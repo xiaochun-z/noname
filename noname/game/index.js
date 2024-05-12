@@ -1507,7 +1507,7 @@ export class Game {
 			name,
 			file: `${path}${name}${ext}`,
 			text: lib.translate[`#${name}`],
-			isDefault,
+			isDefault
 		});
 
 		const getAudioList = (skill, options, skillInfo) => {
@@ -1568,15 +1568,14 @@ export class Game {
 				return audioList;
 			}
 
-			let path = "",
-				ext = "";
+			let path = "", ext = "";
 			if (!/^db:|^ext:|\//.test(audioInfo)) path = "skill/";
 			if (!/\.\w+$/.test(audioInfo)) ext = ".mp3";
 			if (path && ext) return parseAudio(audioInfo, Object.assign(options, { isDefault: true }), defaultInfo);
 			//@TODO
 			console.warn(`${skill}中的地址写法(${audioInfo})暂时没有完全支持台词系统。`);
 			return [getTextMap(path, audioInfo, ext, isDefault)];
-		};
+		}
 
 		return getAudioList(skill, { audioname: [], history: [], isDefault: false }, skillInfo);
 	}
@@ -1591,9 +1590,9 @@ export class Game {
 		if (typeof player !== "string" && player.skin && player.skin.name) {
 			const skinName = player.skin.name;
 			if (skinName !== name && lib.characterSubstitute[name]) {
-				const skin = lib.characterSubstitute[name].find(i => i[0] === skinName);
+				const skin = lib.characterSubstitute[name].find((i) => i[0] === skinName);
 				if (skin) {
-					const newCharacter = get.convertedCharacter(["", "", 0, [], skin[1]]);
+					const newCharacter = get.convertedCharacter(['', '', 0, [], skin[1]]);
 					name = skinName;
 					audioInfo = newCharacter.dieAudios;
 				}
@@ -1614,7 +1613,7 @@ export class Game {
 			name,
 			file: `${path}${name}${ext}`,
 			text: lib.translate[`#${name}:die`],
-			isDefault,
+			isDefault
 		});
 
 		const getAudioList = (name, options, audioInfo) => {
@@ -1633,7 +1632,7 @@ export class Game {
 			history.unshift(name);
 
 			return parseAudio(name, options, audioInfo);
-		};
+		}
 
 		const parseAudio = (name, options, audioInfo) => {
 			const history = options.history.slice();
@@ -1647,8 +1646,8 @@ export class Game {
 				// }
 
 				const map = {};
-				audioInfo.forEach(i => {
-					parseAudio(name, options, i).forEach(data => (map[data.name] = data));
+				audioInfo.forEach((i) => {
+					parseAudio(name, options, i).forEach(data => map[data.name] = data);
 				});
 				return Object.values(map);
 			}
@@ -1674,15 +1673,14 @@ export class Game {
 				return audioList;
 			}
 
-			let path = "",
-				ext = "";
+			let path = "", ext = "";
 			if (!/^db:|^ext:|\//.test(audioInfo)) path = "die/";
 			if (!/\.\w+$/.test(audioInfo)) ext = ".mp3";
 			if (path && ext) return parseAudio(audioInfo, Object.assign(options, { isDefault: true }), defaultInfo);
 			//@TODO
 			console.warn(`${name}中的地址写法(${audioInfo})暂时没有完全支持台词系统。`);
 			return [getTextMap(path, audioInfo, ext, isDefault)];
-		};
+		}
 
 		return getAudioList(name, { history: [], isDefault: false }, audioInfo);
 	}
@@ -1703,8 +1701,7 @@ export class Game {
 		if (info.direct && !directaudio) return;
 		if (lib.skill.global.includes(skill) && !info.forceaudio) return;
 
-		let audio,
-			list = game.parseSkillTextMap(skill, player, skillInfo).randomSort();
+		let audio, list = game.parseSkillTextMap(skill, player, skillInfo).randomSort();
 		return (function play() {
 			if (!list.length) return;
 			audio = list.shift();
@@ -1719,25 +1716,18 @@ export class Game {
 		game.broadcast(game.tryDieAudio, player);
 		if (!lib.config.background_speak) return;
 
-		let playerName;
-		if (typeof player === "string") playerName = player;
-		else if (player.skin && player.skin.name) playerName = player.skin.name;
-		else playerName = player.name;
-
-		let audio,
-			isDefault,
-			list = game.parseDieTextMap(player).randomSort();
-		const check = () => {
+		let audio, isDefault, list = game.parseDieTextMap(player).randomSort();
+		const check = audio => {
 			if (list.length) return true;
 			if (!audio) return false;
 			if (!audio.isDefault) return false;
-			if (!playerName.includes("_")) return false;
-			playerName = playerName.slice(playerName.indexOf("_") + 1);
-			list = game.parseDieTextMap(playerName).randomSort();
-			return check();
-		};
+			const name = audio.name;
+			if (!name.includes("_")) return false;
+			list = game.parseDieTextMap(name.slice(name.indexOf("_") + 1)).randomSort();
+			return check(list[0]);
+		}
 		return (function play() {
-			if (!check()) return;
+			if (!check(audio)) return;
 			audio = list.shift();
 			return game.playAudio(audio.file, play);
 		})();
