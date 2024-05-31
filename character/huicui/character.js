@@ -1,7 +1,5 @@
 const characters = {
-	dc_sp_zhurong: ["female", "qun", 4, ["dcmanhou"]],
-	matie: ["male", "qun", 4, ["dczhuiwang", "dcquxian"]],
-	hansong: ["male", "qun", 3, ["dcyinbi", "dcshuaiyan"]],
+	chezhou: ["male", "wei", 4, ["dcshefu", "dcpigua"]],
 	dc_lifeng: ["male", "shu", 3, ["dctunchu", "dcshuliang"]],
 	wupu: ["male", "qun", 4, ["dcduanti", "dcshicao"]],
 	zangba: ["male", "wei", 4, ["rehengjiang"]],
