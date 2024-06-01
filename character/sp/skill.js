@@ -2054,6 +2054,9 @@ const skills = {
 			)
 				await player.recover(cards.length);
 		},
+		ai: {
+			combo: "olgongjie"
+		},
 	},
 	//OL飞扬
 	olfeiyang: {
