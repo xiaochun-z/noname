@@ -139,6 +139,7 @@ window.noname_character_rank = {
 		"dc_simashi",
 		"dc_sb_simayi",
 		"dc_sb_jiaxu",
+		"dc_sb_zhangxiu",
 		"caofang",
 		"dc_shen_huatuo",
 		"sp_zhenji",
@@ -396,7 +397,8 @@ window.noname_character_rank = {
 		"yj_xuangongzhu",
 		"ol_sb_pangtong",
 		"dc_sb_zhugejin",
-		"matie",
+		"dc_sb_caoang",
+		"dc_sb_guanping",
 	],
 	am: [
 		"tw_yanliang",
@@ -1977,6 +1979,7 @@ window.noname_character_rank = {
 			"jsrg_yuanshao",
 		],
 		epic: [
+			"dc_sb_zhangxiu",
 			"ol_jiangwan",
 			"xukun",
 			"clan_zhongyao",
@@ -2276,6 +2279,8 @@ window.noname_character_rank = {
 			"dc_sp_zhurong",
 		],
 		rare: [
+			"dc_sb_caoang",
+			"dc_sb_guanping",
 			"yue_zhugeguo",
 			"yue_zoushi",
 			"chezhou",
