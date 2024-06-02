@@ -396,6 +396,7 @@ window.noname_character_rank = {
 		"yj_xuangongzhu",
 		"ol_sb_pangtong",
 		"dc_sb_zhugejin",
+		"matie",
 	],
 	am: [
 		"tw_yanliang",
@@ -1135,6 +1136,9 @@ window.noname_character_rank = {
 		"mb_simafu",
 	],
 	b: [
+		"star_zhangzhao",
+		"dc_sp_zhurong",
+		"hansong",
 		"yue_zhugeguo",
 		"std_dc_yanghu",
 		"std_re_dengzhi",
@@ -2267,6 +2271,9 @@ window.noname_character_rank = {
 			"ol_sb_pangtong",
 			"dc_sb_zhugejin",
 			"yue_miheng",
+			"hansong",
+			"star_zhangzhao",
+			"dc_sp_zhurong",
 		],
 		rare: [
 			"yue_zhugeguo",
@@ -2787,6 +2794,7 @@ window.noname_character_rank = {
 			"mb_simafu",
 			"sb_handang",
 			"sb_gongsunzan",
+			"matie",
 		],
 		junk: [
 			"ol_peixiu",
