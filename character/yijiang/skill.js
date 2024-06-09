@@ -14173,7 +14173,7 @@ const skills = {
 		trigger: { player: "damageEnd" },
 		direct: true,
 		filter: function (event, player) {
-			return player.countCards("h") > 0 && player.isDamaged();
+			return player.countCards("h") > 0;
 		},
 		content: function () {
 			"step 0";
