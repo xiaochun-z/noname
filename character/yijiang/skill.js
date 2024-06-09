@@ -14206,11 +14206,7 @@ const skills = {
 				event.finish();
 			}
 			"step 2";
-			if (event.recover) {
-				player.recover();
-			} else if (result.bool) {
-				//player.draw();
-			} else {
+			if (event.recover || !result.bool) {
 				player.recover();
 			}
 		},
