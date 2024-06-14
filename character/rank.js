@@ -399,6 +399,7 @@ window.noname_character_rank = {
 		"dc_sb_zhugejin",
 		"dc_sb_caoang",
 		"dc_sb_guanping",
+		"ol_caifuren",
 	],
 	am: [
 		"tw_yanliang",
@@ -2280,6 +2281,7 @@ window.noname_character_rank = {
 			"dc_sp_zhurong",
 		],
 		rare: [
+			"ol_caifuren",
 			"dc_sb_caoang",
 			"dc_sb_guanping",
 			"yue_zhugeguo",
