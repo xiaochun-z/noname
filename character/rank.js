@@ -1141,8 +1141,10 @@ window.noname_character_rank = {
 		"huan_weiyan",
 		"huan_simayi",
 		"huan_zhaoyun",
+		"huan_guojia",
 	],
 	b: [
+		"huan_zhanghe",
 		"star_zhangzhao",
 		"dc_sp_zhurong",
 		"hansong",
@@ -1984,6 +1986,7 @@ window.noname_character_rank = {
 			"jsrg_yuanshao",
 		],
 		epic: [
+			"huan_guojia",
 			"huan_simayi",
 			"dc_sb_zhangxiu",
 			"ol_jiangwan",
@@ -2285,6 +2288,7 @@ window.noname_character_rank = {
 			"dc_sp_zhurong",
 		],
 		rare: [
+			"huan_weiyan",
 			"ol_caifuren",
 			"dc_sb_caoang",
 			"dc_sb_guanping",
