@@ -12,6 +12,7 @@ const characters = {
 	ol_wangyi: ["female", "wei", 3, ["olzhenlie", "olmiji"]],
 	ol_fazheng: ["male", "shu", 3, ["olxuanhuo", "olenyuan"]],
 	ol_caifuren: ["female", "qun", 3, ["olqieting", "xianzhou"]],
+	ol_liru: ["male", "qun", 3, ["xinjuece", "olmieji", "dcfencheng"]],
 };
 
 export default characters;
