@@ -17,8 +17,28 @@ import { GetCompatible } from "./compatible.js";
 export class Get extends GetCompatible {
 	is = new Is();
 	promises = new Promises();
-	Audio = new Audio();
-	
+	Audio = Audio;
+	/**
+	 * 获取当前内核版本信息
+	 *
+	 * 目前仅考虑`chrome`, `firefox`和`safari`三种浏览器的信息，其余均归于其他范畴
+	 *
+	 * > 其他后续或许会增加，但`IE`永无可能
+	 *
+	 * @returns {["firefox" | "chrome" | "safari" | "other", number, number, number]}
+	 */
+	coreInfo() {
+		const regex = /(firefox|chrome|safari)\/(\d+(?:\.\d+)+)/;
+		let result;
+		if (!(result = userAgent.match(regex))) return ["other", NaN, NaN, NaN];
+		if (result[1] != "safari") {
+			const [major, minor, patch] = result[2].split(".");
+			return [result[1], parseInt(major), parseInt(minor), parseInt(patch)];
+		}
+		result = userAgent.match(/version\/(\d+(?:\.\d+)+).*safari/);
+		const [major, minor, patch] = result[1].split(".");
+		return ["safari", parseInt(major), parseInt(minor), parseInt(patch)];
+	}
 	/**
 	 * 将一个传统格式的character转化为Character对象格式
 	 * @param { Array|Object|import("../library/element/character").Character } data
