@@ -1,14 +1,12 @@
-FROM node:20
+FROM --platform=${TARGETPLATFORM} node:alpine
+RUN npm install pm2 -g
 
 WORKDIR /app
-
-COPY ./docker/* ./
-
-RUN npm install ws body-parser express minimist
-
 COPY . .
+RUN rm -rf noname-server.exe .git .github README.md Dockerfile .gitignore .dockerignore
+RUN npm install
 
+EXPOSE 80
 EXPOSE 8080
-EXPOSE 8089
 
-CMD [ "sh","./start.sh" ]
+CMD [ "pm2-runtime", "process.yml" ]
