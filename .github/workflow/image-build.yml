@@ -1,17 +1,14 @@
 name: Build Docker Image
 on:
-  push:
-      tags: [v\d+\.\d+\.\d+]
     workflow_dispatch:
+      inputs:
+        version: 1.10.16
 jobs:
     build:
       name: push docker image to docker hub
       runs-on: ubuntu-latest
       steps:
         - uses: actions/checkout@v4
-        - name: Get version
-        id: get_version
-        uses: battila7/get-version-action@v2
         - name: login to docker hub
           id: docker-hub
           env:
@@ -23,4 +20,4 @@ jobs:
           id: build-docker-image
           run: |
             ls -la 
-            docker buildx build --platform linux/amd64,linux/arm64 --tag hsiaoshun/noname:${{ steps.get_version.outputs.version-without-v }} --tag hsiaoshun/noname:latest --push .
+            docker buildx build --platform linux/amd64,linux/arm64 --tag hsiaoshun/noname:${{ github.event.inputs.version }} --tag hsiaoshun/noname:latest --push .
