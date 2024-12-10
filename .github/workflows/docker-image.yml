@@ -26,7 +26,6 @@ jobs:
             username: ${{secrets.DOCKERHUB_USERNAME}}
             password: ${{secrets.DOCKERHUB_PASSWORD}}
         - name: build the docker image ${{ matrix.docker_target }}
-          id: build-docker-image
           run: |
             DOCKER_PLATFORM=$(echo "${{ matrix.docker_target }}" | cut -f2 -d:)
             docker buildx build --platform ${DOCKER_PLATFORM} --tag hsiaoshun/noname:${{ github.event.inputs.version }} --tag hsiaoshun/noname:latest --push .
