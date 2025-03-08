@@ -1965,16 +1965,40 @@ export class Game extends GameCompatible {
 			_status.extensionLoading.add(promise);
 			return promise;
 		} else {
-			if (!lib.imported[type]) lib.imported[type] = {};
-			const promise = Promise.resolve((gnc.is.generator(content) ? gnc.of(content) : content)(lib, game, ui, get, ai, _status)).then(content2 => {
+			if (!lib.imported[type]) {
+				lib.imported[type] = {};
+			}
+
+			/** @type {Promise<any>} */
+			let promise;
+			if (typeof content === "function") {
+				if (gnc.is.generator(content)) {
+					promise = gnc.of(content)(lib, game, ui, get, ai, _status);
+				} else {
+					// @ts-expect-error no `Promise.try` type info
+					promise = Promise.try(content, lib, game, ui, get, ai, _status);
+				}
+			} else {
+				// 目前假定content是一个合法的对象
+				promise = Promise.resolve(content);
+			}
+
+			promise = promise.then(content2 => {
 				if (content2.name) {
 					lib.imported[type][content2.name] = content2;
 					// delete content2.name;
 				}
 			});
-			if (typeof _status.importing == "undefined") _status.importing = {};
-			if (!_status.importing[type]) _status.importing[type] = [];
+
+			if (typeof _status.importing == "undefined") {
+				_status.importing = {};
+			}
+			if (!_status.importing[type]) {
+				_status.importing[type] = [];
+			}
+
 			_status.importing[type].add(promise);
+
 			return promise;
 		}
 	}
