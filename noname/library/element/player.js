@@ -6304,6 +6304,9 @@ export class Player extends HTMLDivElement {
 				next.log = true;
 			}
 		}
+		if (get.itemtype(next.cards) !== "cards") {
+			next.cards = [];
+		}
 		next.setContent("gain");
 		next.getd = function (player, key, position) {
 			if (!position) position = ui.discardPile;

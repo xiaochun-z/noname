@@ -3724,8 +3724,8 @@ const skills = {
 					},
 					position: "hes",
 					viewAs: { name: links[0][2] },
+					log: false,
 					precontent() {
-						delete event.result.skill;
 						player.logSkill("twcairu");
 						if (!player.storage.twcairu_used) {
 							player.storage.twcairu_used = [];
@@ -3963,9 +3963,7 @@ const skills = {
 					if (get.name(card) == "sha") return 5 - get.value(card);
 					return 8 - get.value(card);
 				},
-				precontent() {
-					delete event.result.skill;
-				},
+				log: false,
 			},
 			achieve: {
 				audio: "twduwang2.mp3",
@@ -4124,8 +4122,8 @@ const skills = {
 					},
 					position: "hs",
 					viewAs: { name: links[0][2] },
+					log: false,
 					precontent() {
-						delete event.result.skill;
 						player.logSkill("twylyanshi");
 						player.awakenSkill("twylyanshi");
 						if (player.storage.twduwang_ylyanshi) {
@@ -9075,10 +9073,10 @@ const skills = {
 					selectCard: -1,
 					viewAs: { name: links[0].name, isCard: true, cards: [links[0]] },
 					popname: true,
+					log: false,
 					precontent() {
 						player.logSkill("twmouli");
 						player.addTempSkill("twmouli_used");
-						delete event.result.skill;
 						var name = event.result.card.name;
 						event.result.cards = event.result.card.cards;
 						event.result.card = get.autoViewAs(event.result.cards[0]);
@@ -16272,15 +16270,14 @@ const skills = {
 			},
 			backup(links, player) {
 				return {
-					filterCard() {
-						return false;
-					},
+					filterCard: () => false,
 					viewAs: {
 						name: links[0][2],
 						nature: links[0][3],
 						isCard: true,
 					},
 					selectCard: -1,
+					log: false,
 					precontent() {
 						"step 0";
 						player
@@ -16299,7 +16296,6 @@ const skills = {
 							player.logSkill("zhenshan", result.targets);
 							player.addTempSkill("zhenshan_used");
 							player.swapHandcards(result.targets[0]);
-							delete event.result.skill;
 						} else event.finish();
 						"step 2";
 						game.delayx();
@@ -16310,9 +16306,7 @@ const skills = {
 				return "选择" + get.translation(links[0][3] || "") + "【" + get.translation(links[0][2]) + "】的目标";
 			},
 		},
-		subSkill: {
-			used: { charlotte: true },
-		},
+		subSkill: { used: { charlotte: true } },
 		ai: {
 			order() {
 				var player = _status.event.player;
@@ -16350,11 +16344,8 @@ const skills = {
 			},
 			result: {
 				player(player) {
-					if (_status.event.type == "dying") {
-						return get.attitude(player, _status.event.dying);
-					} else {
-						return 1;
-					}
+					if (_status.event.type == "dying") return get.attitude(player, _status.event.dying);
+					return 1;
 				},
 			},
 		},
@@ -16507,10 +16498,10 @@ const skills = {
 					},
 					filterCard: () => false,
 					selectCard: -1,
+					log: false,
 					precontent() {
 						player.logSkill("twyingji");
 						player.draw("nodelay");
-						delete event.result.skill;
 					},
 				};
 			},
@@ -16549,14 +16540,12 @@ const skills = {
 		prompt: "视为使用【无懈可击】并摸一张牌",
 		selectCard: [0, 1],
 		check: () => 1,
+		log: false,
 		precontent() {
 			player.logSkill("twyingji");
 			player.draw("nodelay");
-			delete event.result.skill;
 		},
-		ai: {
-			order: 4,
-		},
+		ai: { order: 4 },
 	},
 	twshanghe: {
 		trigger: { player: "dying" },

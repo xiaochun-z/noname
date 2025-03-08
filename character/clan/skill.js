@@ -762,13 +762,13 @@ const skills = {
 		subSkill: {
 			backup: {
 				precontent() {
-					delete event.result.skill;
 					event.result.card.storage.clanshengmo = true;
 					player.markAuto("clanshengmo", event.result.card.name);
 					player.gain(lib.skill.clanshengmo_backup.cardToGain, "gain2");
 				},
 				filterCard: () => false,
 				selectCard: -1,
+				log: false,
 			},
 		},
 		ai: {
@@ -1749,9 +1749,6 @@ const skills = {
 					return 5 - get.value(card);
 				},
 				log: false,
-				precontent() {
-					delete event.result.skill;
-				},
 			},
 		},
 	},
@@ -1832,13 +1829,12 @@ const skills = {
 		},
 		skillAnimation: true,
 		animationColor: "thunder",
+		log: false,
 		precontent() {
-			"step 0";
 			var skill = "clanjiexuan";
 			player.logSkill(skill);
 			player.changeZhuanhuanji(skill);
 			player.awakenSkill(skill, true);
-			delete event.result.skill;
 		},
 		ai: {
 			order(item, player) {
@@ -2859,10 +2855,10 @@ const skills = {
 		clanSkill: true,
 		skillAnimation: true,
 		animationColor: "soil",
+		log: false,
 		precontent() {
 			player.logSkill("clanxumin");
 			player.awakenSkill("clanxumin");
-			delete event.result.skill;
 		},
 		ai: {
 			order: 7,
@@ -3157,9 +3153,7 @@ const skills = {
 	//族荀淑
 	clanshenjun: {
 		audio: 2,
-		trigger: {
-			global: "useCard",
-		},
+		trigger: { global: "useCard" },
 		forced: true,
 		locked: false,
 		filter(event, player) {
@@ -3191,9 +3185,7 @@ const skills = {
 		},
 		subSkill: {
 			viewAs: {
-				trigger: {
-					global: ["phaseZhunbeiEnd", "phaseJudgeEnd", "phaseDrawEnd", "phaseUseEnd", "phaseDiscardEnd", "phaseJieshuEnd"],
-				},
+				trigger: { global: ["phaseZhunbeiEnd", "phaseJudgeEnd", "phaseDrawEnd", "phaseUseEnd", "phaseDiscardEnd", "phaseJieshuEnd"] },
 				filter(event, player) {
 					return player.countCards("h", card => card.hasGaintag("clanshenjun")) > 0;
 				},
@@ -3267,9 +3259,6 @@ const skills = {
 				filterTarget: lib.filter.filterTarget,
 				check: card => 6 - get.value(card),
 				log: false,
-				precontent() {
-					delete event.result.skill;
-				},
 			},
 		},
 	},

@@ -221,6 +221,12 @@ const translates = {
 	ol_fuhuanghou_prefix: "OL界",
 	olqiuyuan: "求援",
 	olqiuyuan_info: "当你成为【杀】或伤害锦囊牌的目标时，你可以令另一名其他角色选择一项：1.交给你一张与此牌同类型且不同牌名的牌；2.成为此牌的额外目标。",
+	ol_sb_zhangrang: "OL谋张让",
+	ol_sb_zhangrang_prefix: "OL谋",
+	olsblucun: '赂存',
+	olsblucun_info: '每回合限一次，你可以视为使用一张本轮未以此法使用过的基本牌或普通锦囊牌。此牌结算完毕后，当前回合角色将一张手牌置于你的武将牌上，称为“赂”；本回合结束时，你将一张“赂”置入弃牌堆并摸一张牌（若你本回合因此技能使用的牌名包含你选择移去的“赂”的牌名，则你额外摸一张牌）。',
+	olsbtuisheng: '蜕生',
+	olsbtuisheng_info: '限定技，准备阶段或当你进入濒死状态时，你可以重置你本轮〖赂存〗使用过的牌名，然后你选择一项并回复1点体力：①将所有手牌置于你的武将牌上，称为“赂”；②令当前回合角色获得你的所有“赂”且你回复1点体力。',
 };
 
 export default translates;

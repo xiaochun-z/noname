@@ -2626,10 +2626,10 @@ const skills = {
 					filterCard: () => false,
 					selectCard: -1,
 					card: links[0],
+					log: false,
 					precontent() {
 						player.logSkill("rexiansi");
 						player.loseToDiscardpile(lib.skill.rexiansi2_backup.card);
-						delete event.result.skill;
 					},
 				};
 			},
@@ -8373,19 +8373,15 @@ const skills = {
 		filter(event, player) {
 			return !player.isLinked();
 		},
-		filterCard() {
-			return false;
-		},
+		filterCard: () => false,
 		selectCard: -1,
+		log: false,
 		precontent() {
 			player.logSkill("decadechunlao");
 			player.link();
-			delete event.result.skill;
 		},
 		group: ["decadechunlao2", "decadechunlaox"],
-		ai: {
-			jiuOther: true,
-		},
+		ai: { jiuOther: true },
 	},
 	decadechunlaox: {
 		trigger: { player: "damageBegin2" },

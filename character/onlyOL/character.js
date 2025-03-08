@@ -1,4 +1,5 @@
 const characters = {
+	ol_sb_zhangrang: ["male", "qun", 3, ["olsblucun", "olsbtuisheng"], ["sex:male_castrated"]],
 	ol_fuhuanghou: ["female", "qun", 3, ["rezhuikong", "olqiuyuan"]],
 	ol_guohuai: ["male", "wei", 3, ["oljingce"]],
 	ol_sunxiu: ["male", "wu", 3, ["reyanzhu", "rexingxue", "xinzhaofu"]],

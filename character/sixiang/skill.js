@@ -1497,8 +1497,8 @@ const skills = {
 		prompt: () => `将${get.cnNumber(Math.max(1, get.player().getHp()))}张♦牌当做杀，♥牌当做桃，♣牌当做闪，♠牌当做无懈可击使用或打出`,
 		selectCard: () => Math.max(1, get.player().getHp()),
 		complexCard: true,
+		log: false,
 		precontent() {
-			delete event.result.skill;
 			player.logSkill("oldlonghun");
 		},
 		ai: {

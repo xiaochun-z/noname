@@ -4711,12 +4711,12 @@ const skills = {
 					card: links[0],
 					filterCard: () => false,
 					selectCard: -1,
+					log: false,
 					precontent() {
 						var card = lib.skill.nsfengli_use_backup.card;
 						var target = player.storage.nsfengli_use;
 						event.target = target;
 						player.logSkill("nsfengli", target);
-						delete event.result.skill;
 						player.showCards(card, get.translation(player) + "发动了【奉礼】");
 						target.hideShownCards(card);
 					},
@@ -4733,9 +4733,7 @@ const skills = {
 		},
 		ai: {
 			order: 8,
-			result: {
-				player: 1,
-			},
+			result: { player: 1 },
 		},
 	},
 	ns_xiandao: {

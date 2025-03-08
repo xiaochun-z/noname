@@ -1569,16 +1569,15 @@ export default () => {
 						},
 					},
 					backup: {
-						filterCard: true,
+						filterCard(card) {
+							return get.itemtype(card) == "card";
+						},
 						position: "hs",
 						check(card) {
 							return 7 - get.value(card);
 						},
 						log: false,
 						viewAs: { name: "huoshaolianying" },
-						precontent() {
-							delete event.result.skill;
-						},
 					},
 				},
 			},
@@ -2815,9 +2814,9 @@ export default () => {
 									filterCard: true,
 									position: "hs",
 									popname: true,
+									log: false,
 									precontent() {
 										player.logSkill("fakechengshang_effect");
-										delete event.result.skill;
 										const cardx = event.result.card;
 										const removes = player.getStorage("fakechengshang_effect").filter(card => {
 											return lib.card.list.some(list => {
@@ -3522,9 +3521,9 @@ export default () => {
 									},
 									position: "h",
 									popname: true,
+									log: false,
 									precontent() {
 										player.logSkill("fakemibei_effect");
-										delete event.result.skill;
 										player.tempBanSkill("fakemibei_effect", null, false);
 									},
 									viewAs: {
@@ -4444,9 +4443,7 @@ export default () => {
 						position: "he",
 						popname: true,
 						viewAs: { name: "sha", nature: "ice" },
-						precontent() {
-							delete event.result.skill;
-						},
+						log: false,
 					},
 					effect: {
 						charlotte: true,

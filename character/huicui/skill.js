@@ -368,7 +368,6 @@ const skills = {
 							return num + 0.1;
 					},
 				},
-				locked: false,
 				charlotte: true,
 				onremove: (player, skill) => player.removeGaintag(skill),
 			},
@@ -704,27 +703,24 @@ const skills = {
 		},
 	},
 	//群祝融
-	dcmanhou: {
-		audio: 2,
+	dcremanhou: {
+		audio: "dcmanhou",
 		enable: "phaseUse",
 		usable: 1,
 		chooseButton: {
 			dialog(event, player) {
-				return ui.create.dialog("###蛮后###选择一个数字，你可以摸等量张牌并执行等量项");
+				return ui.create.dialog("###蛮后###摸至多四张牌并执行等量项");
 			},
 			chooseControl(event, player) {
 				var list = Array.from({
 					length: 4,
-				}).map((_, i) => get.cnNumber(i + 1, true));
+				}).map((_, i) => get.cnNumber(i + 1) + "张");
 				list.push("cancel2");
 				return list;
 			},
 			check(event, player) {
-				var list = Array.from({
-					length: 4,
-				}).map((_, i) => get.cnNumber(i + 1, true));
-				if (get.effect(player, { name: "losehp" }, player, player) > 4 || player.countCards("hs", card => player.canSaveCard(card, player)) > 0 || player.hp > 2) return "四";
-				return "二";
+				if (get.effect(player, { name: "losehp" }, player, player) > 4 || player.countCards("hs", card => player.canSaveCard(card, player)) > 0 || player.hp > 2) return "四张";
+				return "两张";
 			},
 			backup(result, player) {
 				return {
@@ -737,7 +733,175 @@ const skills = {
 							Array.from({
 								length: 4,
 							})
-								.map((_, i) => get.cnNumber(i + 1, true))
+								.map((_, i) => get.cnNumber(i + 1) + "张")
+								.indexOf(lib.skill.dcremanhou_backup.num) + 1;
+						await player.draw(num);
+						if (num >= 1) await player.removeSkills("dcretanluan");
+						if (num >= 2 && player.countCards("h")) await player.chooseToDiscard("h", true);
+						if (num >= 3) {
+							await player.loseHp();
+							if (game.hasPlayer(target => target !== player && target.countCards("h"))) {
+								const [target] = await player
+									.chooseTarget("是否获得一名其他角色的一张手牌？", (card, player, target) => {
+										return target !== player && target.countCards("h");
+									})
+									.set("ai", target => {
+										const player = get.player();
+										return get.effect(target, { name: "shunshou_copy", position: "h" }, player, player);
+									})
+									.forResult("targets");
+								if (target) {
+									player.line(target);
+									await player.gainPlayerCard(target, "h", true);
+								}
+							}
+						}
+						if (num >= 4) {
+							if (game.hasPlayer(target => target.countDiscardableCards(player, "ej"))) {
+								const [target] = await player
+									.chooseTarget(
+										"弃置场上的一张牌",
+										(card, player, target) => {
+											return target.countDiscardableCards(player, "ej");
+										},
+										true
+									)
+									.set("ai", target => {
+										const player = get.player();
+										return get.effect(target, { name: "guohe_copy", position: "ej" }, player, player);
+									})
+									.forResult("targets");
+								if (target) {
+									player.line(target);
+									await player.discardPlayerCard(target, "ej", true);
+								}
+							}
+							await player.addSkills("dcretanluan");
+						}
+					},
+				};
+			},
+		},
+		ai: {
+			order: 8,
+			result: { player: 1 },
+		},
+		subSkill: { backup: {} },
+	},
+	dcretanluan: {
+		init(player, skill) {
+			if (typeof player.getStat("skill")?.[skill] === "number") {
+				delete player.getStat("skill")[skill];
+			}
+		},
+		onChooseToUse(event) {
+			if (!game.online && !event.dcretanluan) {
+				event.set(
+					"dcretanluan",
+					game.filterPlayer2().reduce((list, target) => {
+						return list.addArray(
+							target
+								.getHistory("lose", evt => {
+									return evt.type === "discard";
+								})
+								.map(evt => evt.cards.filterInD("d"))
+								.flat()
+								.unique()
+						);
+					}, [])
+				);
+			}
+		},
+		audio: "dctanluan",
+		enable: "phaseUse",
+		filter(event, player) {
+			return event.dcretanluan?.some(card => player.hasUseTarget(card));
+		},
+		usable: 1,
+		chooseButton: {
+			dialog(event, player) {
+				const dialog = ui.create.dialog('###探乱###<div class="text center">' + lib.translate.dcretanluan_info + "</div>");
+				dialog.add(event.dcretanluan);
+				return dialog;
+			},
+			filter(button, player) {
+				return player.hasUseTarget(button.link);
+			},
+			check(button) {
+				const card = button.link;
+				return get.player().getUseValue(card) * (get.tag(card, "damage") >= 1 ? 3 : 1);
+			},
+			prompt(links) {
+				return '###探乱###<div class="text center">使用' + get.translation(links) + "，若你因此造成伤害，则重置〖蛮后〗</div>";
+			},
+			backup(links, player) {
+				return {
+					audio: "dctanluan",
+					filterCard: () => false,
+					selectCard: -1,
+					popname: true,
+					viewAs: links[0],
+					card: links[0],
+					precontent() {
+						player.addTempSkill("dcretanluan_effect");
+						const card = get.info("dcretanluan_backup").card;
+						event.result.cards = [card];
+						event.result.card = get.autoViewAs(card, [card]);
+						event.result.card.dcretanluan = true;
+					},
+				};
+			},
+		},
+		subSkill: {
+			backup: {},
+			effect: {
+				charlotte: true,
+				audio: "dctanluan",
+				trigger: { source: "damageSource" },
+				filter(event, player) {
+					if (typeof player.getStat("skill")["dcremanhou"] !== "number") return false;
+					return event.card?.dcretanluan === true;
+				},
+				forced: true,
+				content() {
+					delete player.getStat("skill")["dcremanhou"];
+					player.popup("dcremanhou");
+					game.log(player, "重置了技能", "【" + get.translation("dcremanhou") + "】");
+				},
+			},
+		},
+	},
+	dcmanhou: {
+		audio: 2,
+		enable: "phaseUse",
+		usable: 1,
+		chooseButton: {
+			dialog(event, player) {
+				return ui.create.dialog("###蛮后###摸至多四张牌并执行等量项");
+			},
+			chooseControl(event, player) {
+				var list = Array.from({
+					length: 4,
+				}).map((_, i) => get.cnNumber(i + 1) + "张");
+				list.push("cancel2");
+				return list;
+			},
+			check(event, player) {
+				if (get.effect(player, { name: "losehp" }, player, player) > 4 || player.countCards("hs", card => player.canSaveCard(card, player)) > 0 || player.hp > 2) return "四张";
+				return "两张";
+			},
+			backup(result, player) {
+				return {
+					num: result.control,
+					audio: "dcmanhou",
+					filterCard: () => false,
+					selectCard: -1,
+					async content(event, trigger, player) {
+						var num =
+							Array.from({
+								length: 4,
+							})
+								.map((_, i) => get.cnNumber(i + 1) + "张")
 								.indexOf(lib.skill.dcmanhou_backup.num) + 1;
 						await player.draw(num);
 						if (num >= 1) await player.removeSkills("dctanluan");
@@ -753,20 +917,13 @@ const skills = {
 		},
 		ai: {
 			order: 8,
-			result: {
-				player: 1,
-			},
+			result: { player: 1 },
 		},
-		derivation: "dctanluan",
-		subSkill: {
-			backup: {},
-		},
+		subSkill: { backup: {} },
 	},
 	dctanluan: {
 		audio: 2,
-		trigger: {
-			player: "useCardToPlayered",
-		},
+		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
 			return event.isFirstTarget;
 		},
@@ -4000,9 +4157,7 @@ const skills = {
 						}
 						game.delayx();
 					},
-					ai: {
-						order: 10,
-					},
+					ai: { order: 10 },
 				};
 			},
 			prompt(links, player) {
@@ -4038,9 +4193,7 @@ const skills = {
 			backup2: {
 				filterCard: () => false,
 				selectCard: -1,
-				precontent() {
-					delete event.result.skill;
-				},
+				log: false,
 			},
 		},
 	},
@@ -5940,13 +6093,13 @@ const skills = {
 						name: links[0][2],
 						isCard: true,
 					},
+					log: false,
 					popname: true,
 					precontent() {
 						"step 0";
 						player.logSkill("dcgue");
 						player.addTempSkill("dcgue_blocker");
 						if (player.countCards("h")) player.showHandcards();
-						delete event.result.skill;
 						"step 1";
 						if (player.countCards("h", { name: ["sha", "shan"] }) > 1) {
 							var evt = event.getParent();

@@ -26,8 +26,8 @@ const skills = {
 					filterCard: () => false,
 					selectCard: -1,
 					popname: true,
+					log: false,
 					async precontent(event, trigger, player) {
-						delete event.result.skill;
 						const stat = player.getStat("skill");
 						if (!stat.jsrgqiluan) stat.jsrgqiluan = 0;
 						stat.jsrgqiluan++;
@@ -239,11 +239,11 @@ const skills = {
 				})
 			);
 		},
+		log: false,
 		prompt: "视为对自己使用【桃】",
 		async precontent(event, trigger, player) {
 			player.logSkill("jsrgdangren");
 			player.changeZhuanhuanji("jsrgdangren");
-			delete event.result.skill;
 		},
 		hiddenCard(player, name) {
 			return name === "tao";
@@ -1730,9 +1730,7 @@ const skills = {
 	//404诸葛亮
 	jsrgwentian: {
 		audio: 2,
-		trigger: {
-			player: ["phaseZhunbeiBegin", "phaseJudgeBegin", "phaseDrawBegin", "phaseUseBegin", "phaseDiscardBegin", "phaseJieshuBegin"],
-		},
+		trigger: { player: ["phaseZhunbeiBegin", "phaseJudgeBegin", "phaseDrawBegin", "phaseUseBegin", "phaseDiscardBegin", "phaseJieshuBegin"] },
 		usable: 1,
 		prompt2: "观看牌堆顶的五张牌，将其中一张交给其他角色，并将其余牌置于牌堆顶或牌堆底",
 		group: "jsrgwentian_viewas",
@@ -1835,11 +1833,11 @@ const skills = {
 					str += "】使用";
 					return str;
 				},
+				log: false,
 				precontent() {
 					player.logSkill("jsrgwentian");
 					const cards = get.cards();
 					event.result.cards = cards;
-					delete event.result.skill;
 					game.cardsGotoOrdering(cards);
 					const color = event.result.card.name == "wuxie" ? "black" : "red";
 					if (get.color(cards, false) != color) {
@@ -2111,9 +2109,7 @@ const skills = {
 				filterCard(card) {
 					return get.itemtype(card) == "card" && get.name(card) == "ying";
 				},
-				viewAs: {
-					name: "chuqibuyi",
-				},
+				viewAs: { name: "chuqibuyi" },
 				selectCard: 1,
 				position: "hs",
 				log: false,
@@ -2124,9 +2120,6 @@ const skills = {
 				},
 				ai1(card) {
 					return 6 - get.value(card);
-				},
-				precontent() {
-					delete event.result.skill;
 				},
 			},
 			forbid: {
@@ -2151,9 +2144,6 @@ const skills = {
 					content: "本回合不能使用或打出$牌",
 				},
 			},
-		},
-		ai: {
-			combo: "jsrgjinfa",
 		},
 	},
 	jsrgxuanfeng: {
@@ -3018,6 +3008,7 @@ const skills = {
 						nature: links[0][3],
 						isCard: true,
 					},
+					log: false,
 					selectCard: -1,
 					precontent() {
 						"step 0";
@@ -3033,9 +3024,7 @@ const skills = {
 							)
 							.set("logSkill", "jsrgjingju");
 						"step 1";
-						if (result.bool) {
-							delete event.result.skill;
-						} else {
+						if (!result.bool) {
 							event.getParent().jsrgjingju = true;
 							event.getParent().goto(0);
 							delete event.getParent().openskilldialog;
@@ -4116,8 +4105,8 @@ const skills = {
 						storage: { jsrgzhenfeng: true },
 						isCard: true,
 					},
+					log: false,
 					precontent() {
-						delete event.result.skill;
 						player.logSkill("jsrgzhenfeng");
 						event.getParent().addCount = false;
 						player.addTempSkill("jsrgzhenfeng_used", "phaseUseAfter");
@@ -4131,10 +4120,10 @@ const skills = {
 		},
 		mod: {
 			cardUsable(card) {
-				if (card.storage && card.storage.jsrgzhenfeng) return Infinity;
+				if (card.storage?.jsrgzhenfeng) return Infinity;
 			},
 			targetInRange(card) {
-				if (card.storage && card.storage.jsrgzhenfeng) return true;
+				if (card.storage?.jsrgzhenfeng) return true;
 			},
 		},
 		ai: {
@@ -4151,15 +4140,12 @@ const skills = {
 			},
 			effect: {
 				audio: "jsrgzhenfeng",
-				trigger: {
-					global: "useCardToBegin",
-				},
+				trigger: { global: "useCardToBegin" },
 				charlotte: true,
 				forced: true,
 				onremove: true,
 				filter(event, player) {
-					if (!event.card.storage || !event.card.storage.jsrgzhenfeng) return false;
-					// debugger
+					if (!event.card.storage?.jsrgzhenfeng) return false;
 					var str = event.target
 						.getSkills(null, false, false)
 						.map(skill => {
@@ -4807,8 +4793,8 @@ const skills = {
 					if (get.name(card, false) == "ying" && player.hasSkill("jsrgchuanxin")) maxVal -= 3;
 					return maxVal - get.value(card);
 				},
+				log: false,
 				precontent() {
-					delete event.result.skill;
 					player.addTempSkill("jsrgchuanxin_add");
 				},
 			},
@@ -4892,10 +4878,10 @@ const skills = {
 						isCard: true,
 						storage: { jsrgcuifeng: true },
 					},
+					log: false,
 					precontent() {
 						player.logSkill("jsrgcuifeng");
 						player.awakenSkill("jsrgcuifeng");
-						delete event.result.skill;
 						if (!player.storage.jsrgcuifeng_check)
 							player
 								.when("phaseEnd")
@@ -4921,14 +4907,12 @@ const skills = {
 		},
 		mod: {
 			targetInRange: card => {
-				if (card.storage && card.storage.jsrgcuifeng) return true;
+				if (card.storage?.jsrgcuifeng) return true;
 			},
 		},
 		ai: {
 			order: 1.9,
-			result: {
-				player: 1,
-			},
+			result: { player: 1 },
 		},
 	},
 	jsrgdengnan: {
@@ -4965,10 +4949,10 @@ const skills = {
 						isCard: true,
 						storage: { jsrgdengnan: true },
 					},
+					log: false,
 					precontent() {
 						player.logSkill("jsrgdengnan");
 						player.awakenSkill("jsrgdengnan");
-						delete event.result.skill;
 						if (!player.storage.jsrgdengnan_check)
 							player
 								.when("phaseEnd")
@@ -4998,9 +4982,7 @@ const skills = {
 		},
 		ai: {
 			order: 2,
-			result: {
-				player: 1,
-			},
+			result: { player: 1 },
 		},
 	},
 	//夏侯荣
@@ -5076,9 +5058,9 @@ const skills = {
 					},
 					filterCard: () => false,
 					selectCard: -1,
+					log: false,
 					precontent() {
 						player.logSkill("jsrgfenjian");
-						delete event.result.skill;
 						player.addTempSkill("jsrgfenjian_effect");
 						player.addMark("jsrgfenjian_effect", 1, false);
 						player.addTempSkill("jsrgfenjian_used");
@@ -5092,7 +5074,7 @@ const skills = {
 		},
 		mod: {
 			targetEnabled(card, player, target) {
-				if (player == target && card.storage && card.storage.jsrgfenjian) return false;
+				if (player == target && card.storage?.jsrgfenjian) return false;
 			},
 		},
 		ai: {
@@ -6008,9 +5990,9 @@ const skills = {
 		filterCard: () => false,
 		selectCard: -1,
 		selectTarget: [1, Infinity],
+		log: false,
 		precontent() {
 			player.logSkill("jsrgduxing");
-			delete event.result.skill;
 			var targets = event.result.targets;
 			for (var target of targets) {
 				target.addTempSkill("jsrgduxing_allsha");
@@ -6053,20 +6035,16 @@ const skills = {
 					},
 				},
 			},
-			used: {
-				charlotte: true,
-			},
+			used: { charlotte: true },
 			restore: {
 				charlotte: true,
-				trigger: {
-					global: "useCardAfter",
-				},
+				trigger: { global: "useCardAfter" },
 				forced: true,
 				popup: false,
 				forceDie: true,
 				forceOut: true,
 				filter(event, player) {
-					return event.card.name == "juedou" && event.card.storage && event.card.storage.jsrgduxing;
+					return event.card.name == "juedou" && event.card.storage?.jsrgduxing;
 				},
 				content() {
 					game.countPlayer(current => {
@@ -6621,10 +6599,9 @@ const skills = {
 		position: "he",
 		popname: true,
 		ignoreMod: true,
+		log: false,
 		precontent() {
-			"step 0";
 			player.logSkill("jsrgqiongtu");
-			delete event.result.skill;
 			var card = event.result.cards[0];
 			event.card = card;
 			event.result.card = {
@@ -6648,11 +6625,9 @@ const skills = {
 		},
 		subSkill: {
 			check: {
-				trigger: {
-					global: "useCardAfter",
-				},
+				trigger: { global: "useCardAfter" },
 				filter(event, player) {
-					return event.card.name == "wuxie" && event.card.storage && event.card.storage.jsrgqiongtu;
+					return event.card.name == "wuxie" && event.card.storage?.jsrgqiongtu;
 				},
 				forced: true,
 				popup: false,
@@ -6844,9 +6819,7 @@ const skills = {
 		content() {
 			player.turnOver(false);
 		},
-		ai: {
-			combo: "jsrgguyin",
-		},
+		ai: { combo: "jsrgguyin" },
 		subSkill: {
 			jiu: {
 				audio: "jsrgzhangdeng",
@@ -6869,6 +6842,7 @@ const skills = {
 					);
 				},
 				filterCard: () => false,
+				log: false,
 				selectCard: -1,
 				precontent() {
 					player.logSkill("jsrgzhangdeng_jiu");
@@ -6876,7 +6850,6 @@ const skills = {
 						return current.hasSkill("jsrgzhangdeng") && current.isTurnedOver();
 					});
 					player.line(targets[0]);
-					delete event.result.skill;
 				},
 			},
 		},
@@ -6979,9 +6952,9 @@ const skills = {
 					},
 					position: "hes",
 					viewAs: { name: links[0][2], nature: links[0][3] },
+					log: false,
 					precontent() {
 						player.logSkill("jsrgnianen");
-						delete event.result.skill;
 						var card = event.result.card;
 						if (get.color(card, player) != "red" || get.name(card) != "sha" || get.natureList(card).length) {
 							player.tempBanSkill("jsrgnianen");
@@ -11642,8 +11615,8 @@ const skills = {
 				check(card) {
 					return 5 - get.value(card);
 				},
+				log: false,
 				precontent() {
-					delete event.result.skill;
 					player.addTempSkill("jsrgqinrao_effect");
 				},
 			},

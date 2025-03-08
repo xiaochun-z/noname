@@ -486,7 +486,7 @@ export class Card extends HTMLDivElement {
 			this.node.addinfo.remove();
 			delete this.node.addinfo;
 		}
-		if (card[0] == "heart" || card[0] == "diamond") {
+		if (lib.color.red.includes(card[0])) {
 			this.node.info.classList.add("red");
 		}
 		this.node.image.className = "image";

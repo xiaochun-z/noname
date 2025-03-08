@@ -24,12 +24,12 @@ const skills = {
 		},
 		popname: true,
 		ignoreMod: true,
+		log: false,
 		*precontent(event, map) {
 			var player = map.player;
 			var evt = event.getParent();
 			if (evt.dialog && typeof evt.dialog == "object") evt.dialog.close();
 			player.logSkill("oltousui");
-			delete event.result.skill;
 			var cards = event.result.cards;
 			player.loseToDiscardpile(cards, ui.cardPile, false, "blank").log = false;
 			var shownCards = cards.filter(i => get.position(i) == "e"),
@@ -236,10 +236,10 @@ const skills = {
 						nature: links[0][3],
 						isCard: true,
 					},
+					log: false,
 					precontent() {
 						player.logSkill("bingxin");
 						player.draw();
-						delete event.result.skill;
 						var name = event.result.card.name;
 						player.addTempSkill("bingxin_count");
 						player.markAuto("bingxin_count", [name]);

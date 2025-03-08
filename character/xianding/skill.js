@@ -158,40 +158,43 @@ const skills = {
 	},
 	//徐馨
 	dcyuxian: {
-		group: "dcyuxian_draw",
-		intro: {
-			content: (_, player) => "已记录花色:" + get.translation(player.getStorage("dcyuxian")),
-			markcount: (_, player) => player.getStorage("dcyuxian").length,
-			onunmark: true,
-		},
 		audio: 2,
-		trigger: {
-			player: "useCard",
+		trigger: { player: "useCard" },
+		filter(event, player) {
+			return player.isPhaseUsing() && player.getStorage("dcyuxian").length < 4 && get.suit(event.card, player) !== "none";
 		},
-		filter: (event, player) => player.isPhaseUsing() && event.player === player && player.getStorage("dcyuxian").length < 4 && get.suit(event.card, player) !== "none",
 		forced: true,
 		locked: false,
 		content() {
 			player.storage[event.name] = player.getStorage(event.name).concat([get.suit(trigger.card, player)]);
 			player.markSkill(event.name);
-			player.when({ player: "phaseUseBegin" }).then(() => {
-				player.storage.dcyuxian = [];
-				player.unmarkSkill("dcyuxian");
-			});
+			player.addTip(event.name, get.translation(event.name) + player.getStorage(event.name).reduce((str, suit) => str + get.translation(suit), ""));
+			player
+				.when("phaseUseBegin")
+				.then(() => {
+					get.info("dcyuxian").onremove(player, "dcyuxian");
+					player.unmarkSkill("dcyuxian");
+				})
+				.assign({ firstDo: true });
 		},
+		intro: { content: "已记录花色：$" },
+		onremove(player, skill) {
+			delete player.storage[skill];
+			player.removeTip(skill);
+		},
+		group: "dcyuxian_draw",
 		subSkill: {
 			draw: {
-				trigger: {
-					global: "useCard",
-				},
 				audio: "dcyuxian",
-				filter: (event, player) => {
+				trigger: { global: "useCard" },
+				filter(event, player) {
 					if (_status.currentPhase !== event.player || event.player === player) return false;
 					const num = event.player.getHistory("useCard").indexOf(event);
 					return player.getStorage("dcyuxian")[num] === get.suit(event.card, event.player);
 				},
+				logTarget: "player",
 				check: (event, player) => get.attitude(player, event.player) > 0,
-				prompt: (event, player) => "是否与" + get.translation(event.player) + "各摸一张牌",
+				prompt2: (event, player) => "与" + get.translation(event.player) + "各摸一张牌",
 				async content(event, trigger, player) {
 					await game.asyncDraw([player, trigger.player]);
 				},
@@ -200,29 +203,34 @@ const skills = {
 	},
 	dcminshan: {
 		audio: 2,
-		trigger: {
-			player: "damageEnd",
-		},
+		trigger: { player: "damageEnd" },
 		filter(event, player) {
-			return get.itemtype(event.cards) == "cards";
+			return get.cardPile2(card => {
+				const suit = get.suit(card);
+				if (player.getStorage("dcyuxian").includes(suit)) return true;
+				return event.card && suit === get.suit(event.card);
+			});
 		},
 		async cost(event, trigger, player) {
 			event.result = player
-				.chooseTarget("你可令一名角色获得两张" + get.translation(get.suit(trigger.card, player)) + "牌")
+				.chooseTarget(get.prompt2("dcminshan"))
 				.set("ai", target => {
-					let att = get.attitude(get.player(), target);
-					if (target.hasSkillTag("nogain")) att /= 6;
-					if (att > 0 && target.countCards("h", { name: "tao" }) + target.getHp() < 3 && ["heart", "diamond"].includes(get.event("suit"))) return att * 2;
-					return att;
+					const player = get.player();
+					return get.effect(target, { name: "draw" }, player, player);
 				})
-				.set("suit", get.suit(trigger.card, player))
 				.forResult();
 		},
 		async content(event, trigger, player) {
 			let cards = [];
-			for (let i = 0; i < 2; i++) {
-				let card = get.cardPile2(card => get.suit(card, player) === get.suit(trigger.card, player) && !cards.includes(card));
+			while (cards.length < 2) {
+				let card = get.cardPile2(card => {
+					if (cards.includes(card)) return false;
+					const suit = get.suit(card);
+					if (player.getStorage("dcyuxian").includes(suit)) return true;
+					return trigger.card && suit === get.suit(trigger.card);
+				});
 				if (card) cards.push(card);
+				else break;
 			}
 			if (cards.length) await event.targets[0].gain(cards, "draw");
 		},
@@ -8302,9 +8310,9 @@ const skills = {
 					check(card) {
 						return 6.5 - get.value(card);
 					},
+					log: false,
 					precontent() {
 						player.logSkill("dcposuo");
-						delete event.result.skill;
 						player.addTempSkill("dcposuo_suits", "phaseUseAfter");
 						player.markAuto("dcposuo_suits", [get.suit(event.result.cards[0])]);
 					},
@@ -13422,12 +13430,12 @@ const skills = {
 						name: links[0][2],
 						storage: { dcfengying: true },
 					},
+					log: false,
 					precontent() {
 						player.logSkill("dcfengying");
 						player.addTempSkill("dcfengying_used");
 						player.markAuto("dcfengying_used", [event.result.card.name]);
 						event.getParent().addCount = false;
-						delete event.result.skill;
 					},
 				};
 			},
@@ -13437,10 +13445,10 @@ const skills = {
 		},
 		mod: {
 			targetInRange(card) {
-				if (card.storage && card.storage.dcfengying) return true;
+				if (card.storage?.dcfengying) return true;
 			},
 			cardUsable(card, player) {
-				if (card.storage && card.storage.dcfengying) return Infinity;
+				if (card.storage?.dcfengying) return Infinity;
 			},
 		},
 		ai: {
@@ -13478,9 +13486,7 @@ const skills = {
 			used: {
 				charlotte: true,
 				onremove: true,
-				intro: {
-					content: "已使用过$",
-				},
+				intro: { content: "已使用过$" },
 			},
 		},
 	},

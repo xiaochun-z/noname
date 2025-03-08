@@ -2,6 +2,100 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//田忌
+	dcweiji: {
+		audio: 2,
+		trigger: { player: "useCardToPlayered" },
+		filter(event, player) {
+			return event.isFirstTarget && event.targets.some(i => i !== player);
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
+					return target !== player && get.event().getTrigger().targets.includes(target);
+				})
+				.set("ai", target => {
+					const player = get.player();
+					return 2 + Math.sign(get.attitude(player, target)) + Math.random();
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0],
+				numbers = Array.from({ length: 3 }).map((_, i) => (i + 1).toString());
+			const num1 = await player
+				.chooseControl(numbers)
+				.set("ai", () => {
+					const { player, target } = get.event().getParent();
+					if (get.attitude(player, target) > 0 || get.attitude(target, player) > 0) return 2;
+					return get.rand(0, 2);
+				})
+				.set("prompt", "请选择你给" + get.translation(target) + "设下的难题")
+				.forResult("control");
+			game.log(player, "选择了一个数字");
+			player.chat("我选的" + [1, 2, 3, 114514, 1919810].randomGet() + "，你信吗");
+			await game.delayx();
+			const num2 = await target
+				.chooseControl(numbers)
+				.set("ai", () => {
+					const { player, target } = get.event().getParent();
+					if (get.attitude(player, target) > 0 || get.attitude(target, player) > 0) return 0;
+					return get.rand(0, 2);
+				})
+				.set("prompt", "请猜测" + get.translation(player) + "选择的数字")
+				.forResult("control");
+			target.chat("我猜是" + num2 + "！");
+			await game.delayx();
+			player.chat(num1 === num2 ? "悲" : "喜");
+			await game.delayx();
+			if (num1 !== num2) {
+				player.popup("洗具");
+				player.chat("孩子们，这很好笑");
+				await player.draw(parseInt(num1));
+			} else {
+				player.popup("杯具");
+				player.chat("孩子们，这不好笑");
+			}
+		},
+	},
+	dcsaima: {
+		audio: 2,
+		trigger: { player: "useCardAfter" },
+		filter(event, player) {
+			const card = event.card;
+			if (get.type(card) !== "equip" || ![3, 4, 6].map(str => "equip" + str).some(item => get.subtypes(card).includes(item))) return false;
+			return game.hasPlayer(target => player.canCompare(target));
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
+					return player.canCompare(target);
+				})
+				.set("ai", target => {
+					const player = get.player();
+					return get.damageEffect(target, player, player) + Math.max(3, target.countCards("h")) * get.effect(target, { name: "guohe_copy", position: "h" }, player, player);
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			let num = 0,
+				win = 0;
+			while (num < 3) {
+				num++;
+				const bool = await player.chooseToCompare(target).forResult("bool");
+				if (bool) {
+					win++;
+					game.log("双方拼点剩余", "#y" + (3 - num), "场，", player, "已赢", "#g" + win, "场");
+				}
+			}
+			if (win >= 2) {
+				if (win === 2) player.chat("今以吾之下驷与君上驷，取吾驷与君中驷，取吾中驷与君下驷。则吾一不胜而再胜");
+				player.line(target);
+				await target.damage();
+			}
+		},
+	},
 	//夏侯恩
 	olyinfeng: {
 		audio: 2,

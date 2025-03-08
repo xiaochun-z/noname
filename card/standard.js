@@ -3181,7 +3181,7 @@ game.import("card", function () {
 				filter(event, player) {
 					if (get.mode() != "guozhan") return false;
 					if (event.card.name != "sha") return false;
-					return game.hasPlayer(function (target) {
+					return game.hasPlayer(target => {
 						if (event.targets.includes(target)) return false;
 						if (!lib.filter.filterTarget(event.card, player, target)) return false;
 						if (target.identity == "ye" || target.identity == "unknown") return true;
@@ -3235,35 +3235,27 @@ game.import("card", function () {
 						return get.effect(target, _status.event.cardx, player, player);
 					}
 				},
-				async content(event, trigger, player) {
+        async content(event, trigger, player) {
 					player.logSkill("fangtian_skill", event.targets);
 
-					if (!player.storage.fangtian_guozhan_trigger) {
-						player.storage.fangtian_guozhan_trigger = [];
-					}
-					
-					player.storage.fangtian_guozhan_trigger.add(trigger.card);
 					trigger.targets.addArray(event.targets);
-					player.addTempSkill("fangtian_guozhan_trigger");
+					player.addTempSkill(event.name + "_trigger");
+					player.markAuto(event.name + "_trigger", [trigger.card]);
 				},
-			},
-			fangtian_guozhan_trigger: {
-				trigger: { player: "shaMiss" },
-				silent: true,
-				onremove: true,
-				content() {
-					if (player.storage[event.name].includes(trigger.card)) trigger.getParent().excluded.addArray(trigger.getParent().targets);
-				},
-				group: "fangtian_guozhan_remove",
-			},
-			fangtian_guozhan_remove: {
-				trigger: { player: ["useCardAfter", "useCardCancelled"] },
-				silent: true,
-				filter(event, player) {
-					return player.storage.fangtian_guozhan_trigger && player.storage.fangtian_guozhan_trigger.includes(event.card);
-				},
-				content() {
-					player.storage.fangtian_guozhan_trigger.remove(trigger.card);
+				subSkill: {
+					trigger: {
+						trigger: { player: ["shaMiss", "useCardAfter", "useCardCancelled"] },
+						filter(event, player) {
+							return player.getStorage("fangtian_guozhan_trigger").includes(event.card);
+						},
+						silent: true,
+						onremove: true,
+						charlotte: true,
+						async content(event, trigger, player) {
+							if (event.triggername == "shaMiss" && player.getStorage(event.name).includes(trigger.card)) trigger.getParent().excluded.addArray(trigger.getParent().targets);
+							else player.unmarkAuto(event.name, [trigger.card]);
+						},
+					},
 				},
 			},
 			qilin_skill: {

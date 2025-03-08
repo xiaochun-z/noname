@@ -4946,6 +4946,7 @@ const skills = {
 	},
 	tyansha: {
 		inherit: "tysiji",
+		trigger: { global: "phaseBegin" },
 		filter(event, player) {
 			return (
 				player.countCards("hes") &&
@@ -4961,41 +4962,18 @@ const skills = {
 		group: "tyansha_range",
 		subSkill: {
 			range: {
-				trigger: {
-					player: "useCardAfter",
-				},
+				trigger: { player: "useCardAfter" },
 				filter(event, player) {
-					return (
-						event.skill == "tyansha" &&
-						event.targets?.some(i => {
-							return i.isIn() && !player.getStorage("tyansha_range").includes(i);
-						})
-					);
-				},
-				direct: true,
-				content() {
-					if (!player.getStorage("tyansha_range").length) {
-						player.when({ global: "roundStart" }).then(() => {
-							player.unmarkAuto("tyansha_range", player.getStorage("tyansha_range"));
-						});
-					}
-					let targets = trigger.targets.filter(i => {
-						return i.isIn() && !player.getStorage("tyansha_range").includes(i);
-					});
-					player.markAuto("tyansha_range", targets);
-				},
-				intro: {
-					content: "$本轮计算与你的距离视为1",
+					return event.skill == "tyansha_backup" && event.targets?.some(current => current.isIn() && !player.getStorage("tyansha_effect").includes(current));
 				},
 				firstDo: true,
-				onremove: true,
-				locked: false,
-				mod: {
-					globalTo(from, to, num) {
-						if (to.getStorage("tyansha_range").includes(from)) {
-							return -Infinity;
-						}
-					},
+				silent: true,
+				content() {
+					player.addTempSkill("tyansha_effect", "roundStart");
+					player.markAuto(
+						"tyansha_effect",
+						trigger.targets.filter(current => current.isIn() && !player.getStorage("tyansha_effect").includes(current))
+					);
 				},
 			},
 			backup: {
@@ -5008,16 +4986,20 @@ const skills = {
 				},
 				selectCard: 1,
 				position: "hes",
-				filterTarget(card, player, target) {
-					if (target != _status.event.useTarget && !ui.selected.targets.includes(_status.event.useTarget)) return false;
-					return lib.filter.targetEnabled.apply(this, arguments);
-				},
-				precontent() {
-					event.result.skill = event.getParent(2).name;
-				},
 				ai1(card) {
 					return 7 - get.value(card);
 				},
+				log: false,
+			},
+			effect: {
+				charlotte: true,
+				onremove: true,
+				mod: {
+					globalTo(from, to, num) {
+						if (to.getStorage("tyansha_effect").includes(from)) return -Infinity;
+					},
+				},
+				intro: { content: "$本轮计算与你的距离视为1" },
 			},
 		},
 	},
@@ -5060,7 +5042,7 @@ const skills = {
 		},
 	},
 	tysiji: {
-		trigger: { global: "phaseJieshuBegin" },
+		trigger: { global: "phaseEnd" },
 		filter(event, player) {
 			if (
 				!event.player.hasHistory("lose", evt => {
@@ -5082,17 +5064,43 @@ const skills = {
 		},
 		direct: true,
 		async content(event, trigger, player) {
-			var next = player.chooseToUse();
-			next.set("useTarget", trigger.player);
-			next.set("openskilldialog", `###${get.prompt(event.name, trigger.player)}###${lib.translate[event.name + "_info"]}`);
+			const next = player.chooseToUse();
+			next.set("openskilldialog", `${get.translation(event.name)}：是否将一张牌当作刺【杀】对${get.translation(trigger.player)}使用？`);
 			next.set("norestore", true);
-			next.set("_backupevent", "tyansha_backup");
-			next.set("addCount", false);
+			next.set("_backupevent", `${event.name}_backup`);
 			next.set("custom", {
 				add: {},
 				replace: { window() {} },
 			});
-			next.backup("tyansha_backup");
+			next.backup(`${event.name}_backup`);
+			next.set("targetRequired", true);
+			next.set("complexSelect", true);
+			next.set("filterTarget", function (card, player, target) {
+				const { sourcex } = get.event();
+				if (target != sourcex && !ui.selected.targets.includes(sourcex)) return false;
+				return lib.filter.targetEnabled.apply(this, arguments);
+			});
+			next.set("sourcex", trigger.player);
+			next.set("addCount", false);
+			next.set("logSkill", event.name);
+			await next;
+		},
+		subSkill: {
+			backup: {
+				filterCard(card) {
+					return get.itemtype(card) == "card";
+				},
+				viewAs: {
+					name: "sha",
+					nature: "stab",
+				},
+				selectCard: 1,
+				position: "hes",
+				ai1(card) {
+					return 7 - get.value(card);
+				},
+				log: false,
+			},
 		},
 	},
 	tydaifa: {
@@ -5770,17 +5778,15 @@ const skills = {
 		},
 	},
 	tysheju: {
-		trigger: {
-			player: "useCardAfter",
-		},
+		trigger: { player: "useCardAfter" },
 		filter(event, player) {
 			if (event.card.name != "sha") return false;
-			return event.targets?.some(current => current.isIn() && current.countCards("he"));
+			return event.targets?.some(current => current.isIn() && current.countDiscardableCards(player, "he"));
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt2("tysheju"), function (card, player, target) {
-					return _status.event.getTrigger().targets.includes(target) && target.countCards("he");
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
+					return get.event().getTrigger().targets.includes(target) && target.countDiscardableCards(player, "he");
 				})
 				.set("ai", target => {
 					return get.effect(target, { name: "guohe_copy2" }, get.player(), get.player());
@@ -5790,7 +5796,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			const result = await player.discardPlayerCard(target, "he", true).forResult();
-			if (!result.bool || !result.links) return;
+			if (!result?.bool || !result?.links?.length) return;
 			let subtype = get.subtype(result.links[0]);
 			if (subtype && ["equip3", "equip4", "equip6"].includes(subtype)) return;
 			target.addTempSkill("tysheju_range");
@@ -5815,9 +5821,7 @@ const skills = {
 				charlotte: true,
 				onremove: true,
 				mark: true,
-				intro: {
-					content: "本回合攻击范围+#",
-				},
+				intro: { content: "本回合攻击范围+#" },
 				mod: {
 					attackFrom(from, to, distance) {
 						return distance - from.countMark("tysheju_range");
@@ -11873,7 +11877,6 @@ const skills = {
 						replace: { window() {} },
 					});
 				} else {
-					delete evt.result.skill;
 					delete evt.result.used;
 					evt.result.card = get.autoViewAs(
 						{
@@ -11925,9 +11928,7 @@ const skills = {
 					game.setNature(trigger, "thunder");
 				},
 				marktext: "⚡",
-				intro: {
-					content: "受到的伤害+1且改为雷属性",
-				},
+				intro: { content: "受到的伤害+1且改为雷属性" },
 				ai: {
 					effect: {
 						target: (card, player, target) => {
@@ -12011,9 +12012,7 @@ const skills = {
 				},
 			},
 			remove: {
-				trigger: {
-					global: ["loseAfter", "loseAsyncAfter", "cardsDiscardAfter", "equipAfter"],
-				},
+				trigger: { global: ["loseAfter", "loseAsyncAfter", "cardsDiscardAfter", "equipAfter"] },
 				forced: true,
 				charlotte: true,
 				popup: false,
@@ -12040,32 +12039,29 @@ const skills = {
 					}
 				},
 			},
+			backup: {
+				precontent() {
+					"step 0";
+					event.result._apply_args = { throw: false };
+					var cards = event.result.card.cards;
+					event.result.cards = cards;
+					var owner = get.owner(cards[0]);
+					event.target = owner;
+					owner.$throw(cards[0]);
+					player.popup(event.result.card.name, "metal");
+					game.delayx();
+					event.getParent().addCount = false;
+					"step 1";
+					if (player != target) target.addTempSkill("fengyin");
+					target.addTempSkill("psshouli_thunder");
+					player.addTempSkill("psshouli_thunder");
+				},
+				filterCard: () => false,
+				prompt: "请选择【杀】的目标",
+				selectCard: -1,
+				log: false,
+			},
 		},
-	},
-	psshouli_backup: {
-		sourceSkill: "psshouli",
-		precontent() {
-			"step 0";
-			delete event.result.skill;
-			event.result._apply_args = { throw: false };
-			var cards = event.result.card.cards;
-			event.result.cards = cards;
-			var owner = get.owner(cards[0]);
-			event.target = owner;
-			owner.$throw(cards[0]);
-			player.popup(event.result.card.name, "metal");
-			game.delayx();
-			event.getParent().addCount = false;
-			"step 1";
-			if (player != target) target.addTempSkill("fengyin");
-			target.addTempSkill("psshouli_thunder");
-			player.addTempSkill("psshouli_thunder");
-		},
-		filterCard() {
-			return false;
-		},
-		prompt: "请选择【杀】的目标",
-		selectCard: -1,
 	},
 	pshengwu: {
 		audio: "hengwu",
@@ -12724,7 +12720,6 @@ const skills = {
 					evt.set("_backupevent", "psqichu_backup");
 					evt.backup("psqichu_backup");
 				} else {
-					delete evt.result.skill;
 					delete evt.result.used;
 					evt.result.card = get.autoViewAs(result.links[0]);
 					if (aozhan) evt.result.card.name = name;
@@ -12756,16 +12751,14 @@ const skills = {
 		subSkill: {
 			backup: {
 				precontent() {
-					delete event.result.skill;
 					var name = event.result.card.name;
 					event.result.cards = event.result.card.cards;
 					event.result.card = get.autoViewAs(event.result.cards[0]);
 					event.result.card.name = name;
 				},
-				filterCard() {
-					return false;
-				},
+				filterCard: () => false,
 				selectCard: -1,
+				log: false,
 			},
 			used: { charlotte: true },
 		},
@@ -18157,8 +18150,6 @@ const skills = {
 			},
 			backup: {
 				precontent() {
-					"step 0";
-					delete event.result.skill;
 					var cards = event.result.card.cards;
 					event.result.cards = cards;
 					var owner = get.owner(cards[0]);
@@ -18168,11 +18159,10 @@ const skills = {
 					game.delayx();
 					event.getParent().addCount = false;
 				},
-				filterCard() {
-					return false;
-				},
+				filterCard: () => false,
 				prompt: "请选择【杀】的目标",
 				selectCard: -1,
+				log: false,
 			},
 		},
 	},

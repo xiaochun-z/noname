@@ -1,4 +1,5 @@
 const characters = {
+	ol_zhaozhong: ["male", "qun", 3, ["olpengbi", "oldici"], ["sex:male_castrated"]],
 	ol_wujing: ["male", "wu", 4, ["heji", "olliubing"], ["die:wujing"]],
 	ol_yangfeng: ["male", "qun", 4, ["oljiawei"]],
 	ol_yuanhuan: ["male", "qun", 3, ["olderu", "ollinjie"]],
@@ -179,7 +180,7 @@ const characters = {
 	mizhu: ["male", "shu", 3, ["ziyuan", "jugu"]],
 	buzhi: ["male", "wu", 3, ["hongde", "dingpan"]],
 
-	caochun: ["male", "wei", 4, ["xinshanjia"]],
+	caochun: ["male", "wei", 4, ["olshanjia"]],
 
 	dongbai: ["female", "qun", 3, ["lianzhu", "xiahui"]],
 
