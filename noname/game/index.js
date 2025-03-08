@@ -1210,7 +1210,7 @@ export class Game extends GameCompatible {
 			type == "hidden"
 		);
 		_status.mode = lib.configOL[lib.configOL.mode + "_mode"];
-		game.chooseCharacterOL();
+		return game.chooseCharacterOL();
 	}
 	closeMenu() {
 		if (ui.menuContainer && !ui.menuContainer.classList.contains("hidden")) {
@@ -1323,6 +1323,7 @@ export class Game extends GameCompatible {
 		var next = game.createEvent("waitForPlayer", false);
 		next.func = func;
 		next.setContent("waitForPlayer");
+		return next;
 	}
 	/**
 	 * @param { number } time
@@ -6870,6 +6871,7 @@ export class Game extends GameCompatible {
 		next.player = player;
 		next._isStandardLoop = true;
 		next.setContent("phaseLoop");
+		return next;
 	}
 	/**
 	 * @param { Player } [player]
