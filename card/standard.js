@@ -3235,7 +3235,7 @@ game.import("card", function () {
 						return get.effect(target, _status.event.cardx, player, player);
 					}
 				},
-        async content(event, trigger, player) {
+				async content(event, trigger, player) {
 					player.logSkill("fangtian_skill", event.targets);
 
 					trigger.targets.addArray(event.targets);
@@ -3252,8 +3252,11 @@ game.import("card", function () {
 						onremove: true,
 						charlotte: true,
 						async content(event, trigger, player) {
-							if (event.triggername == "shaMiss" && player.getStorage(event.name).includes(trigger.card)) trigger.getParent().excluded.addArray(trigger.getParent().targets);
-							else player.unmarkAuto(event.name, [trigger.card]);
+							if (event.triggername == "shaMiss" && player.getStorage(event.name).includes(trigger.card)) {
+								trigger.getParent().excluded.addArray(trigger.getParent().targets);
+							} else {
+								player.unmarkAuto(event.name, [trigger.card]);
+							}
 						},
 					},
 				},
