@@ -261,7 +261,56 @@ export async function start(event, trigger, player) {
 			game.players[i].ai.shown = 0;
 		}
 	}
-	if (_status.connectMode && lib.configOL.change_card) { game.replaceHandcards(game.players.slice(0)) }
+	if (_status.connectMode && lib.configOL.change_card) {
+		game.replaceHandcards(game.players.slice(0));
+	}
 
 	await game.phaseLoop(playerFirst);
+}
+
+export function startBefore() {
+	const playback = localStorage.getItem(lib.configprefix + "playback");
+
+	// @ts-expect-error 祖宗之法就是这么写的
+	for (let character in lib.characterPack.mode_guozhan) {
+		if (!get.config("onlyguozhan") && !playback) {
+			if (lib.character[character.slice(3)]) continue;
+		}
+		// @ts-expect-error 祖宗之法就是这么写的
+		lib.character[character] = lib.characterPack.mode_guozhan[character];
+		if (!lib.translate["#" + character + ":die"] && !lib.character[character].dieAudios?.length) {
+			let list = lib.character?.[character.slice(3)]?.dieAudios;
+			lib.character[character].dieAudios = list?.length ? list : [character.slice(3)];
+		}
+		if (!lib.translate[character]) {
+			lib.translate[character] = lib.translate[character.slice(3)];
+		}
+	}
+	for (const character in lib.character) {
+		if (lib.character[character].group == "shen") {
+			lib.character[character].group = lib.character[character].groupInGuozhan || "qun";
+		}
+	}
+}
+
+export function onreinit() {
+	// @ts-expect-error 祖宗之法就是这么写的
+	const pack = lib.characterPack.mode_guozhan;
+
+	for (const character in pack) {
+		lib.character[character] = pack[character];
+		if (!lib.translate["#" + character + ":die"] && !lib.character[character].dieAudios?.length) {
+			let list = lib.character?.[character.slice(3)]?.dieAudios;
+			lib.character[character].dieAudios = list?.length ? list : [character.slice(3)];
+		}
+		if (!lib.translate[character]) {
+			lib.translate[character] = lib.translate[character.slice(3)];
+		}
+	}
+
+	for (const character in lib.character) {
+		if (lib.character[character].group == "shen" || lib.character[character].group == "western") {
+			lib.character[character].group = lib.character[character].groupInGuozhan || "qun";
+		}
+	}
 }
