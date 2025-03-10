@@ -1,4 +1,5 @@
 import { lib, game, ui, get, ai, _status } from "../../../noname.js";
+import { broadcastAll } from "./patch/game.js";
 
 /**
  * @type {ContentFuncByAll}
@@ -82,8 +83,7 @@ export async function start(event, trigger, player) {
 		game.fixedPile = true;
 
 		// 向其他玩家广播当前模式
-		game.broadcastAll(
-			// @ts-expect-error 祖宗之法就是这么写的
+		broadcastAll(
 			(mode, separatism) => {
 				_status.mode = mode;
 				if (separatism) {
@@ -225,8 +225,7 @@ export async function start(event, trigger, player) {
 	await event.trigger("gameStart");
 
 	await game.gameDraw(playerFirst);
-	// @ts-expect-error 祖宗之法就是这么写的
-	game.broadcastAll(player => {
+	broadcastAll(player => {
 		for (let i = 0; i < game.players.length; ++i) {
 			var seatNum = get.distance(player, game.players[i], "absolute");
 			game.players[i].name = `unknown${seatNum}`;
