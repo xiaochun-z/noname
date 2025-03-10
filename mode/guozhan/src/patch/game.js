@@ -1,6 +1,7 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 import { GameEvent, Dialog, Player } from "../../../../noname/library/element/index.js";
 import { Game } from "../../../../noname/game/index.js";
+import { showYexingsContent } from "./content.js";
 
 export class GameGuozhan extends Game {
 	/**
@@ -219,9 +220,9 @@ export class GameGuozhan extends Game {
 		// 过滤神和外服势力，以及没有战绩的势力
 		group = group.filter(group => group !== "shen" && group !== "western" && data[group]);
 		// 将战绩记录转换为字符串
-		const strs = group.map(group => {
-			const name = get.translation(`${group[i]}2`);
-			const [win, lose] = data[group];
+		const strs = group.map(id => {
+			const name = get.translation(`${group[id]}2`);
+			const [win, lose] = data[id];
 
 			return `${name}: ${win}胜 ${lose}负`;
 		});
@@ -307,9 +308,15 @@ export class GameGuozhan extends Game {
 			}
 		}
 	}
-
+ 
+	/**
+	 * 获取当前对局对应录像的名称
+	 * 
+	 * @returns {[name: string, situation: string]}
+	 */
 	getVideoName() {
 		var str = get.translation(game.me.name1) + "/" + get.translation(game.me.name2);
+		// @ts-expect-error 祖宗之法就是这么写的
 		var str2 = _status.separatism
 			? get.modetrans({
 					mode: lib.config.mode,
@@ -319,15 +326,24 @@ export class GameGuozhan extends Game {
 		if (game.me.identity == "ye") {
 			str2 += " - 野心家";
 		}
-		var name = [str, str2];
-		return name;
+		return [str, str2];
 	}
+
+	/**
+	 * 显示所有玩家的身份
+	 * 
+	 * @param {boolean} started 
+	 */
 	showIdentity(started) {
 		if (game.phaseNumber == 0 && !started) return;
 		for (var i = 0; i < game.players.length; i++) {
 			game.players[i].showCharacter(2, false);
 		}
 	}
+
+	/**
+	 * > ? 
+	 */
 	tryResult() {
 		var map = {},
 			sides = [],
@@ -403,6 +419,10 @@ export class GameGuozhan extends Game {
 			}
 		}
 	}
+
+	/**
+	 * 检查游戏结果
+	 */
 	checkResult() {
 		_status.overing = true;
 		var me = game.me._trueMe || game.me;
@@ -413,10 +433,18 @@ export class GameGuozhan extends Game {
 		game.over(winner && winner.isFriendOf(me) ? true : false);
 		game.showIdentity();
 	}
+
+	/**
+	 * > ?
+	 * @param {Player} player 
+	 * @returns {boolean}
+	 */
 	checkOnlineResult(player) {
+		// @ts-expect-error 祖宗之法就是这么写的
 		var winner = lib.playerOL[game.winner_id];
 		return winner && winner.isFriendOf(game.me);
 	}
+
 	chooseCharacter() {
 		var next = game.createEvent("chooseCharacter");
 		next.showConfig = true;
@@ -785,6 +813,7 @@ export class GameGuozhan extends Game {
 				ui.arena.classList.remove("choose-character");
 			}, 500);
 		});
+		return next;
 	}
 	chooseCharacterOL() {
 		var next = game.createEvent("chooseCharacter");
@@ -1050,196 +1079,7 @@ export class GameGuozhan extends Game {
 				result
 			);
 		});
-	}
-}
-
-/**
- *
- * @param {GameEvent} event
- * @param {GameEvent} _trigger
- * @param {Player} player
- */
-export async function showYexingsContent(event, _trigger, player) {
-	/** @type {Player[]} */
-	// @ts-expect-error 类型就是这样的
-	const yexingPlayers = game
-		.filterPlayer(current => lib.character[current.name1][1] == "ye")
-		// @ts-expect-error 祖宗之法就是这么写的
-		.sortBySeat(_status.currentPhase);
-
-	/** @type {Player[]} */
-	let showYexingPlayers = [];
-	for (const target of yexingPlayers) {
-		const next = target.chooseBool("是否【暴露野心】，展示主将并继续战斗？", "若选择“否”，则视为本局游戏失败");
-
-		next.set("ai", showCheck);
-
-		if (await next.forResultBool()) {
-			showYexingPlayers.push(target);
-			target.$fullscreenpop("暴露野心", "thunder");
-			game.log(target, "暴露了野心");
-			await target.showCharacter(0);
-			await game.delay(2);
-		}
-
-		/**
-		 * 是否暴露野心的AI
-		 *
-		 * @param {GameEvent} _event
-		 * @param {Player} _player
-		 */
-		function showCheck(_event, _player) {
-			// TODO: 未来再想AI该怎么写
-			return Math.random() < 0.5;
-		}
-	}
-
-	// 如果没有人暴露野心，那么游戏结束
-	if (showYexingPlayers.length === 0) {
-		const winner = game.findPlayer(current => lib.character[current.name1][1] != "ye");
-
-		if (winner) {
-			broadcastAll(id => {
-				// @ts-expect-error 祖宗之法就是这么写的
-				game.winner_id = id;
-			}, winner.playerid);
-			// @ts-expect-error 祖宗之法就是这么写的
-			game.checkResult();
-		}
-
-		// @ts-expect-error 祖宗之法就是这么写的
-		delete _status.showYexings;
-		return;
-	}
-
-	let yexingGroupList = ["夏", "商", "周", "秦", "汉", "隋", "唐", "宋", "辽", "金", "元", "明"];
-	for (const target of showYexingPlayers) {
-		// 基本不可能发生
-		if (yexingGroupList.length === 0) {
-			yexingGroupList = ["夏", "商", "周", "秦", "汉", "隋", "唐", "宋", "辽", "金", "元", "明"];
-		}
-
-		const next = target.chooseControl(yexingGroupList);
-
-		next.set("prompt", "请选择自己所属的野心家势力的标识");
-		next.set("ai", () => (yexingGroupList ? yexingGroupList.randomGet() : 0));
-
-		/** @type {string} */
-		let text;
-
-		const control = await next.forResultControl();
-		if (control) {
-			text = control;
-			yexingGroupList.remove(control);
-		} else {
-			text = yexingGroupList.randomRemove() ?? "野";
-		}
-
-		lib.group.push(text);
-		lib.translate[`${text}2`] = text;
-		lib.groupnature[text] = "kami";
-
-		broadcastAll(
-			/**
-			 * @param {Player} player
-			 * @param {string} text
-			 */
-			(player, text) => {
-				player.identity = text;
-				player.setIdentity(text, "kami");
-			},
-			target,
-			text
-		);
-
-		target.changeGroup(text);
-		target.removeMark("yexinjia_mark", 1);
-
-		/** @type {Player[]} */
-		// @ts-expect-error 祖宗之法就是这么写的
-		const maybeFriends = game.players.filter(current => current.identity != "ye" && current !== target && !get.is.jun(current) && !yexingPlayers.includes(current) && !current.getStorage("yexinjia_friend").length);
-		if (maybeFriends.length === 0) {
-			continue;
-		}
-
-		/** @type {Player[]} */
-		const refused = [];
-		for (const other of maybeFriends) {
-			target.line(other, "green");
-
-			const next = other.chooseBool(`是否响应${get.translation(target)}发起的【拉拢人心】？`, `将势力改为${text}`);
-
-			next.set("source", target);
-			next.set("ai", check);
-
-			if (await next.forResultBool()) {
-				other.chat("加入");
-				//event.targets4.push(target);
-				broadcastAll(
-					/**
-					 * @param {Player} player
-					 * @param {string} text
-					 */
-					(player, text) => {
-						player.identity = text;
-						player.setIdentity(text, "kami");
-					},
-					other,
-					text
-				);
-				other.changeGroup(text);
-			} else {
-				other.chat("拒绝");
-				refused.push(other);
-			}
-
-			/**
-			 * @param {GameEvent} _event
-			 * @param {Player} _player
-			 * @returns {boolean}
-			 */
-			function check(_event, _player) {
-				const player = get.player();
-				const source = get.event("source");
-				const friendsCount = target.getFriends(true).length;
-
-				if (game.players.length <= 2 * friendsCount) {
-					return false;
-				}
-				// @ts-expect-error 祖宗之法就是这么写的
-				if (source.getFriends(true).length + friendsCount > game.players.length / 2) {
-					return true;
-				}
-
-				if (player.isDamaged() || player.countCards("h") < 4) {
-					return false;
-				}
-
-				return true;
-			}
-		}
-
-		for (const other of refused) {
-			await other.drawTo(4, []);
-			await other.recover();
-		}
-	}
-
-	// @ts-expect-error 祖宗之法就是这么写的
-	delete _status.showYexings;
-	if (
-		!game.hasPlayer(current => {
-			return game.hasPlayer(target => {
-				return !target.isFriendOf(current);
-			});
-		})
-	) {
-		broadcastAll(id => {
-			// @ts-expect-error 祖宗之法就是这么写的
-			game.winner_id = id;
-		}, event.source.playerid);
-		// @ts-expect-error 祖宗之法就是这么写的
-		game.checkResult();
+		return next;
 	}
 }
 
