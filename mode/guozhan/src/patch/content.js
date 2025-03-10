@@ -14,7 +14,8 @@ const game = _game;
 export async function showYexingsContent(event, _trigger, player) {
 	/** @type {Player[]} */
 	const yexingPlayers = game
-		.filterPlayer(current => lib.character[current.name1][1] == "ye" && current.identity == "ye")
+		// @ts-expect-error 祖宗之法就是这么做的
+		.filterPlayer(current => lib.character[current.name1][1] == "ye" && !current._showYexing)
 		// @ts-expect-error 祖宗之法就是这么写的
 		.sortBySeat(_status.currentPhase);
 
@@ -31,6 +32,17 @@ export async function showYexingsContent(event, _trigger, player) {
 			game.log(target, "暴露了野心");
 			await target.showCharacter(0);
 			await game.delay(2);
+
+			broadcastAll(
+				/**
+				 * @param {Player} player
+				 */
+				player => {
+					// @ts-expect-error 祖宗之法就是这么做的
+					player._showYexing = true
+				},
+				player
+			);
 		}
 
 		/**
