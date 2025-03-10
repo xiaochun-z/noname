@@ -3231,8 +3231,9 @@ game.import("card", function () {
 					}
 
 					function check(target) {
-						var player = _status.event.player;
-						return get.effect(target, _status.event.cardx, player, player);
+						const player = get.player();
+						const card = get.event("cardx");
+						return get.effect(target, card, player, player);
 					}
 				},
 				async content(event, trigger, player) {
