@@ -6090,22 +6090,22 @@ export class Library {
 						unlimited: "无限",
 					},
 				},
-				// continue_game: {
-				// 	name: "显示再战",
-				// 	init: true,
-				// 	intro: "游戏结束后可选择用相同的武将再进行一局游戏",
-				// 	onclick(bool) {
-				// 		game.saveConfig("continue_game", bool, this._link.config.mode);
-				// 		if (get.config("continue_game") && get.mode() == "guozhan") {
-				// 			if (!ui.continue_game && _status.over && !_status.brawl && !game.no_continue_game) {
-				// 				ui.continue_game = ui.create.control("再战", game.reloadCurrent);
-				// 			}
-				// 		} else if (ui.continue_game) {
-				// 			ui.continue_game.close();
-				// 			delete ui.continue_game;
-				// 		}
-				// 	},
-				// },
+				continue_game: {
+					name: "显示再战",
+					init: true,
+					intro: "游戏结束后可选择用相同的武将再进行一局游戏",
+					onclick(bool) {
+						game.saveConfig("continue_game", bool, this._link.config.mode);
+						if (get.config("continue_game") && get.mode() == "guozhan") {
+							if (!ui.continue_game && _status.over && !_status.brawl && !game.no_continue_game) {
+								ui.continue_game = ui.create.control("再战", game.reloadCurrent);
+							}
+						} else if (ui.continue_game) {
+							ui.continue_game.close();
+							delete ui.continue_game;
+						}
+					},
+				},
 				dierestart: {
 					name: "死亡后显示重来",
 					init: true,
