@@ -19,7 +19,7 @@ import { gnc } from "../gnc/index.js";
 import { LibInit } from "./init/index.js";
 import { Announce } from "./announce/index.js";
 import { Channel } from "./channel/index.js";
-import { Experimental } from "./experimental/index.js";
+import { experimental } from "./experimental/index.js";
 import * as Element from "./element/index.js";
 import { updateURLs } from "./update-urls.js";
 import { defaultHooks } from "./hooks/index.js";
@@ -28,6 +28,8 @@ import security from "../util/security.js";
 import { ErrorManager } from "../util/error.js";
 
 import { defaultSplashs } from "../init/onload/index.js";
+
+const html = String.raw;
 
 export class Library {
 	configprefix = "noname_0.9_";
@@ -1126,6 +1128,26 @@ export class Library {
 							delete window.lib;
 							delete window._status;
 						}
+					},
+					unfrequent: true,
+				},
+				experimental_enable: {
+					name: "启用实验性功能",
+					init: false,
+					intro: html`
+						开启后将启用部分仍处于实验性质的功能，将改变无名杀现有的部分逻辑（重启后生效）
+						<br />
+						※ 实验性功能无法保证API稳定，如需使用请及时跟进本体进展
+						<br />
+						※ 以API为主的功能不提供具体实现，如需使用请自行实现
+						<br />
+						※ 部分功能将会作用于联机模式
+					`,
+					/**
+					 * @param {boolean} bool 
+					 */
+					async onclick(bool) {
+						await game.promises.saveConfig("experimental_enable", bool);
 					},
 					unfrequent: true,
 				},
@@ -9816,7 +9838,7 @@ export class Library {
 		phaseJieshu: "结束阶段",
 	};
 
-	experimental = Experimental;
+	experimental = experimental;
 
 	element = {
 		content: Element.Content,

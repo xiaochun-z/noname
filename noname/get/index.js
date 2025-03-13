@@ -2369,7 +2369,7 @@ export class Get extends GetCompatible {
 
 		if (typeof obj !== "object" || obj === null) return;
 
-		if (lib.experimental.symbol.itemType in obj) return obj[lib.experimental.symbol.itemType];
+		if (lib.experimental.symbols.ItemType in obj) return obj[lib.experimental.symbols.ItemType];
 	}
 	equipNum(card) {
 		const subtypes = get.subtypes(card);
