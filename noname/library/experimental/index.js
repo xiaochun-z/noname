@@ -16,13 +16,3 @@ export class Experimental {
 }
 
 export let experimental = new Experimental();
-
-/**
- * @param {Experimental} instance 
- */
-export function setExperimental(instance) {
-	experimental = instance || new Experimental();
-	if (lib.config.dev) {
-		Reflect.set(window, "experimental", experimental);
-	}
-};

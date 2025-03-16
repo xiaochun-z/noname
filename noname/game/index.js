@@ -4145,11 +4145,12 @@ export class Game extends GameCompatible {
 		}
 	}
 	reloadCurrent() {
-		let names = [game.me.name1 || game.me.name, game.me.name2];
-		if (game.me.name1 != game.me.name) names = [game.me.name];
+		const me = Reflect.get(_status, "_startPlayerNames") ?? game.me;
+		let names = [me.name1 || me.name, me.name2];
+		if (me.name1 != me.name) names = [me.name];
 		game.saveConfig("continue_name", names);
 		game.saveConfig("mode", lib.config.mode);
-		localStorage.setItem(lib.configprefix + "directstart", true);
+		localStorage.setItem(lib.configprefix + "directstart", "true");
 		game.reload();
 	}
 	/**
