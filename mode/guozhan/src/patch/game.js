@@ -1,7 +1,7 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 import { GameEvent, Dialog, Player } from "../../../../noname/library/element/index.js";
 import { Game } from "../../../../noname/game/index.js";
-import { showYexingsContent } from "./content.js";
+import { showYexingsContent, chooseCharacterContent } from "./content.js";
 
 export class GameGuozhan extends Game {
 	/**
@@ -283,7 +283,7 @@ export class GameGuozhan extends Game {
 	}
 
 	/**
-	 * @param {string[]} list 
+	 * @param {string[]} list
 	 */
 	getIdentityList2(list) {
 		for (var i in list) {
@@ -308,10 +308,10 @@ export class GameGuozhan extends Game {
 			}
 		}
 	}
- 
+
 	/**
 	 * 获取当前对局对应录像的名称
-	 * 
+	 *
 	 * @returns {[name: string, situation: string]}
 	 */
 	getVideoName() {
@@ -331,8 +331,8 @@ export class GameGuozhan extends Game {
 
 	/**
 	 * 显示所有玩家的身份
-	 * 
-	 * @param {boolean} started 
+	 *
+	 * @param {boolean} started
 	 */
 	showIdentity(started) {
 		if (game.phaseNumber == 0 && !started) return;
@@ -342,7 +342,7 @@ export class GameGuozhan extends Game {
 	}
 
 	/**
-	 * > ? 
+	 * > ?
 	 */
 	tryResult() {
 		var map = {},
@@ -436,7 +436,7 @@ export class GameGuozhan extends Game {
 
 	/**
 	 * > ?
-	 * @param {Player} player 
+	 * @param {Player} player
 	 * @returns {boolean}
 	 */
 	checkOnlineResult(player) {
@@ -446,27 +446,46 @@ export class GameGuozhan extends Game {
 	}
 
 	chooseCharacter() {
-		var next = game.createEvent("chooseCharacter");
-		next.showConfig = true;
-		next.addPlayer = true;
-		next.ai = function (player, list, back) {
+		const next = game.createEvent("chooseCharacter");
+
+		next.set("showConfig", true);
+		next.set("addPlayer", true);
+		next.set("ai", check);
+		next.setContent(chooseCharacterContent);
+
+		return next;
+
+		/**
+		 * @param {Player} player
+		 * @param {string[]} list
+		 * @param {string[]} [back]
+		 * @returns
+		 */
+		function check(player, list, back) {
 			if (_status.brawl && _status.brawl.chooseCharacterAi) {
 				if (_status.brawl.chooseCharacterAi(player, list, back) !== false) {
 					return;
 				}
 			}
 			var filterChoice = function (name1, name2) {
+				// @ts-expect-error 祖宗之法就是这么写的
 				if (_status.separatism) return true;
 				var group1 = lib.character[name1][1];
 				var group2 = lib.character[name2][1];
+				// @ts-expect-error 祖宗之法就是这么写的
 				var doublex = get.is.double(name1, true);
 				if (doublex) {
+					// @ts-expect-error 祖宗之法就是这么写的
 					var double = get.is.double(name2, true);
+					// @ts-expect-error 祖宗之法就是这么写的
 					if (double) return doublex.some(group => double.includes(group));
+					// @ts-expect-error 祖宗之法就是这么写的
 					return doublex.includes(group2);
 				} else {
 					if (group1 == "ye") return group2 != "ye";
+					// @ts-expect-error 祖宗之法就是这么写的
 					var double = get.is.double(name2, true);
+					// @ts-expect-error 祖宗之法就是这么写的
 					if (double) return double.includes(group1);
 					return group1 == group2;
 				}
@@ -481,14 +500,21 @@ export class GameGuozhan extends Game {
 							vicex = list[i];
 						}
 						player.init(mainx, vicex, false);
+						// @ts-expect-error 祖宗之法就是这么写的
 						if (get.is.double(mainx, true)) {
+							// @ts-expect-error 祖宗之法就是这么写的
 							if (!get.is.double(vicex, true)) player.trueIdentity = lib.character[vicex][1];
+							// @ts-expect-error 祖宗之法就是这么写的
 							else if (get.is.double(mainx, true).removeArray(get.is.double(vicex, true)).length == 0 || get.is.double(vicex, true).removeArray(get.is.double(mainx, true)).length == 0)
+								// @ts-expect-error 祖宗之法就是这么写的
 								player.trueIdentity = get.is
 									.double(vicex, true)
+									// @ts-expect-error 祖宗之法就是这么写的
 									.filter(group => get.is.double(mainx, true).includes(group))
 									.randomGet();
+							// @ts-expect-error 祖宗之法就是这么写的
 							else player.trueIdentity = get.is.double(mainx, true).find(group => get.is.double(vicex, true).includes(group));
+							// @ts-expect-error 祖宗之法就是这么写的
 						} else if (lib.character[mainx][1] == "ye" && get.is.double(vicex, true)) player.trueIdentity = get.is.double(vicex, true).randomGet();
 						if (back) {
 							list.remove(player.name1);
@@ -501,319 +527,7 @@ export class GameGuozhan extends Game {
 					}
 				}
 			}
-		};
-		next.setContent(function () {
-			"step 0";
-			ui.arena.classList.add("choose-character");
-			var addSetting = function (dialog) {
-				dialog.add("选择座位").classList.add("add-setting");
-				var seats = document.createElement("table");
-				seats.classList.add("add-setting");
-				seats.style.margin = "0";
-				seats.style.width = "100%";
-				seats.style.position = "relative";
-				for (var i = 1; i <= game.players.length; i++) {
-					var td = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode");
-					td.innerHTML = "<span>" + get.cnNumber(i, true) + "</span>";
-					td.link = i - 1;
-					seats.appendChild(td);
-					td.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
-						if (_status.dragged) return;
-						if (_status.justdragged) return;
-						if (_status.cheat_seat) {
-							_status.cheat_seat.classList.remove("bluebg");
-							if (_status.cheat_seat == this) {
-								delete _status.cheat_seat;
-								return;
-							}
-						}
-						this.classList.add("bluebg");
-						_status.cheat_seat = this;
-					});
-				}
-				dialog.content.appendChild(seats);
-				if (game.me == game.zhu) {
-					seats.previousSibling.style.display = "none";
-					seats.style.display = "none";
-				}
-
-				dialog.add(ui.create.div(".placeholder.add-setting"));
-				dialog.add(ui.create.div(".placeholder.add-setting"));
-				if (get.is.phoneLayout()) dialog.add(ui.create.div(".placeholder.add-setting"));
-			};
-			var removeSetting = function () {
-				var dialog = _status.event.dialog;
-				if (dialog) {
-					dialog.style.height = "";
-					delete dialog._scrollset;
-					var list = Array.from(dialog.querySelectorAll(".add-setting"));
-					while (list.length) {
-						list.shift().remove();
-					}
-					ui.update();
-				}
-			};
-			event.addSetting = addSetting;
-			event.removeSetting = removeSetting;
-
-			var chosen = lib.config.continue_name || [];
-			game.saveConfig("continue_name");
-			event.chosen = chosen;
-
-			var i;
-			event.list = [];
-			for (i in lib.character) {
-				if (i.indexOf("gz_shibing") == 0) continue;
-				if (chosen.includes(i)) continue;
-				if (lib.filter.characterDisabled(i)) continue;
-				if (get.config("onlyguozhan")) {
-					if (!lib.characterGuozhanFilter.some(pack => lib.characterPack[pack][i])) continue;
-					if (get.is.jun(i)) continue;
-				}
-				if (lib.character[i].hasHiddenSkill) continue;
-				event.list.push(i);
-			}
-			_status.characterlist = event.list.slice(0);
-			_status.yeidentity = [];
-			if (_status.brawl && _status.brawl.chooseCharacterFilter) {
-				event.list = _status.brawl.chooseCharacterFilter(event.list);
-			}
-			event.list.randomSort();
-			// var list=event.list.splice(0,parseInt(get.config('choice_num')));
-			var list;
-			if (_status.brawl && _status.brawl.chooseCharacter) {
-				list = _status.brawl.chooseCharacter(event.list, game.me);
-			} else {
-				list = game.getCharacterChoice(event.list, parseInt(get.config("choice_num")));
-			}
-			if (_status.auto) {
-				event.ai(game.me, list);
-				lib.init.onfree();
-			} else if (chosen.length) {
-				game.me.init(chosen[0], chosen[1], false);
-				lib.init.onfree();
-			} else {
-				var dialog = ui.create.dialog("选择角色", "hidden", [list, "character"]);
-				if (!_status.brawl || !_status.brawl.noAddSetting) {
-					if (get.config("change_identity")) {
-						addSetting(dialog);
-					}
-				}
-				var next = game.me.chooseButton(dialog, true, 2).set("onfree", true);
-				next.filterButton = function (button) {
-					if (ui.dialog.buttons.length <= 10) {
-						for (var i = 0; i < ui.dialog.buttons.length; i++) {
-							if (ui.dialog.buttons[i] != button) {
-								if (
-									lib.element.player.perfectPair.call(
-										{
-											name1: button.link,
-											name2: ui.dialog.buttons[i].link,
-										},
-										true
-									)
-								) {
-									button.classList.add("glow2");
-								}
-							}
-						}
-					}
-					if (lib.character[button.link].hasHiddenSkill) return false;
-					var filterChoice = function (name1, name2) {
-						if (_status.separatism) return true;
-						var group1 = lib.character[name1][1];
-						var group2 = lib.character[name2][1];
-						var doublex = get.is.double(name1, true);
-						if (doublex) {
-							var double = get.is.double(name2, true);
-							if (double) return doublex.some(group => double.includes(group));
-							return doublex.includes(group2);
-						} else {
-							if (group1 == "ye") return group2 != "ye";
-							var double = get.is.double(name2, true);
-							if (double) return double.includes(group1);
-							return group1 == group2;
-						}
-					};
-					if (!ui.selected.buttons.length) {
-						return ui.dialog.buttons.some(but => {
-							if (but == button) return false;
-							return filterChoice(button.link, but.link);
-						});
-					}
-					return filterChoice(ui.selected.buttons[0].link, button.link);
-				};
-				next.switchToAuto = function () {
-					event.ai(game.me, list);
-					ui.arena.classList.remove("selecting");
-				};
-				var createCharacterDialog = function () {
-					event.dialogxx = ui.create.characterDialog(
-						"heightset",
-						function (i) {
-							if (i.indexOf("gz_shibing") == 0) return true;
-							if (get.config("onlyguozhan")) {
-								if (!lib.characterGuozhanFilter.some(pack => lib.characterPack[pack][i])) return true;
-								if (get.is.jun(i)) return true;
-							}
-						},
-						get.config("onlyguozhanexpand") ? "expandall" : undefined,
-						get.config("onlyguozhan") ? "onlypack:mode_guozhan" : undefined
-					);
-					if (ui.cheat2) {
-						ui.cheat2.addTempClass("controlpressdownx", 500);
-						ui.cheat2.classList.remove("disabled");
-					}
-				};
-				if (lib.onfree) {
-					lib.onfree.push(createCharacterDialog);
-				} else {
-					createCharacterDialog();
-				}
-				ui.create.cheat2 = function () {
-					ui.cheat2 = ui.create.control("自由选将", function () {
-						if (this.dialog == _status.event.dialog) {
-							if (game.changeCoin) {
-								game.changeCoin(10);
-							}
-							this.dialog.close();
-							_status.event.dialog = this.backup;
-							this.backup.open();
-							delete this.backup;
-							game.uncheck();
-							game.check();
-							if (ui.cheat) {
-								ui.cheat.addTempClass("controlpressdownx", 500);
-								ui.cheat.classList.remove("disabled");
-							}
-						} else {
-							if (game.changeCoin) {
-								game.changeCoin(-10);
-							}
-							this.backup = _status.event.dialog;
-							_status.event.dialog.close();
-							_status.event.dialog = _status.event.parent.dialogxx;
-							this.dialog = _status.event.dialog;
-							this.dialog.open();
-							game.uncheck();
-							game.check();
-							if (ui.cheat) {
-								ui.cheat.classList.add("disabled");
-							}
-						}
-					});
-					if (lib.onfree) {
-						ui.cheat2.classList.add("disabled");
-					}
-				};
-				ui.create.cheat = function () {
-					_status.createControl = ui.cheat2;
-					ui.cheat = ui.create.control("更换", function () {
-						if (ui.cheat2 && ui.cheat2.dialog == _status.event.dialog) {
-							return;
-						}
-						if (game.changeCoin) {
-							game.changeCoin(-3);
-						}
-						event.list = event.list.concat(list);
-						event.list.randomSort();
-						// list=event.list.splice(0,parseInt(get.config('choice_num')));
-						list = game.getCharacterChoice(event.list, parseInt(get.config("choice_num")));
-						var buttons = ui.create.div(".buttons");
-						var node = _status.event.dialog.buttons[0].parentNode;
-						_status.event.dialog.buttons = ui.create.buttons(list, "character", buttons);
-						_status.event.dialog.content.insertBefore(buttons, node);
-						buttons.addTempClass("start");
-						node.remove();
-						game.uncheck();
-						game.check();
-					});
-					delete _status.createControl;
-				};
-				if (!_status.brawl || !_status.brawl.chooseCharacterFixed) {
-					if (!ui.cheat && get.config("change_choice")) ui.create.cheat();
-					if (!ui.cheat2 && get.config("free_choose")) ui.create.cheat2();
-				}
-			}
-			("step 1");
-			if (ui.cheat) {
-				ui.cheat.close();
-				delete ui.cheat;
-			}
-			if (ui.cheat2) {
-				ui.cheat2.close();
-				delete ui.cheat2;
-			}
-			if (result.buttons) {
-				var name1 = result.buttons[0].link,
-					name2 = result.buttons[1].link;
-				event.choosen = [name1, name2];
-				if (get.is.double(name1, true)) {
-					if (!get.is.double(name2, true)) event._result = { control: lib.character[name2][1] };
-					else if (get.is.double(name1, true).removeArray(get.is.double(name2, true)).length == 0 || get.is.double(name2, true).removeArray(get.is.double(name1, true)).length == 0)
-						game.me
-							.chooseControl(get.is.double(name2, true).filter(group => get.is.double(name1, true).includes(group)))
-							.set("prompt", "请选择你代表的势力")
-							.set("ai", () => _status.event.controls.randomGet());
-					else
-						event._result = {
-							control: get.is.double(name1, true).find(group => get.is.double(name2, true).includes(group)),
-						};
-				} else if (lib.character[name1][1] == "ye" && get.is.double(name2, true))
-					game.me
-						.chooseControl(get.is.double(name2, true))
-						.set("prompt", "请选择副将代表的势力")
-						.set("ai", () => _status.event.controls.randomGet());
-			}
-			("step 2");
-			if (result && result.control) game.me.trueIdentity = result.control;
-			if (event.choosen) {
-				game.me.init(event.choosen[0], event.choosen[1], false);
-				game.addRecentCharacter(event.choosen[0], event.choosen[1]);
-			}
-			event.list.remove(game.me.name1);
-			event.list.remove(game.me.name2);
-			for (var i = 0; i < game.players.length; i++) {
-				if (game.players[i] != game.me) {
-					event.ai(game.players[i], game.getCharacterChoice(event.list, parseInt(get.config("choice_num"))), event.list);
-				}
-			}
-			for (var i = 0; i < game.players.length; i++) {
-				game.players[i].classList.add("unseen");
-				game.players[i].classList.add("unseen2");
-				_status.characterlist.remove(game.players[i].name);
-				_status.characterlist.remove(game.players[i].name2);
-				if (game.players[i] != game.me) {
-					game.players[i].node.identity.firstChild.innerHTML = "猜";
-					game.players[i].node.identity.dataset.color = "unknown";
-					game.players[i].node.identity.classList.add("guessing");
-				}
-				game.players[i].hiddenSkills = lib.character[game.players[i].name1][3].slice(0);
-				var hiddenSkills2 = lib.character[game.players[i].name2][3];
-				for (var j = 0; j < hiddenSkills2.length; j++) {
-					game.players[i].hiddenSkills.add(hiddenSkills2[j]);
-				}
-				for (var j = 0; j < game.players[i].hiddenSkills.length; j++) {
-					if (!lib.skill[game.players[i].hiddenSkills[j]]) {
-						game.players[i].hiddenSkills.splice(j--, 1);
-					}
-				}
-				game.players[i].group = "unknown";
-				game.players[i].sex = "unknown";
-				game.players[i].name1 = game.players[i].name;
-				game.players[i].name = "unknown";
-				game.players[i].identity = "unknown";
-				game.players[i].node.name.show();
-				game.players[i].node.name2.show();
-				for (var j = 0; j < game.players[i].hiddenSkills.length; j++) {
-					game.players[i].addSkillTrigger(game.players[i].hiddenSkills[j], true);
-				}
-			}
-			setTimeout(function () {
-				ui.arena.classList.remove("choose-character");
-			}, 500);
-		});
-		return next;
+		}
 	}
 	chooseCharacterOL() {
 		var next = game.createEvent("chooseCharacter");
