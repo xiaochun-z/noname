@@ -1,5 +1,5 @@
 import { lib, game as _game, ui, get, ai, _status } from "../../../../noname.js";
-import { GameEvent, Dialog, Player, Control, Button } from "../../../../noname/library/element/index.js";
+import { GameEvent, Dialog, Player, Control, Button, Character } from "../../../../noname/library/element/index.js";
 import { GameGuozhan, broadcastAll } from "./game.js";
 import { delay } from "../../../../noname/util/index.js";
 
@@ -9,7 +9,6 @@ const game = _game;
 const html = String.raw;
 
 /**
- *
  * @param {GameEvent} event
  * @param {GameEvent} _trigger
  * @param {Player} _player
@@ -129,7 +128,7 @@ export async function chooseCharacterContent(event, _trigger, _player) {
 				// @ts-expect-error 祖宗之法就是这么写的
 				next.set("ai", () => _status.event.controls.randomGet());
 
-				result = await next.forResult();
+				result2 = await next.forResult();
 			}
 
 			if (result2?.control) {
@@ -510,7 +509,316 @@ export async function chooseCharacterContent(event, _trigger, _player) {
 }
 
 /**
- *
+ * @param {GameEvent} event
+ * @param {GameEvent} _trigger
+ * @param {Player} _player
+ */
+export async function chooseCharacterOLContent(event, _trigger, _player) {
+	broadcastAll(() => {
+		ui.arena.classList.add("choose-character");
+		for (const player of game.players) {
+			player.classList.add("unseen");
+			player.classList.add("unseen2");
+		}
+	});
+
+	/** @type {Record<string, Character>} */
+	const pack = Reflect.get(lib.characterPack, "mode_guozhan");
+	const characterList = Object.keys(pack).filter(character => {
+		return !character.startsWith("gz_shibing") && !get.is.jun(character) && !lib.config.guozhan_banned?.includes(character);
+	});
+	Reflect.set(_status, "characterlist", characterList.slice(0));
+	Reflect.set(_status, "yeidentity", []);
+
+	const list2 = [];
+	let num;
+	if (lib.configOL.number * 6 > characterList.length) {
+		num = 5;
+	} else if (lib.configOL.number * 7 > characterList.length) {
+		num = 6;
+	} else {
+		num = 7;
+	}
+
+	characterList.randomSort();
+	for (const player of game.players) {
+		list2.push([player, ["选择角色", [game.getCharacterChoice(characterList, num), "character"]], 2, true, () => Math.random(), filterButton]);
+	}
+
+	const next = game.me.chooseButtonOL(
+		list2,
+		(player, result) => {
+			if (game.online || player == game.me) {
+				player.init(result.links[0], result.links[1], false);
+			}
+		},
+		void 0
+	);
+
+	next.set("processAI", chooseCharacterCheck);
+	next.set("switchToAuto", () => {
+		Reflect.set(get.event(), "result", "ai");
+	});
+
+	const chooseCharacterResult = await next.forResult();
+
+	let sort = true;
+	const chosen = [];
+	const chosenCharacter = [];
+
+	for (const i in chooseCharacterResult) {
+		if (chooseCharacterResult[i] && chooseCharacterResult[i].links) {
+			for (var j = 0; j < chooseCharacterResult[i].links.length; j++) {
+				characterList.remove(chooseCharacterResult[i].links[j]);
+			}
+		}
+	}
+
+	for (const i in chooseCharacterResult) {
+		if (chooseCharacterResult[i] == "ai" || !chooseCharacterResult[i].links || chooseCharacterResult[i].links.length < 1) {
+			if (sort) {
+				sort = false;
+				characterList.randomSort();
+			}
+			chooseCharacterResult[i] = [characterList.shift()];
+			const group = lib.character[chooseCharacterResult[i][0]][1];
+			for (let j = 0; j < characterList.length; j++) {
+				if (lib.character[characterList[j]][1] == group) {
+					chooseCharacterResult[i].push(characterList[j]);
+					characterList.splice(j--, 1);
+					break;
+				}
+			}
+		} else {
+			chooseCharacterResult[i] = chooseCharacterResult[i].links;
+		}
+		const name1 = chooseCharacterResult[i][0];
+		const name2 = chooseCharacterResult[i][1];
+		// @ts-expect-error 祖宗之法就是这么写的
+		if (get.is.double(name1, true)) {
+			// @ts-expect-error 祖宗之法就是这么写的
+			if (!get.is.double(name2, true)) {
+				// @ts-expect-error 祖宗之法就是这么写的
+				lib.playerOL[i].trueIdentity = lib.character[name2][1];
+				// @ts-expect-error 祖宗之法就是这么写的
+			} else if (get.is.double(name1, true).removeArray(get.is.double(name2, true)).length == 0 || get.is.double(name2, true).removeArray(get.is.double(name1, true)).length == 0) {
+				chosen.push(lib.playerOL[i]);
+				chosenCharacter.push([name1, name2]);
+			} else {
+				// @ts-expect-error 祖宗之法就是这么写的
+				lib.playerOL[i].trueIdentity = get.is.double(name1, true).find(group => get.is.double(name2, true).includes(group));
+			}
+			// @ts-expect-error 祖宗之法就是这么写的
+		} else if (lib.character[name1][1] == "ye" && get.is.double(name2, true)) {
+			chosen.push(lib.playerOL[i]);
+			chosenCharacter.push([name1, name2]);
+		}
+	}
+
+	let chooseGroupResult = {};
+	if (chosen.length) {
+		for (let i = 0; i < chosen.length; ++i) {
+			const name1 = chosenCharacter[i][0];
+			const name2 = chosenCharacter[i][1];
+			let str;
+			let choice;
+			if (get.is.double(name1, true)) {
+				str = "请选择你代表的势力";
+				choice = get.is.double(name2, true).filter(group => get.is.double(name1, true).includes(group));
+			}
+			if (lib.character[name1][1] == "ye") {
+				str = "请选择你的副将代表的势力";
+				choice = get.is.double(name2, true);
+			}
+			chosen[i] = [chosen[i], [str, [choice.map(i => ["", "", "group_" + i]), "vcard"]], 1, true];
+		}
+
+		chooseGroupResult = await game.me
+			.chooseButtonOL(
+				chosen,
+				function (player, result) {
+					if (player == game.me) player.trueIdentity = result.links[0][2].slice(6);
+				},
+				void 0
+			)
+			.set("switchToAuto", () => {
+				// @ts-expect-error 祖宗之法就是这么写的
+				_status.event.result = "ai";
+			})
+			.set("processAI", () => {
+				return {
+					bool: true,
+					// @ts-expect-error 祖宗之法就是这么写的
+					links: [_status.event.dialog.buttons.randomGet().link],
+				};
+			})
+			.forResult();
+	}
+
+	broadcastAll(
+		(result, result2, delay) => {
+			for (const current of game.players) {
+				const id = current.playerid;
+				// @ts-expect-error 祖宗之法就是这么写的
+				if (result[id] && !current.name) {
+					// @ts-expect-error 祖宗之法就是这么写的
+					current.init(result[id][0], result[id][1], false);
+				}
+				// @ts-expect-error 祖宗之法就是这么写的
+				if (result2[id] && result2[id].length) {
+					// @ts-expect-error 祖宗之法就是这么写的
+					current.trueIdentity = result2[id][0][2].slice(6);
+				}
+				if (current != game.me) {
+					// @ts-expect-error 祖宗之法就是这么写的
+					current.node.identity.firstChild.innerHTML = "猜";
+					current.node.identity.dataset.color = "unknown";
+					current.node.identity.classList.add("guessing");
+				}
+				current.hiddenSkills = lib.character[current.name1][3].slice(0);
+				const hiddenSkills2 = lib.character[current.name2][3];
+				for (const skill of hiddenSkills2) {
+					current.hiddenSkills.add(skill);
+				}
+				for (let j = 0; j < current.hiddenSkills.length; j++) {
+					if (!lib.skill[current.hiddenSkills[j]]) {
+						current.hiddenSkills.splice(j--, 1);
+					}
+				}
+				current.group = "unknown";
+				current.sex = "unknown";
+				current.name1 = current.name;
+				current.name = "unknown";
+				current.identity = "unknown";
+				current.node.name.show();
+				current.node.name2.show();
+				for (const skill of current.hiddenSkills) {
+					// @ts-expect-error 祖宗之法就是这么写的
+					current.addSkillTrigger(skill, true);
+				}
+			}
+
+			delay(500).then(() => {
+				ui.arena.classList.remove("choose-character")
+			});
+		},
+		chooseCharacterResult,
+		chooseGroupResult,
+		delay
+	);
+
+	return;
+
+	function filterButton(button) {
+		if (ui.dialog) {
+			if (ui.dialog.buttons.length <= 10) {
+				for (const btn of ui.dialog.buttons) {
+					if (btn !== button) {
+						if (
+							// @ts-expect-error 祖宗之法就是这么写的
+							lib.element.player.perfectPair.call(
+								{
+									name1: button.link,
+									// @ts-expect-error 祖宗之法就是这么写的
+									name2: btn.link,
+								},
+								true
+							)
+						) {
+							button.classList.add("glow2");
+						}
+					}
+				}
+			}
+		}
+		const filterChoice = (name1, name2) => {
+			// @ts-expect-error 祖宗之法就是这么写的
+			if (_status.separatism) return true;
+			const group1 = lib.character[name1][1];
+			const group2 = lib.character[name2][1];
+			// @ts-expect-error 祖宗之法就是这么写的
+			const doublex = get.is.double(name1, true);
+			if (doublex) {
+				// @ts-expect-error 祖宗之法就是这么写的
+				const double = get.is.double(name2, true);
+				// @ts-expect-error 祖宗之法就是这么写的
+				if (double) return doublex.some(group => double.includes(group));
+				// @ts-expect-error 祖宗之法就是这么写的
+				return doublex.includes(group2);
+			} else {
+				if (group1 === "ye") return group2 !== "ye";
+				// @ts-expect-error 祖宗之法就是这么写的
+				const double = get.is.double(name2, true);
+				// @ts-expect-error 祖宗之法就是这么写的
+				if (double) return double.includes(group1);
+				return group1 === group2;
+			}
+		};
+		if (!ui.selected.buttons.length) {
+			return ui.dialog.buttons.some(but => {
+				if (but === button) return false;
+				// @ts-expect-error 祖宗之法就是这么写的
+				return filterChoice(button.link, but.link);
+			});
+		}
+		// @ts-expect-error 祖宗之法就是这么写的
+		return filterChoice(ui.selected.buttons[0].link, button.link);
+	}
+
+	function chooseCharacterCheck() {
+		// @ts-expect-error 祖宗之法就是这么写的
+		const buttons = _status.event.dialog.buttons;
+
+		const filterChoice = (name1, name2) => {
+			// @ts-expect-error 祖宗之法就是这么写的
+			if (_status.separatism) return true;
+			const group1 = lib.character[name1][1];
+			const group2 = lib.character[name2][1];
+			// @ts-expect-error 祖宗之法就是这么写的
+			const doublex = get.is.double(name1, true);
+			if (doublex) {
+				// @ts-expect-error 祖宗之法就是这么写的
+				const double = get.is.double(name2, true);
+				// @ts-expect-error 祖宗之法就是这么写的
+				if (double) return doublex.some(group => double.includes(group));
+				// @ts-expect-error 祖宗之法就是这么写的
+				return doublex.includes(group2);
+			} else {
+				if (group1 === "ye") return group2 !== "ye";
+				// @ts-expect-error 祖宗之法就是这么写的
+				const double = get.is.double(name2, true);
+				// @ts-expect-error 祖宗之法就是这么写的
+				if (double) return double.includes(group1);
+				return group1 === group2;
+			}
+		};
+
+		for (let i = 0; i < buttons.length - 1; ++i) {
+			const button1 = buttons[i];
+			for (let j = i + 1; j < buttons.length; ++j) {
+				const button2 = buttons[j];
+
+				if (filterChoice(button1.link, button2.link) || filterChoice(button2.link, button1.link)) {
+					let mainx = button1.link;
+					let vicex = button2.link;
+
+					// @ts-expect-error 祖宗之法就是这么写的
+					if (!filterChoice(mainx, vicex) || (filterChoice(vicex, mainx) && get.guozhanReverse(mainx, vicex))) {
+						mainx = button2.link;
+						vicex = button1.link;
+					}
+					const list = [mainx, vicex];
+					return {
+						bool: true,
+						links: list,
+					};
+				}
+			}
+		}
+	}
+}
+
+/**
  * @param {GameEvent} event
  * @param {GameEvent} _trigger
  * @param {Player} player

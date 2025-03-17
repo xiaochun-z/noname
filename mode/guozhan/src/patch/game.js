@@ -1,7 +1,7 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 import { GameEvent, Dialog, Player } from "../../../../noname/library/element/index.js";
 import { Game } from "../../../../noname/game/index.js";
-import { showYexingsContent, chooseCharacterContent } from "./content.js";
+import { showYexingsContent, chooseCharacterContent, chooseCharacterOLContent } from "./content.js";
 
 export class GameGuozhan extends Game {
 	/**
@@ -356,6 +356,7 @@ export class GameGuozhan extends Game {
 			}
 			var added = false;
 			for (var j of sides) {
+				// @ts-expect-error 祖宗之法就是这么写的
 				if (i.isFriendOf(pmap[j])) {
 					added = true;
 					map[j].push(i);
@@ -391,30 +392,38 @@ export class GameGuozhan extends Game {
 			};
 			if (!hiddens.length) {
 				if (map[sides[0]].length > 1) {
+					// @ts-expect-error 祖宗之法就是这么写的
 					for (var i of map[sides[0]]) {
 						if (isYe(i)) {
+							// @ts-expect-error 祖宗之法就是这么写的
 							game.showYexings();
 							return;
 						}
 					}
 				}
-				game.broadcastAll(function (id) {
+				broadcastAll(function (id) {
+					// @ts-expect-error 祖宗之法就是这么写的
 					game.winner_id = id;
 				}, sides[0]);
+				// @ts-expect-error 祖宗之法就是这么写的
 				game.checkResult();
 			} else {
 				var identity = map[sides[0]][0].identity;
 				if (identity == "ye") return;
+				// @ts-expect-error 祖宗之法就是这么写的
 				for (var i of map[sides[0]]) {
 					if (isYe(i)) return;
 				}
 				for (var ind = 0; ind < hiddens.length; ind++) {
 					var current = hiddens[ind];
+					// @ts-expect-error 祖宗之法就是这么写的
 					if (isYe(current) || current.getGuozhanGroup(2) != identity || !current.wontYe(null, ind + 1)) return;
 				}
-				game.broadcastAll(function (id) {
+				broadcastAll(function (id) {
+					// @ts-expect-error 祖宗之法就是这么写的
 					game.winner_id = id;
 				}, sides[0]);
+				// @ts-expect-error 祖宗之法就是这么写的
 				game.checkResult();
 			}
 		}
@@ -424,13 +433,17 @@ export class GameGuozhan extends Game {
 	 * 检查游戏结果
 	 */
 	checkResult() {
+		// @ts-expect-error 祖宗之法就是这么写的
 		_status.overing = true;
+		// @ts-expect-error 祖宗之法就是这么写的
 		var me = game.me._trueMe || game.me;
 		for (var i = 0; i < game.players.length; i++) {
 			game.players[i].showCharacter(2);
 		}
+		// @ts-expect-error 祖宗之法就是这么写的
 		var winner = (_status.connectMode ? lib.playerOL : game.playerMap)[game.winner_id];
 		game.over(winner && winner.isFriendOf(me) ? true : false);
+		// @ts-expect-error 祖宗之法就是这么写的
 		game.showIdentity();
 	}
 
@@ -495,6 +508,7 @@ export class GameGuozhan extends Game {
 					if (filterChoice(list[i], list[j]) || filterChoice(list[j], list[i])) {
 						var mainx = list[i];
 						var vicex = list[j];
+						// @ts-expect-error 祖宗之法就是这么写的
 						if (!filterChoice(mainx, vicex) || (filterChoice(vicex, mainx) && get.guozhanReverse(mainx, vicex))) {
 							mainx = list[j];
 							vicex = list[i];
@@ -508,6 +522,7 @@ export class GameGuozhan extends Game {
 							else if (get.is.double(mainx, true).removeArray(get.is.double(vicex, true)).length == 0 || get.is.double(vicex, true).removeArray(get.is.double(mainx, true)).length == 0)
 								// @ts-expect-error 祖宗之法就是这么写的
 								player.trueIdentity = get.is
+									// @ts-expect-error 祖宗之法就是这么写的
 									.double(vicex, true)
 									// @ts-expect-error 祖宗之法就是这么写的
 									.filter(group => get.is.double(mainx, true).includes(group))
@@ -531,268 +546,7 @@ export class GameGuozhan extends Game {
 	}
 	chooseCharacterOL() {
 		var next = game.createEvent("chooseCharacter");
-		next.setContent(function () {
-			"step 0";
-			game.broadcastAll(function () {
-				ui.arena.classList.add("choose-character");
-				for (var i = 0; i < game.players.length; i++) {
-					game.players[i].classList.add("unseen");
-					game.players[i].classList.add("unseen2");
-				}
-			});
-			var list = [];
-			for (var i in lib.characterPack.mode_guozhan) {
-				if (i.indexOf("gz_shibing") == 0) continue;
-				if (get.is.jun(i)) continue;
-				if (lib.config.guozhan_banned && lib.config.guozhan_banned.includes(i)) continue;
-				list.push(i);
-			}
-			_status.characterlist = list.slice(0);
-			_status.yeidentity = [];
-			event.list = list.slice(0);
-			var list2 = [];
-			var num;
-			if (lib.configOL.number * 6 > list.length) {
-				num = 5;
-			} else if (lib.configOL.number * 7 > list.length) {
-				num = 6;
-			} else {
-				num = 7;
-			}
-			var filterButton = function (button) {
-				if (ui.dialog) {
-					if (ui.dialog.buttons.length <= 10) {
-						for (var i = 0; i < ui.dialog.buttons.length; i++) {
-							if (ui.dialog.buttons[i] != button) {
-								if (
-									lib.element.player.perfectPair.call(
-										{
-											name1: button.link,
-											name2: ui.dialog.buttons[i].link,
-										},
-										true
-									)
-								) {
-									button.classList.add("glow2");
-								}
-							}
-						}
-					}
-				}
-				var filterChoice = function (name1, name2) {
-					if (_status.separatism) return true;
-					var group1 = lib.character[name1][1];
-					var group2 = lib.character[name2][1];
-					var doublex = get.is.double(name1, true);
-					if (doublex) {
-						var double = get.is.double(name2, true);
-						if (double) return doublex.some(group => double.includes(group));
-						return doublex.includes(group2);
-					} else {
-						if (group1 == "ye") return group2 != "ye";
-						var double = get.is.double(name2, true);
-						if (double) return double.includes(group1);
-						return group1 == group2;
-					}
-				};
-				if (!ui.selected.buttons.length) {
-					return ui.dialog.buttons.some(but => {
-						if (but == button) return false;
-						return filterChoice(button.link, but.link);
-					});
-				}
-				return filterChoice(ui.selected.buttons[0].link, button.link);
-			};
-			list.randomSort();
-			for (var i = 0; i < game.players.length; i++) {
-				list2.push([
-					game.players[i],
-					["选择角色", [game.getCharacterChoice(list, num), "character"]],
-					2,
-					true,
-					function () {
-						return Math.random();
-					},
-					filterButton,
-				]);
-			}
-			game.me
-				.chooseButtonOL(list2, function (player, result) {
-					if (game.online || player == game.me) player.init(result.links[0], result.links[1], false);
-				})
-				.set("switchToAuto", function () {
-					_status.event.result = "ai";
-				})
-				.set("processAI", function () {
-					var buttons = _status.event.dialog.buttons;
-					var filterChoice = function (name1, name2) {
-						if (_status.separatism) return true;
-						var group1 = lib.character[name1][1];
-						var group2 = lib.character[name2][1];
-						var doublex = get.is.double(name1, true);
-						if (doublex) {
-							var double = get.is.double(name2, true);
-							if (double) return doublex.some(group => double.includes(group));
-							return doublex.includes(group2);
-						} else {
-							if (group1 == "ye") return group2 != "ye";
-							var double = get.is.double(name2, true);
-							if (double) return double.includes(group1);
-							return group1 == group2;
-						}
-					};
-					for (var i = 0; i < buttons.length - 1; i++) {
-						for (var j = i + 1; j < buttons.length; j++) {
-							if (filterChoice(buttons[i].link, buttons[j].link) || filterChoice(buttons[j].link, buttons[i].link)) {
-								var mainx = buttons[i].link;
-								var vicex = buttons[j].link;
-								if (!filterChoice(mainx, vicex) || (filterChoice(vicex, mainx) && get.guozhanReverse(mainx, vicex))) {
-									mainx = buttons[j].link;
-									vicex = buttons[i].link;
-								}
-								var list = [mainx, vicex];
-								return {
-									bool: true,
-									links: list,
-								};
-							}
-						}
-					}
-				});
-			("step 1");
-			var sort = true,
-				chosen = [],
-				chosenCharacter = [];
-			for (var i in result) {
-				if (result[i] && result[i].links) {
-					for (var j = 0; j < result[i].links.length; j++) {
-						event.list.remove(result[i].links[j]);
-					}
-				}
-			}
-			for (var i in result) {
-				if (result[i] == "ai" || !result[i].links || result[i].links.length < 1) {
-					if (sort) {
-						sort = false;
-						event.list.randomSort();
-					}
-					result[i] = [event.list.shift()];
-					var group = lib.character[result[i][0]][1];
-					for (var j = 0; j < event.list.length; j++) {
-						if (lib.character[event.list[j]][1] == group) {
-							result[i].push(event.list[j]);
-							event.list.splice(j--, 1);
-							break;
-						}
-					}
-				} else {
-					result[i] = result[i].links;
-				}
-				var name1 = result[i][0],
-					name2 = result[i][1];
-				if (get.is.double(name1, true)) {
-					if (!get.is.double(name2, true)) lib.playerOL[i].trueIdentity = lib.character[name2][1];
-					else if (get.is.double(name1, true).removeArray(get.is.double(name2, true)).length == 0 || get.is.double(name2, true).removeArray(get.is.double(name1, true)).length == 0) {
-						chosen.push(lib.playerOL[i]);
-						chosenCharacter.push([name1, name2]);
-					} else lib.playerOL[i].trueIdentity = get.is.double(name1, true).find(group => get.is.double(name2, true).includes(group));
-				} else if (lib.character[name1][1] == "ye" && get.is.double(name2, true)) {
-					chosen.push(lib.playerOL[i]);
-					chosenCharacter.push([name1, name2]);
-				}
-			}
-			event.result2 = result;
-			if (chosen.length) {
-				for (var i = 0; i < chosen.length; i++) {
-					var name1 = chosenCharacter[i][0],
-						name2 = chosenCharacter[i][1],
-						str,
-						choice;
-					if (get.is.double(name1, true)) {
-						str = "请选择你代表的势力";
-						choice = get.is.double(name2, true).filter(group => get.is.double(name1, true).includes(group));
-					}
-					if (lib.character[name1][1] == "ye") {
-						str = "请选择你的副将代表的势力";
-						choice = get.is.double(name2, true);
-					}
-					chosen[i] = [
-						chosen[i],
-						[
-							str,
-							[
-								choice.map(function (i) {
-									return ["", "", "group_" + i];
-								}),
-								"vcard",
-							],
-						],
-						1,
-						true,
-					];
-				}
-				game.me
-					.chooseButtonOL(chosen, function (player, result) {
-						if (player == game.me) player.trueIdentity = result.links[0][2].slice(6);
-					})
-					.set("switchToAuto", function () {
-						_status.event.result = "ai";
-					})
-					.set("processAI", function () {
-						return {
-							bool: true,
-							links: [_status.event.dialog.buttons.randomGet().link],
-						};
-					});
-			} else event._result = {};
-			("step 2");
-			if (!result) result = {};
-			var result2 = event.result2;
-			game.broadcastAll(
-				function (result, result2) {
-					for (var i = 0; i < game.players.length; i++) {
-						var current = game.players[i],
-							id = current.playerid;
-						if (result[id] && !current.name) {
-							current.init(result[id][0], result[id][1], false);
-						}
-						if (result2[id] && result2[id].length) {
-							current.trueIdentity = result2[id][0][2].slice(6);
-						}
-						if (game.players[i] != game.me) {
-							game.players[i].node.identity.firstChild.innerHTML = "猜";
-							game.players[i].node.identity.dataset.color = "unknown";
-							game.players[i].node.identity.classList.add("guessing");
-						}
-						game.players[i].hiddenSkills = lib.character[game.players[i].name1][3].slice(0);
-						var hiddenSkills2 = lib.character[game.players[i].name2][3];
-						for (var j = 0; j < hiddenSkills2.length; j++) {
-							game.players[i].hiddenSkills.add(hiddenSkills2[j]);
-						}
-						for (var j = 0; j < game.players[i].hiddenSkills.length; j++) {
-							if (!lib.skill[game.players[i].hiddenSkills[j]]) {
-								game.players[i].hiddenSkills.splice(j--, 1);
-							}
-						}
-						game.players[i].group = "unknown";
-						game.players[i].sex = "unknown";
-						game.players[i].name1 = game.players[i].name;
-						game.players[i].name = "unknown";
-						game.players[i].identity = "unknown";
-						game.players[i].node.name.show();
-						game.players[i].node.name2.show();
-						for (var j = 0; j < game.players[i].hiddenSkills.length; j++) {
-							game.players[i].addSkillTrigger(game.players[i].hiddenSkills[j], true);
-						}
-					}
-					setTimeout(function () {
-						ui.arena.classList.remove("choose-character");
-					}, 500);
-				},
-				result2,
-				result
-			);
-		});
+		next.setContent(chooseCharacterOLContent);
 		return next;
 	}
 }
