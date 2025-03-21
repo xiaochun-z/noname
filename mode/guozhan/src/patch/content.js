@@ -1,11 +1,15 @@
-import { lib, game as _game, ui, get, ai, _status } from "../../../../noname.js";
+import { lib, game as _game, ui, get as _get, ai, _status } from "../../../../noname.js";
 import { GameEvent, Dialog, Player, Control, Button, Character } from "../../../../noname/library/element/index.js";
-import { GameGuozhan, broadcastAll } from "./game.js";
+import { GameGuozhan, broadcast, broadcastAll } from "./game.js";
+import { GetGuozhan } from "./get.js";
 import { delay } from "../../../../noname/util/index.js";
 
 /** @type {GameGuozhan} */
 // @ts-expect-error 类型就是这么定的
 const game = _game;
+/** @type {GetGuozhan} */
+// @ts-expect-error 类型就是这么定的
+const get = _get;
 const html = String.raw;
 
 /**
@@ -622,12 +626,15 @@ export async function chooseCharacterOLContent(event, _trigger, _player) {
 			const name2 = chosenCharacter[i][1];
 			let str;
 			let choice;
+			// @ts-expect-error 祖宗之法就是这么写的
 			if (get.is.double(name1, true)) {
 				str = "请选择你代表的势力";
+				// @ts-expect-error 祖宗之法就是这么写的
 				choice = get.is.double(name2, true).filter(group => get.is.double(name1, true).includes(group));
 			}
 			if (lib.character[name1][1] == "ye") {
 				str = "请选择你的副将代表的势力";
+				// @ts-expect-error 祖宗之法就是这么写的
 				choice = get.is.double(name2, true);
 			}
 			chosen[i] = [chosen[i], [str, [choice.map(i => ["", "", "group_" + i]), "vcard"]], 1, true];
@@ -699,7 +706,7 @@ export async function chooseCharacterOLContent(event, _trigger, _player) {
 			}
 
 			delay(500).then(() => {
-				ui.arena.classList.remove("choose-character")
+				ui.arena.classList.remove("choose-character");
 			});
 		},
 		chooseCharacterResult,
@@ -802,7 +809,6 @@ export async function chooseCharacterOLContent(event, _trigger, _player) {
 					let mainx = button1.link;
 					let vicex = button2.link;
 
-					// @ts-expect-error 祖宗之法就是这么写的
 					if (!filterChoice(mainx, vicex) || (filterChoice(vicex, mainx) && get.guozhanReverse(mainx, vicex))) {
 						mainx = button2.link;
 						vicex = button1.link;
@@ -1017,3 +1023,133 @@ export async function showYexingsContent(event, _trigger, player) {
 		break;
 	}
 }
+
+/**
+ * @param {GameEvent} event
+ * @param {GameEvent} _trigger
+ * @param {Player} player
+ */
+export async function hideCharacter(event, _trigger, player) {
+	const { num } = event;
+
+	game.addVideo("hideCharacter", player, num);
+
+	const log = Reflect.get(event, "log");
+	let skills;
+	switch (num) {
+		case 0:
+			if (log !== false) game.log(player, "暗置了主将" + get.translation(player.name1));
+			skills = lib.character[player.name1][3];
+			player.name = player.name2;
+			player.sex = lib.character[player.name2][0];
+			player.classList.add("unseen");
+			break;
+		case 1:
+			if (log !== false) game.log(player, "暗置了副将" + get.translation(player.name2));
+			skills = lib.character[player.name2][3];
+			player.classList.add("unseen2");
+			break;
+		// 为skills赋值，避免报错
+		default:
+			skills = [];
+			break;
+	}
+
+	broadcast(
+		(player, name, sex, num, skills) => {
+			player.name = name;
+			player.sex = sex;
+			switch (num) {
+				case 0:
+					player.classList.add("unseen");
+					break;
+				case 1:
+					player.classList.add("unseen2");
+					break;
+			}
+			for (var i = 0; i < skills.length; i++) {
+				if (!player.skills.includes(skills[i])) continue;
+				player.hiddenSkills.add(skills[i]);
+				player.skills.remove(skills[i]);
+			}
+		},
+		player,
+		player.name,
+		player.sex,
+		num,
+		skills
+	);
+
+	for (let i = 0; i < skills.length; ++i) {
+		if (!player.skills.includes(skills[i])) {
+			continue;
+		}
+
+		player.hiddenSkills.add(skills[i]);
+
+		const info = get.info(skills[i]);
+		if (info.ondisable && info.onremove) {
+			// @ts-expect-error 祖宗之法就是这么写的
+			info.onremove(player);
+		}
+
+		player.skills.remove(skills[i]);
+	}
+
+	player.checkConflict();
+}
+
+/**
+ * @param {GameEvent} event
+ * @param {GameEvent} _trigger
+ * @param {Player} player
+ */
+export async function chooseJunlingFor(event, _trigger, player) {
+	const { num, target } = event;
+	let prompt = Reflect.get(event, "prompt", event);
+
+	let junlingNames = ["junling1", "junling2", "junling3", "junling4", "junling5", "junling6"];
+	junlingNames = junlingNames.randomGets(event.num).sort();
+
+	const junlings = junlingNames.map(name => ["军令", "", name]);
+
+	if (target != undefined && !prompt) {
+		const selfPrompt = target == player ? "（你）" : "";
+		prompt = `选择一张军令牌，令${get.translation(target)}${selfPrompt}选择是否执行`;
+	}
+
+	const chooseResult = await player
+		.chooseButton([prompt, [junlings, "vcard"]], true)
+		.set("ai", button => {
+			// @ts-expect-error 祖宗之法就是这么写的
+			return get.junlingEffect(get.player(), button.link[2], get.event()?.getParent()?.target, [], get.player());
+		})
+		.forResultLinks();
+
+	const result = {
+		junling: chooseResult[0][2],
+		/** @type {Player[]} */
+		targets: [],
+	};
+
+	if (result.junling == "junling1") {
+		/** @type {Player[]} */
+		// @ts-expect-error 祖宗之法就是这么写的
+		const targets = await player
+			.chooseTarget("选择一名角色，做为若该军令被执行，受到伤害的角色", true)
+			.set("ai", other => get.damageEffect(other, target, player))
+			.forResultTargets();
+
+		if (targets.length > 0) {
+			player.line(targets, "green");
+			result.targets = targets;
+		}
+	}
+
+	Reflect.set(event, "result", result);
+}
+
+export default Object.freeze({
+	hideCharacter,
+	chooseJunlingFor,
+});

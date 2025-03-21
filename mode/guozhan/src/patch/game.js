@@ -544,10 +544,25 @@ export class GameGuozhan extends Game {
 			}
 		}
 	}
+
 	chooseCharacterOL() {
 		var next = game.createEvent("chooseCharacter");
 		next.setContent(chooseCharacterOLContent);
 		return next;
+	}
+
+	/**
+	 * 类型兼容版本
+	 * 
+	 * @param {string} type 
+	 * @param {Player?} player
+	 * @param {any} [content]
+	 * @returns 
+	 */
+	// @ts-expect-error 祖宗之法就是这么写的
+	addVideo(type, player, content) {
+		// @ts-expect-error 祖宗之法就是这么写的
+		return super.addVideo(type, player, content);
 	}
 }
 
