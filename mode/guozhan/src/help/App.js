@@ -2,20 +2,20 @@ import html from "../../../../game/dedent.js";
 
 export default {
 	template: html`
-		<div style="margin: 10px">声明</div>
-		<ul style="margin-top: 0">
+		<div :style="titleStyle">声明</div>
+		<ul :style="listStyle">
 			<li>以下所有规则均为根据公开爆料整理，经村规改动后制定的临时规则。不代表任何官方意见。请以后续发布的官方规则作为标准。</li>
 		</ul>
 
-		<div style="margin: 10px">双势力武将</div>
-		<ul style="margin-top: 0">
+		<div :style="titleStyle">双势力武将</div>
+		<ul :style="listStyle">
 			<li>双势力武将牌可以和野心家武将牌/包含势力单武将牌/含有重叠势力的其他双势力武将牌组合，若你的主将为双势力武将，则：若你的副将为单势力武将牌，你的势力视为此势力；若你的副将为双势力武将，你的势力视为两张武将牌上的重叠势力（若重叠势力不止一个则需在游戏开始时选择一个作为自己的势力）；野心家武将牌为主将，双势力武将牌为副将时，游戏开始时需选择一个副将所含势力作为副将的势力。<br /></li>
 			<li>变更副将时，可以选择包含原势力的双势力武将牌。左慈发动〖役鬼〗时，可以使用双势力武将牌同时指定两个不同势力的角色为目标。<br /></li>
 			<li>特殊地，“冈崎汐”作为多势力武将牌，结算流程和规则与其他双势力武将相同。</li>
 		</ul>
 
-		<div style="margin: 10px">野心家武将</div>
-		<ul style="margin-top: 0">
+		<div :style="titleStyle">野心家武将</div>
+		<ul :style="listStyle">
 			<li>野心家武将只能放在主将位置。副将可以为任意非野心家武将牌。<br /></li>
 			<li>选择了野心家武将牌的角色（以下简称“野心家角色”）仅明置副将时，若副将为单势力武将牌，则势力暂时视为与该武将牌相同。若副将为双势力武将牌，则势力视为游戏开始时选择的副将代表的势力。<br /></li>
 			<li>野心家角色明置主将时，其势力改为野心家。若其是首次明置该武将牌，则其获得一个“野心家”标记。<br /></li>
@@ -25,11 +25,24 @@ export default {
 			<li>选择发起“拉拢人心”的野心家角色选择一个新的势力作为自己的势力，弃置“野心家”标记，令所有其他非野心家角色且非君主且非已“结盟”角色依次选择是否和该野心家角色“结盟”。选择“是”的角色将势力改为和该野心家势力相同。此次“拉拢人心”对所有其他角色询问结束后，所有选择“否”的角色将手牌摸至四张并回复1点体力。</li>
 		</ul>
 
-		<div style="margin: 10px">纵横捭阖</div>
-		<ul style="margin-top: 0">
+		<div :style="titleStyle">纵横捭阖</div>
+		<ul :style="listStyle">
 			<li>当一名角色对目标角色发动具有拥有“纵横”衍生技的技能时，其可以令对方获得“纵横”衍生技直到其下回合结束。</li>
 		</ul>
 	`,
 
-	setup() {},
+	setup() {
+		const titleStyle = {
+			margin: "10px"
+		};
+
+		const listStyle = {
+			marginTop: "0"
+		};
+
+		return {
+			titleStyle,
+			listStyle
+		}
+	},
 };
