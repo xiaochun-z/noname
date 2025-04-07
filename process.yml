@@ -1,0 +1,7 @@
+apps:
+  - script: noname-server.js
+    name: 'main-game'
+    args:
+      - --port=80
+  - script: game/server.js
+    name: 'game-lobby'
