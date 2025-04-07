@@ -5,7 +5,7 @@ import { game } from "../game/index.js";
 import { _status } from "../status/index.js";
 import { ui } from "../ui/index.js";
 import { gnc } from "../gnc/index.js";
-import { userAgent, nonameInitialized, AsyncFunction, device, leaveCompatibleEnvironment } from "../util/index.js";
+import { userAgentLowerCase, nonameInitialized, AsyncFunction, device, leaveCompatibleEnvironment } from "../util/index.js";
 import * as config from "../util/config.js";
 import { promiseErrorHandlerMap } from "../util/browser.js";
 import { importCardPack, importCharacterPack, importExtension, importMode } from "./import.js";
@@ -94,7 +94,7 @@ export function sendUpdate() {
 				fs.writeFileSync(path.join(__dirname, "Home", "saveProtocol.txt"), "");
 				// 启动http
 				const cp = require("child_process");
-				cp.exec(`start /min ${__dirname}\\noname-server.exe -platform=electron`, (err, stdout, stderr) => { });
+				cp.exec(`start /min ${__dirname}\\noname-server.exe -platform=electron`, (err, stdout, stderr) => {});
 				return `http://localhost:8089/app.html?sendUpdate=true`;
 			}
 		}
@@ -162,16 +162,7 @@ export async function boot() {
 		} else resolve(void 0);
 	}).then(onWindowReady.bind(window));
 
-	// 闭源客户端检测并提醒
-	if (typeof window.NonameAndroidBridge == "object") {
-		if (["com.widget.noname.qingyao", "online.nonamekill.android"].some(packageName => window.NonameAndroidBridge.getPackageName().includes(packageName))) {
-			alert("您正在一个不受信任的闭源客户端上运行《无名杀》。建议您更换为其他开源的无名杀客户端，避免给您带来不必要的损失。");
-		}
-	} else {
-		if (lib.assetURL.includes("com.widget.noname.qingyao") || lib.assetURL.includes("online.nonamekill.android")) {
-			alert("您正在一个不受信任的闭源客户端上运行《无名杀》。建议您更换为其他开源的无名杀客户端，避免给您带来不必要的损失。");
-		}
-	}
+	// 清瑤？過於先進以至於無法運行我們的落後本體，故也就不再檢測
 
 	// Electron平台
 	if (typeof window.require === "function") {
@@ -264,7 +255,7 @@ export async function boot() {
 	config.get("all").plays = [];
 	config.get("all").mode = [];
 
-	if (!config.get("errstop") || config.get("compatiblemode")) _status.withError = true;
+	if (config.get("compatiblemode")) _status.withError = true;
 	if (config.get("debug")) {
 		await lib.init.promises.js(`${lib.assetURL}game`, "asset");
 		if (window.noname_skin_list) {
@@ -392,7 +383,7 @@ export async function boot() {
 		appearenceConfig.global_font.item.default = "默认";
 	}
 
-	const ua = userAgent;
+	const ua = userAgentLowerCase;
 	if ("ontouchstart" in document) {
 		if (!config.get("totouched")) {
 			game.saveConfig("totouched", true);
@@ -654,6 +645,7 @@ export async function boot() {
 		toLoad.push(importCharacterPack(characterPack));
 	}
 	toLoad.push(lib.init.promises.js(`${lib.assetURL}character`, "rank"));
+	toLoad.push(lib.init.promises.js(`${lib.assetURL}character`, "replace"));
 
 	if (_status.javaScriptExtensions) {
 		const loadJavaScriptExtension = async (javaScriptExtension, pathArray, fileArray, onLoadArray, onErrorArray, index) => {
@@ -737,6 +729,16 @@ function initSheet(libConfig) {
 		Reflect.get(ui, "css").border_stylesheet.sheet.insertRule('#window .player>.framebg,#window #arena.long.mobile:not(.fewplayer) .player[data-position="0"]>.framebg{display:block;background-image:url("' + lib.assetURL + "theme/style/player/" + bstyle + '1.png")}', 0);
 		Reflect.get(ui, "css").border_stylesheet.sheet.insertRule('#window #arena.long:not(.fewplayer) .player>.framebg, #arena.oldlayout .player>.framebg{background-image:url("' + lib.assetURL + "theme/style/player/" + bstyle + '3.png")}', 0);
 		Reflect.get(ui, "css").border_stylesheet.sheet.insertRule(".player>.count{z-index: 3 !important;border-radius: 2px !important;text-align: center !important;}", 0);
+	}
+	game.zsOriginLineXy = game.linexy;
+	if (libConfig.zhishixian && libConfig.zhishixian != "default") {
+		var layout = libConfig.zhishixian;
+		game.saveConfig("zhishixian", layout);
+		if (layout == "default") {
+			game.linexy = game.zsOriginLineXy;
+		} else {
+			game.linexy = game["zs" + layout + "LineXy"];
+		}
 	}
 	if (libConfig.control_style && libConfig.control_style != "default" && libConfig.control_style != "custom") {
 		var str = "";
@@ -847,6 +849,7 @@ async function loadConfig() {
 async function loadCss() {
 	Reflect.set(ui, "css", {
 		menu: await lib.init.promises.css(lib.assetURL + "layout/default", "menu"),
+		newmenu: await lib.init.promises.css(lib.assetURL + "layout/default", "newmenu"),
 		default: await lib.init.promises.css(lib.assetURL + "layout/default", "layout"),
 	});
 }
@@ -859,7 +862,7 @@ async function loadCss() {
  * @deprecated
  * @return {Promise<void>}
  */
-async function onWindowReady() { }
+async function onWindowReady() {}
 
 function setBackground() {
 	let htmlbg = localStorage.getItem(lib.configprefix + "background");
@@ -923,7 +926,7 @@ async function setOnError() {
 		const reg = /[^\d.]/;
 		const match = version.match(reg) != null;
 		str += "\n" + `${match ? "游戏" : "无名杀"}版本: ${version || "未知版本"}`;
-		if (match) str += "\n⚠️您使用的游戏代码不是源于libccy/noname无名杀官方仓库，请自行寻找您所使用的游戏版本开发者反馈！";
+		if (match) str += "\n⚠️您使用的游戏代码不是源于libnoname/noname无名杀官方仓库，请自行寻找您所使用的游戏版本开发者反馈！";
 		if (_status && _status.event) {
 			let evt = _status.event;
 			str += `\nevent.name: ${evt.name}\nevent.step: ${evt.step}`;
@@ -964,7 +967,11 @@ async function setOnError() {
 		if (errorReporter) game.print(errorReporter.report(str + "\n代码出现错误"));
 		else {
 			if (typeof line == "number" && (typeof Reflect.get(game, "readFile") == "function" || location.origin != "file://")) {
-				const createShowCode = function (lines) {
+				/**
+				 * @param { string[] } lines 代码分割行数
+				 * @param { number } lines 代码报错行数
+				 */
+				const createShowCode = function (lines, line) {
 					let showCode = "";
 					if (lines.length >= 10) {
 						if (line > 4) {
@@ -981,22 +988,11 @@ async function setOnError() {
 					}
 					return showCode;
 				};
-				//协议名须和html一致(网页端防跨域)，且文件是js
-				if (typeof src == "string" && src.startsWith(location.protocol) && src.endsWith(".js")) {
-					//获取代码
-					const codes = lib.init.reqSync("local:" + decodeURI(src).replace(lib.assetURL, "").replace(winPath, ""));
-					if (codes) {
-						const lines = codes.split("\n");
-						str += "\n" + createShowCode(lines);
-						str += "\n-------------";
-					}
-				}
-				//解析parsex里的content fun内容(通常是技能content)
-				// @ts-ignore
-				else if (
+				// 解析step content的错误
+				if (
 					err &&
 					err.stack &&
-					["at Object.eval [as content]", "at Proxy.content"].some(str => {
+					["at GameEvent.eval (eval at packStep", "at StepParser.eval (eval at packStep"].some(str => {
 						let stackSplit1 = err.stack.split("\n")[1];
 						if (stackSplit1) {
 							return stackSplit1.trim().startsWith(str);
@@ -1004,10 +1000,25 @@ async function setOnError() {
 						return false;
 					})
 				) {
-					const codes = _status.event.content;
+					// @ts-ignore
+					const codes = _status.event.content.originals[_status.event.step];
 					if (typeof codes == "function") {
-						const lines = codes.toString().split("\n");
-						str += "\n" + createShowCode(lines);
+						const regex = /<anonymous>:(\d+):\d+/;
+						const match = err.stack.split("\n")[1].match(regex);
+						if (match) {
+							const lines = codes.toString().split("\n");
+							str += "\n" + createShowCode(lines, Number(match[1]));
+							str += "\n-------------";
+						}
+					}
+				}
+				// 协议名须和html一致(网页端防跨域)，且文件是js
+				else if (typeof src == "string" && src.startsWith(location.protocol) && src.endsWith(".js")) {
+					//获取代码
+					const codes = lib.init.reqSync("local:" + decodeURI(src).replace(lib.assetURL, "").replace(winPath, ""));
+					if (codes) {
+						const lines = codes.split("\n");
+						str += "\n" + createShowCode(lines, line);
 						str += "\n-------------";
 					}
 				}

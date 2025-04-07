@@ -1505,7 +1505,7 @@ div:not(.handcards) > .card > .info > span,
 }
 .buttons.smallzoom {
 	display: block;
-	zoom: 0.65;
+	/* zoom: 0.65; */
 }
 .buttons .card.button > .name {
 	transform: scale(0.8);
@@ -1628,7 +1628,7 @@ div:not(.handcards) > .card > .info > span,
 .mark-container.marks > .card > .background.skillmark,
 .mark-container.marks > .card.fakemark.fullborder > .background {
 	padding-top: calc(17px / 2) !important;
-	zoom: 2;
+	/* zoom: 2; */
 }
 .mark-container.marks > .card.overflowmark {
 	overflow: visible;
@@ -4678,6 +4678,20 @@ div[data-decoration="bronze"]::after {
 .player {
 	top: 47px;
 	left: 14px;
+}
+.cardsetion {
+	left: 1px;
+	width: calc(100% - 2px);
+	color: #fff;
+	text-shadow: 1px 1px black;
+	font-size: 15px;
+	bottom: 9%;
+	text-align: center;
+	z-index: 2;
+	pointer-events: none;
+}
+.card.tempname.tempimage {
+	opacity: 1 !important;
 }
 .card .wunature {
 	top: 74px;

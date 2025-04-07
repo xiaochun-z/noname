@@ -1,3 +1,7 @@
+:root {
+    --tip-display: none;
+}
+
 /* addNewRow的对话框的样式 */
 .dialog.addNewRow {
     --bgColor: #2f2f3557;
@@ -89,7 +93,8 @@
 }
 
 .popupContainer.deckMonitor .deckMonitor {
-    --bgColor: rgb(87 151 164);
+    --bgColor: #45362c;
+    border: 3px solid rgb(213 194 179);
     width: 80%;
     height: 75%;
     background-color: var(--bgColor);
@@ -129,7 +134,8 @@
     bottom: 0%;
     display: flex;
     justify-content: space-between;
-    background: #59bac4;
+    background: #45362c;
+    border: 2px solid #594d41;
     padding: 5px;
     box-sizing: border-box;
     /* 滚动方案开启，压缩方案关闭 */
@@ -141,7 +147,7 @@
 }
 
 .popupContainer.deckMonitor .deckMonitor .contentContainer .columnContainer {
-    background-color: #9137c0;
+    background-color: #c2b597;
     height: 100%;
     flex-grow: 1;
     flex-shrink: 1;
@@ -159,12 +165,13 @@
 .popupContainer.deckMonitor .deckMonitor .contentContainer .columnContainer .subtitle {
     width: 100%;
     text-align: center;
+    color: black;
     flex-grow: 0;
     height: 10%;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 1.2em;
+    font-size: 1.3em;
     flex-shrink: 0;
     overflow: scroll;
 }
@@ -189,7 +196,7 @@
 
 .popupContainer.deckMonitor .deckMonitor .contentContainer .columnContainer .itemContainer .item {
 
-    background-color: #2f2e2e;
+    background-color: #45362c;
     display: flex;
     width: 96%;
     margin-top: 4px;
@@ -244,7 +251,7 @@
     width: 100%;
     bottom: max(48%, var(--bottom, 46%));
     height: fit-content;
-    display: flex;
+    display: var(--tip-display);
     flex-flow: column nowrap;
     justify-content: flex-start;
     z-index: 2;

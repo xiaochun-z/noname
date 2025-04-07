@@ -183,7 +183,7 @@ const skills = {
 						const event = get.event();
 						if (event.filterCard({ name: "sha" }, player, event)) {
 							if (
-								!player.hasShan() &&
+								!player.hasSha() &&
 								!game.hasPlayer(function (current) {
 									return player.canUse("sha", current) && current.hp == 1 && get.effect(current, { name: "sha" }, player, player) > 0;
 								})
@@ -196,8 +196,8 @@ const skills = {
 					respondSha: true,
 					respondShan: true,
 					skillTagFilter(player, tag, arg) {
+						if (arg === "respond") return false;
 						if (!player.hasMark("dddxiaxing")) return false;
-						if (arg != "use") return false;
 					},
 					result: {
 						player: 1,
@@ -518,13 +518,13 @@ const skills = {
 						}
 						return 0.1;
 					},
+					log: false,
 					precontent() {
 						"step 0";
 						player.logSkill("dddshilie");
 						player.addTempSkill("dddshilie_used");
 						var cards = event.result.cards.slice();
 						player.addShownCards(cards, "visible_dddshilie");
-						delete event.result.skill;
 						player.showCards(cards, get.translation(player) + "发动了【示烈】");
 						if (
 							cards
@@ -653,55 +653,54 @@ const skills = {
 	},
 	dddqiaoduan: {
 		trigger: { global: "linkAfter" },
-		direct: true,
 		usable: 1,
 		filter(event, player) {
-			var num = game.countPlayer(current => current.isLinked());
+			const num = game.countPlayer(current => current.isLinked());
 			if (event.player.isLinked()) {
 				return player.countCards("he") >= num && game.hasPlayer(current => current.isDamaged());
 			} else {
 				return num > 0;
 			}
 		},
-		content() {
-			"step 0";
+		async cost(event, trigger, player) {
+			const num = game.countPlayer(current => current.isLinked());
+			const { skill } = event;
 			if (trigger.player.isLinked()) {
-				var num = game.countPlayer(current => current.isLinked());
-				player.chooseCardTarget({
-					prompt: get.prompt("dddqiaoduan"),
-					prompt2: "操作提示：选择" + get.cnNumber(num) + "张牌和一名已受伤的角色。将这些牌置于牌堆底（先选择的在上），然后该角色回复1点体力。",
-					filterCard: true,
-					selectCard: num,
-					filterTarget: (card, player, target) => target.isDamaged(),
-					ai1: card => 5 - get.value(card),
-					ai2: target => {
-						var player = _status.event.player;
-						return get.recoverEffect(target, player, player);
-					},
-				});
-			} else event.goto(2);
-			"step 1";
-			if (result.bool) {
-				player.logSkill("dddqiaoduan", result.targets[0]);
-				player.loseToDiscardpile(result.cards, ui.cardPile);
-				result.targets[0].recover();
-			} else player.storage.counttrigger.dddqiaoduan--;
-			event.finish();
-			"step 2";
-			var num = game.countPlayer(current => current.isLinked());
-			player.chooseTarget(get.prompt("dddqiaoduan"), [1, num], "令至多" + get.cnNumber(num) + "名角色各摸一张牌").set("ai", function (target) {
-				var player = _status.event.player;
-				var att = get.attitude(player, target) / Math.sqrt(1 + target.countCards("h"));
-				if (target.hasSkillTag("nogain")) att /= 10;
-				return att;
-			});
-			"step 3";
-			if (result.bool) {
-				var targets = result.targets.sortBySeat();
-				player.logSkill("dddqiaoduan", targets);
-				game.asyncDraw(targets);
-				game.delayex();
-			} else player.storage.counttrigger.dddqiaoduan--;
+				event.result = await player
+					.chooseCardTarget({
+						prompt: get.prompt(skill),
+						prompt2: `操作提示：选择${get.cnNumber(num)}张牌和一名已受伤的角色。将这些牌置于牌堆底（先选择的在上），然后该角色回复1点体力。`,
+						filterCard: true,
+						selectCard: num,
+						filterTarget: (card, player, target) => target.isDamaged(),
+						ai1: card => 5 - get.value(card),
+						ai2: target => {
+							const player = get.player();
+							return get.recoverEffect(target, player, player);
+						},
+					})
+					.forResult();
+			} else {
+				event.result = await player
+					.chooseTarget(get.prompt(skill), [1, num], `令至多${get.cnNumber(num)}名角色各摸一张牌`)
+					.set("ai", target => {
+						const player = get.player();
+						let att = get.attitude(player, target) / Math.sqrt(1 + target.countCards("h"));
+						if (target.hasSkillTag("nogain")) att /= 10;
+						return att;
+					})
+					.forResult();
+			}
+		},
+		async content(event, trigger, player) {
+			const { targets, cards } = event;
+			if (cards?.length) {
+				await player.loseToDiscardpile(cards, ui.cardPile);
+				await targets[0].recover();
+			} else {
+				await game.asyncDraw(targets.sortBySeat());
+				await game.delayex();
+			}
 		},
 	},
 	//孙亮
@@ -1085,39 +1084,30 @@ const skills = {
 			dialog(event, player) {
 				return ui.create.dialog(
 					"并肩",
-					// [[
-					// 	[2,'调整至2张'],
-					// 	[4,'调整至4张']
-					// ],'tdnodes'],
 					[["sha", "shan"], "vcard"],
 					"hidden"
 				);
 			},
-			// select:2,
 			filter(button, player) {
 				if (ui.selected.buttons.length) {
 					if (typeof button.link == typeof ui.selected.buttons[0].link) return false;
 				}
-				// if(typeof button.link=='number'){
-				// 	return button.link!=player.countCards('h');
-				// }
 				return _status.event.getParent().filterCard({
 					name: button.link[2],
 					isCard: true,
 				});
 			},
 			check(button) {
-				// if(typeof button.link=='number') return button.link;
 				return 1;
 			},
 			backup(links, player) {
-				// if(typeof links[0]=='number') links.reverse();
 				var skill = {
 					viewAs: {
 						name: links[0][2],
 						suit: "none",
 						number: null,
 						isCard: true,
+						log: false,
 					},
 				};
 				var num = 2 - player.countCards("h");
@@ -1140,7 +1130,6 @@ const skills = {
 				return skill;
 			},
 			prompt(links, player) {
-				// if(typeof links[0]=='number') links.reverse();
 				var num = 2 - player.countCards("h");
 				if (num > 0) {
 					return "摸" + get.cnNumber(num) + "张牌并视为使用" + get.translation(links[0][2]);
@@ -1155,13 +1144,10 @@ const skills = {
 				if (player.countCards("h") < 4) return get.order({ name: "sha" }, player) + 0.2;
 				return 1;
 			},
-			result: {
-				player: 1,
-			},
+			result: { player: 1 },
 		},
 		content_draw() {
 			"step 0";
-			delete event.result.skill;
 			player.logSkill("dddbingjian");
 			player.draw(lib.skill.dddbingjian_backup.draw);
 			player.addTempSkill("dddbingjian_used");
@@ -1180,7 +1166,6 @@ const skills = {
 		},
 		content_discard() {
 			"step 0";
-			delete event.result.skill;
 			player.logSkill("dddbingjian");
 			player.discard(event.result.cards);
 			event.num = event.result.cards.length;
@@ -1212,7 +1197,6 @@ const skills = {
 		},
 		content_draw_old() {
 			"step 0";
-			delete event.result.skill;
 			player.logSkill("dddbingjian");
 			player.addTempSkill("dddbingjian_round", "roundStart");
 			player.draw(lib.skill.dddbingjian_backup.draw);
@@ -1233,7 +1217,6 @@ const skills = {
 		},
 		content_discard_old() {
 			"step 0";
-			delete event.result.skill;
 			player.logSkill("dddbingjian");
 			player.discard(event.result.cards);
 			event.result.card = {
@@ -1282,9 +1265,7 @@ const skills = {
 					},
 				},
 				mark: true,
-				intro: {
-					content: "本轮内不能使用或打出$",
-				},
+				intro: { content: "本轮内不能使用或打出$" },
 			},
 			used: {
 				charlotte: true,
@@ -2792,6 +2773,7 @@ const skills = {
 					viewAs: get.autoViewAs(links[0]),
 					filterCard: () => false,
 					selectCard: -1,
+					log: false,
 					precontent() {
 						"step 0";
 						var card = lib.skill["dddfusi_global_backup"].card;
@@ -2800,7 +2782,6 @@ const skills = {
 						event.source = get.owner(card);
 						if (!event.result.card.storage) event.result.card.storage = {};
 						event.result.card.storage._dddfusi_owner = event.source;
-						delete event.result.skill;
 						player.logSkill("dddfusi_global", event.source);
 						if (player.hasSkill("dddfusi_allowed")) event.finish();
 						"step 1";
@@ -2979,25 +2960,16 @@ const skills = {
 					var storage = player.getStorage("dddchashi");
 					if (!storage || !storage.length) return false;
 					if (event.player != storage[1] || !event.player.isIn()) return false;
-					// if(!player.getCards('he').includes(storage[0])||!storage[0].hasGaintag('dddchashi')) return false;
 					if (get.suit(event.card) != get.suit(storage[0]) && get.type2(event.card) != get.type2(storage[0])) return false;
-					// var evt=event.getParent('phaseUse');
-					// if(evt.player)
-					// if(event.player.getHistory('useCard',function(evtx){
-					// 	return evtx.getParent('phaseUse')==evt;
-					// }).indexOf(event)!=0) return false;
 					return true;
 				},
 				content() {
 					var storage = player.getStorage("dddchashi");
-					// storage[1].gain(storage[0],player,'give');
-					// player.draw();
 					game.asyncDraw([player, storage[1]].sortBySeat(_status.currentPhase));
 					player.removeSkill("dddchashi_effect");
 				},
 				onremove(player, storage) {
 					delete player.storage["dddchashi"];
-					// player.removeGaintag('dddchashi');
 				},
 			},
 			ai: {
@@ -3012,7 +2984,6 @@ const skills = {
 		},
 		content() {
 			player.draw(2);
-			// player.addTempSkill('dddqice_effect');
 			player.setStorage("dddqice", true);
 			player
 				.when("useCard1")
@@ -3071,8 +3042,8 @@ const skills = {
 		trigger: { global: "gameDrawBegin" },
 		forced: true,
 		content() {
-			var me = player;
-			var numx = trigger.num;
+			const me = player;
+			const numx = trigger.num;
 			trigger.num =
 				typeof numx == "function"
 					? function (player) {
@@ -3080,16 +3051,18 @@ const skills = {
 								return 3 * numx(player);
 							}
 							return numx(player);
-						}
+					  }
 					: function (player) {
 							if (player == me) {
 								return 3 * numx;
 							}
 							return numx;
-						};
+					  };
 			player._dddmiaoxing = true;
+			const effect = "dddmiaoxing_out";
+			player.addTempSkill(effect, { player: `${effect}After` });
 		},
-		group: ["dddmiaoxing_out", "dddmiaoxing_balance"],
+		group: "dddmiaoxing_balance",
 		marktext: "水",
 		intro: {
 			name: "水相",
@@ -3097,110 +3070,114 @@ const skills = {
 				return "" + player.getExpansions("dddmiaoxing_1").length + "/" + player.getExpansions("dddmiaoxing_2").length;
 			},
 			mark(dialog, content, player) {
-				var content1 = player.getExpansions("dddmiaoxing_1");
-				var content2 = player.getExpansions("dddmiaoxing_2");
-				if ((content1 && content1.length) || (content2 && content2.length)) {
+				const content1 = player.getExpansions("dddmiaoxing_1");
+				const content2 = player.getExpansions("dddmiaoxing_2");
+				if (content1?.length || content2?.length) {
 					if (player == game.me || player.isUnderControl()) {
-						dialog.addText("第一组");
-						dialog.addAuto(content1);
-						dialog.addText("第二组");
-						dialog.addAuto(content2);
+						if (content1?.length) {
+							dialog.addText("第一组");
+							dialog.addAuto(content1);
+						}
+						if (content2?.length) {
+							dialog.addText("第二组");
+							dialog.addAuto(content2);
+						}
 					} else {
-						return "第一组“水相”有" + get.cnNumber(content1.length) + "张；" + "第二组“水相”有" + get.cnNumber(content2.length) + "张";
+						let str = "";
+						if (content1?.length) str += `第一组“水相”有${get.cnNumber(content1.length)}张`;
+						if (content1?.length && content2?.length) str += `；`;
+						if (content2?.length) str += `第二组“水相”有${get.cnNumber(content2.length)}张`;
+						return str;
 					}
 				}
 			},
 		},
 		subSkill: {
 			out: {
-				trigger: {
-					global: "phaseBefore",
+				charlotte: true,
+				trigger: { global: "phaseBefore", player: "enterGame" },
+				filter(event, player) {
+					return (event.name != "phase" || game.phaseNumber == 0) && player._dddmiaoxing;
 				},
 				forced: true,
-				filter(event, player) {
-					return game.phaseNumber == 0 && player._dddmiaoxing;
-				},
-				content() {
-					"step 0";
+				popup: false,
+				async content(event, trigger, player) {
 					delete player._dddmiaoxing;
-					var cardsx = player.getCards("h"),
-						num = Math.ceil(cardsx.length / 3);
-					var cards = [cardsx.slice(0, num), cardsx.slice(num, 2 * num), cardsx.slice(2 * num)];
-					event.cards = cards;
-					player.chooseControl("第一组", "第二组", "第三组").set("dialog", ["淼形：选择一组作为你的手牌", '<span class="text center">第一组</span>', cards[0], '<span class="text center">第二组</span>', cards[1], '<span class="text center">第三组</span>', cards[2]]);
-					"step 1";
-					event.cards.splice(result.index, 1);
-					var cards = event.cards;
-					player.addToExpansion(cards[0], player, "giveAuto", false).gaintag.add("dddmiaoxing_1");
-					player.addToExpansion(cards[1], player, "giveAuto").gaintag.add("dddmiaoxing_2");
-					player.markSkill("dddmiaoxing");
+					const hs = player.getCards("h");
+					if (!hs.length) return;
+					const num = Math.ceil(hs.length / 3);
+					const cards = [hs.slice(0, num), hs.slice(num, 2 * num), hs.slice(2 * num)];
+					const choices = [],
+						dialog = ["淼形：选择一组作为你的手牌"];
+					for (let i = 0; i < 3; i++) {
+						const str = `第${get.cnNumber(i + 1, true)}组`;
+						if (cards[i]?.length) {
+							choices.push(str);
+							dialog.addArray([`<span class="text center">${str}</span>`, cards[i]]);
+						}
+					}
+					const { result } = await player.chooseControl(choices).set("dialog", dialog);
+					cards.splice(result.index, 1);
+					let index = 0;
+					while (index < 2) {
+						const next = player.addToExpansion(cards[index], player, "giveAuto", false);
+						next.gaintag.add(`dddmiaoxing_${index + 1}`);
+						await next;
+						player.markSkill("dddmiaoxing");
+						index++;
+					}
 				},
 			},
 			balance: {
 				trigger: { player: "phaseDrawAfter" },
-				forced: true,
-				content() {
-					"step 0";
-					var forced = player.getExpansions("dddmiaoxing_1").length != player.countCards("h") && player.getExpansions("dddmiaoxing_2").length != player.countCards("h");
-					var next = player.chooseButton([1, 2], ["淼形：将至少一组“水相”调整至与手牌数相等", [["第一组", "第二组"], "tdnodes"], '<span class="text center">第一组</span>', player.getExpansions("dddmiaoxing_1"), '<span class="text center">第二组</span>', player.getExpansions("dddmiaoxing_2")], forced);
+				filter(event, player) {
+					return ["dddmiaoxing_1", "dddmiaoxing_2"].some(tag => player.countExpansions(tag) != player.countCards("h"));
+				},
+				locked: true,
+				async cost(event, trigger, player) {
+					const forced = player.getExpansions("dddmiaoxing_1").length != player.countCards("h") && player.getExpansions("dddmiaoxing_2").length != player.countCards("h");
+					const dialog = ["淼形：将至少一组“水相”调整至与手牌数相等", [[0, 1].map(i => [i, `第${get.cnNumber(i + 1)}组`]), "tdnodes"]];
+					for (let i = 0; i < 2; i++) {
+						const str = `第${get.cnNumber(i + 1, true)}组`;
+						const cards = player.getExpansions(`dddmiaoxing_${i + 1}`);
+						if (cards.length) dialog.addArray([`<span class="text center">${str}</span>`, cards]);
+					}
+					const next = player.chooseButton([1, 2], forced).set("createDialog", dialog);
 					next.set("filterButton", button => {
-						var type = typeof button.link;
-						return type != "object";
+						const player = get.player();
+						const type = typeof button.link;
+						return type == "number" && player.countExpansions(`dddmiaoxing_${button.link + 1}`) != player.countCards("h");
 					});
 					next.set("ai", button => {
-						var player = _status.event.player;
-						var ind = ["第一组", "第二组"].indexOf(button.link) + 1;
-						if (ind == -1) return -100;
-						return player.countCards("h") - player.getExpansions("dddmiaoxing_" + ind).length;
+						const player = get.player();
+						const ind = button.link + 1;
+						return player.countCards("h") - player.countExpansions(`dddmiaoxing_${ind}`);
 					});
-					"step 1";
-					if (result.bool) {
-						var choices = result.links;
-						event.choices = choices;
-						// var hs=result.moved[0],sx1=result.moved[1],sx2=result.moved[2];
-						// hs.removeArray(player.getCards('h'));
-						// sx1.removeArray(player.getExpansions('dddmiaoxing_1'));
-						// sx2.removeArray(player.getExpansions('dddmiaoxing_2'));
-						// if(!hs.length&&!sx1.length&&!sx2.length) return;
-						// player.gain(hs,'gain2');
-						// player.addToExpansion(sx1,player,'giveAuto').gaintag.add('dddmiaoxing_1');
-						// player.addToExpansion(sx2,player,'giveAuto').gaintag.add('dddmiaoxing_2');
-					} else event.finish();
-					"step 2";
-					if (event.choices.includes("第一组")) {
-						var del = player.countCards("h") - player.getExpansions("dddmiaoxing_1").length;
-						if (del >= 0) {
-							if (del != 0) player.addToExpansion(get.cards(del), player, "draw").gaintag.add("dddmiaoxing_1");
-							event.goto(4);
-						} else {
-							player.chooseButton(["淼形：移除" + get.cnNumber(-del) + "张第一组的“水相”", player.getExpansions("dddmiaoxing_1")], -del, true).set("ai", button => {
+					const { result } = await next;
+					event.result = {
+						bool: result?.bool,
+						cost_data: result?.links,
+					};
+				},
+				async content(event, trigger, player) {
+					const { cost_data: links } = event;
+					for (const link of links.sort()) {
+						const tag = `dddmiaoxing_${link + 1}`;
+						const expansions = player.getExpansions(tag);
+						const del = player.countCards("h") - expansions.length;
+						if (del == 0) continue;
+						else if (del > 0) {
+							const next = player.addToExpansion(get.cards(del), player, "draw");
+							next.gaintag.add(tag);
+							await next;
+						} else if (expansions.length) {
+							const { result } = await player.chooseButton([`淼形：移除${get.cnNumber(-del)}张第${get.cnNumber(link + 1)}组的“水相”`, expansions], -del, true).set("ai", button => {
 								return -get.buttonValue(button);
 							});
+							if (result?.bool && result?.links?.length) await player.loseToDiscardpile(result.links);
 						}
+						player.markSkill("dddmiaoxing");
 					}
-					"step 3";
-					if (result.bool) {
-						player.loseToDiscardpile(result.links);
-					}
-					"step 4";
-					player.markSkill("dddmiaoxing");
-					if (event.choices.includes("第二组")) {
-						var del = player.countCards("h") - player.getExpansions("dddmiaoxing_2").length;
-						if (del >= 0) {
-							if (del != 0) player.addToExpansion(get.cards(del), player, "draw").gaintag.add("dddmiaoxing_2");
-							event.goto(6);
-						} else {
-							player.chooseButton(["淼形：移除" + get.cnNumber(-del) + "张第二组的“水相”", player.getExpansions("dddmiaoxing_2")], -del, true).set("ai", button => {
-								return -get.buttonValue(button);
-							});
-						}
-					}
-					"step 5";
-					if (result.bool) {
-						player.loseToDiscardpile(result.links);
-					}
-					"step 6";
-					player.markSkill("dddmiaoxing");
 				},
 			},
 		},
@@ -3209,22 +3186,30 @@ const skills = {
 		audio: 2,
 		trigger: { player: ["useCardAfter", "respondAfter"] },
 		filter(event, player) {
-			return get.type(event.card) == "basic" && !player.hasSkill("dddfushi_used");
+			return get.type(event.card) == "basic" && (player.countCards("h") || ["dddmiaoxing_1", "dddmiaoxing_2"].some(tag => player.countExpansions(tag)));
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseControl("第一组", "第二组", "cancel2")
-				.set("dialog", [get.prompt("dddfushi"), '<span class="text center">用所有手牌交换一组“水相”</span>', '<span class="text center">第一组</span>', player.getExpansions("dddmiaoxing_1"), '<span class="text center">第二组</span>', player.getExpansions("dddmiaoxing_2")])
+		usable: 1,
+		async cost(event, trigger, player) {
+			const choices = [];
+			if (player.countExpansions("dddmiaoxing_1") || player.countCards("h")) choices.push("第一组");
+			if (player.countExpansions("dddmiaoxing_2") || player.countCards("h")) choices.push("第二组");
+			const dialog = [get.prompt(event.skill), '<span class="text center">用所有手牌交换一组“水相”</span>'];
+			for (let i = 0; i < 2; i++) {
+				const str = `第${get.cnNumber(i + 1, true)}组`;
+				const cards = player.getExpansions(`dddmiaoxing_${i + 1}`);
+				if (cards.length) dialog.addArray([`<span class="text center">${str}</span>`, cards]);
+			}
+			const { result } = await player
+				.chooseControl(choices, "cancel2")
+				.set("dialog", dialog)
 				.set("ai", () => {
-					return _status.event.choice;
+					return get.event("choice");
 				})
 				.set(
 					"choice",
-					(function () {
-						var fn = player == _status.currentPhase ? "useful" : "value";
-						var list = [
+					(() => {
+						const fn = player == _status.currentPhase ? "useful" : "value";
+						const list = [
 							[1, player.getExpansions("dddmiaoxing_1").reduce((p, c) => p + get[fn](c), 0)],
 							[2, player.getExpansions("dddmiaoxing_2").reduce((p, c) => p + get[fn](c), 0)],
 							[3, player.getCards("h").reduce((p, c) => p + get[fn](c), 0)],
@@ -3232,59 +3217,84 @@ const skills = {
 						return list[0][0] - 1;
 					})()
 				);
-			"step 1";
-			if (result.control == "cancel2") event.finish();
-			else {
-				player.logSkill("dddfushi");
-				player.addTempSkill("dddfushi_used");
-				var index = result.index + 1;
-				player.addToExpansion(player.getCards("h"), player, "giveAuto").gaintag.add("dddmiaoxing_" + index);
-				player.gain(player.getExpansions("dddmiaoxing_" + index), "draw");
-				game.log(player, "获得了" + get.cnNumber(player.getExpansions("dddmiaoxing_" + index).length) + "张“水相”");
+			event.result = {
+				bool: result?.control !== "cancel2",
+				cost_data: result?.index,
+			};
+		},
+		async content(event, trigger, player) {
+			const index = event.cost_data + 1;
+			const tag = `dddmiaoxing_${index}`;
+			const gain = player.getExpansions(tag);
+			if (player.countCards("h")) {
+				const next = player.addToExpansion(player.getCards("h"), player, "giveAuto");
+				next.gaintag.add(tag);
+				await next;
 			}
-			"step 2";
+			if (gain.length) {
+				await player.gain(gain, "draw");
+				game.log(player, `获得了${get.cnNumber(gain.length)}张“水相”`);
+			}
 			player.markSkill("dddmiaoxing");
-			player
+			const targets = game.filterPlayer(current => current.hasSex("male"));
+			if (!targets.length) return;
+			let result;
+			result = await player
 				.chooseTarget("是否令一名男性角色选择是否交换“水相”？", (card, player, target) => {
-					return target.hasSex("male");
+					if (!target.hasSex("male")) return false;
+					return target.countCards("h") || ["dddmiaoxing_1", "dddmiaoxing_2"].some(tag => player.countExpansions(tag));
 				})
-				.set("ai", target => get.attitude(_status.event.player, target));
-			"step 3";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
+				.set("ai", target => {
+					const player = get.player();
+					return get.attitude(player, target);
+				})
+				.forResult();
+			if (result?.bool && result?.targets?.length) {
+				const {
+					targets: [target],
+				} = result;
 				player.line(target);
-				target
-					.chooseControl("第一组", "第二组", "cancel2")
-					.set("dialog", ["浮世：是否用所有手牌交换一组“水相”？", '<span class="text center">第一组</span>', player.getExpansions("dddmiaoxing_1"), '<span class="text center">第二组</span>', player.getExpansions("dddmiaoxing_2")])
+				const choices = [];
+				if (player.countExpansions("dddmiaoxing_1") || target.countCards("h")) choices.push("第一组");
+				if (player.countExpansions("dddmiaoxing_2") || target.countCards("h")) choices.push("第二组");
+				if (!choices.length) return;
+				const dialog = [get.prompt(event.name), '<span class="text center">用所有手牌交换一组“水相”</span>'];
+				for (let i = 0; i < 2; i++) {
+					const str = `第${get.cnNumber(i + 1, true)}组`;
+					const cards = player.getExpansions(`dddmiaoxing_${i + 1}`);
+					if (cards.length) dialog.addArray([`<span class="text center">${str}</span>`, cards]);
+				}
+				result = await target
+					.chooseControl(choices, "cancel2")
+					.set("dialog", dialog)
 					.set("ai", () => {
-						return _status.event.choice;
+						return get.event("choice");
 					})
 					.set(
 						"choice",
-						(function () {
-							var fn = target == _status.currentPhase ? "useful" : "value";
-							var list = [
+						(() => {
+							const fn = target == _status.currentPhase ? "useful" : "value";
+							const list = [
 								[1, player.getExpansions("dddmiaoxing_1").reduce((p, c) => p + get[fn](c), 0)],
 								[2, player.getExpansions("dddmiaoxing_2").reduce((p, c) => p + get[fn](c), 0)],
 								[3, target.getCards("h").reduce((p, c) => p + get[fn](c), 0)],
 							].sort((a, b) => b[1] - a[1]);
-							return list[0] - 1;
+							return list[0][0] - 1;
 						})()
-					);
-			} else event.finish();
-			"step 4";
-			if (result.control == "cancel2") event.finish();
-			else {
-				var index = result.index + 1;
-				player.addToExpansion(target.getCards("h"), target, "giveAuto").gaintag.add("dddmiaoxing_" + index);
-				target.gain(player.getExpansions("dddmiaoxing_" + index), player, "giveAuto");
+					)
+					.forResult();
+				if (result?.control == "cancel2" || typeof result?.index != "number") return;
+				const index = result.index + 1;
+				const tag = `dddmiaoxing_${index}`;
+				const gain = player.getExpansions(tag);
+				if (target.countCards("h")) {
+					const next = player.addToExpansion(target.getCards("h"), player, "giveAuto");
+					next.gaintag.add(tag);
+					await next;
+				}
+				if (gain.length) await target.gain(gain, player, "giveAuto");
+				player.markSkill("dddmiaoxing");
 			}
-			"step 5";
-			player.markSkill("dddmiaoxing");
-		},
-		subSkill: {
-			used: { charlotte: true },
 		},
 	},
 	//赵昂
@@ -3791,7 +3801,6 @@ const skills = {
 			"step 1";
 			var send = function (targets) {
 				var next = game.createEvent("dddfenye_choose", false);
-				// next.player=game.me;
 				next.targets = targets;
 				next.ai = event.ai;
 				next.fixedResult = event.fixedResult;
@@ -4521,13 +4530,13 @@ const skills = {
 								return 3 + numx(player);
 							}
 							return numx(player);
-						}
+					  }
 					: function (player) {
 							if (player == me) {
 								return 3 + numx;
 							}
 							return numx;
-						};
+					  };
 		},
 		mod: {
 			attackRange: (player, num) => num + 3,
@@ -4537,10 +4546,6 @@ const skills = {
 			remove: {
 				trigger: { player: "dying" },
 				forced: true,
-				// direct:true,
-				// filter(event,player){
-				// 	return event.source&&event.source.isIn()&&event.source.getEquips(1).length>0;
-				// },
 				content() {
 					player.removeSkills("dddxiaoxing");
 				},
@@ -4687,7 +4692,6 @@ const skills = {
 		audio: 2,
 		zhuSkill: true,
 		trigger: {
-			// global:['discardBegin','drawBegin'],
 			global: "dieAfter",
 		},
 		filter(event, player) {
@@ -4712,9 +4716,13 @@ const skills = {
 			"step 0";
 			trigger.source.chooseCard("是否响应" + get.translation(player) + "的【附义】？", "弃置两张牌，令其获得其武将牌上的一个技能", "he", 2, lib.filter.cardDiscardable).set("ai", () => {
 				let zhu = _status.event.getParent().player;
-				if (!zhu.getStockSkills(true, true).some(skill => {
-					return !zhu.hasSkill(skill, null, false, false);
-				}) || get.attitude(_status.event.player, zhu) <= 2) return 0;
+				if (
+					!zhu.getStockSkills(true, true).some(skill => {
+						return !zhu.hasSkill(skill, null, false, false);
+					}) ||
+					get.attitude(_status.event.player, zhu) <= 2
+				)
+					return 0;
 				return 6 - get.value(card);
 			});
 			"step 1";
@@ -5450,7 +5458,6 @@ const skills = {
 			"step 2";
 			if (!result.bool) {
 				player.line(target);
-				// player.trySkillAnimate('dddbailei_animate','dddbailei_animate',player.checkShow('dddbailei'));
 				target.damage();
 				game.delayx();
 			} else event.finish();

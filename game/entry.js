@@ -14,7 +14,7 @@ if (core === "chrome" && !isNaN(version) && version < 85) {
 	game.print(tip);
 	const redirect_tip = `您使用的浏览器或无名杀客户端内核版本过低，将在未来的版本被废弃！\n目前使用的浏览器UA信息为：\n${userAgent}\n点击“确认”以前往GitHub下载最新版无名杀客户端（可能需要科学上网）。`;
 	if (confirm(redirect_tip)) {
-		window.open("https://github.com/libccy/noname/releases/tag/chromium77-client");
+		window.open("https://github.com/libnoname/noname/releases/tag/chromium77-client");
 	}
 	*/
 	waitUpdate = game.tryUpdateClient(/** UpdateReason.UNDERSUPPORT **/ 4);
@@ -81,85 +81,97 @@ waitUpdate
 				});
 			}
 		} else {
+			const readConfig = async () => {
+				return game.promises
+					.readFileAsText("noname.config.txt")
+					.then(data => {
+						if (navigator.notification) {
+							navigator.notification.activityStart("正在导入数据", "请稍候");
+						}
+						return /** @type {Promise<void>} */ (
+							// eslint-disable-next-line no-async-promise-executor
+							new Promise(async (resolve, reject) => {
+								if (!data) return reject(new Error("没有数据内容"));
+								try {
+									data = JSON.parse(lib.init.decode(data));
+									if (!data || typeof data != "object") {
+										throw "err";
+									}
+									// @ts-ignore
+									if (lib.db && (!data.config || !data.data)) {
+										throw "err";
+									}
+								} catch (e) {
+									console.log(e);
+									if (e == "err") {
+										reject(new Error("导入文件格式不正确"));
+									} else {
+										reject(new Error("导入失败： " + e.message));
+									}
+									return;
+								}
+								// @ts-ignore
+								if (!lib.db) {
+									const noname_inited = localStorage.getItem("noname_inited");
+									const onlineKey = localStorage.getItem(lib.configprefix + "key");
+									localStorage.clear();
+									if (noname_inited) {
+										localStorage.setItem("noname_inited", noname_inited);
+									}
+									if (onlineKey) {
+										localStorage.setItem(lib.configprefix + "key", onlineKey);
+									}
+									for (let i in data) {
+										localStorage.setItem(i, data[i]);
+									}
+								} else {
+									for (let i in data.config) {
+										await game.putDB("config", i, data.config[i]);
+										lib.config[i] = data.config[i];
+									}
+									for (let i in data.data) {
+										await game.putDB("data", i, data.data[i]);
+									}
+								}
+								lib.init.background();
+								resolve();
+							})
+						);
+					})
+					.then(() => {
+						return game.promises.removeFile("noname.config.txt");
+					})
+					.then(() => {
+						alert("数据导入成功, 即将自动重启");
+						const url = new URL(location.href);
+						if (url.searchParams.get("sendUpdate")) {
+							url.searchParams.delete("sendUpdate");
+							location.href = url.toString();
+						} else {
+							location.reload();
+						}
+					})
+					.catch(e => {
+						console.log(e);
+						if (window.FileError) {
+							if (!(e instanceof window.FileError)) {
+								alert(typeof e?.message == "string" ? e.message : JSON.stringify(e));
+							} else {
+								console.error(`noname.config.txt读取失败: ${Object.keys(window.FileError).find(msg => window.FileError[msg] === e.code)}`);
+							}
+						}
+					})
+					.finally(() => {
+						if (navigator.notification) {
+							navigator.notification.activityStop();
+						}
+					});
+			};
 			let searchParams = new URLSearchParams(location.search);
 			for (let [key, value] of searchParams) {
 				// 成功导入后删除noname.config.txt
 				if (key === "sendUpdate" && value === "true") {
-					if (navigator.notification) {
-						navigator.notification.activityStart("正在导入旧版数据", "请稍候");
-					}
-					return game.promises
-						.readFileAsText("noname.config.txt")
-						.then(data => {
-							return /** @type {Promise<void>} */ (
-								// eslint-disable-next-line no-async-promise-executor
-								new Promise(async (resolve, reject) => {
-									if (!data) return reject("!data");
-									try {
-										data = JSON.parse(lib.init.decode(data));
-										if (!data || typeof data != "object") {
-											throw "err";
-										}
-										// @ts-ignore
-										if (lib.db && (!data.config || !data.data)) {
-											throw "err";
-										}
-									} catch (e) {
-										console.log(e);
-										if (e == "err") {
-											alert("导入文件格式不正确");
-											reject("导入文件格式不正确");
-										} else {
-											alert("导入失败： " + e.message);
-											reject("导入失败： " + e.message);
-										}
-										return;
-									}
-									if (navigator.notification) {
-										navigator.notification.activityStop();
-									}
-									alert("升级前的配置导入成功, 即将自动重启");
-									// @ts-ignore
-									if (!lib.db) {
-										const noname_inited = localStorage.getItem("noname_inited");
-										const onlineKey = localStorage.getItem(lib.configprefix + "key");
-										localStorage.clear();
-										if (noname_inited) {
-											localStorage.setItem("noname_inited", noname_inited);
-										}
-										if (onlineKey) {
-											localStorage.setItem(lib.configprefix + "key", onlineKey);
-										}
-										for (let i in data) {
-											localStorage.setItem(i, data[i]);
-										}
-									} else {
-										for (let i in data.config) {
-											await game.putDB("config", i, data.config[i]);
-											lib.config[i] = data.config[i];
-										}
-										for (let i in data.data) {
-											await game.putDB("data", i, data.data[i]);
-										}
-									}
-									lib.init.background();
-									resolve();
-								})
-							);
-						})
-						.then(() => {
-							return game.promises.removeFile("noname.config.txt");
-						})
-						.then(() => {
-							const url = new URL(location.href);
-							url.searchParams.delete("sendUpdate");
-							location.href = url.toString();
-						})
-						.catch(e => {
-							if (navigator.notification) {
-								navigator.notification.activityStop();
-							}
-						});
+					return readConfig();
 				}
 				// 新客户端导入扩展
 				else if (key === "importExtensionName") {
@@ -178,6 +190,7 @@ waitUpdate
 					});
 				}
 			}
+			readConfig();
 		}
 	})
 	.then(onload);

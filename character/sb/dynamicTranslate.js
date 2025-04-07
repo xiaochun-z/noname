@@ -27,18 +27,15 @@ const dynamicTranslates = {
 		str += "阴：出牌阶段限一次，你可以弃置X张与“任”颜色相同的牌并对攻击范围内的一名角色造成1点伤害（X为你与其体力值值差且X至少为1）。";
 		if (!storage) str += "</span>";
 		if (storage) str += '<span class="bluetext">';
-		str += "阳：你的回合外，一名角色使用或打出牌结算完成后，若此牌与“任”类别相同，则你可以令一名角色摸两张牌。";
+		str += "阳：你的回合外，一名角色使用或打出牌结算完成后，若此牌与“任”类别相同，则你可以令至多两名角色各摸两张牌。";
 		if (storage) str += "</span>";
 		return str;
 	},
 	sbwansha(player) {
 		const storage = player.storage.sbwansha;
 		var str = "①你的回合内，不处于濒死状态的其他角色不能使用【桃】。②一名角色进入濒死状态时，你可以观看其手牌并选择其";
-		str += storage ? "区域内" : "中";
-		str += "零至";
-		const bool = get.mode() == "identity";
-		str += storage ? (bool ? "两" : "三") : (bool ? "一" : "两");
-		str += "张牌，然后其选择一项：1.你将这些牌分配给任意名不为其的角色；2.其弃置除这些牌以外的牌。";
+		str += storage ? "区域内的" : "中";
+		str += "零至两张牌（其他角色不可见），然后其选择一项：1.你将这些牌分配给任意名不为其的角色；2.其弃置除这些牌以外的牌。";
 		return str;
 	},
 	sbweimu(player) {
@@ -47,11 +44,13 @@ const dynamicTranslates = {
 		str += storage ? "①" : "";
 		str += "当你成为黑色锦囊牌的目标时，取消之。";
 		if (storage) {
-			str += "②每轮开始时，若你上一轮成为其他角色使用牌的目标的次数不大于";
-			str += get.mode() == "identity" ? "1" : "2";
-			str +="，你从弃牌堆中随机获得一张黑色锦囊牌或防具牌。";
+			str += "②每轮开始时，若你上一轮成为其他角色使用牌的目标的次数不大于1，你从弃牌堆中随机获得一张黑色锦囊牌或防具牌。";
 		}
 		return str;
+	},
+	sbtiandu(player) {
+		if (player.storage.sbtiandu) return '转换技，出牌阶段开始时，阴：你可以弃置两张手牌，然后视为使用一张普通锦囊牌；<span class="bluetext">阳：你进行判定并获得判定牌，然后若判定结果与你本局游戏因〖天妒〗弃置的牌花色相同，你受到1点无来源伤害</span>。';
+		return '转换技，出牌阶段开始时，<span class="bluetext">阴：你可以弃置两张手牌，然后视为使用一张普通锦囊牌</span>；阳：你进行判定并获得判定牌，然后若判定结果与你本局游戏因〖天妒〗弃置的牌花色相同，你受到1点无来源伤害。';
 	},
 };
 export default dynamicTranslates;

@@ -117,8 +117,7 @@ export default () => {
 					break;
 				default:
 					if (!game.zhu.isInitFilter("noZhuSkill")) {
-						game.zhu.addSkill("feiyang");
-						game.zhu.addSkill("bahu");
+						game.zhu.addSkill(["feiyang", "bahu"]);
 					}
 			}
 			game.addGlobalSkill("doudizhu_viewHandcard");
@@ -232,8 +231,6 @@ export default () => {
 			},
 			getRoomInfo: function (uiintro) {
 				uiintro.add('<div class="text chat">双将模式：' + (lib.configOL.double_character ? "开启" : "关闭"));
-				// uiintro.add('<div class="text chat">屏蔽弱将：'+(lib.configOL.ban_weak?'开启':'关闭'));
-				// var last=uiintro.add('<div class="text chat">屏蔽强将：'+(lib.configOL.ban_strong?'开启':'关闭'));
 				if (lib.configOL.banned.length) {
 					uiintro.add('<div class="text chat">禁用武将：' + get.translation(lib.configOL.banned));
 				}
@@ -1054,7 +1051,7 @@ export default () => {
 					}
 					var chooseGroup = false;
 					if (event.chosen.length) {
-						if (lib.character[event.chosen[0]][1] == "shen") {
+						if (lib.character[event.chosen[0]][1] == "shen" || lib.character[event.chosen[0]][1] == "western") {
 							chooseGroup = true;
 						}
 					} else if (event.modchosen) {
@@ -1063,12 +1060,12 @@ export default () => {
 					} else if (result.buttons.length == 2) {
 						event.choosed = [result.buttons[0].link, result.buttons[1].link];
 						game.addRecentCharacter(result.buttons[0].link, result.buttons[1].link);
-						if (lib.character[event.choosed[0]][1] == "shen") {
+						if (lib.character[event.choosed[0]][1] == "shen" || lib.character[event.choosed[0]][1] == "western") {
 							chooseGroup = true;
 						}
 					} else {
 						event.choosed = [result.buttons[0].link];
-						if (lib.character[event.choosed[0]][1] == "shen") {
+						if (lib.character[event.choosed[0]][1] == "shen" || lib.character[event.choosed[0]][1] == "western") {
 							chooseGroup = true;
 						}
 						game.addRecentCharacter(result.buttons[0].link);
@@ -1855,7 +1852,7 @@ export default () => {
 			doudizhu_viewHandcard: "手牌可见",
 			bahu: "跋扈",
 			feiyang_info: "判定阶段开始时，若你的判定区有牌，则你可以弃置两张牌，然后弃置你判定区的所有牌。",
-			bahu_info: "锁定技，准备阶段开始时，你摸一张牌。出牌阶段，你可以多使用一张【杀】。",
+			bahu_info: "锁定技，准备阶段开始时，你摸一张牌。出牌阶段，你出【杀】次数+1。",
 			kaihei: "强易",
 			kaihei_info: "出牌阶段，你可以获得一名其他角色的至多两张牌，然后交给其等量的牌。每名角色每局游戏限一次。",
 			doudizhu_cardPile: "底牌",
@@ -1902,10 +1899,10 @@ export default () => {
 			player: {
 				getTopCards: function (num) {
 					if (typeof num != "number") num = 1;
-					if (num <= 0) num = 1;
 					var cards;
 					var player = this;
-					if (player.storage.doudizhu_cardPile && player.storage.doudizhu_cardPile.length) {
+					if (num <= 0) cards = [];
+					else if (player.storage.doudizhu_cardPile?.length) {
 						cards = player.storage.doudizhu_cardPile.randomRemove(num);
 						if (player.storage.doudizhu_cardPile.length) player.markSkill("doudizhu_cardPile");
 						else player.unmarkSkill("doudizhu_cardPile");
@@ -2359,17 +2356,15 @@ export default () => {
 			feiyang: {
 				trigger: { player: "phaseJudgeBegin" },
 				charlotte: true,
-				direct: true,
 				filter: function (event, player) {
 					return _status.mode != "online" && _status.mode != "binglin" && player == game.zhu && player.countCards("j") && player.countCards("he") > 1;
 				},
-				content: function () {
-					"step 0";
-					player
+				async cost(event, trigger, player) {
+					event.result = await player
 						.chooseToDiscard("he", 2, get.prompt("feiyang"), "弃置两张牌，然后弃置判定区里的所有牌")
 						.set("logSkill", "feiyang")
 						.set("ai", function (card) {
-							if (_status.event.goon) return 6 - get.value(card);
+							if (_status.event.goon) return 7 - get.value(card);
 							return 0;
 						})
 						.set(
@@ -2391,11 +2386,12 @@ export default () => {
 									);
 								}, "j");
 							})()
-						);
-					"step 1";
-					if (result.bool) {
-						player.discardPlayerCard(player, "j", true, player.countCards("j"));
-					}
+						)
+						.forResult();
+					event.result.skill_popup = false;
+				},
+				async content(event, trigger, player) {
+					await player.discardPlayerCard(player, "j", true, player.countCards("j"));
 				},
 			},
 			bahu: {
@@ -3037,6 +3033,7 @@ export default () => {
 				fullskin: true,
 				type: "equip",
 				subtype: "equip2",
+				cardcolor: "club",
 				skills: ["diqi_skill"],
 				destroy: "diqi_skill",
 				ai: {

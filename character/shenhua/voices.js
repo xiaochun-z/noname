@@ -1,7 +1,7 @@
 export default {
 	"#liegong_re_huangzhong1": "弓不离手，自有转机。",
 	"#liegong_re_huangzhong2": "箭阵开道，所向无敌！",
-	"#re_huangzhong:die": "真哉，老将无用矣……",
+	"#re_huangzhong:die": "把我的弓，拿来，呃。",
 	"#gzbuqu1": "还不够！",
 	"#gzbuqu2": "我绝不会倒下！",
 	"#old_zhoutai:die": "已经，尽力了……",

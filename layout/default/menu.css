@@ -156,9 +156,9 @@
 	position: relative;
 }
 
-.menu-buttons > .button {
+/* .menu-buttons > .button {
 	zoom: 0.75;
-}
+} */
 
 .menu-buttons .cardpiledelete,
 .toggle > .cardpiledelete {

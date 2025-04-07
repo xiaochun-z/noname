@@ -9,13 +9,16 @@ const characterSort = {
 	mobile_sp11: ["fuqian", "qiaozhou", "ruanhui", "sp_caosong", "sp_maojie", "wangjun", "yanpu", "mayuanyi", "xin_mamidi"],
 	mobile_sp12: ["hujinding", "lifeng", "zhaotongzhaoguang", "wangyuanji", "yanghuiyu", "liuye", "simazhao", "zhuling", "yangbiao"],
 	mobile_sp13: ["sp_pengyang", "liwei", "xin_guozhao", "qianzhao", "peixiu", "yanxiang", "xin_hansui", "yangfu"],
-	mobile_sp_default: ["mb_sp_zhenji", "mb_xianglang", "xin_wuban", "laimin", "xin_huojun", "mb_huban", "sp_jianggan", "jiangji", "zhangbu", "muludawang", "yangfeng", "mb_chengui", "baoxin"],
+	mobile_sp14: ["mb_ganfuren", "xin_huojun", "laimin", "xin_wuban", "mb_huban", "sp_jianggan", "baoxin", "mb_chengui", "muludawang", "yangfeng"],
+	mobile_sp_default: ["mb_qinghegongzhu", "mb_wangjing", "mb_sp_zhenji", "mb_xianglang", "jiangji", "zhangbu", "wuke"],
 	mobile_xlqk1: ["lingcao", "sunru", "liuzan"],
 	mobile_xlqk2: ["pangdegong", "miheng"],
 	mobile_xlqk3: ["majun", "zhengxuan", "simashi"],
 	mobile_xlqk4: ["nanhualaoxian", "shichangshi", "sunhanhua"],
 	mobile_xlqk5: ["mb_zhangfen"],
-	mobile_longxue: ["mb_simafu", "mb_wenqin", "mb_simazhou", "mb_sp_guanqiujian", "mb_caomao", "chengji", "lizhaojiaobo", "mb_wangjing", "mb_jiachong"],
+	mobile_longxue: ["mb_simazhao", "mb_simafu", "mb_wenqin", "mb_simazhou", "mb_sp_guanqiujian", "mb_caomao", "chengji", "lizhaojiaobo", "mb_jiachong"],
+	mobile_bingshiPack: ["pot_taishici", "pot_dongzhao", "pot_lougui", "pot_yuji", "mb_xiahoushang", "pangxi", "sunsháo", "mb_yanghong", "pot_chendao"], //potential--潜在, 潜力, 可能, 电位, 潜能, 势
+	mobile_laoyouji: ["friend_zhugeliang", "friend_xushu", "friend_pangtong", "friend_cuijun", "friend_shitao"],
 	mobile_standard: ["xin_xiahoudun", "xin_zhangfei", "old_yuanshu"],
 	mobile_shenhua_feng: ["re_xiaoqiao", "xin_zhoutai"],
 	mobile_shenhua_huo: ["re_pangtong", "re_sp_zhugeliang", "re_xunyu", "re_dianwei", "re_yanwen", "xin_yuanshao"],
@@ -28,8 +31,9 @@ const characterSort = {
 	mobile_yijiang3: ["re_liru", "xin_jianyong", "xin_zhuran", "xin_guohuai", "xin_panzhangmazhong", "xin_fuhuanghou", "re_yufan"],
 	mobile_yijiang4: ["xin_zhoucang", "xin_caifuren", "xin_guyong", "xin_sunluban", "xin_caozhen", "xin_jushou", "xin_wuyi", "xin_zhuhuan", "re_chenqun"],
 	mobile_yijiang5: ["xin_zhangyi", "xin_sunxiu", "xin_quancong", "xin_zhuzhi", "xin_caoxiu"],
-	mobile_yijiang7: ["re_jikang"],
+	mobile_yijiang7: ["re_jikang", "mb_xuezong"],
 	mobile_changshi: ["scs_zhangrang", "scs_zhaozhong", "scs_sunzhang", "scs_bilan", "scs_xiayun", "scs_hankui", "scs_lisong", "scs_duangui", "scs_guosheng", "scs_gaowang"],
+	mobile_others: [],
 };
 
 const characterSortTranslate = {
@@ -56,6 +60,7 @@ const characterSortTranslate = {
 	mobile_sp11: "SP·组11",
 	mobile_sp12: "SP·组12",
 	mobile_sp13: "SP·组13",
+	mobile_sp14: "SP·组14",
 	mobile_sp_default: "SP·未分组",
 	mobile_xlqk1: "袖里乾坤·组1",
 	mobile_xlqk2: "袖里乾坤·组2",
@@ -63,6 +68,8 @@ const characterSortTranslate = {
 	mobile_xlqk4: "袖里乾坤·组4",
 	mobile_xlqk5: "袖里乾坤·组5",
 	mobile_longxue: "龙血玄黄",
+	mobile_bingshiPack: "兵势篇",
+	mobile_laoyouji: "老友季",
 	mobile_others: "其他",
 	mobile_changshi: "十常侍单体",
 };

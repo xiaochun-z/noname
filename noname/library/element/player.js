@@ -1,4 +1,3 @@
-
 import { ai } from "../../ai/index.js";
 import { get } from "../../get/index.js";
 import { game } from "../../game/index.js";
@@ -9,6 +8,7 @@ import { CacheContext } from "../cache/cacheContext.js";
 import { ChildNodesWatcher } from "../cache/childNodesWatcher.js";
 import security from "../../util/security.js";
 import { ContentCompiler } from "./gameEvent.js";
+import dedent from "../../../game/dedent.js";
 
 export class Player extends HTMLDivElement {
 	/**
@@ -373,19 +373,23 @@ export class Player extends HTMLDivElement {
 	 */
 	addTip(index, message, isTemp = false, css = {}) {
 		const player = this;
+		if (player.getHiddenSkills(true, true).includes(index)) return;
 		game.broadcastAll(
 			(player, index, message, css) => {
 				player.node.tipContainer ??= ui.create.div(".tipContainer", player);
 				player.tips ??= new Map();
 				if (!player.tips.has(index)) player.tips.set(index, ui.create.div(".tip", player.node.tipContainer));
-				player.tips.get(index).innerHTML = message.replace(/ /g, "&nbsp;").replace(/[♥︎♦︎]/g, '<span style="color: red; ">$&</span>').replace(/\n/g, '<br>');
+				player.tips.get(index).innerHTML = message
+					.replace(/ /g, "&nbsp;")
+					.replace(/[♥︎♦︎]/g, '<span style="color: red; ">$&</span>')
+					.replace(/\n/g, "<br>");
 				player.tips.get(index).css(css);
 
-				let double = player.classList.contains('fullskin2') && lib.config.layout !== 'long2';
+				let double = player.classList.contains("fullskin2") && lib.config.layout !== "long2";
 
 				const width = player.node.avatar.clientWidth;
 				let w = width * (double ? 2 : 1);
-				player.style.setProperty('--w', `${w}px`);
+				player.style.setProperty("--w", `${w}px`);
 
 				//检查tip的高度，使其不覆盖装备
 				game.callHook("checkTipBottom", [player]);
@@ -415,7 +419,6 @@ export class Player extends HTMLDivElement {
 				})
 				.finish();
 		}
-
 	}
 	/**
 	 * 清除标记，不传参数可以清空所有标记
@@ -437,7 +440,6 @@ export class Player extends HTMLDivElement {
 					player.node.tipContainer?.remove();
 					delete player.node.tipContainer;
 				}
-
 			},
 			this,
 			index
@@ -461,20 +463,20 @@ export class Player extends HTMLDivElement {
 		this.markSkill("stratagem_fury");
 	}
 	/**
-	 * 
+	 *
 	 * 链式创建一次性的API。
-	 * 
+	 *
 	 * 使用者只需关注技能的效果，而不是技能本身
-	 * 
+	 *
 	 *  @example
 	 * when('xxx') when([xxx1,xxx2])//均会被解析为：player:xxx或player:[xxx1,xxx2]
-	 * 
-	 * when({player:xxx})或when({gloal:[xxx]})//对象类型将直接应用
-	 * 
+	 *
+	 * when({player:xxx})或when({global:[xxx]})//对象类型将直接应用
+	 *
 	 * when(xxx1,xxx2)//解析为player:[xxx1,xxx2]
-	 * 
+	 *
 	 * when({player: 'xxAfter'}, {global: 'yyBegin'})//合并解析
-	 * @param  {[Signal[]]|Signal[]|SkillTrigger[]} triggerNames 
+	 * @param  {[Signal[]]|Signal[]|SkillTrigger[]} triggerNames
 	 * @returns {When}
 	 */
 	when(...triggerNames) {
@@ -573,7 +575,7 @@ export class Player extends HTMLDivElement {
 				const topVars = ["_status", "lib", "game", "ui", "get", "ai"];
 
 				const params = ["topVars", "event", "trigger", "player"];
-				const body = `
+				const body = dedent`
 					var { ${deconstructs.join(", ")} } = event;
 					var { ${topVars.join(", ")} } = topVars;
 					${varstr}
@@ -768,6 +770,7 @@ export class Player extends HTMLDivElement {
 			 * 如果instantlyAdd为false，则需要以此法获得技能
 			 **/
 			finish() {
+				if (lib.skill[skillName] != skill) throw `This skill has been destroyed`;
 				player.addSkill(skillName);
 				return this;
 			},
@@ -1104,10 +1107,10 @@ export class Player extends HTMLDivElement {
 		return Math.max(
 			0,
 			this.countEnabledSlot(type) -
-			this.getVEquips(type).reduce((num, card) => {
-				let types = get.subtypes(card, false);
-				return num + get.numOf(types, type);
-			}, 0)
+				this.getVEquips(type).reduce((num, card) => {
+					let types = get.subtypes(card, false);
+					return num + get.numOf(types, type);
+				}, 0)
 		);
 	}
 	/**
@@ -1136,11 +1139,11 @@ export class Player extends HTMLDivElement {
 		return Math.max(
 			0,
 			this.countEnabledSlot(type) -
-			this.getVEquips(type).reduce((num, card) => {
-				let types = get.subtypes(card, false);
-				if (!lib.filter.canBeReplaced(card, this)) num += get.numOf(types, type);
-				return num;
-			}, 0)
+				this.getVEquips(type).reduce((num, card) => {
+					let types = get.subtypes(card, false);
+					if (!lib.filter.canBeReplaced(card, this)) num += get.numOf(types, type);
+					return num;
+				}, 0)
 		);
 	}
 	/**
@@ -1488,11 +1491,11 @@ export class Player extends HTMLDivElement {
 	/**
 	 * @deprecated
 	 */
-	$disableEquip() { }
+	$disableEquip() {}
 	/**
 	 * @deprecated
 	 */
-	$enableEquip() { }
+	$enableEquip() {}
 	//装备区End
 	chooseToDebate() {
 		var next = game.createEvent("chooseToDebate");
@@ -2076,6 +2079,7 @@ export class Player extends HTMLDivElement {
 	 * @param { 'main' | 'vice' | boolean } checkShow
 	 */
 	trySkillAnimate(name, popname, checkShow) {
+		game.callHook("checkSkillAnimate", [this, name, popname]);
 		if (!game.online && lib.config.skill_animation_type != "off" && lib.skill[name] && lib.skill[name].skillAnimation) {
 			if (lib.config.skill_animation_type == "default") {
 				checkShow = checkShow || "main";
@@ -2135,43 +2139,50 @@ export class Player extends HTMLDivElement {
 	 * @returns { boolean | undefined }
 	 */
 	hasUsableCard(name, type) {
+		const player = this;
 		if (typeof type !== "string") type = type ? "limit" : "all";
+		let event = get.event();
+		let evtNames = typeof type !== "string" || type === "all" ? ["chooseToUse", "chooseToRespond"] : ["chooseTo" + type.slice(0, 1).toUpperCase() + type.slice(1)];
 		if (
-			this.hasCard(i => {
-				if (get.name(i, this) !== name) return false;
+			player.hasCard(i => {
+				if (get.name(i, player) !== name) return false;
 				if (type === "all") return true;
-				let event = _status.event,
-					evt = event.getParent("chooseToUse");
-				if (get.itemtype(evt) !== "event") evt = event;
-				if (type === "respond") return lib.filter.cardRespondable(i, this, evt);
-				return lib.filter.cardEnabled(i, this, type === "limit" ? evt : "forceEnable");
+				return evtNames.some(evtName => {
+					let evt = event.getParent(evtName);
+					if (get.itemtype(evt) !== "event") evt = event;
+					if (type === "respond") return lib.filter.cardRespondable(i, player, evt);
+					return lib.filter.cardEnabled(i, player, type === "limit" ? evt : "forceEnable");
+				});
 			}, "hs")
 		)
 			return true;
-		const skills = this.getSkills("invisible").concat(lib.skill.global),
-			str = "respond" + name[0].toUpperCase() + name.slice(1);
+		const skills = player.getSkills("invisible").concat(lib.skill.global);
 		game.expandSkills(skills);
 		for (let i = 0; i < skills.length; i++) {
-			const ifo = get.info(skills[i]),
+			const skill = skills[i],
+				ifo = get.info(skill),
 				hiddenCard = ifo.hiddenCard;
-			if (ifo.viewAs && typeof ifo.viewAs !== "function" && typeof ifo.viewAs !== "string" && ifo.viewAs.name === name) {
-				if (!ifo.viewAsFilter || ifo.viewAsFilter(this) !== false) return true;
-			} else if (typeof hiddenCard == "function") {
-				if (hiddenCard(this, name)) return true;
+			if (ifo.usable !== undefined) {
+				let num = ifo.usable;
+				if (typeof num === "function") num = ifo.usable(skill, player);
+				if (typeof num === "number" && get.skillCount(skill, player) >= num) continue;
 			}
-			/*else if (ifo.ai && ifo.ai[str]) {
-				if (ifo.ai.skillTagFilter) {
-					if ((type === 'respond' || type === 'all')&& ifo.ai.skillTagFilter(this, str, 'respond') !== false) return true;
-					if (type !== 'respond' && ifo.ai.skillTagFilter(this, str, 'use') !== false) return true;
-					continue;
-				}
-				if (type === 'all') return true;
-				if (typeof ifo.ai[str] === 'string') {
-					if (ifo.ai[str] === 'use' || type === 'respond' && ifo.ai[str] === type) return true;
-				}
-				else return true;
-			}*/
+			if (ifo.viewAs && typeof ifo.viewAs !== "function" && typeof ifo.viewAs !== "string" && ifo.viewAs.name === name) {
+				const goon = !ifo.viewAsFilter || ifo.viewAsFilter(player) !== false;
+				const bool =
+					!ifo.filter ||
+					evtNames.some(evtName => {
+						let evt = event.getParent(evtName);
+						if (get.itemtype(evt) !== "event") evt = get.event();
+						if (ifo["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)]) ifo["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)](evt);
+						return ifo.filter(evt, player, evt.triggername);
+					});
+				if (goon && bool) return true;
+			} else if (typeof hiddenCard == "function") {
+				if (hiddenCard(player, name)) return true;
+			}
 		}
+		return false;
 	}
 	/**
 	 * @param { Player } to
@@ -2225,10 +2236,10 @@ export class Player extends HTMLDivElement {
 		m = game.checkMod(from, to, m, "attackFrom", from);
 		m = game.checkMod(from, to, m, "attackTo", to);
 		const equips1 = from.getVCards("e", function (card) {
-			return !card.cards?.some(card => {
-				return ui.selected.cards?.includes(card);
-			});
-		}),
+				return !card.cards?.some(card => {
+					return ui.selected.cards?.includes(card);
+				});
+			}),
 			equips2 = to.getVCards("e", function (card) {
 				return !card.cards?.some(card => {
 					return ui.selected.cards?.includes(card);
@@ -3089,6 +3100,9 @@ export class Player extends HTMLDivElement {
 		this.classList.remove("unseen2");
 		this.classList.remove("unseen_show");
 		this.classList.remove("unseen2_show");
+		this.classList.remove("turnedover");
+		this.classList.remove("linked");
+		this.classList.remove("linked2");
 
 		this.node.identity.style.backgroundColor = "";
 		this.node.intro.innerHTML = "";
@@ -3104,6 +3118,8 @@ export class Player extends HTMLDivElement {
 		for (var mark in this.marks) {
 			this.marks[mark].remove();
 		}
+		this.removeTip();
+		ui.updatej(this);
 		ui.updatem(this);
 	}
 	getLeft() {
@@ -3180,7 +3196,7 @@ export class Player extends HTMLDivElement {
 		);
 	}
 	emotion(pack, id) {
-		var str = '<img src="##assetURL##image/emotion/' + pack + "/" + id + '.gif" width="50" height="50">';
+		var str = `<img src="##assetURL##image/emotion/${pack}/${id}.gif" width="50" height="50">`;
 		this.say(str);
 		game.broadcast(
 			function (id, str) {
@@ -3228,6 +3244,9 @@ export class Player extends HTMLDivElement {
 	 * @param { string } str
 	 */
 	say(str) {
+		if (!get.is.emotion(str)) {
+			str = get.plainText(str);
+		}
 		str = str.replace(/##assetURL##/g, lib.assetURL);
 		var dialog = ui.create.dialog("hidden");
 		dialog.classList.add("static");
@@ -3374,7 +3393,11 @@ export class Player extends HTMLDivElement {
 			this.smoothAvatar(false, video);
 		}
 		if (node) {
-			node.setBackground(name2, "character");
+			if (name === name2) {
+				var skinName = this.name2 != name ? this.skin?.name : this.skin?.name2;
+				if (!skinName || skinName === name2) node.setBackground(name2, "character");
+				else node.setBackground(skinName, "character");
+			} else node.setBackground(name2, "character");
 			if (this == game.me && ui.fakeme && fakeme !== false) {
 				ui.fakeme.style.backgroundImage = node.style.backgroundImage;
 			}
@@ -3461,6 +3484,7 @@ export class Player extends HTMLDivElement {
 			this.maxHp,
 			this.hujia
 		);
+		game.callHook("checkUpdate", [this]);
 		this.$update(...arguments);
 	}
 	$update() {
@@ -3870,7 +3894,7 @@ export class Player extends HTMLDivElement {
 		if (this.playerid) return prefix + this.playerid + "]";
 		return (
 			prefix +
-			`
+			dedent`
 			${this.name}+${this.sex}+${this.group}+${this.hp}+${this.maxHp}+${this.hujia}+${"[" + this.skills.join(",") + "]"}+${this.name1}+${this.name2}]
 		`
 		);
@@ -3881,9 +3905,21 @@ export class Player extends HTMLDivElement {
 	 * @returns { number }
 	 */
 	countSkill(skill) {
-		var num = this.getStat("skill")[skill];
-		if (num == undefined) return 0;
-		return num;
+		const info = lib.skill[skill];
+		let num = 0;
+		if (!info) {
+			console.warn("“" + skill + "”为无效技能ID！");
+			return 0;
+		}
+		if (info.usable !== undefined && this.hasSkill("counttrigger") && this.storage.counttrigger) {
+			num = this.storage.counttrigger[skill];
+			if (typeof num === "number") return num;
+		}
+		num = this.getStat("skill")[skill];
+		if (typeof num === "number") return num;
+		return this.getHistory("useSkill", evt => {
+			return evt.skill === skill;
+		}).length;
 	}
 	/**
 	 * @param {*} [unowned]
@@ -3918,6 +3954,16 @@ export class Player extends HTMLDivElement {
 			}
 		}
 		return list;
+	}
+	/**
+	 * 获取一名角色隐藏武将牌上的所有技能
+	 * @param {*} [unowned]
+	 * @param {*} [unique]
+	 * @returns { string[] }
+	 */
+	getHiddenSkills(unowned, unique) {
+		const player = this;
+		return player.getStockSkills(unowned, unique, true).removeArray(player.getStockSkills(unowned, unique));
 	}
 	/**
 	 * @param { string } [arg1='h']
@@ -4737,6 +4783,7 @@ export class Player extends HTMLDivElement {
 		if (next.ai == undefined) next.ai = get.unuseful;
 		next.setContent("chooseToGive");
 		next._args = args;
+		next.gaintag = [];
 		return next;
 	}
 	chooseToDiscard() {
@@ -5425,6 +5472,7 @@ export class Player extends HTMLDivElement {
 		if (next.complexSelect !== false) next.complexSelect = true;
 		next.setContent("gainPlayerCard");
 		next._args = Array.from(arguments);
+		next.gaintag = [];
 		return next;
 	}
 	/**
@@ -5837,6 +5885,7 @@ export class Player extends HTMLDivElement {
 			next.drawDeck = 1;
 		}
 		next.result = [];
+		next.gaintag = [];
 		return next;
 	}
 	randomDiscard() {
@@ -5891,7 +5940,7 @@ export class Player extends HTMLDivElement {
 		return [];
 	}
 	/**
-	 * 令玩家弃置一些牌
+	 * 强制令玩家弃置其区域内的一些牌
 	 * @returns { GameEventPromise }
 	 */
 	discard() {
@@ -5918,6 +5967,104 @@ export class Player extends HTMLDivElement {
 			next.resolve();
 		}
 		next.setContent("discard");
+		return next;
+	}
+	/**
+	 * 令玩家弃置其区域内一些能被弃置的牌
+	 *
+	 * cards: Card[] | Card;
+	 * 要弃置的牌
+	 *
+	 * source?: Player;
+	 * 来源，令Player弃牌的角色。默认目标角色
+	 *
+	 * position?: div | fragment;
+	 * 经Mod筛选后的牌要置入的区域，默认ui.discardPile
+	 *
+	 * log?: 'popup' | 'logSkill' | false | string;
+	 * 因对应Mod技能导致部分牌未被弃置时，是否为Mod技能执行对应函数。默认'popup'
+	 *
+	 * @returns { GameEventPromise }
+	 */
+	modedDiscard() {
+		var next = game.createEvent("discard");
+		next.player = this;
+		next.source = this;
+		next.cards = [];
+		next.log = "popup";
+		for (let i = 0; i < arguments.length; i++) {
+			if (get.itemtype(arguments[i]) === "player") {
+				next.source = arguments[i];
+				if (this !== next.source) next.notBySelf = true;
+			} else if (get.itemtype(arguments[i]) === "cards") {
+				next.cards = arguments[i].slice(0);
+			} else if (get.itemtype(arguments[i]) === "card") {
+				next.cards = [arguments[i]];
+			} else if (["div", "fragment"].includes(get.objtype(arguments[i]))) {
+				next.position = arguments[i];
+			} else if (arguments[i] === false || typeof arguments[i] === "string") {
+				next.log = arguments[i];
+			}
+		}
+		if (!next.cards.length) {
+			_status.event.next.remove(next);
+			next.resolve();
+		}
+		next.skills = [];
+		next.protected_cards = [];
+		let event = _status.event;
+		if (typeof event !== "string") event = event.getParent().name;
+		let skills = [];
+		if (typeof this.getModableSkills === "function") {
+			skills = this.getModableSkills();
+		} else if (typeof this.getSkills === "function") {
+			skills = this.getSkills().concat(lib.skill.global);
+			game.expandSkills(skills);
+			skills = skills.filter(i => {
+				const info = get.info(i);
+				return info && info.mod;
+			});
+			skills.sort((a, b) => get.priority(a) - get.priority(b));
+		}
+		for (let skill of skills) {
+			let mod = get.info(skill).mod.canBeDiscarded;
+			if (mod)
+				for (let i = 0; i < next.cards.length; i++) {
+					let arg = [next.cards[i], next.source, this, event, "unchanged"],
+						result = mod.call(game, ...arg);
+					if (result !== undefined && typeof arg[arg.length - 1] !== "object") arg[arg.length - 1] = result;
+					if (!arg[arg.length - 1]) {
+						next.skills.add(skill);
+						next.protected_cards.push(next.cards.splice(i--, 1)[0]);
+					}
+				}
+			mod = get.info(skill).mod.cardDiscardable;
+			if (mod)
+				for (let i = 0; i < next.cards.length; i++) {
+					let arg = [next.cards[i], this, event, "unchanged"],
+						result = mod.call(game, ...arg);
+					if (result !== undefined && typeof arg[arg.length - 1] !== "object") arg[arg.length - 1] = result;
+					if (!arg[arg.length - 1]) {
+						next.skills.add(skill);
+						next.protected_cards.push(next.cards.splice(i--, 1)[0]);
+					}
+				}
+		}
+		next.setContent(function () {
+			"step 0";
+			if (event.skills.length && event.log)
+				for (let i of event.skills) {
+					if (typeof player[event.log] === "function") player[event.log](i);
+				}
+			if (!cards.length) event.finish();
+			"step 1";
+			game.log(player, "弃置了", cards);
+			event.done = player.lose(cards, event.position, "visible");
+			event.done.type = "discard";
+			if (event.discarder) event.done.discarder = event.discarder;
+			"step 2";
+			event.trigger("discard");
+		});
 		return next;
 	}
 	/**
@@ -5984,10 +6131,10 @@ export class Player extends HTMLDivElement {
 		} else if (next.card == undefined) {
 			if (next.cards) {
 				next.card = next.cards[0];
-				if (!next.skill) {
-					next.card = get.autoViewAs(next.card, next.cards);
-				}
 			}
+		}
+		if (next.card) {
+			next.card = get.autoViewAs(next.card, next.cards);
 		}
 		next.setContent("respond");
 		return next;
@@ -6166,6 +6313,9 @@ export class Player extends HTMLDivElement {
 			if (!("log" in next)) {
 				next.log = true;
 			}
+		}
+		if (get.itemtype(next.cards) !== "cards") {
+			next.cards = [];
 		}
 		next.setContent("gain");
 		next.getd = function (player, key, position) {
@@ -6403,6 +6553,7 @@ export class Player extends HTMLDivElement {
 				next._triggered = null;
 				next.notrigger = true;
 			} else if (argument == "unreal") next.unreal = true;
+			else if (argument == "nohujia") next.nohujia = true;
 			else if (get.itemtype(argument) == "nature" && argument != "stab") next.nature = argument;
 			else if (get.itemtype(argument) == "natures") {
 				const natures = argument.split(lib.natureSeparator).remove("stab");
@@ -7210,6 +7361,12 @@ export class Player extends HTMLDivElement {
 		lib.node.torespond = {};
 		if (typeof proceed == "function") proceed();
 		else if (_status.paused && !noresume) game.resume();
+
+		if (lib.node.waitForResult[this.playerid]?.length > 0) {
+			const current = lib.node.waitForResult[this.playerid].pop();
+			current(result);
+			// delete lib.node.waitForResult[this.playerid];
+		}
 	}
 	tempUnwait(result) {
 		if (!(this.playerid in lib.node.torespond)) return;
@@ -7498,6 +7655,11 @@ export class Player extends HTMLDivElement {
 			delete this.node.timer;
 		}
 	}
+	/**
+	 * 向角色对应storage中添加相应元素，刷新标记状态
+	 * @param { string } name 技能ID
+	 * @param { * } [info] 向storage数组中添加对应元素/元素数组
+	 */
 	markAuto(name, info) {
 		if (typeof info != "undefined") {
 			if (!Array.isArray(this.storage[name])) this.storage[name] = [];
@@ -7511,14 +7673,25 @@ export class Player extends HTMLDivElement {
 				this[storage.length > 0 ? "markSkill" : "unmarkSkill"](name);
 			} else if (typeof storage == "number") {
 				this[storage > 0 ? "markSkill" : "unmarkSkill"](name);
+			} else if (storage) {
+				this.markSkill(name);
+			} else {
+				this.unmarkSkill(name);
 			}
 		}
 	}
+	/**
+	 * 移除角色对应storage中相应元素并刷新标记状态
+	 * @param { string } name 技能ID
+	 * @param { * } info 移除storage数组中对应元素/元素数组
+	 */
 	unmarkAuto(name, info) {
 		var storage = this.storage[name];
-		if (Array.isArray(info) && Array.isArray(storage)) {
-			storage.removeArray(info.slice(0));
-			this.markAuto(name);
+		if (Array.isArray(storage)) {
+			if (Array.isArray(info)) {
+				storage.removeArray(info.slice(0));
+			} else storage.remove(info);
+			this[storage.length > 0 ? "markSkill" : "unmarkSkill"](name);
 		}
 	}
 	getExpansions(tag) {
@@ -8123,7 +8296,7 @@ export class Player extends HTMLDivElement {
 		}
 		return this;
 	}
-	addSkillLog(skill) {
+	addSkillLog(skill, popup = true) {
 		if (!skill) return this;
 		this.addSkill(skill);
 		if (!Array.isArray(skill)) skill = [skill];
@@ -8131,12 +8304,12 @@ export class Player extends HTMLDivElement {
 			this,
 			"获得了技能",
 			...skill.map(i => {
-				this.popup(i);
+				if (popup) this.popup(i);
 				return "#g【" + get.translation(i) + "】";
 			})
 		);
 	}
-	removeSkillLog(skill, popup) {
+	removeSkillLog(skill, popup = true) {
 		if (!skill) return this;
 		this.removeSkill(skill);
 		if (!Array.isArray(skill)) skill = [skill];
@@ -8144,7 +8317,7 @@ export class Player extends HTMLDivElement {
 			this,
 			"失去了技能",
 			...skill.map(i => {
-				if (popup === true) this.popup(i);
+				if (popup) this.popup(i);
 				return "#g【" + get.translation(i) + "】";
 			})
 		);
@@ -8188,15 +8361,15 @@ export class Player extends HTMLDivElement {
 		}
 		return skill;
 	}
-	addSkills(skill) {
+	addSkills(skill, popup = true) {
 		if (!skill) return;
-		return this.changeSkills(Array.isArray(skill) ? skill : [skill], []);
+		return this.changeSkills(Array.isArray(skill) ? skill : [skill], [], popup);
 	}
-	removeSkills(skill) {
+	removeSkills(skill, popup = true) {
 		if (!skill) return;
-		return this.changeSkills([], Array.isArray(skill) ? skill : [skill]);
+		return this.changeSkills([], Array.isArray(skill) ? skill : [skill], popup);
 	}
-	changeSkills(addSkill = [], removeSkill = []) {
+	changeSkills(addSkill = [], removeSkill = [], popup = true) {
 		if (!Array.isArray(addSkill) || !Array.isArray(removeSkill)) {
 			console.warn(`警告：Player[${this.name}].changeSkills的参数错误，应当为数组形式。`);
 			return;
@@ -8204,6 +8377,7 @@ export class Player extends HTMLDivElement {
 		const next = game.createEvent("changeSkills", false);
 		next.player = this;
 		next.forceDie = true;
+		next.popup = popup;
 		next.addSkill = addSkill.slice(0).unique();
 		next.removeSkill = removeSkill.slice(0).unique();
 		next.setContent("changeSkills");
@@ -8242,11 +8416,11 @@ export class Player extends HTMLDivElement {
 			}
 			if (info.mark) {
 				if (info.mark == "card" && get.itemtype(this.storage[skill]) == "card") {
-					this.markSkill(skill, null, this.storage[skill], nobroadcast);
+					this.markSkill(skill, null, this.storage[skill]);
 				} else if (info.mark == "card" && get.itemtype(this.storage[skill]) == "cards") {
-					this.markSkill(skill, null, this.storage[skill][0], nobroadcast);
+					this.markSkill(skill, null, this.storage[skill][0]);
 				} else if (info.mark == "image") {
-					this.markSkill(skill, null, ui.create.card(null, "noclick").init([null, null, skill]), nobroadcast);
+					this.markSkill(skill, null, ui.create.card(null, "noclick").init([null, null, skill]));
 				} else if (info.mark == "character") {
 					var intro = info.intro.content;
 					if (typeof intro == "function") {
@@ -8264,9 +8438,9 @@ export class Player extends HTMLDivElement {
 					} else {
 						caption = get.translation(skill);
 					}
-					this.markSkillCharacter(skill, this.storage[skill], caption, intro, nobroadcast);
+					this.markSkillCharacter(skill, this.storage[skill], caption, intro);
 				} else {
-					this.markSkill(skill, null, null, nobroadcast);
+					this.markSkill(skill, null, null);
 				}
 			}
 			game.callHook("addSkillCheck", [skill, this]);
@@ -8288,14 +8462,7 @@ export class Player extends HTMLDivElement {
 		return this.changeSkills(skillsToAdd, skillsToRemove).set("$handle", function (player, skillsToAdd, skillsToRemove) {
 			//先失去先前获得的衍生技能
 			if (skillsToRemove.length > 0) {
-				game.log(
-					player,
-					"失去了技能",
-					...skillsToRemove.map(i => {
-						return "#g【" + get.translation(i) + "】";
-					})
-				);
-				player.removeSkill(skillsToRemove);
+				player.removeSkillLog(skillsToRemove, get.event().popup);
 			}
 			//再获得新的衍生技能
 			if (skillsToAdd.length > 0) {
@@ -8303,6 +8470,7 @@ export class Player extends HTMLDivElement {
 					player,
 					"获得了技能",
 					...skillsToAdd.map(i => {
+						if (get.event().popup) player.popup(i);
 						return "#g【" + get.translation(i) + "】";
 					})
 				);
@@ -8396,14 +8564,7 @@ export class Player extends HTMLDivElement {
 			skills = this.getRemovableAdditionalSkills(skill, target);
 		return player.changeSkills([], skills).set("$handle", function (player, addSkills, removeSkills) {
 			if (removeSkills.length > 0) {
-				game.log(
-					player,
-					"失去了技能",
-					...removeSkills.map(i => {
-						return "#g【" + get.translation(i) + "】";
-					})
-				);
-				player.removeSkill(removeSkills);
+				player.removeSkillLog(removeSkills, get.event().popup);
 			}
 			player.$removeAdditionalSkills(skill, target);
 		});
@@ -8412,7 +8573,7 @@ export class Player extends HTMLDivElement {
 		if (!nounmark) this.unmarkSkill(skill);
 		this.disableSkill(skill + "_awake", skill);
 		this.awakenedSkills.add(skill);
-		if (!this.storage[skill]) this.storage[skill] = true;
+		if (this.storage[skill] === undefined || this.storage[skill] === false) this.storage[skill] = true;
 		_status.event.clearStepCache();
 		return this;
 	}
@@ -8685,10 +8846,10 @@ export class Player extends HTMLDivElement {
 		return skill;
 	}
 	/**
-	 * 
-	 * @param {SAAType<string>} skillsToAdd 
-	 * @param {SAAType<Signal>|SkillTrigger} [expire] 
-	 * @returns 
+	 *
+	 * @param {SAAType<string>} skillsToAdd
+	 * @param {SAAType<Signal>|SkillTrigger} [expire]
+	 * @returns
 	 */
 	addTempSkills(skillsToAdd, expire) {
 		//请注意，该方法的底层实现并非tempSkill，而是additionalSkills和player.when！
@@ -8705,6 +8866,7 @@ export class Player extends HTMLDivElement {
 					player,
 					"获得了技能",
 					...addSkills.map(i => {
+						if (get.event().popup) player.popup(i);
 						return "#g【" + get.translation(i) + "】";
 					})
 				);
@@ -8874,14 +9036,15 @@ export class Player extends HTMLDivElement {
 	/**
 	 * 快速获取一名角色当前轮次/倒数第X轮次的历史
 	 *	@template {Exclude< keyof ActionHistory, 'isRound'|'isMe'>} T
-	 * @param {T} key 
-	 * @param {(event:GameEventPromise)=>boolean} filter 筛选条件
+	 * @param {T} key
+	 * @param {(event:GameEventPromise)=>boolean} filter 筛选条件，不填写默认为lib.filter.all
 	 * @param {number} [num] 获取倒数第num轮的历史，默认为0，表示当前轮
 	 * @param {boolean} [keep] 若为true,则获取倒数第num轮到现在的所有历史
 	 * @param {GameEventPromise} last 代表最后一个事件，获取该事件之前的历史
 	 */
-	getRoundHistory(key, filter, num, keep, last) {
+	getRoundHistory(key, filter = lib.filter.all, num, keep, last) {
 		if (!num) num = 0;
+		if (!filter || typeof filter != "function") filter = lib.filter.all;
 		const player = this;
 		let evts = [],
 			history = player.actionHistory;
@@ -8905,12 +9068,12 @@ export class Player extends HTMLDivElement {
 		return evts;
 	}
 	/**
-	 * 不填参数，直接获得最后一个回合的改玩家的整个历史对象。
+	 * 不填参数，直接获得最后一个回合的该玩家的整个历史对象。
 	 * @overload
 	 * @returns { ActionHistory }
 	 */
 	/**
-	 * 
+	 *
 	 * @overload
 	 * @param { 'isRound'|'isMe' } key
 	 * @returns { boolean}
@@ -8920,7 +9083,7 @@ export class Player extends HTMLDivElement {
 	 * @overload
 	 * @param { T } key
 	 * @param { (event: GameEventPromise) => boolean } [filter] 过滤条件
-	 * @param { GameEventPromise } [last] 若有改参数，则该参数事件之后的将被排除掉
+	 * @param { GameEventPromise } [last] 若有该参数，则该参数事件之后的将被排除掉
 	 * @returns { ActionHistory[T] }
 	 */
 	getHistory(key, filter, last) {
@@ -8943,7 +9106,7 @@ export class Player extends HTMLDivElement {
 	 * @template { Exclude<keyof ActionHistory,'isRound'|'isMe'> } T
 	 * @param { T } key
 	 * @param { (event: GameEventPromise) => void } filter 遍历过程需要执行的函数
-	 * @param { GameEventPromise } [last] 
+	 * @param { GameEventPromise } [last]
 	 */
 	checkHistory(key, filter, last) {
 		if (!key || !filter) return;
@@ -8980,7 +9143,7 @@ export class Player extends HTMLDivElement {
 		return history.some(filter);
 	}
 	/**
-	 * 不填参数，直接获得最后一个回合的改玩家的整个历史对象。
+	 * 不填参数，直接获得最后一个回合的该玩家的整个历史对象。
 	 * @overload
 	 * @returns { ActionHistory }
 	 */
@@ -8989,7 +9152,7 @@ export class Player extends HTMLDivElement {
 	 * @overload
 	 * @param { T } key
 	 * @param { (event: GameEventPromise) => boolean } [filter] 过滤条件
-	 * @param { GameEventPromise } [last] 若有改参数，则该参数事件之后的将被排除掉
+	 * @param { GameEventPromise } [last] 若有该参数，则该参数事件之后的将被排除掉
 	 * @returns { ActionHistory[T] }
 	 */
 	getLastHistory(key, filter, last) {
@@ -9109,7 +9272,7 @@ export class Player extends HTMLDivElement {
 	/**
 	 * @template {keyof Stat} T
 	 * @overload
-	 * @param {T} key 
+	 * @param {T} key
 	 * @returns {Stat[T]}
 	 */
 	getStat(key) {
@@ -9124,7 +9287,7 @@ export class Player extends HTMLDivElement {
 	/**
 	 * @template {keyof Stat} T
 	 * @overload
-	 * @param {T} key 
+	 * @param {T} key
 	 * @returns {Stat[T]}
 	 */
 	getLastStat(key) {
@@ -9516,6 +9679,28 @@ export class Player extends HTMLDivElement {
 		return this.hp >= this.maxHp || this.storage.nohp;
 	}
 	/**
+	 * 判断玩家是否是场上体力上限最大的玩家
+	 * @param { boolean } [only] 是否唯一
+	 * @returns { boolean }
+	 */
+	isMaxMaxHp(only) {
+		return game.players.every(value => {
+			if (value.isOut() || value == this) return true;
+			return only ? value.maxHp < this.maxHp : value.maxHp <= this.maxHp;
+		});
+	}
+	/**
+	 * 判断玩家是否是场上体力上限最少的玩家
+	 * @param { boolean } [only] 是否唯一
+	 * @returns { boolean }
+	 */
+	isMinMaxHp(only) {
+		return game.players.every(value => {
+			if (value.isOut() || value == this) return true;
+			return only ? value.maxHp > this.maxHp : value.maxHp >= this.maxHp;
+		});
+	}
+	/**
 	 * 判断玩家是否是场上体力最大的玩家
 	 * @param { boolean } [only] 是否唯一
 	 * @param { boolean } [raw]
@@ -9890,9 +10075,9 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * @param { string } skill
-	 * @param { Parameters<this['getSkills']>[0] } arg2
-	 * @param { Parameters<this['getSkills']>[1] } arg3
-	 * @param { Parameters<this['getSkills']>[2] } arg4
+	 * @param { Parameters<this['getSkills']>[0] } [arg2]
+	 * @param { Parameters<this['getSkills']>[1] } [arg3]
+	 * @param { Parameters<this['getSkills']>[2] } [arg4]
 	 * @returns { boolean }
 	 */
 	hasSkill(skill, arg2, arg3, arg4) {
@@ -10075,27 +10260,27 @@ export class Player extends HTMLDivElement {
 		return false;
 	}
 	/**
-	 *
-	 * @param {string|boolean} [respond]
-	 * @param {boolean} [noauto]
+	 * 有没有可用杀
+	 * @param { string | boolean } [respond] 响应什么类型，默认使用。"use": 使用 / "respond": 打出 / "all": 全部，true
+	 * @param { boolean } [noauto] 不考虑出牌阶段才能用的（待补充）
 	 */
 	hasSha(respond, noauto) {
 		if (this.countCards("hs", "sha")) return true;
 		if (this.countCards("hs", "hufu")) return true;
 		if (!noauto && this.countCards("hs", "yuchanqian")) return true;
-		let tag = respond;
-		if (typeof tag !== "string") tag = respond ? "respond" : "use";
-		if (this.hasSkillTag("respondSha", true, tag, true)) return true;
-		if (typeof respond !== "string") respond = respond ? "respond" : "all";
+		if (typeof respond !== "string") respond = respond ? "all" : "use";
+		if (this.hasSkillTag("respondSha", true, respond, true)) return true;
 		return this.hasUsableCard("sha", respond);
 	}
+	/**
+	 * 有没有可用闪
+	 * @param { string | boolean } [respond] 响应什么类型，默认使用。"use": 使用 / "respond": 打出 / "all": 全部，true
+	 */
 	hasShan(respond) {
 		if (this.countCards("hs", "shan")) return true;
 		if (this.countCards("hs", "hufu")) return true;
-		let tag = respond;
-		if (typeof tag !== "string") tag = respond ? "respond" : "use";
-		if (this.hasSkillTag("respondShan", true, tag, true)) return true;
-		if (typeof respond !== "string") respond = respond ? "respond" : "all";
+		if (typeof respond !== "string") respond = respond ? "all" : "use";
+		if (this.hasSkillTag("respondShan", true, respond, true)) return true;
 		return this.hasUsableCard("shan", respond);
 	}
 	/**
@@ -10306,16 +10491,20 @@ export class Player extends HTMLDivElement {
 			this.$draw(cards.length);
 		}
 	}
-	$draw(num, init, config) {
+	$draw(num, init, config, cardsetion) {
+		if (!cardsetion && cardsetion !== false && lib.config.card_animation_info) {
+			cardsetion = get.cardsetion(this);
+		}
 		if (init !== false && init !== "nobroadcast") {
 			game.broadcast(
-				function (player, num, init, config) {
-					player.$draw(num, init, config);
+				function (player, num, init, config, cardsetion) {
+					player.$draw(num, init, config, cardsetion);
 				},
 				this,
 				num,
 				init,
-				config
+				config,
+				cardsetion
 			);
 		}
 		var cards, node;
@@ -10336,8 +10525,32 @@ export class Player extends HTMLDivElement {
 		if (cards) {
 			cards = cards.slice(0);
 			node = cards.shift().copy("thrown", "drawingcard");
+			if (cardsetion) {
+				var next = ui.create.div(".cardsetion", cardsetion, node);
+				next.style.setProperty("display", "block", "important");
+				if (node.node) {
+					if (node.node.cardsetion) {
+						node.node.cardsetion.remove();
+						delete node.node.cardsetion;
+					}
+					node.node.cardsetion = next;
+				}
+			}
 		} else {
 			node = ui.create.div(".card.thrown.drawingcard");
+			node.classList.add("infoflip");
+			node.classList.add("infohidden");
+			if (cardsetion) {
+				var next = ui.create.div(".cardsetion", cardsetion, node);
+				next.style.setProperty("display", "block", "important");
+				if (node.node) {
+					if (node.node.cardsetion) {
+						node.node.cardsetion.remove();
+						delete node.node.cardsetion;
+					}
+					node.node.cardsetion = next;
+				}
+			}
 		}
 		node.fixed = true;
 		node.hide();
@@ -10444,31 +10657,42 @@ export class Player extends HTMLDivElement {
 			if (config && config.total > 1) {
 				setTimeout(function () {
 					if (cards) {
-						that.$draw(cards, false, config);
+						that.$draw(cards, false, config, cardsetion);
 					} else {
-						that.$draw(num - 1, false, config);
+						that.$draw(num - 1, false, config, cardsetion);
 					}
 				}, 50);
 			} else {
 				setTimeout(function () {
 					if (cards) {
-						that.$draw(cards, false, config);
+						that.$draw(cards, false, config, cardsetion);
 					} else {
-						that.$draw(num - 1, false, config);
+						that.$draw(num - 1, false, config, cardsetion);
 					}
 				}, 200);
 			}
 		}
 	}
-	$compareMultiple(card1, targets, cards) {
+	$compareMultiple(card1, targets, cards, cardsetions) {
+		if (!cardsetions && lib.config.card_animation_info) {
+			var cardsetions = {},
+				cardsetion_targets = [this];
+			cardsetion_targets.addArray(targets);
+			for (let target of cardsetion_targets) {
+				let id = target.playerid,
+					cardsetion = get.cardsetion(target);
+				cardsetions[id] = cardsetion;
+			}
+		}
 		game.broadcast(
-			function (player, card1, targets, cards) {
-				player.$compareMultiple(card1, targets, cards);
+			function (player, card1, targets, cards, cardsetions) {
+				player.$compareMultiple(card1, targets, cards, cardsetions);
 			},
 			this,
 			card1,
 			targets,
-			cards
+			cards,
+			cardsetions
 		);
 		game.addVideo("compareMultiple", this, [get.cardInfo(card1), get.targetsInfo(targets), get.cardsInfo(cards)]);
 		var player = this;
@@ -10484,6 +10708,17 @@ export class Player extends HTMLDivElement {
 		}
 
 		node1.style.transform = "perspective(600px) rotateY(180deg) translateX(0)";
+		if (cardsetions) {
+			var next = ui.create.div(".cardsetion", cardsetions[player.playerid] || "", node1);
+			next.style.setProperty("display", "block", "important");
+			if (node1.node) {
+				if (node1.node.cardsetion) {
+					node1.node.cardsetion.remove();
+					delete node1.node.cardsetion;
+				}
+				node1.node.cardsetion = next;
+			}
+		}
 		var onEnd01 = function () {
 			//node1.removeEventListener('webkitTransitionEnd',onEnd01);
 			setTimeout(function () {
@@ -10515,6 +10750,17 @@ export class Player extends HTMLDivElement {
 						node2 = target.$throwxy2(card2, "calc(50% - " + -left + "px)", "calc(50% - 114px)", "perspective(600px) rotateY(180deg)", true);
 					} else {
 						node2 = target.$throwxy2(card2, "calc(50% + " + left + "px)", "calc(50% - 114px)", "perspective(600px) rotateY(180deg)", true);
+					}
+					if (cardsetions) {
+						var next = ui.create.div(".cardsetion", cardsetions[target.playerid] || "", node2);
+						next.style.setProperty("display", "block", "important");
+						if (node2.node) {
+							if (node2.node.cardsetion) {
+								node2.node.cardsetion.remove();
+								delete node2.node.cardsetion;
+							}
+							node2.node.cardsetion = next;
+						}
 					}
 					if (lib.config.cardback_style != "default") {
 						node2.style.transitionProperty = "none";
@@ -10550,15 +10796,25 @@ export class Player extends HTMLDivElement {
 			}
 		}, 200);
 	}
-	$compare(card1, target, card2) {
+	$compare(card1, target, card2, cardsetions) {
+		if (!cardsetions && lib.config.card_animation_info) {
+			var cardsetions = {},
+				cardsetion_targets = [this, target];
+			for (let targetx of cardsetion_targets) {
+				let id = targetx.playerid,
+					cardsetion = get.cardsetion(targetx);
+				cardsetions[id] = cardsetion;
+			}
+		}
 		game.broadcast(
-			function (player, target, card1, card2) {
-				player.$compare(card1, target, card2);
+			function (player, target, card1, card2, cardsetions) {
+				player.$compare(card1, target, card2, cardsetions);
 			},
 			this,
 			target,
 			card1,
-			card2
+			card2,
+			cardsetions
 		);
 		game.addVideo("compare", this, [get.cardInfo(card1), target.dataset.position, get.cardInfo(card2)]);
 		var player = this;
@@ -10572,7 +10828,17 @@ export class Player extends HTMLDivElement {
 		} else {
 			node1.classList.add("infohidden");
 		}
-
+		if (cardsetions) {
+			var next = ui.create.div(".cardsetion", cardsetions[player.playerid] || "", node1);
+			next.style.setProperty("display", "block", "important");
+			if (node1.node) {
+				if (node1.node.cardsetion) {
+					node1.node.cardsetion.remove();
+					delete node1.node.cardsetion;
+				}
+				node1.node.cardsetion = next;
+			}
+		}
 		node1.style.transform = "perspective(600px) rotateY(180deg) translateX(0)";
 		var onEnd01 = function () {
 			//node1.removeEventListener('webkitTransitionEnd',onEnd01);
@@ -10605,6 +10871,17 @@ export class Player extends HTMLDivElement {
 			} else {
 				node2.classList.add("infohidden");
 			}
+			if (cardsetions) {
+				var next = ui.create.div(".cardsetion", cardsetions[target.playerid] || "", node2);
+				next.style.setProperty("display", "block", "important");
+				if (node2.node) {
+					if (node2.node.cardsetion) {
+						node2.node.cardsetion.remove();
+						delete node2.node.cardsetion;
+					}
+					node2.node.cardsetion = next;
+				}
+			}
 			node2.style.transform = "perspective(600px) rotateY(180deg) translateX(0)";
 			var onEnd02 = function () {
 				//node2.removeEventListener('webkitTransitionEnd',onEnd02);
@@ -10628,7 +10905,12 @@ export class Player extends HTMLDivElement {
 			node2.listenTransition(onEnd02);
 		}, 200);
 	}
-	$throw(card, time, init, nosource) {
+	$throw(card, time, init, nosource, cardsetion) {
+		if (!cardsetion && cardsetion !== false && lib.config.card_animation_info) {
+			let source = this;
+			if (["useCard", "respond"].includes(get.event().name)) source = get.player();
+			cardsetion = get.cardsetion(source);
+		}
 		if (typeof card == "number") {
 			var tmp = card;
 			card = [];
@@ -10636,19 +10918,32 @@ export class Player extends HTMLDivElement {
 				var cardx = ui.create.card();
 				cardx.classList.add("infohidden");
 				cardx.classList.add("infoflip");
+				if (cardsetion) {
+					var next = ui.create.div(".cardsetion", cardsetion, cardx);
+					next.style.setProperty("display", "block", "important");
+					if (cardx.node) {
+						if (cardx.node.cardsetion) {
+							cardx.node.cardsetion.remove();
+							delete cardx.node.cardsetion;
+						}
+						cardx.node.cardsetion = next;
+					}
+				}
 				card.push(cardx);
 			}
 		}
 		if (init !== false) {
 			if (init !== "nobroadcast") {
 				game.broadcast(
-					function (player, card, time, init, nosource) {
-						player.$throw(card, time, init, nosource);
+					function (player, card, time, init, nosource, cardsetion) {
+						player.$throw(card, time, init, nosource, cardsetion);
 					},
 					this,
 					card,
 					time,
-					init
+					init,
+					nosource,
+					cardsetion
 				);
 			}
 			if (get.itemtype(card) != "cards") {
@@ -10666,13 +10961,13 @@ export class Player extends HTMLDivElement {
 		if (get.itemtype(card) == "cards") {
 			var node;
 			for (var i = 0; i < card.length; i++) {
-				node = this.$throw(card[i], time, false, nosource);
+				node = this.$throw(card[i], time, false, nosource, cardsetion);
 			}
 			return node;
 		} else {
 			var node;
 			if (card == undefined || card.length == 0) return;
-			node = this.$throwordered(card.copy("thrown"), nosource);
+			node = this.$throwordered(card.copy("thrown"), nosource, cardsetion);
 			if (time != undefined) {
 				node.fixed = true;
 				setTimeout(function () {
@@ -10684,7 +10979,54 @@ export class Player extends HTMLDivElement {
 		}
 	}
 	$throwordered() {
-		return this.$throwordered2.apply(this, arguments);
+		const $throwordered2 = this.$throwordered2.apply(this, arguments);
+		if (lib.config.card_animation_info) {
+			let node = arguments[0];
+			let eventInfo = arguments[2],
+				player = this;
+			if (!eventInfo) eventInfo = get.cardsetion(player);
+			if (eventInfo?.length) {
+				game.broadcastAll(
+					function (node, eventInfo, id) {
+						if (!node.node) {
+							node = [...ui.arena.childNodes].find(c => {
+								if (c.classList.contains("thrown") && c.classList.contains("card")) {
+									if (c._cardid == id && !c.selectedt) {
+										c.selectedt = true;
+										return true;
+									}
+								}
+							});
+						}
+						if (!node.node) return;
+						node.classList.add("infoflip");
+						let next = ui.create.div(".cardsetion", eventInfo, node);
+						next.style.setProperty("display", "block", "important");
+						if (node.node) {
+							if (node.node.cardsetion) {
+								node.node.cardsetion.remove();
+								delete node.node.cardsetion;
+							}
+							node.node.cardsetion = next;
+						}
+					},
+					node,
+					eventInfo,
+					node._cardid
+				);
+				node.classList.add("infoflip");
+				let next = ui.create.div(".cardsetion", eventInfo, node);
+				next.style.setProperty("display", "block", "important");
+				if (node.node) {
+					if (node.node.cardsetion) {
+						node.node.cardsetion.remove();
+						delete node.node.cardsetion;
+					}
+					node.node.cardsetion = next;
+				}
+			}
+		}
+		return $throwordered2;
 		// if(lib.config.low_performance){
 		// 	return this.$throwordered2.apply(this,arguments);
 		// }
@@ -11069,16 +11411,22 @@ export class Player extends HTMLDivElement {
 		}
 		return this.$give.apply(this, args);
 	}
-	$give(card, player, log, init) {
+	$give(card, player, log, init, cardsetion) {
+		if (!cardsetion && cardsetion !== false && lib.config.card_animation_info) {
+			let evt = get.cardsetion(null, true);
+			if (evt && evt.player == player) cardsetion = get.cardsetion(player);
+			else cardsetion = get.cardsetion(this);
+		}
 		if (init !== false) {
 			game.broadcast(
-				function (source, card, player, init) {
-					source.$give(card, player, false, init);
+				function (source, card, player, init, cardsetion) {
+					source.$give(card, player, false, init, cardsetion);
 				},
 				this,
 				card,
 				player,
-				init
+				init,
+				cardsetion
 			);
 			if (typeof card == "number" && card >= 0) {
 				game.addVideo("give", this, [card, player.dataset.position]);
@@ -11099,7 +11447,7 @@ export class Player extends HTMLDivElement {
 				this.$givemod(card, player);
 			} else {
 				for (var i = 0; i < card.length; i++) {
-					this.$give(card[i], player, false, false);
+					this.$give(card[i], player, false, false, cardsetion);
 				}
 			}
 		} else if (typeof card == "number" && card >= 0) {
@@ -11109,7 +11457,7 @@ export class Player extends HTMLDivElement {
 			if (this.$givemod) {
 				this.$givemod(card, player);
 			} else {
-				while (card--) this.$give("", player, false, false);
+				while (card--) this.$give("", player, false, false, cardsetion);
 			}
 		} else {
 			if (log != false && !_status.video) {
@@ -11125,12 +11473,35 @@ export class Player extends HTMLDivElement {
 				var node;
 				if (get.itemtype(card) == "card") {
 					node = card.copy("card", "thrown", false);
+					if (cardsetion) {
+						var next = ui.create.div(".cardsetion", cardsetion, node);
+						if (node.node) {
+							if (node.node.cardsetion) {
+								node.node.cardsetion.remove();
+								delete node.node.cardsetion;
+							}
+							node.node.cardsetion = next;
+						}
+					}
 				} else {
 					node = ui.create.div(".card.thrown");
+					if (cardsetion) {
+						node.classList.add("infoflip");
+						node.classList.add("infohidden");
+						let next = ui.create.div(".cardsetion", cardsetion, node);
+						next.style.setProperty("display", "block", "important");
+						if (node.node) {
+							if (node.node.cardsetion) {
+								node.node.cardsetion.remove();
+								delete node.node.cardsetion;
+							}
+							node.node.cardsetion = next;
+						}
+					}
 				}
 				// node.dataset.position=this.dataset.position;
 				node.fixed = true;
-				this.$throwordered(node);
+				this.$throwordered(node, null, cardsetion);
 				// lib.listenEnd(node);
 				// node.hide();
 				// node.style.transitionProperty='left,top,opacity';
@@ -11384,15 +11755,19 @@ export class Player extends HTMLDivElement {
 		}
 		return player;
 	}
-	$gain(card, log, init) {
+	$gain(card, log, init, cardsetion) {
+		if (!cardsetion && cardsetion !== false && lib.config.card_animation_info) {
+			cardsetion = get.cardsetion(this);
+		}
 		if (init !== false) {
 			game.broadcast(
 				function (player, card, init) {
-					player.$gain(card, false, init);
+					player.$gain(card, false, init, cardsetion);
 				},
 				this,
 				card,
-				init
+				init,
+				cardsetion
 			);
 			if (typeof card == "number" && card >= 0) {
 				game.addVideo("gain", this, card);
@@ -11438,13 +11813,22 @@ export class Player extends HTMLDivElement {
 			} else {
 				var node;
 				if (get.itemtype(card) == "card") {
-					// node=this.$throwordered(card.copy(),true);
 					node = card.copy("thrown", false);
 				} else {
-					// node=this.$throwordered(ui.create.div('.card.thrown'),true);
 					node = ui.create.div(".card.thrown");
 					node.moveTo = lib.element.Card.prototype.moveTo;
 					node.moveDelete = lib.element.Card.prototype.moveDelete;
+				}
+				if (cardsetion) {
+					var next = ui.create.div(".cardsetion", cardsetion, node);
+					next.style.setProperty("display", "block", "important");
+					if (node.node) {
+						if (node.node.cardsetion) {
+							node.node.cardsetion.remove();
+							delete node.node.cardsetion;
+						}
+						node.node.cardsetion = next;
+					}
 				}
 				node.fixed = true;
 				node.style.left = "calc(50% - 52px " + (Math.random() - 0.5 < 0 ? "+" : "-") + " " + Math.random() * 100 + "px)";
@@ -11464,16 +11848,20 @@ export class Player extends HTMLDivElement {
 			}
 		}
 	}
-	$gain2(cards, log) {
+	$gain2(cards, log, cardsetion) {
+		if (!cardsetion && cardsetion !== false && lib.config.card_animation_info) {
+			cardsetion = get.cardsetion(this);
+		}
 		if (log === true) {
 			game.log(this, "获得了", cards);
 		}
 		game.broadcast(
-			function (player, cards) {
-				player.$gain2(cards);
+			function (player, cards, cardsetion) {
+				player.$gain2(cards, null, cardsetion);
 			},
 			this,
-			cards
+			cards,
+			cardsetion
 		);
 		if (get.itemtype(cards) == "card") cards = [cards];
 		else if (get.itemtype(cards) != "cards") return;
@@ -11481,6 +11869,15 @@ export class Player extends HTMLDivElement {
 			list2 = [];
 		for (var i = 0; i < cards.length; i++) {
 			if (cards[i].clone && (cards[i].clone.parentNode == this.parentNode || cards[i].clone.parentNode == ui.arena) && parseFloat(getComputedStyle(cards[i].clone).opacity) > 0.3) {
+				var next = ui.create.div(".cardsetion", cardsetion, cards[i].clone);
+				next.style.setProperty("display", "block", "important");
+				if (cards[i].clone.node) {
+					if (cards[i].clone.node.cardsetion) {
+						cards[i].clone.node.cardsetion.remove();
+						delete cards[i].clone.node.cardsetion;
+					}
+					cards[i].clone.node.cardsetion = next;
+				}
 				cards[i].clone.moveDelete(this);
 				list2.push(cards[i].clone);
 			} else {
@@ -11491,7 +11888,7 @@ export class Player extends HTMLDivElement {
 			game.addVideo("gain2", this, get.cardsInfo(list2));
 		}
 		if (list.length) {
-			this.$draw(list, "nobroadcast");
+			this.$draw(list, "nobroadcast", null, cardsetion);
 			return true;
 		}
 	}

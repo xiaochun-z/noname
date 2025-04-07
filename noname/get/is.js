@@ -1,4 +1,4 @@
-import { userAgent } from "../util/index.js";
+import { userAgentLowerCase } from "../util/index.js";
 import { game } from "../game/index.js";
 import { lib } from "../library/index.js";
 import { _status } from "../status/index.js";
@@ -6,6 +6,14 @@ import { ui } from "../ui/index.js";
 import { get } from "./index.js";
 
 export class Is {
+	/**
+	 * @param { string } str
+	 * @returns
+	 */
+	emotion(str) {
+		let regExp = /^<img\b(?=[^>]*\bsrc="##assetURL##image\/emotion\/([^"\/]+)\/([^"\/]+)\.gif")(?=[^>]*\bwidth="50")(?=[^>]*\bheight="50")(?!.*\b(?!src|width|height)\w+=)[^>]*\/?>$/i;
+		return regExp.test(str);
+	}
 	/**
 	 * 判断是否为进攻坐骑
 	 * @param { Card | VCard } card
@@ -282,7 +290,7 @@ export class Is {
 	 * @param { string } str
 	 */
 	banWords(str) {
-		return get.is.emoji(str) || window.bannedKeyWords.some(item => str.includes(item));
+		return get.is.emoji(str) || window.bannedKeyWords?.some(item => str.includes(item));
 	}
 	/**
 	 * @param { GameEventPromise } event
@@ -292,7 +300,7 @@ export class Is {
 		return !(event.card && event.card.isCard);
 	}
 	safari() {
-		return userAgent.indexOf("safari") != -1 && userAgent.indexOf("chrome") == -1;
+		return userAgentLowerCase.indexOf("safari") != -1 && userAgentLowerCase.indexOf("chrome") == -1;
 	}
 	/**
 	 * @param { (Card | VCard)[]} cards
@@ -341,13 +349,6 @@ export class Is {
 	altered(skillName) {
 		return false;
 	}
-	/*
-	 skill=>{
-	 return false;
-	 // if(_status.connectMode) return true;
-	 // return !lib.config.vintageSkills.includes(skill);
-	 },
-	 */
 	/**
 	 * @param { any } obj
 	 * @returns { boolean }
@@ -476,7 +477,7 @@ export class Is {
 	 * @returns
 	 */
 	zhuanhuanji(skill, player) {
-		const info = lib.skill[skill],
+		const info = get.info(skill),
 			{ zhuanhuanji } = info;
 		if ("zhuanhuanji2" in info) {
 			const { zhuanhuanji2 } = info;

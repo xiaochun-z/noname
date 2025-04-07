@@ -2,6 +2,7 @@
  * https://github.com/accforgit/blog-data/blob/master/%E7%AE%80%E5%8D%95%E5%88%86%E9%A1%B5/demo/index.html
  */
 
+import dedent from "../../game/dedent.js";
 import { lib } from "../../noname.js";
 
 /**
@@ -30,6 +31,18 @@ export class Pagination {
 		disbaleNextCName: "no-next",
 		pageNumberCName: "page-number",
 		changePageEvent: "click",
+		/** @type { Required<PaginationState> } */
+		insertAfter: undefined,
+		/** @type { Required<PaginationState> } */
+		activePosition: undefined,
+		/** @type { Required<PaginationState> } */
+		pageNumberForCN: undefined,
+		/** @type { Required<PaginationState> } */
+		pageLimitForCN: undefined,
+		/** @type { Required<PaginationState> } */
+		pageRefuseChanged: undefined,
+		/** @type { Required<PaginationState> } */
+		pageElement: undefined,
 	};
 	/**
 	 * @param { Partial<PaginationState> } paramsObj
@@ -110,7 +123,7 @@ export class Pagination {
 						for (let i = 1; i < state.maxShowBtnCount + 1; i++) {
 							let value = String(i + 1);
 							// @ts-ignore
-							evaNumberLi[i].innerText = value;
+							evaNumberLi[i].innerText = state.pageNumberForCN?.[parseInt(value) - 1] ?? value;
 							evaNumberLi[i].setAttribute(state.dataNumberAttr, value);
 						}
 					}
@@ -126,7 +139,7 @@ export class Pagination {
 					for (let i = 1; i < state.maxShowBtnCount + 1; i++) {
 						let value = String(pageNumber + (i - state.activePosition));
 						// @ts-ignore
-						evaNumberLi[i].innerText = value;
+						evaNumberLi[i].innerText = state.pageNumberForCN?.[parseInt(value) - 1] ?? value;
 						evaNumberLi[i].setAttribute(state.dataNumberAttr, value);
 					}
 					this.addClass(evaNumberLi[state.activePosition], state.activeCName);
@@ -139,7 +152,7 @@ export class Pagination {
 						for (let i = 1; i < state.maxShowBtnCount + 1; i++) {
 							let value = String(state.totalPageCount - (state.maxShowBtnCount - i) - 1);
 							// @ts-ignore
-							evaNumberLi[i].innerText = value;
+							evaNumberLi[i].innerText = state.pageNumberForCN?.[parseInt(value) - 1] ?? value;
 							evaNumberLi[i].setAttribute(state.dataNumberAttr, value);
 						}
 					}
@@ -191,27 +204,27 @@ export class Pagination {
 
 		let { totalPageCount, pCName, prevCName, disbalePrevCName, pageNumber, pageNumberCName, activeCName, dataNumberAttr, maxShowBtnCount, nextCName, disbaleNextCName } = state;
 
-		let paginationStr = `
+		let paginationStr = dedent`
 				<ul class="pagination">
-					<li class="${pCName} ${prevCName} ${disbalePrevCName}">上一页</li>
-					<li class="${pCName} ${pageNumberCName} ${activeCName}" ${dataNumberAttr}='1'>1</li>
+					<li class="${pCName} ${prevCName} ${disbalePrevCName}">${state.pageLimitForCN?.[0] ?? "上一页"}</li>
+					<li class="${pCName} ${pageNumberCName} ${activeCName}" ${dataNumberAttr}='1'>${state.pageNumberForCN?.[0] ?? "1"}</li>
 			`;
 		if (totalPageCount - 2 > maxShowBtnCount) {
 			paginationStr += `<li class="${pCName} number-ellipsis ellipsis-head" style="display: none;">...</li>`;
 			for (let i = 2; i < maxShowBtnCount + 2; i++) {
-				paginationStr += `<li class="${pCName} ${pageNumberCName} ${i === 1 ? activeCName : ""}" ${dataNumberAttr}='${i}'>${i}</li>`;
+				paginationStr += `<li class="${pCName} ${pageNumberCName} ${i === 1 ? activeCName : ""}" ${dataNumberAttr}='${i}'>${state.pageNumberForCN?.[i - 1] ?? i}</li>`;
 			}
-			paginationStr += `
+			paginationStr += dedent`
 				<li class="${pCName} number-ellipsis ellipsis-tail">...</li>
-				<li class="${pCName} ${pageNumberCName}" ${dataNumberAttr}='${totalPageCount}'>${totalPageCount}</li>
+				<li class="${pCName} ${pageNumberCName}" ${dataNumberAttr}='${totalPageCount}'>${state.pageNumberForCN?.[totalPageCount - 1] ?? totalPageCount}</li>
 			`;
 		} else {
 			for (let i = 2; i <= totalPageCount; i++) {
-				paginationStr += `<li class="${pCName} ${pageNumberCName}" ${dataNumberAttr}='${i}'>${i}</li>`;
+				paginationStr += `<li class="${pCName} ${pageNumberCName}" ${dataNumberAttr}='${i}'>${state.pageNumberForCN?.[i - 1] ?? i}</li>`;
 			}
 		}
-		paginationStr += `<li class="${pCName} ${nextCName}${totalPageCount === 1 ? " " + disbaleNextCName : ""}">下一页</li></ul>`;
-		
+		paginationStr += `<li class="${pCName} ${nextCName}${totalPageCount === 1 ? " " + disbaleNextCName : ""}">${state.pageLimitForCN?.[1] ?? "下一页"}</li></ul>`;
+
 		if (state.insertAfter) {
 			let afterElement = state.insertAfter instanceof Element ? state.insertAfter : document.querySelector(state.insertAfter);
 			if (!afterElement || !pageContainer.contains(afterElement)) {
@@ -224,7 +237,7 @@ export class Pagination {
 				// @ts-ignore
 				this.element = afterElement.nextElementSibling;
 				// @ts-ignore
-				this.element.style.position = 'static';
+				this.element.style.position = "static";
 			}
 		} else {
 			pageContainer.insertAdjacentHTML("beforeend", paginationStr);
@@ -236,7 +249,7 @@ export class Pagination {
 		let ele = this.element;
 		while (ele !== null) {
 			// @ts-ignore
-			if (ele.classList.contains('dialog')) {
+			if (ele.classList.contains("dialog")) {
 				// @ts-ignore
 				Array.from(this.element.children).forEach(item => {
 					if (item.classList.contains("number-ellipsis") || item.classList.contains("ellipsis-tail")) return;
@@ -257,7 +270,8 @@ export class Pagination {
 	 */
 	isIllegal(pageNumber) {
 		let { state } = this;
-		return /*state.pageNumber === pageNumber || */Math.ceil(pageNumber) !== pageNumber || pageNumber > state.totalPageCount || pageNumber < 1 || typeof pageNumber !== "number" || pageNumber !== pageNumber;
+		if (state.pageRefuseChanged) return true;
+		return /*state.pageNumber === pageNumber || */ Math.ceil(pageNumber) !== pageNumber || pageNumber > state.totalPageCount || pageNumber < 1 || typeof pageNumber !== "number" || pageNumber !== pageNumber;
 	}
 	/**
 	 * 隐藏/显示省略符号占位

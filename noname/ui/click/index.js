@@ -78,9 +78,7 @@ export class Click {
 				uiintro.content.innerHTML = "";
 				uiintro.addText("创建约战");
 				button.textnode = uiintro.content.lastChild.lastChild;
-				uiintro.add(
-					'<input type="text" style="width:calc(100% - 10px);resize: none;border: none;border-radius: 2px;box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 0px 1px;margin-top: -2px;margin-bottom: 2px;">'
-				);
+				uiintro.add('<input type="text" style="width:calc(100% - 10px);resize: none;border: none;border-radius: 2px;box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 0px 1px;margin-top: -2px;margin-bottom: 2px;">');
 				uiintro.content.lastChild.style.paddingTop = 0;
 				button.input = uiintro.content.lastChild.lastChild;
 				button.input.onfocus = function () {
@@ -174,7 +172,7 @@ export class Click {
 							hour: parseInt(hoursselect.value),
 							nickname: get.connectNickname(),
 							avatar: lib.config.connect_avatar,
-							content: button.input.value,
+							content: get.plainText(button.input.value),
 							create: game.onlineKey,
 							members: [game.onlineKey],
 						};
@@ -227,7 +225,7 @@ export class Click {
 							hour: parseInt(hoursselect.value),
 							nickname: get.connectNickname(),
 							avatar: lib.config.connect_avatar,
-							content: button.input.value,
+							content: get.plainText(button.input.value),
 						},
 						game.onlineKey
 					);
@@ -235,12 +233,7 @@ export class Click {
 
 				var num = 0;
 				for (var i = 0; i < button.info.length; i++) {
-					if (
-						typeof button.info[i].creator == "string" &&
-						button.info[i].creator != game.onlineKey &&
-						get.is.banWords(button.info[i].content)
-					)
-						continue;
+					if (typeof button.info[i].creator == "string" && button.info[i].creator != game.onlineKey && get.is.banWords(button.info[i].content)) continue;
 					if (button.info[i].creator == game.onlineKey) {
 						num++;
 					}
@@ -363,9 +356,7 @@ export class Click {
 				uiintro.content.innerHTML = "";
 				uiintro.addText("发状态");
 				button.textnode = uiintro.content.lastChild.lastChild;
-				uiintro.add(
-					'<input type="text" style="width:calc(100% - 10px);resize: none;border: none;border-radius: 2px;box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 0px 1px;margin-top: -2px;margin-bottom: 2px;">'
-				);
+				uiintro.add('<input type="text" style="width:calc(100% - 10px);resize: none;border: none;border-radius: 2px;box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 0px 1px;margin-top: -2px;margin-bottom: 2px;">');
 				uiintro.content.lastChild.style.paddingTop = 0;
 				button.input = uiintro.content.lastChild.lastChild;
 				button.input.onfocus = function () {
@@ -413,30 +404,20 @@ export class Click {
 
 				for (var i = 0; i < button.info.length; i++) {
 					var node = ui.create.div(".menubutton.videonode.pointerdiv", uiintro.content);
-					ui.create
-						.div(".menubutton.videoavatar", node)
-						.setBackground(button.info[i][1] || "caocao", "character");
+					ui.create.div(".menubutton.videoavatar", node).setBackground(button.info[i][1] || "caocao", "character");
 					if (button.info[i][4] == game.wsid) {
-						ui.create.div(
-							".name",
-							'<span class="thundertext thunderauto">' + (button.info[i][0] || "无名玩家"),
-							node
-						);
+						ui.create.div(".name", '<span class="thundertext thunderauto">' + (button.info[i][0] || "无名玩家"), node);
 						node.isme = true;
 					} else if (button.info[i][2]) {
 						ui.create.div(".name", button.info[i][0] || "无名玩家", node);
 					} else {
-						ui.create.div(
-							".name",
-							'<span style="opacity:0.6">' + (button.info[i][0] || "无名玩家"),
-							node
-						);
+						ui.create.div(".name", '<span style="opacity:0.6">' + (button.info[i][0] || "无名玩家"), node);
 					}
 					//show ID
 					//ui.create.div('.videostatus',node,button.info[i][5]);
 					//node.classList.add('videonodestatus');
 					if (button.info[i][3]) {
-						ui.create.div(".videostatus", node, button.info[i][3].slice(0, 80));
+						ui.create.div(".videostatus", node, get.plainText(button.info[i][3].slice(0, 80)));
 						node.classList.add("videonodestatus");
 					}
 				}
@@ -722,13 +703,7 @@ export class Click {
 		if (!game.getIdentityList) return;
 		if (_status.video) return;
 		if (this.parentNode.forceShown) return;
-		if (
-			!_status.connectMode &&
-			this.parentNode.ai.stratagem_camouflage &&
-			get.config("nei_auto_mark_camouflage") &&
-			game.me.identity == "nei"
-		)
-			return;
+		if (!_status.connectMode && this.parentNode.ai.stratagem_camouflage && get.config("nei_auto_mark_camouflage") && game.me.identity == "nei") return;
 		if (_status.clickingidentity) {
 			for (var i = 0; i < _status.clickingidentity[1].length; i++) {
 				_status.clickingidentity[1][i].delete();
@@ -911,12 +886,7 @@ export class Click {
 			var node = ui.create.div(".newgame.pointernode");
 			for (var i = 0; i < 3 && i + k * 3 < modes.length; i++) {
 				var thismode = modes[i + k * 3];
-				var div = ui.create.div(
-					thismode == (_status.sourcemode || lib.config.mode)
-						? ".underlinenode.on"
-						: ".underlinenode",
-					node
-				);
+				var div = ui.create.div(thismode == (_status.sourcemode || lib.config.mode) ? ".underlinenode.on" : ".underlinenode", node);
 				div.innerHTML = lib.translate[thismode];
 				div.link = thismode;
 				div.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
@@ -944,13 +914,7 @@ export class Click {
 		uiintro.add('剩余 <span style="font-family:' + "xinwei" + '">' + num);
 
 		if (_status.connectMode) return uiintro;
-		uiintro.add(
-			'<div class="text center">轮数 <span style="font-family:xinwei">' +
-				game.roundNumber +
-				'</span>&nbsp;&nbsp;&nbsp;&nbsp;洗牌 <span style="font-family:xinwei">' +
-				game.shuffleNumber +
-				"</div>"
-		);
+		uiintro.add('<div class="text center">轮数 <span style="font-family:xinwei">' + game.roundNumber + '</span>&nbsp;&nbsp;&nbsp;&nbsp;洗牌 <span style="font-family:xinwei">' + game.shuffleNumber + "</div>");
 		uiintro.add('<div class="text center">弃牌堆</div>');
 		if (ui.discardPile.childNodes.length) {
 			var list = [];
@@ -1094,55 +1058,41 @@ export class Click {
 		lib.setScroll(list2);
 		//uiintro.add(list2);
 		for (var i in lib.emotionList) {
-			var emotionPack = ui.create.div(
-				".card.fullskin",
-				'<img src="' + lib.assetURL + "image/emotion/" + i + '/1.gif" width="50" height="50">',
-				function () {
-					emotionTitle.innerHTML = get.translation(this.pack);
-					for (var j = 1; j <= lib.emotionList[this.pack]; j++) {
-						var emotionButton = ui.create.div(
-							".card.fullskin",
-							'<img src="' +
-								lib.assetURL +
-								"image/emotion/" +
-								this.pack +
-								"/" +
-								j +
-								'.gif" width="50" height="50">',
-							function () {
-								var player = game.me;
-								if (!player) {
-									if (game.connectPlayers) {
-										if (game.online) {
-											for (var i = 0; i < game.connectPlayers.length; i++) {
-												if (game.connectPlayers[i].playerid == game.onlineID) {
-													player = game.connectPlayers[i];
-													break;
-												}
-											}
-										} else {
-											player = game.connectPlayers[0];
+			var emotionPack = ui.create.div(".card.fullskin", '<img src="' + lib.assetURL + "image/emotion/" + i + '/1.gif" width="50" height="50">', function () {
+				emotionTitle.innerHTML = get.translation(this.pack);
+				for (var j = 1; j <= lib.emotionList[this.pack]; j++) {
+					var emotionButton = ui.create.div(".card.fullskin", '<img src="' + lib.assetURL + "image/emotion/" + this.pack + "/" + j + '.gif" width="50" height="50">', function () {
+						var player = game.me;
+						if (!player) {
+							if (game.connectPlayers) {
+								if (game.online) {
+									for (var i = 0; i < game.connectPlayers.length; i++) {
+										if (game.connectPlayers[i].playerid == game.onlineID) {
+											player = game.connectPlayers[i];
+											break;
 										}
 									}
-								}
-								if (!player) return;
-								if (game.online) {
-									game.send("emotion", game.onlineID, this.pack, this.emotionID);
 								} else {
-									player.emotion(this.pack, this.emotionID);
+									player = game.connectPlayers[0];
 								}
 							}
-						);
-						emotionButton.emotionID = j;
-						emotionButton.pack = this.pack;
-						emotionButton.style.height = "50px";
-						emotionButton.style.width = "50px";
-						list2.appendChild(emotionButton);
-					}
-					list1.remove();
-					uiintro.add(list2);
+						}
+						if (!player) return;
+						if (game.online) {
+							game.send("emotion", game.onlineID, this.pack, this.emotionID);
+						} else {
+							player.emotion(this.pack, this.emotionID);
+						}
+					});
+					emotionButton.emotionID = j;
+					emotionButton.pack = this.pack;
+					emotionButton.style.height = "50px";
+					emotionButton.style.width = "50px";
+					list2.appendChild(emotionButton);
 				}
-			);
+				list1.remove();
+				uiintro.add(list2);
+			});
 			emotionPack.pack = i;
 			emotionPack.style.height = "50px";
 			emotionPack.style.width = "50px";
@@ -1425,12 +1375,8 @@ export class Click {
 			delete _status._swipeorigin;
 			if (ui.roundmenu._dragorigin && ui.roundmenu._dragtransform && e.touches.length) {
 				var translate = ui.roundmenu._dragtransform.slice(0);
-				var dx =
-					e.touches[0].clientX / game.documentZoom -
-					ui.roundmenu._dragorigin.clientX / game.documentZoom;
-				var dy =
-					e.touches[0].clientY / game.documentZoom -
-					ui.roundmenu._dragorigin.clientY / game.documentZoom;
+				var dx = e.touches[0].clientX / game.documentZoom - ui.roundmenu._dragorigin.clientX / game.documentZoom;
+				var dy = e.touches[0].clientY / game.documentZoom - ui.roundmenu._dragorigin.clientY / game.documentZoom;
 				translate[0] += dx;
 				translate[1] += dy;
 				if (dx * dx + dy * dy > 100) {
@@ -1445,18 +1391,10 @@ export class Click {
 			_status.clicked = true;
 		} else if (_status.draggingtouchdialog) {
 			delete _status._swipeorigin;
-			if (
-				_status.draggingtouchdialog._dragorigin &&
-				_status.draggingtouchdialog._dragtransform &&
-				e.touches.length
-			) {
+			if (_status.draggingtouchdialog._dragorigin && _status.draggingtouchdialog._dragtransform && e.touches.length) {
 				var translate = _status.draggingtouchdialog._dragtransform.slice(0);
-				var dx =
-					e.touches[0].clientX / game.documentZoom -
-					_status.draggingtouchdialog._dragorigin.clientX / game.documentZoom;
-				var dy =
-					e.touches[0].clientY / game.documentZoom -
-					_status.draggingtouchdialog._dragorigin.clientY / game.documentZoom;
+				var dx = e.touches[0].clientX / game.documentZoom - _status.draggingtouchdialog._dragorigin.clientX / game.documentZoom;
+				var dy = e.touches[0].clientY / game.documentZoom - _status.draggingtouchdialog._dragorigin.clientY / game.documentZoom;
 				translate[0] += dx;
 				translate[1] += dy;
 				_status.draggingtouchdialog._dragtouches = e.touches[0];
@@ -1476,8 +1414,7 @@ export class Click {
 					var ex = e.touches[0].clientX / game.documentZoom - ui.arena.offsetLeft;
 					var ey = e.touches[0].clientY / game.documentZoom - ui.arena.offsetTop;
 					for (var i = 0; i < game.players.length; i++) {
-						var left =
-							-ui.chessContainer.chessLeft + ui.chess.offsetLeft + game.players[i].getLeft();
+						var left = -ui.chessContainer.chessLeft + ui.chess.offsetLeft + game.players[i].getLeft();
 						var top = -ui.chessContainer.chessTop + ui.chess.offsetTop + game.players[i].getTop();
 						var width = game.players[i].offsetWidth;
 						var height = game.players[i].offsetHeight;
@@ -1501,10 +1438,7 @@ export class Click {
 
 					ctx.beginPath();
 
-					ctx.moveTo(
-						_status.mousedragging.clientX / game.documentZoom - ui.arena.offsetLeft,
-						_status.mousedragging.clientY / game.documentZoom - ui.arena.offsetTop
-					);
+					ctx.moveTo(_status.mousedragging.clientX / game.documentZoom - ui.arena.offsetLeft, _status.mousedragging.clientY / game.documentZoom - ui.arena.offsetTop);
 
 					if (_status.multitarget) {
 						for (var i = 0; i < _status.lastdragchange.length; i++) {
@@ -1513,18 +1447,12 @@ export class Click {
 						}
 					}
 					if (!_status.selectionfull) {
-						ctx.lineTo(
-							e.touches[0].clientX / game.documentZoom - ui.arena.offsetLeft,
-							e.touches[0].clientY / game.documentZoom - ui.arena.offsetTop
-						);
+						ctx.lineTo(e.touches[0].clientX / game.documentZoom - ui.arena.offsetLeft, e.touches[0].clientY / game.documentZoom - ui.arena.offsetTop);
 					}
 					ctx.stroke();
 					if (!_status.multitarget) {
 						for (var i = 0; i < _status.lastdragchange.length; i++) {
-							ctx.moveTo(
-								_status.mousedragging.clientX / game.documentZoom - ui.arena.offsetLeft,
-								_status.mousedragging.clientY / game.documentZoom - ui.arena.offsetTop
-							);
+							ctx.moveTo(_status.mousedragging.clientX / game.documentZoom - ui.arena.offsetLeft, _status.mousedragging.clientY / game.documentZoom - ui.arena.offsetTop);
 							var exy = _status.lastdragchange[i]._lastdragchange;
 							ctx.lineTo(exy[0], exy[1]);
 							ctx.stroke();
@@ -1557,25 +1485,14 @@ export class Click {
 						ex -= -ui.chessContainer.chessLeft + ui.chess.offsetLeft;
 						ey -= -ui.chessContainer.chessTop + ui.chess.offsetTop;
 					}
-					if (
-						itemtype != "player" ||
-						game.chess ||
-						(ex > item.offsetLeft &&
-							ex < item.offsetLeft + item.offsetWidth &&
-							ey > item.offsetTop &&
-							ey < item.offsetTop + item.offsetHeight)
-					) {
+					if (itemtype != "player" || game.chess || (ex > item.offsetLeft && ex < item.offsetLeft + item.offsetWidth && ey > item.offsetTop && ey < item.offsetTop + item.offsetHeight)) {
 						var targetfixed = false;
 						if (itemtype == "player") {
 							if (get.select(_status.event.selectTarget)[1] <= -1) {
 								targetfixed = true;
 							}
 						}
-						if (
-							!targetfixed &&
-							item.classList.contains("selectable") &&
-							_status.dragstatuschanged != item
-						) {
+						if (!targetfixed && item.classList.contains("selectable") && _status.dragstatuschanged != item) {
 							_status.mouseleft = true;
 							_status.dragstatuschanged = item;
 							_status.clicked = false;
@@ -1587,12 +1504,7 @@ export class Click {
 									_status.lastdragchange.push(item);
 									item._lastdragchange = [exx, eyy];
 									if (lib.falseitem) {
-										var from = [
-											_status.mousedragging.clientX / game.documentZoom -
-												ui.arena.offsetLeft,
-											_status.mousedragging.clientY / game.documentZoom -
-												ui.arena.offsetTop,
-										];
+										var from = [_status.mousedragging.clientX / game.documentZoom - ui.arena.offsetLeft, _status.mousedragging.clientY / game.documentZoom - ui.arena.offsetTop];
 										var to = [exx, eyy];
 										var node = ui.create.div(".linexy.hidden");
 										node.style.left = from[0] + "px";
@@ -1639,20 +1551,11 @@ export class Click {
 								}
 							}
 							_status.selectionfull = true;
-							if (
-								_status.event.filterButton &&
-								ui.selected.buttons.length < get.select(_status.event.selectButton)[1]
-							) {
+							if (_status.event.filterButton && ui.selected.buttons.length < get.select(_status.event.selectButton)[1]) {
 								_status.selectionfull = false;
-							} else if (
-								_status.event.filterCard &&
-								ui.selected.cards.length < get.select(_status.event.selectCard)[1]
-							) {
+							} else if (_status.event.filterCard && ui.selected.cards.length < get.select(_status.event.selectCard)[1]) {
 								_status.selectionfull = false;
-							} else if (
-								_status.event.filterTarget &&
-								ui.selected.targets.length < get.select(_status.event.selectTarget)[1]
-							) {
+							} else if (_status.event.filterTarget && ui.selected.targets.length < get.select(_status.event.selectTarget)[1]) {
 								_status.selectionfull = false;
 							}
 						}
@@ -1683,12 +1586,8 @@ export class Click {
 			}
 			var translate;
 			if (ui.roundmenu._dragorigin && ui.roundmenu._dragtransform && ui.roundmenu._dragtouches) {
-				var dx =
-					ui.roundmenu._dragtouches.clientX / game.documentZoom -
-					ui.roundmenu._dragorigin.clientX / game.documentZoom;
-				var dy =
-					ui.roundmenu._dragtouches.clientY / game.documentZoom -
-					ui.roundmenu._dragorigin.clientY / game.documentZoom;
+				var dx = ui.roundmenu._dragtouches.clientX / game.documentZoom - ui.roundmenu._dragorigin.clientX / game.documentZoom;
+				var dy = ui.roundmenu._dragtouches.clientY / game.documentZoom - ui.roundmenu._dragorigin.clientY / game.documentZoom;
 				if (dx * dx + dy * dy < 1000) {
 					ui.click.roundmenu();
 					ui.roundmenu._dragtransform = ui.roundmenu._dragorigintransform;
@@ -1710,17 +1609,9 @@ export class Click {
 		} else if (_status.draggingtouchdialog) {
 			delete _status._swipeorigin;
 			var translate;
-			if (
-				_status.draggingtouchdialog._dragorigin &&
-				_status.draggingtouchdialog._dragtransform &&
-				_status.draggingtouchdialog._dragtouches
-			) {
-				var dx =
-					_status.draggingtouchdialog._dragtouches.clientX / game.documentZoom -
-					_status.draggingtouchdialog._dragorigin.clientX / game.documentZoom;
-				var dy =
-					_status.draggingtouchdialog._dragtouches.clientY / game.documentZoom -
-					_status.draggingtouchdialog._dragorigin.clientY / game.documentZoom;
+			if (_status.draggingtouchdialog._dragorigin && _status.draggingtouchdialog._dragtransform && _status.draggingtouchdialog._dragtouches) {
+				var dx = _status.draggingtouchdialog._dragtouches.clientX / game.documentZoom - _status.draggingtouchdialog._dragorigin.clientX / game.documentZoom;
+				var dy = _status.draggingtouchdialog._dragtouches.clientY / game.documentZoom - _status.draggingtouchdialog._dragorigin.clientY / game.documentZoom;
 				translate = _status.draggingtouchdialog._dragtransform;
 				translate[0] += dx;
 				translate[1] += dy;
@@ -1735,20 +1626,10 @@ export class Click {
 			setTimeout(function () {
 				_status.justdragged = false;
 			}, 500);
-		} else if (
-			_status._swipeorigin &&
-			!_status.paused2 &&
-			!_status.mousedragging &&
-			_status._swipeorigin.touches &&
-			!_status.filterCharacter
-		) {
+		} else if (_status._swipeorigin && !_status.paused2 && !_status.mousedragging && _status._swipeorigin.touches && !_status.filterCharacter) {
 			if (get.utc() - _status._swipeorigin.time < 500) {
-				var dx =
-					_status._swipeorigin.touches.clientX / game.documentZoom -
-					_status._swipeorigin.clientX / game.documentZoom;
-				var dy =
-					_status._swipeorigin.touches.clientY / game.documentZoom -
-					_status._swipeorigin.clientY / game.documentZoom;
+				var dx = _status._swipeorigin.touches.clientX / game.documentZoom - _status._swipeorigin.clientX / game.documentZoom;
+				var dy = _status._swipeorigin.touches.clientY / game.documentZoom - _status._swipeorigin.clientY / game.documentZoom;
 				var goswipe = function (action) {
 					game.closeConnectMenu();
 					switch (action) {
@@ -1931,10 +1812,7 @@ export class Click {
 
 				ctx.beginPath();
 
-				ctx.moveTo(
-					_status.mousedragging.clientX / game.documentZoom - ui.arena.offsetLeft,
-					_status.mousedragging.clientY / game.documentZoom - ui.arena.offsetTop
-				);
+				ctx.moveTo(_status.mousedragging.clientX / game.documentZoom - ui.arena.offsetLeft, _status.mousedragging.clientY / game.documentZoom - ui.arena.offsetTop);
 				if (_status.multitarget) {
 					for (var i = 0; i < _status.lastdragchange.length; i++) {
 						var exy = _status.lastdragchange[i]._lastdragchange;
@@ -1942,18 +1820,12 @@ export class Click {
 					}
 				}
 				if (!_status.selectionfull) {
-					ctx.lineTo(
-						e.clientX / game.documentZoom - ui.arena.offsetLeft,
-						e.clientY / game.documentZoom - ui.arena.offsetTop
-					);
+					ctx.lineTo(e.clientX / game.documentZoom - ui.arena.offsetLeft, e.clientY / game.documentZoom - ui.arena.offsetTop);
 				}
 				ctx.stroke();
 				if (!_status.multitarget) {
 					for (var i = 0; i < _status.lastdragchange.length; i++) {
-						ctx.moveTo(
-							_status.mousedragging.clientX / game.documentZoom - ui.arena.offsetLeft,
-							_status.mousedragging.clientY / game.documentZoom - ui.arena.offsetTop
-						);
+						ctx.moveTo(_status.mousedragging.clientX / game.documentZoom - ui.arena.offsetLeft, _status.mousedragging.clientY / game.documentZoom - ui.arena.offsetTop);
 						var exy = _status.lastdragchange[i]._lastdragchange;
 						ctx.lineTo(exy[0], exy[1]);
 						ctx.stroke();
@@ -1990,25 +1862,14 @@ export class Click {
 						ex -= -ui.chessContainer.chessLeft + ui.chess.offsetLeft;
 						ey -= -ui.chessContainer.chessTop + ui.chess.offsetTop;
 					}
-					if (
-						itemtype != "player" ||
-						game.chess ||
-						(ex > item.offsetLeft &&
-							ex < item.offsetLeft + item.offsetWidth &&
-							ey > item.offsetTop &&
-							ey < item.offsetTop + item.offsetHeight)
-					) {
+					if (itemtype != "player" || game.chess || (ex > item.offsetLeft && ex < item.offsetLeft + item.offsetWidth && ey > item.offsetTop && ey < item.offsetTop + item.offsetHeight)) {
 						var targetfixed = false;
 						if (itemtype == "player") {
 							if (get.select(_status.event.selectTarget)[1] <= -1) {
 								targetfixed = true;
 							}
 						}
-						if (
-							!targetfixed &&
-							item.classList.contains("selectable") &&
-							_status.dragstatuschanged != item
-						) {
+						if (!targetfixed && item.classList.contains("selectable") && _status.dragstatuschanged != item) {
 							_status.mouseleft = true;
 							_status.dragstatuschanged = item;
 							_status.clicked = false;
@@ -2023,20 +1884,11 @@ export class Click {
 								_status.lastdragchange.remove(item);
 							}
 							_status.selectionfull = true;
-							if (
-								_status.event.filterButton &&
-								ui.selected.buttons.length < get.select(_status.event.selectButton)[1]
-							) {
+							if (_status.event.filterButton && ui.selected.buttons.length < get.select(_status.event.selectButton)[1]) {
 								_status.selectionfull = false;
-							} else if (
-								_status.event.filterCard &&
-								ui.selected.cards.length < get.select(_status.event.selectCard)[1]
-							) {
+							} else if (_status.event.filterCard && ui.selected.cards.length < get.select(_status.event.selectCard)[1]) {
 								_status.selectionfull = false;
-							} else if (
-								_status.event.filterTarget &&
-								ui.selected.targets.length < get.select(_status.event.selectTarget)[1]
-							) {
+							} else if (_status.event.filterTarget && ui.selected.targets.length < get.select(_status.event.selectTarget)[1]) {
 								_status.selectionfull = false;
 							}
 						}
@@ -2062,23 +1914,12 @@ export class Click {
 						hoveration = node._hoveration;
 					} else {
 						hoveration = parseInt(lib.config.hoveration);
-						if (
-							node.classList.contains("button") ||
-							(node.parentNode && node.parentNode.parentNode) == ui.me
-						) {
+						if (node.classList.contains("button") || (node.parentNode && node.parentNode.parentNode) == ui.me) {
 							hoveration += 500;
 						}
 					}
 					_status._mouseentertimeout = setTimeout(function () {
-						if (
-							_status.currentmouseenter != node ||
-							node._mouseentercreated ||
-							_status.tempunpopup ||
-							_status.mousedragging ||
-							_status.mousedown ||
-							!node.offsetWidth ||
-							!node.offsetHeight
-						) {
+						if (_status.currentmouseenter != node || node._mouseentercreated || _status.tempunpopup || _status.mousedragging || _status.mousedown || !node.offsetWidth || !node.offsetHeight) {
 							return;
 						}
 						if (node._hoverfunc && !node._nopup) {
@@ -2104,10 +1945,8 @@ export class Click {
 				var ddialog = _status.draggingdialog;
 				if (ddialog._dragorigin && ddialog._dragtransform) {
 					var translate = ddialog._dragtransform.slice(0);
-					translate[0] +=
-						e.clientX / game.documentZoom - ddialog._dragorigin.clientX / game.documentZoom;
-					translate[1] +=
-						e.clientY / game.documentZoom - ddialog._dragorigin.clientY / game.documentZoom;
+					translate[0] += e.clientX / game.documentZoom - ddialog._dragorigin.clientX / game.documentZoom;
+					translate[1] += e.clientY / game.documentZoom - ddialog._dragorigin.clientY / game.documentZoom;
 					ui.click.checkdialogtranslate(translate, ddialog);
 				}
 				_status.clicked = true;
@@ -2115,10 +1954,8 @@ export class Click {
 			if (_status.draggingroundmenu) {
 				if (ui.roundmenu._dragorigin && ui.roundmenu._dragtransform) {
 					var translate = ui.roundmenu._dragtransform.slice(0);
-					translate[0] +=
-						e.clientX / game.documentZoom - ui.roundmenu._dragorigin.clientX / game.documentZoom;
-					translate[1] +=
-						e.clientY / game.documentZoom - ui.roundmenu._dragorigin.clientY / game.documentZoom;
+					translate[0] += e.clientX / game.documentZoom - ui.roundmenu._dragorigin.clientX / game.documentZoom;
+					translate[1] += e.clientY / game.documentZoom - ui.roundmenu._dragorigin.clientY / game.documentZoom;
 					ui.click.checkroundtranslate(translate);
 				}
 				_status.clicked = true;
@@ -2139,11 +1976,7 @@ export class Click {
 		while (item) {
 			var itemtype = get.itemtype(item);
 			if (itemtype == "button") break;
-			if (
-				itemtype == "dialog" &&
-				!item.classList.contains("popped") &&
-				!item.classList.contains("fixed")
-			) {
+			if (itemtype == "dialog" && !item.classList.contains("popped") && !item.classList.contains("fixed")) {
 				var ddialog = item;
 				_status.draggingdialog = ddialog;
 				ddialog._dragorigin = e;
@@ -2172,11 +2005,7 @@ export class Click {
 		while (item) {
 			var itemtype = get.itemtype(item);
 			if (itemtype == "card" || itemtype == "button" || itemtype == "player") {
-				if (
-					item.classList.contains("selectable") &&
-					!item.classList.contains("selected") &&
-					!item.classList.contains("noclick")
-				) {
+				if (item.classList.contains("selectable") && !item.classList.contains("selected") && !item.classList.contains("noclick")) {
 					_status.clicked = false;
 					ui.click[itemtype].call(item);
 					if (item.classList.contains("selected")) {
@@ -2201,11 +2030,7 @@ export class Click {
 		if (!this.parentNode.parentNode) return;
 		if (this.parentNode.parentNode.parentNode != ui.me) return;
 		if (this.parentNode.parentNode.classList.contains("scrollh")) return;
-		if (
-			this.classList.contains("selectable") &&
-			!this.classList.contains("selected") &&
-			!this.classList.contains("noclick")
-		) {
+		if (this.classList.contains("selectable") && !this.classList.contains("selected") && !this.classList.contains("noclick")) {
 			this._waitingfordrag = {
 				clientX: e.touches[0].clientX,
 				clientY: e.touches[0].clientY,
@@ -2242,10 +2067,8 @@ export class Click {
 			var translate;
 			if (ddialog._dragorigin && ddialog._dragtransform) {
 				translate = ddialog._dragtransform;
-				translate[0] +=
-					e.clientX / game.documentZoom - ddialog._dragorigin.clientX / game.documentZoom;
-				translate[1] +=
-					e.clientY / game.documentZoom - ddialog._dragorigin.clientY / game.documentZoom;
+				translate[0] += e.clientX / game.documentZoom - ddialog._dragorigin.clientX / game.documentZoom;
+				translate[1] += e.clientY / game.documentZoom - ddialog._dragorigin.clientY / game.documentZoom;
 				ui.click.checkdialogtranslate(null, ddialog);
 				delete ddialog._dragorigin;
 			}
@@ -2551,9 +2374,7 @@ export class Click {
 		_status.choosing.previousSibling.show();
 		delete _status.choosing;
 		if (this.parentNode.parentNode.querySelector(".toggle").additionalCommand) {
-			this.parentNode.parentNode
-				.querySelector(".toggle")
-				.additionalCommand(this.link, this.parentNode.parentNode);
+			this.parentNode.parentNode.querySelector(".toggle").additionalCommand(this.link, this.parentNode.parentNode);
 		}
 	}
 	button() {
@@ -2602,10 +2423,7 @@ export class Click {
 		if (_status.clicked) return;
 		if (ui.intro) return;
 		_status.clicked = true;
-		if (
-			this.parentNode &&
-			(this.parentNode.classList.contains("judges") || this.parentNode.classList.contains("marks"))
-		) {
+		if (this.parentNode && (this.parentNode.classList.contains("judges") || this.parentNode.classList.contains("marks"))) {
 			var rect = this.getBoundingClientRect();
 			ui.click.touchpop();
 			ui.click.intro.call(this, {
@@ -2635,14 +2453,7 @@ export class Click {
 			this.classList.add("selected");
 			this.updateTransform(true);
 		}
-		if (
-			game.chess &&
-			get.config("show_range") &&
-			!_status.event.skill &&
-			this.classList.contains("selected") &&
-			_status.event.isMine() &&
-			_status.event.name == "chooseToUse"
-		) {
+		if (game.chess && get.config("show_range") && !_status.event.skill && this.classList.contains("selected") && _status.event.isMine() && _status.event.name == "chooseToUse") {
 			var player = _status.event.player;
 			var range = get.info(this).range;
 			if (range) {
@@ -2658,15 +2469,7 @@ export class Click {
 		}
 		game.check();
 
-		if (
-			lib.config.popequip &&
-			get.is.phoneLayout() &&
-			arguments[0] != "popequip" &&
-			ui.arena &&
-			ui.arena.classList.contains("selecting") &&
-			this.parentNode &&
-			this.parentNode.classList.contains("popequip")
-		) {
+		if (lib.config.popequip && get.is.phoneLayout() && arguments[0] != "popequip" && ui.arena && ui.arena.classList.contains("selecting") && this.parentNode && this.parentNode.classList.contains("popequip")) {
 			var rect = this.getBoundingClientRect();
 			ui.click.touchpop();
 			ui.click.intro.call(this.parentNode, {
@@ -2692,7 +2495,7 @@ export class Click {
 		}
 		// ui.click.skin(this,player.name);
 		game.pause2();
-		var audioName=player.skin.name || player.name1 || player.name;
+		var audioName = player.skin.name || player.name1 || player.name;
 		ui.click.charactercard(player.name1 || player.name, null, null, true, this, audioName);
 	}
 	avatar2() {
@@ -2760,12 +2563,7 @@ export class Click {
 						} else {
 							lib.configOL.number++;
 						}
-						game.send(
-							"changeNumConfig",
-							lib.configOL.number,
-							game.connectPlayers.indexOf(this),
-							this.classList.contains("unselectable2")
-						);
+						game.send("changeNumConfig", lib.configOL.number, game.connectPlayers.indexOf(this), this.classList.contains("unselectable2"));
 					}
 				}
 				return;
@@ -2793,17 +2591,8 @@ export class Click {
 					}
 				}
 			} else {
-				if (
-					lib.configOL.mode == "versus" ||
-					lib.configOL.mode == "doudizhu" ||
-					lib.configOL.mode == "single"
-				)
-					return;
-				if (
-					lib.configOL.mode == "identity" &&
-					(lib.configOL.identity_mode == "zhong" || lib.configOL.identity_mode == "purple")
-				)
-					return;
+				if (lib.configOL.mode == "versus" || lib.configOL.mode == "doudizhu" || lib.configOL.mode == "single") return;
+				if (lib.configOL.mode == "identity" && (lib.configOL.identity_mode == "zhong" || lib.configOL.identity_mode == "purple")) return;
 				if (!this.classList.contains("unselectable2") && lib.configOL.number <= 2) return;
 				this.classList.toggle("unselectable2");
 				if (this.classList.contains("unselectable2")) {
@@ -2834,11 +2623,7 @@ export class Click {
 			}
 		} else {
 			ui.selected.targets.add(this);
-			if (
-				_status.event.name == "chooseTarget" ||
-				_status.event.name == "chooseToUse" ||
-				_status.event.name == "chooseCardTarget"
-			) {
+			if (_status.event.name == "chooseTarget" || _status.event.name == "chooseToUse" || _status.event.name == "chooseCardTarget") {
 				var targetprompt = null;
 				if (_status.event.targetprompt) {
 					targetprompt = _status.event.targetprompt;
@@ -2855,9 +2640,7 @@ export class Click {
 						const targets = ui.selected.targets.slice();
 						let index = ui.selected.targets.indexOf(this);
 						for (let i = 0; i < targetprompt.length; i++) {
-							const target = targets.find(
-								(cur) => cur.node.prompt && cur.node.prompt.innerHTML === targetprompt[i]
-							);
+							const target = targets.find(cur => cur.node.prompt && cur.node.prompt.innerHTML === targetprompt[i]);
 							if (target) {
 								targets.remove(target);
 							} else {
@@ -2970,31 +2753,17 @@ export class Click {
 				} else {
 					str2 = info.prompt;
 				}
-				event.skillDialog = ui.create.dialog(
-					str,
-					'<div><div style="width:100%;text-align:center">' + str2 + "</div></div>"
-				);
+				event.skillDialog = ui.create.dialog(str, '<div><div style="width:100%;text-align:center">' + str2 + "</div></div>");
 				if (info.longprompt) {
 					event.skillDialog.forcebutton = true;
 					ui.update();
 				}
 			} else if (info.promptfunc) {
-				event.skillDialog = ui.create.dialog(
-					str,
-					'<div><div style="width:100%">' + info.promptfunc(event, event.player) + "</div></div>"
-				);
+				event.skillDialog = ui.create.dialog(str, '<div><div style="width:100%">' + info.promptfunc(event, event.player) + "</div></div>");
 			} else if (lib.dynamicTranslate[skill]) {
-				event.skillDialog = ui.create.dialog(
-					str,
-					'<div><div style="width:100%">' +
-						lib.dynamicTranslate[skill](event.player, skill) +
-						"</div></div>"
-				);
+				event.skillDialog = ui.create.dialog(str, '<div><div style="width:100%">' + lib.dynamicTranslate[skill](event.player, skill) + "</div></div>");
 			} else if (lib.translate[skill + "_info"]) {
-				event.skillDialog = ui.create.dialog(
-					str,
-					'<div><div style="width:100%">' + lib.translate[skill + "_info"] + "</div></div>"
-				);
+				event.skillDialog = ui.create.dialog(str, '<div><div style="width:100%">' + lib.translate[skill + "_info"] + "</div></div>");
 			}
 		}
 	}
@@ -3039,10 +2808,9 @@ export class Click {
 			}
 			const skillDialog = gameEvent.skillDialog;
 			if (skillDialog && get.objtype(skillDialog) == "div") skillDialog.close();
-			gameEvent.player.getCards("hej").forEach((card) => card.recheck("useSkill"));
+			gameEvent.player.getCards("hej").forEach(card => card.recheck("useSkill"));
 			gameEvent.restore();
-		} else if (["chooseToUse", "chooseToRespond"].includes(gameEvent.name))
-			result.card = get.autoViewAs(result.cards[0]);
+		} else if (["chooseToUse", "chooseToRespond"].includes(gameEvent.name)) result.card = get.autoViewAs(result.cards[0]);
 		if (ui.skills) ui.skills.close();
 		if (ui.skills2) ui.skills2.close();
 		if (ui.skills3) ui.skills3.close();
@@ -3127,7 +2895,7 @@ export class Click {
 		}
 	}
 	charactercard(name, sourcenode, noedit, resume, avatar, audioName) {
-		if(!audioName) audioName = name;
+		if (!audioName) audioName = name;
 		if (_status.dragged) return;
 		if (lib.config.theme != "simple") {
 			ui.window.classList.add("shortcutpaused");
@@ -3210,11 +2978,7 @@ export class Click {
 								game.saveConfig("skin", lib.config.skin);
 							} else {
 								delete lib.config.skin[nameskin];
-								if (
-									gzbool &&
-									lib.character[nameskin2].hasSkinInGuozhan &&
-									lib.config.mode_config.guozhan.guozhanSkin
-								) {
+								if (gzbool && lib.character[nameskin2].hasSkinInGuozhan && lib.config.mode_config.guozhan.guozhanSkin) {
 									bg.setBackground(nameskin2, "character");
 									if (sourcenode) sourcenode.setBackground(nameskin2, "character");
 									if (avatar) avatar.setBackground(nameskin2, "character");
@@ -3230,12 +2994,7 @@ export class Click {
 						if (i) {
 							button.setBackgroundImage("image/skin/" + nameskin + "/" + i + ".jpg");
 						} else {
-							if (
-								gzbool &&
-								lib.character[nameskin2].hasSkinInGuozhan &&
-								lib.config.mode_config.guozhan.guozhanSkin
-							)
-								button.setBackground(nameskin2, "character", "noskin");
+							if (gzbool && lib.character[nameskin2].hasSkinInGuozhan && lib.config.mode_config.guozhan.guozhanSkin) button.setBackground(nameskin2, "character", "noskin");
 							else button.setBackground(nameskin, "character", "noskin");
 						}
 					}
@@ -3320,83 +3079,51 @@ export class Click {
 		}
 
 		// 样式二
-		if (
-			lib.config.show_characternamepinyin == "showPinyin2" ||
-			lib.config.show_skillnamepinyin == "showPinyin2" ||
-			lib.config.show_characternamepinyin == "showCodeIdentifier2" ||
-			lib.config.show_skillnamepinyin == "showCodeIdentifier2"
-		) {
+		if (lib.config.show_characternamepinyin == "showPinyin2" || lib.config.show_skillnamepinyin == "showPinyin2" || lib.config.show_characternamepinyin == "showCodeIdentifier2" || lib.config.show_skillnamepinyin == "showCodeIdentifier2") {
 			var nameinfo = get.character(name);
 			var intro = ui.create.div(".characterintro", get.characterIntro(name), uiintro);
-			if (
-				lib.config.show_characternamepinyin == "showPinyin2" ||
-				lib.config.show_characternamepinyin == "showCodeIdentifier2"
-			) {
+			if (lib.config.show_characternamepinyin == "showPinyin2" || lib.config.show_characternamepinyin == "showCodeIdentifier2") {
 				var charactername = get.rawName2(name);
-				var characterpinyin =
-					lib.config.show_characternamepinyin == "showCodeIdentifier2"
-						? name
-						: get.pinyin(charactername);
+				var characterpinyin = lib.config.show_characternamepinyin == "showCodeIdentifier2" ? name : get.pinyin(charactername);
 				var charactersex = get.translation(nameinfo[0]);
 				const charactergroups = get.is.double(name, true);
 				let charactergroup;
-				if (charactergroups)
-					charactergroup = charactergroups.map((i) => get.translation(i)).join("/");
+				if (charactergroups) charactergroup = charactergroups.map(i => get.translation(i)).join("/");
 				else charactergroup = get.translation(nameinfo[1]);
 				var characterhp = nameinfo[2];
 				var characterintroinfo = get.characterIntro(name);
 				var spacemark = " | ";
-				if (charactername.length > 3)
-					spacemark =
-						'<span style="font-size:7px">' +
-						" " +
-						"</span>" +
-						"|" +
-						'<span style="font-size:7px">' +
-						" " +
-						"</span>";
-				intro.innerHTML =
-					'<span style="font-weight:bold;margin-right:5px">' +
-					charactername +
-					"</span>" +
-					'<span style="font-size:14px;font-family:SimHei,STHeiti,sans-serif">' +
-					"[" +
-					characterpinyin +
-					"]" +
-					"</span>" +
-					spacemark +
-					charactersex +
-					spacemark +
-					charactergroup +
-					spacemark +
-					characterhp +
-					'<span style="line-height:2"></span>' +
-					"<br>" +
-					characterintroinfo;
+				if (charactername.length > 3) spacemark = '<span style="font-size:7px">' + " " + "</span>" + "|" + '<span style="font-size:7px">' + " " + "</span>";
+				intro.innerHTML = '<span style="font-weight:bold;margin-right:5px">' + charactername + "</span>" + '<span style="font-size:14px;font-family:SimHei,STHeiti,sans-serif">' + "[" + characterpinyin + "]" + "</span>" + spacemark + charactersex + spacemark + charactergroup + spacemark + characterhp + '<span style="line-height:2"></span>' + "<br>" + characterintroinfo;
 			}
-			
+
 			// 添加台词部分
-			let dieAudios = get.Audio.die({ player: audioName }).audioList.map(i => i.text).filter(Boolean);
-			if(!dieAudios.length) dieAudios = get.Audio.die({ player: name }).audioList.map(i => i.text).filter(Boolean);
+			let dieAudios = get.Audio.die({ player: audioName })
+				.audioList.map(i => i.text)
+				.filter(Boolean);
+			if (!dieAudios.length)
+				dieAudios = get.Audio.die({ player: name })
+					.audioList.map(i => i.text)
+					.filter(Boolean);
 			const skillAudioMap = new Map();
 			nameinfo.skills.forEach(skill => {
 				let voiceMap = get.Audio.skill({ skill, player: audioName }).textList;
-				if(!voiceMap.length) voiceMap = get.Audio.skill({ skill, player: name }).textList;
-				if(voiceMap.length) skillAudioMap.set(skill, voiceMap);
+				if (!voiceMap.length) voiceMap = get.Audio.skill({ skill, player: name }).textList;
+				if (voiceMap.length) skillAudioMap.set(skill, voiceMap);
 			});
 			const derivationSkillAudioMap = new Map();
 			nameinfo.skills.forEach(skill => {
 				var info = get.info(skill);
-				if(info.derivation) {
+				if (info.derivation) {
 					var derivation = info.derivation;
-					if(typeof derivation == 'string') {
+					if (typeof derivation == "string") {
 						derivation = [derivation];
 					}
-					for(var i=0; i<derivation.length; i++) {
-						if (derivation[i].indexOf('_faq') != -1) continue;
+					for (var i = 0; i < derivation.length; i++) {
+						if (derivation[i].indexOf("_faq") != -1) continue;
 						let derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: audioName }).textList;
-						if(!derivationVoiceMap.length) derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: name }).textList;
-						if(derivationVoiceMap.length) derivationSkillAudioMap.set(derivation[i], derivationVoiceMap);
+						if (!derivationVoiceMap.length) derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: name }).textList;
+						if (derivationVoiceMap.length) derivationSkillAudioMap.set(derivation[i], derivationVoiceMap);
 					}
 				}
 			});
@@ -3447,7 +3174,7 @@ export class Click {
 					});
 				}
 			}
-			
+
 			var intro2 = ui.create.div(".characterintro.intro2", uiintro);
 			var list = get.character(name, 3) || [];
 			var skills = ui.create.div(".characterskill", uiintro);
@@ -3498,26 +3225,6 @@ export class Click {
 								intro2.innerHTML += '<br><br><span style="font-weight:bold;margin-right:5px">' + derivationname + "</span>" + derivationtranslationinfo;
 							}
 						}
-					}
-					if (info.alter) {
-						intro2.innerHTML += '<br><br><div class="hrefnode skillversion"></div>';
-						var skillversionnode = intro2.querySelector(".hrefnode.skillversion");
-						if (lib.config.vintageSkills.includes(skill)) {
-							skillversionnode.innerHTML = "切换至新版";
-						} else {
-							skillversionnode.innerHTML = "切换至旧版";
-						}
-						skillversionnode.listen(function () {
-							if (lib.config.vintageSkills.includes(skill)) {
-								lib.config.vintageSkills.remove(skill);
-								lib.translate[skill + "_info"] = lib.translate[skill + "_info_alter"];
-							} else {
-								lib.config.vintageSkills.push(skill);
-								lib.translate[skill + "_info"] = lib.translate[skill + "_info_origin"];
-							}
-							game.saveConfig("vintageSkills", lib.config.vintageSkills);
-							clickSkill.call(skillnode, "init");
-						});
 					}
 
 					if (lib.config.background_speak && e !== "init") {
@@ -3570,8 +3277,7 @@ export class Click {
 					span = document.createElement("span");
 				span.style.fontWeight = "bold";
 				const exInfo = nameInfo.trashBin,
-					characterName =
-						exInfo && exInfo.includes("ruby") ? lib.translate[name] : get.rawName2(name);
+					characterName = exInfo && exInfo.includes("ruby") ? lib.translate[name] : get.rawName2(name);
 				span.innerHTML = characterName;
 				const ruby = document.createElement("ruby");
 				ruby.appendChild(span);
@@ -3579,17 +3285,14 @@ export class Click {
 				leftParenthesisRP.textContent = "（";
 				ruby.appendChild(leftParenthesisRP);
 				const rt = document.createElement("rt");
-				rt.innerHTML =
-					showCharacterNamePinyin == "showCodeIdentifier"
-						? name
-						: lib.translate[`${name}_rt`] || get.pinyin(characterName).join(" ");
+				rt.innerHTML = showCharacterNamePinyin == "showCodeIdentifier" ? name : lib.translate[`${name}_rt`] || get.pinyin(characterName).join(" ");
 				ruby.appendChild(rt);
 				const rightParenthesisRP = document.createElement("rp");
 				rightParenthesisRP.textContent = "）";
 				ruby.appendChild(rightParenthesisRP);
 				characterIntroTable.appendChild(ruby);
 				const characterSexDiv = ui.create.div(".character-sex", characterIntroTable),
-					exInfoSex = exInfo && exInfo.find((value) => value.startsWith("sex:")),
+					exInfoSex = exInfo && exInfo.find(value => value.startsWith("sex:")),
 					characterSex = exInfoSex ? exInfoSex.split(":").pop() : nameInfo[0];
 				new Promise((resolve, reject) => {
 					const imageName = `sex_${characterSex}`,
@@ -3600,14 +3303,12 @@ export class Click {
 					}
 					const image = information.image;
 					if (!image) resolve(`${lib.assetURL}image/card/${imageName}.png`);
-					else if (image.startsWith("db:"))
-						game.getDB("image", image.slice(3)).then(resolve, reject);
-					else if (image.startsWith("ext:"))
-						resolve(`${lib.assetURL}${image.replace(/^ext:/, "extension/")}`);
+					else if (image.startsWith("db:")) game.getDB("image", image.slice(3)).then(resolve, reject);
+					else if (image.startsWith("ext:")) resolve(`${lib.assetURL}${image.replace(/^ext:/, "extension/")}`);
 					else resolve(`${lib.assetURL}${image}`);
 				})
 					.then(
-						(source) =>
+						source =>
 							new Promise((resolve, reject) => {
 								const image = new Image();
 								image.onload = () => resolve(image);
@@ -3615,58 +3316,56 @@ export class Click {
 								image.src = source;
 							})
 					)
-					.then((image) => characterSexDiv.appendChild(image))
+					.then(image => characterSexDiv.appendChild(image))
 					.catch(() => (characterSexDiv.innerHTML = get.translation(characterSex)));
 				const characterGroupDiv = ui.create.div(".character-group", characterIntroTable),
 					characterGroups = get.is.double(name, true);
 				if (characterGroups)
 					Promise.all(
-						characterGroups.map((characterGroup) =>
-							Promise.resolve().then(async () => {
-								const imageName = `group_${characterGroup}`,
-									information = lib.card[imageName];
-								if (!information) return `${lib.assetURL}image/card/${imageName}.png`;
-								const image = information.image;
-								if (!image) return `${lib.assetURL}image/card/${imageName}.png`;
-								if (image.startsWith("db:")) return await game.getDB("image", image.slice(3));
-								if (image.startsWith("ext:")) return `${lib.assetURL}${image.replace(/^ext:/, "extension/")}`;
-								return `${lib.assetURL}${image}`;
-							}).then(
-								(source) =>
-									new Promise((resolve, reject) => {
-										const image = new Image();
-										image.onload = () => resolve(image);
-										image.onerror = reject;
-										image.src = source;
-									})
-							)
+						characterGroups.map(characterGroup =>
+							Promise.resolve()
+								.then(async () => {
+									const imageName = `group_${characterGroup}`,
+										information = lib.card[imageName];
+									if (!information) return `${lib.assetURL}image/card/${imageName}.png`;
+									const image = information.image;
+									if (!image) return `${lib.assetURL}image/card/${imageName}.png`;
+									if (image.startsWith("db:")) return await game.getDB("image", image.slice(3));
+									if (image.startsWith("ext:")) return `${lib.assetURL}${image.replace(/^ext:/, "extension/")}`;
+									return `${lib.assetURL}${image}`;
+								})
+								.then(
+									source =>
+										new Promise((resolve, reject) => {
+											const image = new Image();
+											image.onload = () => resolve(image);
+											image.onerror = reject;
+											image.src = source;
+										})
+								)
 						)
 					)
-						.then((images) => {
+						.then(images => {
 							let documentFragment = document.createDocumentFragment();
 							images.forEach(documentFragment.appendChild, documentFragment);
 							characterGroupDiv.appendChild(documentFragment);
 						})
-						.catch(
-							() =>
-								(characterGroupDiv.innerHTML = characterGroups
-									.map((characterGroup) => get.translation(characterGroup))
-									.join("/"))
-						);
+						.catch(() => (characterGroupDiv.innerHTML = characterGroups.map(characterGroup => get.translation(characterGroup)).join("/")));
 				else {
 					const characterGroup = nameInfo[1];
-					Promise.resolve().then(async () => {
-						const imageName = `group_${characterGroup}`,
-							information = lib.card[imageName];
-						if (!information) return `${lib.assetURL}image/card/${imageName}.png`;
-						const image = information.image;
-						if (!image) return `${lib.assetURL}image/card/${imageName}.png`;
-						if (image.startsWith("db:")) return await game.getDB("image", image.slice(3));
-						if (image.startsWith("ext:")) return `${lib.assetURL}${image.replace(/^ext:/, "extension/")}`;
-						return `${lib.assetURL}${image}`;
-					})
+					Promise.resolve()
+						.then(async () => {
+							const imageName = `group_${characterGroup}`,
+								information = lib.card[imageName];
+							if (!information) return `${lib.assetURL}image/card/${imageName}.png`;
+							const image = information.image;
+							if (!image) return `${lib.assetURL}image/card/${imageName}.png`;
+							if (image.startsWith("db:")) return await game.getDB("image", image.slice(3));
+							if (image.startsWith("ext:")) return `${lib.assetURL}${image.replace(/^ext:/, "extension/")}`;
+							return `${lib.assetURL}${image}`;
+						})
 						.then(
-							(source) =>
+							source =>
 								new Promise((resolve, reject) => {
 									const image = new Image();
 									image.onload = () => resolve(image);
@@ -3674,7 +3373,7 @@ export class Click {
 									image.src = source;
 								})
 						)
-						.then((image) => characterGroupDiv.appendChild(image))
+						.then(image => characterGroupDiv.appendChild(image))
 						.catch(() => (characterGroupDiv.innerHTML = get.translation(characterGroup)));
 				}
 				const hpDiv = ui.create.div(".hp", characterIntroTable),
@@ -3695,30 +3394,35 @@ export class Click {
 			}
 			const htmlParser = document.createElement("body");
 			htmlParser.innerHTML = get.characterIntro(name);
-			Array.from(htmlParser.childNodes).forEach((value) => introduction.appendChild(value));
-			
+			Array.from(htmlParser.childNodes).forEach(value => introduction.appendChild(value));
+
 			// 添加台词部分
-			let dieAudios = get.Audio.die({ player: audioName }).audioList.map(i => i.text).filter(Boolean);
-			if(!dieAudios.length) dieAudios = get.Audio.die({ player: name }).audioList.map(i => i.text).filter(Boolean);
+			let dieAudios = get.Audio.die({ player: audioName })
+				.audioList.map(i => i.text)
+				.filter(Boolean);
+			if (!dieAudios.length)
+				dieAudios = get.Audio.die({ player: name })
+					.audioList.map(i => i.text)
+					.filter(Boolean);
 			const skillAudioMap = new Map();
 			nameInfo.skills.forEach(skill => {
 				let voiceMap = get.Audio.skill({ skill, player: audioName }).textList;
-				if(!voiceMap.length) voiceMap = get.Audio.skill({ skill, player: name }).textList;
-				if(voiceMap.length) skillAudioMap.set(skill, voiceMap);
+				if (!voiceMap.length) voiceMap = get.Audio.skill({ skill, player: name }).textList;
+				if (voiceMap.length) skillAudioMap.set(skill, voiceMap);
 			});
 			const derivationSkillAudioMap = new Map();
 			nameInfo.skills.forEach(skill => {
 				var info = get.info(skill);
-				if(info.derivation) {
+				if (info.derivation) {
 					var derivation = info.derivation;
-					if(typeof derivation == 'string') {
+					if (typeof derivation == "string") {
 						derivation = [derivation];
 					}
-					for(var i=0; i<derivation.length; i++) {
-						if (derivation[i].indexOf('_faq') != -1) continue;
+					for (var i = 0; i < derivation.length; i++) {
+						if (derivation[i].indexOf("_faq") != -1) continue;
 						let derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: audioName }).textList;
-						if(!derivationVoiceMap.length) derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: name }).textList;
-						if(derivationVoiceMap.length) derivationSkillAudioMap.set(derivation[i], derivationVoiceMap);
+						if (!derivationVoiceMap.length) derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: name }).textList;
+						if (derivationVoiceMap.length) derivationSkillAudioMap.set(derivation[i], derivationVoiceMap);
 					}
 				}
 			});
@@ -3762,7 +3466,7 @@ export class Click {
 					});
 				}
 			}
-			
+
 			const introduction2 = ui.create.div(".characterintro.intro2", uiintro);
 			var list = get.character(name).skills;
 			var skills = ui.create.div(".characterskill", uiintro);
@@ -3852,28 +3556,6 @@ export class Click {
 							Array.from(htmlParser.childNodes).forEach(childNode => introduction2.appendChild(childNode));
 						});
 					}
-					if (info.alter) {
-						introduction2.appendChild(document.createElement("br"));
-						introduction2.appendChild(document.createElement("br"));
-						ui.create.div(".hrefnode.skillversion", introduction2);
-						var skillversionnode = introduction2.querySelector(".hrefnode.skillversion");
-						if (lib.config.vintageSkills.includes(skill)) {
-							skillversionnode.innerHTML = "切换至新版";
-						} else {
-							skillversionnode.innerHTML = "切换至旧版";
-						}
-						skillversionnode.listen(function () {
-							if (lib.config.vintageSkills.includes(skill)) {
-								lib.config.vintageSkills.remove(skill);
-								lib.translate[skill + "_info"] = lib.translate[skill + "_info_alter"];
-							} else {
-								lib.config.vintageSkills.push(skill);
-								lib.translate[skill + "_info"] = lib.translate[skill + "_info_origin"];
-							}
-							game.saveConfig("vintageSkills", lib.config.vintageSkills);
-							clickSkill.call(skillnode, "init");
-						});
-					}
 
 					if (lib.config.background_speak && e !== "init") {
 						let name = bg.tempSkin || audioName || playername;
@@ -3939,7 +3621,7 @@ export class Click {
 			}
 		}
 		let border = get.groupnature(get.bordergroup(name), "raw");
-		for(let skill of deri) {
+		for (let skill of deri) {
 			if (list.includes(skill)) continue;
 			let info = get.info(skill);
 			if (!info || info.nopop) continue;
@@ -3958,8 +3640,13 @@ export class Click {
 				clickSkill.call(currentx, "init");
 			}
 		}
-		let dieAudios = get.Audio.die({ player: audioName }).audioList.map(i => i.text).filter(Boolean);
-		if(!dieAudios.length) dieAudios = get.Audio.die({ player: name }).audioList.map(i => i.text).filter(Boolean);
+		let dieAudios = get.Audio.die({ player: audioName })
+			.audioList.map(i => i.text)
+			.filter(Boolean);
+		if (!dieAudios.length)
+			dieAudios = get.Audio.die({ player: name })
+				.audioList.map(i => i.text)
+				.filter(Boolean);
 		if (dieAudios.length) {
 			let dieaudio = ui.create.div(".menubutton.large", skills, clickSkill, "阵亡");
 			dieaudio.style.backgroundColor = "rgb(0, 0, 0, 1)";
@@ -3970,7 +3657,7 @@ export class Click {
 		}
 		if (lib.characterSubstitute[name]) {
 			let avatars2 = ui.create.div(".avatars", playerbg);
-			let skin = ui.create.div(".changeskin2", "查看其他皮肤", playerbg, function() {
+			let skin = ui.create.div(".changeskin2", "查看其他皮肤", playerbg, function () {
 				playerbg.classList.add("scroll");
 				if (skin._created) {
 					return;
@@ -4029,13 +3716,7 @@ export class Click {
 			ui.historybar.style.zIndex = 22;
 		}
 		var uiintro;
-		if (
-			this.classList.contains("card") &&
-			this.parentNode &&
-			this.parentNode.classList.contains("equips") &&
-			get.is.phoneLayout() &&
-			!get.is.mobileMe(this.parentNode.parentNode)
-		) {
+		if (this.classList.contains("card") && this.parentNode && this.parentNode.classList.contains("equips") && get.is.phoneLayout() && !get.is.mobileMe(this.parentNode.parentNode)) {
 			uiintro = get.nodeintro(this.parentNode.parentNode, false, e);
 		}
 		uiintro = uiintro || get.nodeintro(this, false, e);
@@ -4129,7 +3810,6 @@ export class Click {
 			_status.auto = true;
 			ui.auto.classList.add("glow");
 			ui.arena.classList.add("auto");
-
 			if (_status.imchoosing && _status.paused) {
 				if (ui.confirm) ui.confirm.close();
 				ui.control.hide();
@@ -4139,6 +3819,7 @@ export class Click {
 					if (_status.paused && _status.imchoosing) {
 						game.uncheck();
 						_status.event.redo();
+						if (_status.event.skill && !_status.event.norestore) _status.event.restore();
 					}
 				}
 				game.resume();
@@ -4171,26 +3852,14 @@ export class Click {
 	wuxie() {
 		if (this.classList.contains("hidden")) return;
 		this.classList.toggle("glow");
-		if (
-			this.classList.contains("glow") &&
-			_status.event.type == "wuxie" &&
-			_status.event.isMine() &&
-			ui.confirm &&
-			_status.imchoosing
-		) {
+		if (this.classList.contains("glow") && _status.event.type == "wuxie" && _status.event.isMine() && ui.confirm && _status.imchoosing) {
 			ui.click.cancel(ui.confirm.lastChild);
 		}
 	}
 	tempnowuxie() {
 		if (this.classList.contains("hidden")) return;
 		this.classList.toggle("glow");
-		if (
-			this.classList.contains("glow") &&
-			_status.event.type == "wuxie" &&
-			_status.event.isMine() &&
-			ui.confirm &&
-			_status.imchoosing
-		) {
+		if (this.classList.contains("glow") && _status.event.type == "wuxie" && _status.event.isMine() && ui.confirm && _status.imchoosing) {
 			var triggerevent = _status.event.getTrigger();
 			if (triggerevent && this._origin == triggerevent.parent.id) {
 				if (triggerevent.targets && triggerevent.num == triggerevent.targets.length - 1) {
@@ -4304,23 +3973,13 @@ export class Click {
 		if (_status.mousedragging) return;
 		if (_status.draggingtouchdialog) return;
 		if (!_status.dragged) {
-			if (
-				Math.abs(e.touches[0].clientX / game.documentZoom - this.startX) > 10 ||
-				Math.abs(e.touches[0].clientY / game.documentZoom - this.startY) > 10
-			) {
+			if (Math.abs(e.touches[0].clientX / game.documentZoom - this.startX) > 10 || Math.abs(e.touches[0].clientY / game.documentZoom - this.startY) > 10) {
 				_status.dragged = true;
 			}
 		}
-		if (
-			(this == ui.handcards1Container || this == ui.handcards2Container) &&
-			!this.classList.contains("scrollh")
-		) {
+		if ((this == ui.handcards1Container || this == ui.handcards2Container) && !this.classList.contains("scrollh")) {
 			e.preventDefault();
-		} else if (
-			lib.device == "ios" &&
-			this.scrollHeight <= this.offsetHeight + 5 &&
-			this.scrollWidth <= this.offsetWidth + 5
-		) {
+		} else if (lib.device == "ios" && this.scrollHeight <= this.offsetHeight + 5 && this.scrollWidth <= this.offsetWidth + 5) {
 			e.preventDefault();
 		} else {
 			delete _status._swipeorigin;

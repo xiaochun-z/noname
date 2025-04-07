@@ -29,12 +29,8 @@ const translates = {
 	old_huatuo_prefix: "OL",
 	old_guanyu: "旧关羽",
 	old_guanyu_prefix: "旧",
-	ol_liaohua: "OL廖化",
-	ol_liaohua_prefix: "OL",
 	ol_zhuran: "OL朱然",
 	ol_zhuran_prefix: "OL",
-	ol_manchong: "OL满宠",
-	ol_manchong_prefix: "OL",
 	old_fuhuanghou: "旧伏寿",
 	old_fuhuanghou_prefix: "旧",
 	old_caochong: "旧曹冲",
@@ -131,6 +127,8 @@ const translates = {
 	panfeng_prefix: "旧",
 	old_shixie: "旧士燮",
 	old_shixie_prefix: "旧",
+	old_wuyi: "旧吴懿",
+	old_wuyi_prefix: "旧",
 };
 
 export default translates;

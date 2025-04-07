@@ -3,6 +3,7 @@ import { lib } from "../index.js";
 import { _status } from "../../status/index.js";
 import { ui } from "../../ui/index.js";
 import { game } from "../../../noname.js";
+import { Pagination } from "../../util/pagination.js";
 
 export class Dialog extends HTMLDivElement {
 	/** @type { HTMLDivElement } */
@@ -22,7 +23,7 @@ export class Dialog extends HTMLDivElement {
 	noforcebutton;
 	/** @type { boolean } */
 	noopen;
-	/** 
+	/**
 	 * dialog添加数据是否支持分页
 	 * @type { boolean }
 	 **/
@@ -32,7 +33,7 @@ export class Dialog extends HTMLDivElement {
 	 * @type { Map<HTMLElement, InstanceType<typeof import("../../util/pagination.js").Pagination>> }
 	 */
 	paginationMap;
-	/** 
+	/**
 	 * 根据数据类型，为每一个类型分配一页的最大数据量
 	 * @type { Map<keyof UI['create']['buttonPresets'], number> }
 	 */
@@ -88,12 +89,23 @@ export class Dialog extends HTMLDivElement {
 		return dialog;
 	}
 	/**
+	 * 添加分页组件到页面
+	 * @param {Pagination} state - 分页组件的配置对象
+	 */
+	addPagination(state = {}) {
+		// 传入初始配置
+		const p = new Pagination(state);
+		this.paginationMap.set(state.insertAfter, p);
+		// 渲染元素
+		p.renderPageDOM();
+	}
+	/**
 	 *
 	 * @param  {RowItem[]} args
 	 */
 	addNewRow(...args) {
 		this.classList.add("addNewRow");
-		this.classList.remove('nobutton');
+		this.classList.remove("nobutton");
 		//参数归一化
 		let itemOptions = parameterNormolize();
 		//设置比例字符串

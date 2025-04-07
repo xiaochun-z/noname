@@ -6,7 +6,6 @@ import skills from "./skill.js";
 import translates from "./translate.js";
 import characterIntros from "./intro.js";
 import characterFilters from "./characterFilter.js";
-import characterReplaces from "./characterReplace.js";
 import dynamicTranslates from "./dynamicTranslate.js";
 import voices from "./voices.js";
 import { characterSort, characterSortTranslate } from "./sort.js";
@@ -45,12 +44,14 @@ game.import("character", function () {
 			ddd_guanning: "#g虎鲸",
 			ddd_lie: "#gyyuaN",
 			ddd_liangxi: "#g先負",
-			// ddd_liuchong:'#g',
+			ddd_sunliang: "#g空照",
+			ddd_qianzhao: "#g林己",
+			ddd_zhangmiao: "#g厨房给好友",
+			ddd_liuchong: "#g扬林0602",
 			ddd_luoxian: "#g绝代倾国倾城貌",
 		},
 		dynamicTranslate: { ...dynamicTranslates },
 		characterIntro: { ...characterIntros },
-		characterReplace: { ...characterReplaces },
 		card: { ...cards },
 		skill: { ...skills },
 		translate: { ...translates, ...voices, ...characterSortTranslate },

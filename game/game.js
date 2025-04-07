@@ -7,7 +7,7 @@
 	 *
 	 * @type {[majorVersion: number, minorVersion: number, patchVersion: number]}
 	 */
-	const minSafariVersion = [14, 5, 0];
+	const minSafariVersion = [15, 0, 0];
 
 	// 获取基础变量
 	/**
@@ -16,17 +16,29 @@
 	const {
 		game,
 		get,
-		util: { nonameInitialized, assetURL, userAgent },
+		util: { nonameInitialized, assetURL, userAgentLowerCase, compatibleEnvironment },
 		UpdateReason,
 	} = await import("../noname-compatible.js").catch(importFallback);
 
 	// 使用到的文本
 	const globalText = {
 		GPL_ALERT: ["①无名杀是一款基于GPLv3协议的开源软件！", "你可以在遵守GPLv3协议的基础上任意使用，修改并转发《无名杀》，以及所有基于《无名杀》开发的拓展。", "点击“确定”即代表您认可并接受GPLv3协议↓️", "https://www.gnu.org/licenses/gpl-3.0.html", "②无名杀官方发布地址仅有GitHub仓库！", "其他所有的所谓“无名杀”社群（包括但不限于绝大多数“官方”QQ群、QQ频道等）均为玩家自发组织，与无名杀官方无关！"].join("\n"),
-		LOAD_ENTRY_FAILED: ["您使用的浏览器或《无名杀》客户端加载内容失败！", "请检查是否缺少游戏文件！隔版本更新请下载完整包而不是离线包！", "目前使用的浏览器UA信息为: ", userAgent, "若您使用的客户端为自带内核的旧版“兼容版”，请及时更新客户端版本！", "若您使用的客户端为手机端的非兼容版《无名杀》，请尝试更新手机的WebView内核，或者更换为1.8.2版本及以上的兼容版！", "若您是直接使用浏览器加载index.html进行游戏，请改为运行文件夹内的“noname-server.exe”（或使用VSCode等工具启动Live Server），以动态服务器的方式启动《无名杀》！", "若您使用的是苹果端，请至少将Safari升级至14.5.0！"].join("\n"),
-		REDIRECT_TIP: ["您使用的浏览器或无名杀客户端内核版本过低，已经无法正常运行无名杀！", "目前使用的浏览器UA信息为: ", userAgent, "如果你使用的是浏览器，请更新你的浏览器内核！", "如果你使用的是无名杀客户端，点击“确认”以前往GitHub下载最新版无名杀客户端（可能需要科学上网）。", "（第三方客户端请联系第三方客户端的发布者）"].join("\n"),
-		SAFARI_VERSION_NOT_SUPPORT: ["您使用的Safari浏览器无法支持当前无名杀所需的功能，请至少升级至14.5.0！", "当前浏览器的UA为: ", userAgent, "稍后您的无名杀将自动退出（可能的话）"].join("\n"),
+		LOAD_ENTRY_FAILED: ["您使用的浏览器或《无名杀》客户端加载内容失败！", "请检查是否缺少游戏文件！隔版本更新请下载完整包而不是离线包！", "目前使用的浏览器UA信息为: ", userAgentLowerCase, "若您使用的客户端为自带内核的旧版“兼容版”，请及时更新客户端版本！", "若您使用的客户端为手机端的非兼容版《无名杀》，请尝试更新手机的WebView内核，或者更换为1.8.2版本及以上的兼容版！", "若您是直接使用浏览器加载index.html进行游戏，请改为运行文件夹内的“noname-server.exe”（或使用VSCode等工具启动Live Server），以动态服务器的方式启动《无名杀》！", "若您使用的是苹果端，请至少将Safari升级至14.5.0！"].join("\n"),
+		REDIRECT_TIP: ["您使用的浏览器或无名杀客户端的版本或内核版本过低，已经无法正常运行无名杀！", "目前使用的浏览器UA信息为: ", userAgentLowerCase, "如果你使用的是浏览器，请更新你的浏览器内核！", "如果你使用的是无名杀客户端，点击“确认”以前往GitHub下载最新版无名杀客户端（可能需要科学上网）。", "（第三方客户端请联系第三方客户端的发布者）"].join("\n"),
+		SAFARI_VERSION_NOT_SUPPORT: ["您使用的Safari浏览器无法支持当前无名杀所需的功能，请至少升级至15.0.0！", "当前浏览器的UA为: ", userAgentLowerCase, "稍后您的无名杀将自动退出（可能的话）"].join("\n"),
+		SERVICE_WORKER_NOT_SUPPORT: ["您使用的客户端或浏览器不支持启用serviceWorker", "请确保您的客户端或浏览器使用http://localhost或https协议打开《无名杀》并且启用serviceWorker！"].join("\n"),
+		SERVICE_WORKER_LOAD_FAILED: ["serviceWorker加载失败！", "游戏内容或许会因此加载失败！"].join("\n"),
 	};
+
+	// 不支持file协议
+	if (location.protocol.startsWith("file")) {
+		return alert(globalText.REDIRECT_TIP);
+	}
+
+	// 必须启用serviceWorker
+	if (!("serviceWorker" in navigator)) {
+		return alert(globalText.SERVICE_WORKER_NOT_SUPPORT);
+	}
 
 	// 检查 window 对象中是否存在 "__core-js_shared__" 属性
 	if (!("__core-js_shared__" in window)) {
@@ -46,16 +58,13 @@
 
 	// 检查是否已经显示过GPL许可协议警告
 	if (!localStorage.getItem("gplv3_noname_alerted")) {
-		// 判断游戏是否运行在HTTP环境中
-		const gameInHttpEnvironment = location.protocol.startsWith("http");
-
 		// 判断游戏是否已经初始化过
 		const gameIntialized = nonameInitialized && nonameInitialized.length > 0;
 
 		// 如果满足以下条件之一，则显示GPL许可协议警告:
-		// 1. 游戏运行在HTTP环境中且已经初始化过
+		// 1. 已经初始化过
 		// 2. 用户确认显示GPL许可协议警告
-		if ((gameInHttpEnvironment && gameIntialized) || confirm(globalText.GPL_ALERT)) {
+		if (gameIntialized || confirm(globalText.GPL_ALERT)) {
 			// 记录已显示过GPL许可协议警告
 			localStorage.setItem("gplv3_noname_alerted", String(true));
 		} else {
@@ -64,7 +73,7 @@
 		}
 	}
 
-	window["b" + "ann" + "e" + "dE" + "x" + "ten" + "s" + "i" + "o" + "ns"] = [
+	window["bannedExtensions"] = [
 		"\u4fa0\u4e49",
 		"\u5168\u6559\u7a0b",
 		"在线更新", //游戏内在线更新方式修改了，不再依赖于在线更新扩展了
@@ -72,7 +81,7 @@
 
 	// 检查是否是Safari浏览器
 	// 通过检查用户代理字符串是否包含 "safari" 且不包含 "chrome"，可以初步判断是不是Safari
-	if (userAgent.includes("safari") && !userAgent.includes("chrome")) {
+	if (userAgentLowerCase.includes("safari") && !userAgentLowerCase.includes("chrome")) {
 		// 如果是 Safari 浏览器,则进行以下操作
 		// 获取 Safari 版本信息
 		let [coreName, ...safariVersion] = get.coreInfo();
@@ -92,9 +101,13 @@
 	// 处理Node环境下的http情况
 	if (typeof window.require == "function" && typeof window.process == "object" && typeof window.__dirname == "string") {
 		// 在http环境下修改__dirname和require的逻辑
-		if (location.protocol.startsWith("http") && window.__dirname.endsWith("electron.asar\\renderer")) {
+		if (window.__dirname.endsWith("electron.asar\\renderer") || window.__dirname.endsWith("electron.asar/renderer")) {
 			const path = require("path");
-			window.__dirname = path.join(path.resolve(), "resources/app");
+			if (window.process.platform === "darwin") {
+				window.__dirname = path.join(window.process.resourcesPath, "app");
+			} else {
+				window.__dirname = path.join(path.resolve(), "resources/app");
+			}
 			const oldData = Object.entries(window.require);
 			// @ts-ignore
 			window.require = function (moduleId) {
@@ -141,7 +154,7 @@
 	}
 
 	// 使serviceWorker加载完成后，再加载entry.js
-	if (location.protocol.startsWith("http") && "serviceWorker" in navigator) {
+	if ("serviceWorker" in navigator) {
 		let scope = new URL("./", location.href).toString();
 		let registrations = await navigator.serviceWorker.getRegistrations();
 		let findServiceWorker = registrations.find(registration => {
@@ -158,8 +171,12 @@
 			if (!findServiceWorker) location.reload();
 			// 接收消息，暂时没用到
 			navigator.serviceWorker.addEventListener("message", e => {
-				console.log(e);
+				if (e.data?.type === "reload") {
+					window.location.reload();
+				}
 			});
+			// 发送消息
+			// navigator.serviceWorker.controller.postMessage({ action: "reload" });
 			registration_1.update().catch(e => console.error("worker update失败", e));
 			if (!sessionStorage.getItem("canUseTs")) {
 				await import("./canUse.ts")
@@ -171,6 +188,7 @@
 			}
 		} catch (e_1) {
 			console.log("serviceWorker加载失败: ", e_1);
+			return alert(globalText.SERVICE_WORKER_LOAD_FAILED);
 		}
 	}
 
@@ -256,7 +274,7 @@
 
 				/**
 				 * @param {*} url
-				 * @param {typeof import("../library/update.js")} param1
+				 * @param {typeof import("../noname/library/update.js")} param1
 				 * @returns {Promise<File>}
 				 */
 				function update(url, { request, createProgress }) {
@@ -310,14 +328,14 @@
 					// 显示一个确认对话框，询问是否要重定向到 GitHub 页面
 					if (confirm(text)) {
 						// 如果确认,则打开新的浏览器窗口,跳转到指定的 GitHub 页面
-						window.open("https://github.com/libccy/noname/releases/tag/chromium85-client");
+						window.open("https://github.com/libnoname/noname/releases/tag/chromium85-client");
 					}
 				}
 
 				switch (type) {
 					case UpdateReason.DEBUG: {
 						// 测试环境
-						let url = "https://ghproxy.cc/https://github.com/libccy/noname/releases/download/chromium85-client/Noname-linux-x64.zip";
+						let url = "https://ghproxy.cc/https://github.com/libnoname/noname/releases/download/chromium85-client/Noname-linux-x64.zip";
 						return import("../library/update.js").then(module => update(url, module)).then(open);
 					}
 					case UpdateReason.FALLBACK: {
@@ -362,12 +380,12 @@
 							function callback(module) {
 								// 此时已经加载了update.js，可以尝试更新
 								if (confirm(tips)) {
-									let url = "https://ghproxy.cc/https://github.com/libccy/noname/releases/download/chromium85-client/Noname-yuri-v1.9.2.apk";
+									let url = "https://ghproxy.cc/https://github.com/libnoname/noname/releases/download/chromium85-client/Noname-yuri-v1.9.2.apk";
 
 									if (coreVersion == 77) {
 										let compatibleTips = ["检测到你现在的版本号为上版本兼容版的版本号，由于当前版本无法确认是否为兼容版，特此在此再次询问", "请问你是否需要下载最新的兼容版？", "（目前由理版可直接使用已安装的Chrome内核，但如果无法安装最新的Chrome，依然需要兼容版）"].join("\n");
 										if (confirm(compatibleTips)) {
-											url = "https://ghproxy.cc/https://github.com/libccy/noname/releases/download/chromium85-client/Noname-yuri-compatible-v1.8.3.apk";
+											url = "https://ghproxy.cc/https://github.com/libnoname/noname/releases/download/chromium85-client/Noname-yuri-compatible-v1.8.3.apk";
 										}
 									}
 
@@ -444,59 +462,83 @@
 				if (typeof window.process != "undefined" && typeof window.process.versions == "object") {
 					// 如果存在versions.chrome，默认为electron的versions.chrome
 					if (window.process.versions.chrome) {
-						// @ts-expect-error Type must be right
-						return [
-							"chrome",
-							...window.process.versions.chrome
-								.split(".")
-								.slice(0, 3)
-								.map(item => parseInt(item)),
-						];
+						return parseVersion("chrome", window.process.versions.chrome);
 					}
 				}
 
+				// Chrome/Chromium下的实验性特性，具体可参见
+				// https://developer.mozilla.org/en-US/docs/Web/API/Navigator/userAgentData
 				// @ts-ignore
 				if (typeof navigator.userAgentData != "undefined") {
 					// @ts-ignore
 					const userAgentData = navigator.userAgentData;
 					if (userAgentData.brands && userAgentData.brands.length) {
-						let brand = userAgentData.brands.find(({ brand }) => {
+						const brand = userAgentData.brands.find(({ brand }) => {
 							let str = brand.toLowerCase();
 							// 当前支持的浏览器中只有chrome支持userAgentData，故只判断chrome的情况
 							return str.includes("chrome") || str.includes("chromium");
 						});
 
-						return brand ? ["chrome", parseInt(brand.version), 0, 0] : ["other", NaN, NaN, NaN];
+						// 如果能通过userAgentData找到对应的浏览器信息，则直接返回
+						// 反之则继续通过正则表达式匹配userAgent
+						if (brand) {
+							return ["chrome", parseInt(brand.version), 0, 0];
+						}
 					}
 				}
 
+				// 目前仅考虑Firefox, Chrome和Safari三种浏览器
+				// 其余浏览器均归于other
 				const regex = /(firefox|chrome|safari)\/(\d+(?:\.\d+)+)/;
-				let result;
-				if (!(result = userAgent.match(regex))) return ["other", NaN, NaN, NaN];
+				let result = userAgentLowerCase.match(regex);
+				if (result == null) {
+					return ["other", NaN, NaN, NaN];
+				}
 
-				// 非Safari情况直接返回结果
+				// 非Safari情况可直接返回结果
 				if (result[1] !== "safari") {
-					const [major, minor, patch] = result[2].split(".");
-					// @ts-expect-error "Matched result must be the status."
-					return [result[1], parseInt(major), parseInt(minor), parseInt(patch)];
+					// @ts-expect-error Type must be right
+					return parseVersion(result[1], result[2]);
 				}
 
 				// 以下是所有Safari平台的判断方法
 				// macOS以及以桌面显示的移动端则直接判断
-				if (/macintosh/.test(userAgent)) {
-					result = userAgent.match(/version\/(\d+(?:\.\d+)+).*safari/);
-					if (!result) return ["other", NaN, NaN, NaN];
+				if (/macintosh/.test(userAgentLowerCase)) {
+					result = userAgentLowerCase.match(/version\/(\d+(?:\.\d+)+).*safari/);
+					if (result == null) {
+						return ["other", NaN, NaN, NaN];
+					}
 				}
 				// 不然则通过OS后面的版本号来获取内容
 				else {
 					let safariRegex = /(?:iphone|ipad); cpu (?:iphone )?os (\d+(?:_\d+)+)/;
-					result = userAgent.match(safariRegex);
-					if (!result) return ["other", NaN, NaN, NaN];
+					result = userAgentLowerCase.match(safariRegex);
+					if (result == null) {
+						return ["other", NaN, NaN, NaN];
+					}
 				}
 				// result = userAgent.match(/version\/(\d+(?:\.\d+)+).*safari/)
-				// @ts-ignore
-				const [major, minor, patch] = result[1].split(".");
-				return ["safari", parseInt(major), parseInt(minor), parseInt(patch)];
+				return parseVersion("safari", result[1]);
+
+				/**
+				 * 通用解析版本号方法
+				 *
+				 * @param {"firefox" | "chrome" | "safari" | "other"} coreName
+				 * @param {string} versions
+				 * @returns {["firefox" | "chrome" | "safari" | "other", number, number, number]}
+				 */
+				function parseVersion(coreName, versions) {
+					const [major, minor, patch] = versions.split(".");
+					const majorVersion = parseInt(major);
+
+					// 如果major解析为NaN，则整体解析为NaN（此时不考虑minor和patch）
+					if (Number.isNaN(majorVersion)) {
+						return [coreName, NaN, NaN, NaN];
+					}
+
+					// 反之则将不为NaN的minor和patch解析为0
+					return [coreName, majorVersion, parseInt(minor) || 0, parseInt(patch) || 0];
+				}
 			}
 		}
 
@@ -507,16 +549,21 @@
 		};
 
 		const nonameInitialized = localStorage.getItem("noname_inited");
-		const assetURL = location.protocol.startsWith("http") || typeof nonameInitialized != "string" || nonameInitialized === "nodejs" ? "" : nonameInitialized;
-		const userAgent = navigator.userAgent.toLowerCase();
+		const assetURL = "";
+		const userAgent = navigator.userAgent
+		const userAgentLowerCase = userAgent.toLowerCase();
 
 		return {
+			// @ts-expect-error TypeMust
 			game: new GameCompatible(),
 			get: new GetCompatible(),
 			util: {
+				// @ts-expect-error TypeMust
 				nonameInitialized,
 				assetURL,
 				userAgent,
+				userAgentLowerCase,
+				compatibleEnvironment: true,
 			},
 			UpdateReason,
 		};

@@ -1,26 +1,9 @@
-import {
-	menuContainer,
-	menuxpages,
-	menuUpdates,
-	openMenu,
-	clickToggle,
-	clickSwitcher,
-	clickContainer,
-	clickMenuItem,
-	createMenu,
-	createConfig,
-} from "../index.js";
+import { menuContainer, menuxpages, menuUpdates, openMenu, clickToggle, clickSwitcher, clickContainer, clickMenuItem, createMenu, createConfig } from "../index.js";
 import { ui, game, get, ai, lib, _status } from "../../../../../noname.js";
-import {
-	parseSize,
-	checkVersion,
-	getRepoTagDescription,
-	request,
-	createProgress,
-	getLatestVersionFromGitHub,
-	getTreesFromGithub,
-} from "../../../../library/update.js";
-import security from "../../../../util/security.js";
+import { parseSize, checkVersion, getRepoTagDescription, request, createProgress, getLatestVersionFromGitHub, getTreesFromGithub } from "../../../../library/update.js";
+import { createApp } from "../../../../../game/vue.esm-browser.js";
+import security from "../../../../util/security.js"
+import dedent from "../../../../../game/dedent.js";
 
 export const otherMenu = function (/** @type { boolean | undefined } */ connectMenu) {
 	if (connectMenu) return;
@@ -172,30 +155,21 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 					checkVersionButton.innerHTML = "检查游戏更新";
 					checkDevVersionButton.disabled = false;
 					checkDevVersionButton.innerHTML = "更新到开发版";
-				}
+				};
 
 				/**
 				 * @param {{ assets: any; author?: { login: string; avatar_url: string; html_url: string; }; body?: string; html_url?: string; name: any; published_at?: string; zipball_url: any; }} description
 				 */
 				const download = description => {
-					const progress = createProgress(
-						"正在更新" + description.name,
-						1,
-						description.name + ".zip"
-					);
+					const progress = createProgress("正在更新" + description.name, 1, description.name + ".zip");
 					/**
 					 * @type {progress}
 					 */
 					let unZipProgress;
 					let url = description.zipball_url;
 					if (Array.isArray(description.assets) && description.assets.length > 0) {
-						const coreZipData = description.assets.find((v) => v.name == "noname.core.zip");
-						if (
-							coreZipData &&
-							confirm(
-								`检测到该版本(${description.name})有离线包资源，是否改为下载离线包资源？否则将下载完整包资源`
-							)
-						) {
+						const coreZipData = description.assets.find(v => v.name == "noname.core.zip");
+						if (coreZipData && confirm(`检测到该版本(${description.name})有离线包资源，是否改为下载离线包资源？否则将下载完整包资源`)) {
 							url = "https://ghproxy.cc/" + coreZipData.browser_download_url;
 						}
 					}
@@ -215,17 +189,14 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 						progress.setProgressMax(max);
 						progress.setProgressValue(received);
 					})
-						.then(async (blob) => {
+						.then(async blob => {
 							progress.remove();
 							const zip = await get.promises.zip();
 							zip.load(await blob.arrayBuffer());
 							const entries = Object.entries(zip.files);
 							let root;
 							const hiddenFileFlags = [".", "_"];
-							unZipProgress = createProgress(
-								"正在解压" + progress.getFileName(),
-								entries.length
-							);
+							unZipProgress = createProgress("正在解压" + progress.getFileName(), entries.length);
 							let i = 0;
 							for (const [key, value] of entries) {
 								// 第一个是文件夹的话，就是根文件夹
@@ -233,76 +204,47 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 									root = key;
 								}
 								unZipProgress.setProgressValue(i++);
-								const fileName =
-									typeof root == "string" && key.startsWith(root)
-										? key.replace(root, "")
-										: key;
+								const fileName = typeof root == "string" && key.startsWith(root) ? key.replace(root, "") : key;
 								if (hiddenFileFlags.includes(fileName[0])) continue;
 								if (value.dir) {
 									await game.promises.createDir(fileName);
 									continue;
 								}
 								unZipProgress.setFileName(fileName);
-								const [path, name] = [
-									fileName.split("/").slice(0, -1).join("/"),
-									fileName.split("/").slice(-1).join("/"),
-								];
+								const [path, name] = [fileName.split("/").slice(0, -1).join("/"), fileName.split("/").slice(-1).join("/")];
 								game.print(`${fileName}(${i}/${entries.length})`);
-								await game.promises
-									.writeFile(value.asArrayBuffer(), path, name)
-									.catch(async (e) => {
-										// 特殊处理
-										if (
-											name == "noname-server.exe" &&
-											e.message.includes("resource busy or locked") &&
-											location.protocol.startsWith("http")
-										) {
-											if (
-												typeof window.require == "function" &&
-												typeof window.process == "object" &&
-												typeof window.__dirname == "string"
-											) {
-												return new Promise((resolve, reject) => {
-													const cp = require("child_process");
-													cp.exec(`taskkill /IM noname-server.exe /F`, (e) => {
-														if (e) reject(e);
-														else
-															game.promises
-																.writeFile(value.asArrayBuffer(), path, name)
-																.then(() => {
-																	cp.exec(
-																		`start /b ${__dirname}\\noname-server.exe -platform=electron`,
-																		() => { }
-																	);
-																	function loadURL() {
-																		let myAbortController =
-																			new AbortController();
-																		let signal = myAbortController.signal;
-																		setTimeout(
-																			() => myAbortController.abort(),
-																			2000
-																		);
-																		fetch(
-																			`http://localhost:8089/app.html`,
-																			{ signal }
-																		)
-																			.then(({ ok }) => {
-																				if (ok) resolve(null);
-																				else
-																					throw new Error(
-																						"fetch加载失败"
-																					);
-																			})
-																			.catch(() => loadURL());
-																	}
-																	loadURL();
-																})
-																.catch(reject);
-													});
+								await game.promises.writeFile(value.asArrayBuffer(), path, name).catch(async e => {
+									// 特殊处理
+									if (name == "noname-server.exe" && e.message.includes("resource busy or locked")) {
+										if (typeof window.require == "function" && typeof window.process == "object" && typeof window.__dirname == "string") {
+											return new Promise((resolve, reject) => {
+												const cp = require("child_process");
+												cp.exec(`taskkill /IM noname-server.exe /F`, e => {
+													if (e) reject(e);
+													else
+														game.promises
+															.writeFile(value.asArrayBuffer(), path, name)
+															.then(() => {
+																cp.exec(`start /b ${__dirname}\\noname-server.exe -platform=electron`, () => {});
+																function loadURL() {
+																	let myAbortController = new AbortController();
+																	let signal = myAbortController.signal;
+																	setTimeout(() => myAbortController.abort(), 2000);
+																	fetch(`http://localhost:8089/app.html`, { signal })
+																		.then(({ ok }) => {
+																			if (ok) resolve(null);
+																			else throw new Error("fetch加载失败");
+																		})
+																		.catch(() => loadURL());
+																}
+																loadURL();
+															})
+															.catch(reject);
 												});
-											}
-										} else throw e;
-									});
+											});
+										}
+									} else throw e;
+								});
 							}
 							unZipProgress.remove();
 							if (url === description.zipball_url) {
@@ -317,13 +259,13 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 							}
 							refresh();
 						})
-						.catch((e) => {
+						.catch(e => {
 							if (progress.parentNode) progress.remove();
 							if (unZipProgress && unZipProgress.parentNode) unZipProgress.remove();
 							refresh();
 							throw e;
 						});
-				}
+				};
 
 				if (!dev) {
 					getLatestVersionFromGitHub()
@@ -333,8 +275,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 								/** @type { ReturnType<import('../../../../library/update.js').getRepoTagDescription> } */
 								const description = lib.config[`version_description_${tagName}`];
 								return description;
-							}
-							else return getRepoTagDescription(tagName);
+							} else return getRepoTagDescription(tagName);
 						})
 						.then(description => {
 							// 保存版本信息
@@ -349,10 +290,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 									return;
 								}
 							}
-							const str =
-								versionResult < 0
-									? `有新版本${description.name}可用，是否下载？`
-									: `本地版本${lib.version}高于或等于github版本${description.name}，是否强制下载？`;
+							const str = versionResult < 0 ? `有新版本${description.name}可用，是否下载？` : `本地版本${lib.version}高于或等于github版本${description.name}，是否强制下载？`;
 							const str2 = description.body;
 							if (navigator.notification && navigator.notification.confirm) {
 								navigator.notification.confirm(
@@ -371,7 +309,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 								} else refresh();
 							}
 						})
-						.catch((e) => {
+						.catch(e => {
 							alert("获取更新失败: " + e);
 							refresh();
 						});
@@ -380,8 +318,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 						download({
 							name: "noname-PR-Branch",
 							assets: [],
-							zipball_url:
-								"https://ghproxy.cc/https://github.com/libccy/noname/archive/PR-Branch.zip",
+							zipball_url: "https://ghproxy.cc/https://github.com/libnoname/noname/archive/PR-Branch.zip",
 						});
 					} else {
 						refresh();
@@ -411,7 +348,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 				const refresh = () => {
 					checkAssetButton.innerHTML = "检查素材更新";
 					checkAssetButton.disabled = false;
-				}
+				};
 
 				const assetDirectories = [];
 				if (lib.config.asset_font) assetDirectories.push("font");
@@ -445,21 +382,22 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 					const results = [];
 					for (let i = 0; i < arr.length; i += 20) {
 						const pushArr = arr.slice(i, i + 20);
-						results.push(
-							...await Promise.all(pushArr.map(predicate))
-						);
+						results.push(...(await Promise.all(pushArr.map(predicate))));
 					}
 					return arr.filter((_v, index) => results[index]);
 				};
 
 				const result = await asyncFilter(files.flat(), async v => {
-					return game.promises.readFile(v.path).then(data => {
-						// 有设置就不进行对比直接返回false
-						if (lib.config.asset_notReplaceExistingFiles) return false;
-						return v.size != data.byteLength;
-						// 报错了就是没有文件
-					}).catch(() => true);
-				}).then(arr => arr.map((v) => v.path));
+					return game.promises
+						.readFile(v.path)
+						.then(data => {
+							// 有设置就不进行对比直接返回false
+							if (lib.config.asset_notReplaceExistingFiles) return false;
+							return v.size != data.byteLength;
+							// 报错了就是没有文件
+						})
+						.catch(() => true);
+				}).then(arr => arr.map(v => v.path));
 
 				console.log("需要更新的文件有:", result);
 				game.print("需要更新的文件有:", result);
@@ -474,9 +412,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 								li2.childNodes[0] &&
 								// nodeType = 3为text
 								li2.childNodes[0].nodeType === 3 &&
-								li2.childNodes[0].textContent.startsWith(
-									"素材版本"
-								)
+								li2.childNodes[0].textContent.startsWith("素材版本")
 							) {
 								li2.childNodes[0].textContent = `素材版本：${window.noname_asset_list[0]}`;
 							}
@@ -523,41 +459,32 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 							}),
 						}
 					)
-						.then(async (blob) => {
+						.then(async blob => {
 							progress.remove();
 							const zip = await get.promises.zip();
 							zip.load(await blob.arrayBuffer());
 							const entries = Object.entries(zip.files);
 							let root;
 							const hiddenFileFlags = [".", "_"];
-							unZipProgress = createProgress(
-								"正在解压" + progress.getFileName(),
-								entries.length
-							);
+							unZipProgress = createProgress("正在解压" + progress.getFileName(), entries.length);
 							let i = 0;
 							for (const [key, value] of entries) {
 								unZipProgress.setProgressValue(i++);
-								const fileName =
-									typeof root == "string" && key.startsWith(root)
-										? key.replace(root, "")
-										: key;
+								const fileName = typeof root == "string" && key.startsWith(root) ? key.replace(root, "") : key;
 								if (hiddenFileFlags.includes(fileName[0])) continue;
 								if (value.dir) {
 									await game.promises.createDir(fileName);
 									continue;
 								}
 								unZipProgress.setFileName(fileName);
-								const [path, name] = [
-									fileName.split("/").slice(0, -1).join("/"),
-									fileName.split("/").slice(-1).join("/"),
-								];
+								const [path, name] = [fileName.split("/").slice(0, -1).join("/"), fileName.split("/").slice(-1).join("/")];
 								game.print(`${fileName}(${i}/${entries.length})`);
 								await game.promises.writeFile(value.asArrayBuffer(), path, name);
 							}
 							unZipProgress.remove();
 							await finish();
 						})
-						.catch((e) => {
+						.catch(e => {
 							if (progress.parentNode) progress.remove();
 							if (unZipProgress && unZipProgress.parentNode) unZipProgress.remove();
 							refresh();
@@ -599,7 +526,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 			updatepx.style.whiteSpace = "nowrap";
 			updatepx.style.marginTop = "8px";
 			var buttonx = ui.create.node("button", "访问项目主页", function () {
-				window.open("https://github.com/libccy/noname");
+				window.open("https://github.com/libnoname/noname");
 			});
 			updatepx.appendChild(buttonx);
 			ui.updateUpdate = function () {
@@ -689,7 +616,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 					span5_br,
 					span5_check,
 					/* span6, span6_br, span6_check,*/
-				].forEach((item) =>
+				].forEach(item =>
 					HTMLDivElement.prototype.css.call(item, {
 						display: "none",
 					})
@@ -711,7 +638,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 					span5_br,
 					span5_check,
 					/* span6, span6_br, span6_check,*/
-				].forEach((item) =>
+				].forEach(item =>
 					HTMLDivElement.prototype.css.call(item, {
 						display: "",
 					})
@@ -724,7 +651,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 		// var span6_br = ui.create.node('br');
 		// li2.lastChild.appendChild(span6_br);
 		// var span2_br = ui.create.node('br');
-		var span114514_br = ui.create.node('br');
+		var span114514_br = ui.create.node("br");
 		li2.lastChild.appendChild(span114514_br);
 
 		var span7 = ui.create.div("", `不替换已有素材`);
@@ -838,7 +765,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 			span5_br,
 			span5_check,
 			/* span6, span6_br, span6_check,*/
-		].forEach((item) =>
+		].forEach(item =>
 			HTMLDivElement.prototype.css.call(item, {
 				display: "none",
 			})
@@ -857,12 +784,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 		var norow2 = function () {
 			var node = currentrow1;
 			if (!node) return false;
-			return (
-				node.innerHTML == "横置" ||
-				node.innerHTML == "翻面" ||
-				node.innerHTML == "换人" ||
-				node.innerHTML == "复活"
-			);
+			return node.innerHTML == "横置" || node.innerHTML == "翻面" || node.innerHTML == "换人" || node.innerHTML == "复活";
 		};
 		var checkCheat = function () {
 			if (norow2()) {
@@ -887,11 +809,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 				}
 			} else {
 				for (var i = 0; i < row3.childElementCount; i++) {
-					if (
-						currentrow1 &&
-						currentrow1.innerHTML == "换人" &&
-						row3.childNodes[i].link == game.me
-					) {
+					if (currentrow1 && currentrow1.innerHTML == "换人" && row3.childNodes[i].link == game.me) {
 						row3.childNodes[i].classList.add("unselectable");
 					} else {
 						row3.childNodes[i].classList.remove("unselectable");
@@ -1109,11 +1027,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 				row1.hide();
 				row2.hide();
 			}
-			if (
-				lib.config.mode == "identity" ||
-				lib.config.mode == "guozhan" ||
-				lib.config.mode == "doudizhu"
-			) {
+			if (lib.config.mode == "identity" || lib.config.mode == "guozhan" || lib.config.mode == "doudizhu") {
 				if (
 					game.notMe ||
 					(game.me &&
@@ -1229,7 +1143,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 							return;
 						}
 
-						// 
+						//
 						control.overrideParameter("target", window);
 					})
 					.start();
@@ -1259,7 +1173,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 			/**
 			 * @type { (value:string)=>any }
 			 */
-			let fun
+			let fun;
 			if (security.isSandboxRequired()) {
 				const reg = /^\{([^{}]+:\s*([^\s,]*|'[^']*'|"[^"]*"|\{[^}]*\}|\[[^\]]*\]|null|undefined|([a-zA-Z$_][a-zA-Z0-9$_]*\s*:\s*)?[a-zA-Z$_][a-zA-Z0-9$_]*\(\)))(?:,\s*([^{}]+:\s*(?:[^\s,]*|'[^']*'|"[^"]*"|\{[^}]*\}|\[[^\]]*\]|null|undefined|([a-zA-Z$_][a-zA-Z0-9$_]*\s*:\s*)?[a-zA-Z$_][a-zA-Z0-9$_]*\(\))))*\}$/;
 				fun = function (value) {
@@ -1283,7 +1197,9 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 				// 	};
 				// `, { window: proxyWindow });
 			} else {
-				fun = (new Function('window', `
+				fun = new Function(
+					"window",
+					dedent`
 					const _status=window._status;
 					const lib=window.lib;
 					const game=window.game;
@@ -1297,7 +1213,8 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 						"use strict";
 						return eval(reg.test(value)?('('+value+')'):value);
 					}
-				`))(proxyWindow);
+				`
+				)(proxyWindow);
 			}
 			const runCommand = () => {
 				if (text2.value && !["up", "down"].includes(text2.value)) {
@@ -1324,11 +1241,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 					} else {
 						text2.value = "";
 					}
-				} else if (
-					text2.value.includes("无天使") &&
-					(text2.value.includes("无神佛") ||
-						(text2.value.includes("无神") && text2.value.includes("无佛")))
-				) {
+				} else if (text2.value.includes("无天使") && (text2.value.includes("无神佛") || (text2.value.includes("无神") && text2.value.includes("无佛")))) {
 					game.print("密码正确！欢迎来到死后世界战线！");
 					_status.keyVerified = true;
 					text2.value = "";
@@ -1345,7 +1258,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 					text2.value = "";
 				}
 			};
-			text2.addEventListener("keydown", (e) => {
+			text2.addEventListener("keydown", e => {
 				if (e.keyCode == 13) {
 					runCommand();
 				} else if (e.keyCode == 38) {
@@ -1367,16 +1280,15 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 			game.print = function () {
 				const args = [...arguments];
 				const printResult = args
-					.map((arg) => {
+					.map(arg => {
 						if (typeof arg != "string") {
-							const parse = (obj) => {
+							const parse = obj => {
 								if (Array.isArray(obj)) {
-									return `[${obj.map((v) => parse(v))}]`;
+									return `[${obj.map(v => parse(v))}]`;
 								} else if (typeof obj == "function") {
-									if (typeof obj.name == "string"){
+									if (typeof obj.name == "string") {
 										return `[Function ${obj.name}]`;
-									}
-									else {
+									} else {
 										return `[Function]`;
 									}
 								} else if (typeof obj != "string") {
@@ -1396,12 +1308,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 								} catch (_) {
 									argi = arg.toString();
 								}
-								return argi
-									.replace(/&/g, "&amp;")
-									.replace(/</g, "&lt;")
-									.replace(/>/g, "&gt;")
-									.replace(/"/g, "&quot;")
-									.replace(/'/g, "&#39;");
+								return argi.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 							} else if (typeof arg == "object") {
 								let msg = "";
 								for (const name of Object.getOwnPropertyNames(arg)) {
@@ -1413,13 +1320,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 							}
 						} else {
 							const str = String(arg);
-							if (!/<[a-zA-Z]+[^>]*?\/?>.*?(?=<\/[a-zA-Z]+[^>]*?>|$)/.exec(str))
-								return str
-									.replace(/&/g, "&amp;")
-									.replace(/</g, "&lt;")
-									.replace(/>/g, "&gt;")
-									.replace(/"/g, "&quot;")
-									.replace(/'/g, "&#39;");
+							if (!/<[a-zA-Z]+[^>]*?\/?>.*?(?=<\/[a-zA-Z]+[^>]*?>|$)/.exec(str)) return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 							else return str;
 						}
 					})
@@ -1439,6 +1340,67 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 				game.print("点击以下按钮\n将开启诗笺版内置的控制台");
 				game.print("<button onclick='window.noname_shijianInterfaces.showDevTools();'>开启DevTools</button>");
 			}
+		};
+		if (!get.config("menu_loadondemand")) node._initLink();
+	})();
+	(function () {
+		var page = ui.create.div("");
+		var node = ui.create.div(".menubutton.large", "内核", start.firstChild, clickMode);
+		node._initLink = function () {
+			node.link = page;
+			page.classList.add("menu-sym");
+			
+			const coreInfo = get.coreInfo();
+
+			const agent = document.createElement("div");
+			agent.css({
+				margin: "10px 0",
+				textAlign: "left",
+			});
+			let agentText = dedent`浏览器内核: ${coreInfo[0]}<br/>
+			浏览器版本: ${coreInfo[1]}.${coreInfo[2]}.${coreInfo[3]}<br/>`;
+
+			if (lib.device === 'android') {
+				agentText += dedent`应用平台: 安卓<br/>`;
+
+				if (typeof window.NonameAndroidBridge?.getPackageName === "function") {
+					agentText += dedent`安卓应用包名: ${window.NonameAndroidBridge.getPackageName()}<br/>`;
+				}
+
+				if (typeof window.NonameAndroidBridge?.getPackageVersionCode === "function") {
+					agentText += dedent`安卓应用版本: ${window.NonameAndroidBridge.getPackageVersionCode()}<br/>`;
+				}
+
+				if (typeof window.device === "object") {
+					agentText += dedent`安卓版本: ${device.version}<br/>
+					安卓SDK版本: ${device.sdkVersion}<br/>
+					设备制造商: ${device.manufacturer}<br/>`;
+				}
+			}
+			else if (lib.device === 'ios') {
+				agentText += dedent`应用平台: 苹果<br/>`;
+			}
+			else if (typeof window.require == "function" && typeof window.process == "object" && typeof window.__dirname == "string") {
+				agentText += dedent`应用平台: Electron<br/>
+				Electron版本: ${process.versions.electron}<br/>`;
+			}
+
+			agent.innerHTML = agentText;
+
+			page.appendChild(agent);
+
+			const button = document.createElement("button");
+			button.classList.add("changeWebviewProvider");
+			button.innerText = "点击切换WebView实现";
+			button.addEventListener("click", function () {
+				if (typeof window.NonameAndroidBridge?.changeWebviewProvider === "function") {
+					window.NonameAndroidBridge.changeWebviewProvider();
+				}
+				else {
+					alert("此客户端不支持此功能");
+				}
+			});
+			page.appendChild(button);
 		};
 		if (!get.config("menu_loadondemand")) node._initLink();
 	})();
@@ -1466,16 +1428,8 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 			for (var i = 0; i < lib.config.all.mode.length; i++) {
 				if (!lib.config.gameRecord[lib.config.all.mode[i]]) continue;
 				if (lib.config.gameRecord[lib.config.all.mode[i]].str) {
-					ui.create.div(
-						".config.indent",
-						lib.translate[lib.config.all.mode[i]],
-						page
-					).style.marginBottom = "-5px";
-					var item = ui.create.div(
-						".config.indent",
-						lib.config.gameRecord[lib.config.all.mode[i]].str + "<span>重置</span>",
-						page
-					);
+					ui.create.div(".config.indent", lib.translate[lib.config.all.mode[i]], page).style.marginBottom = "-5px";
+					var item = ui.create.div(".config.indent", lib.config.gameRecord[lib.config.all.mode[i]].str + "<span>重置</span>", page);
 					item.style.height = "auto";
 					item.lastChild.addEventListener("click", reset);
 					item.lastChild.classList.add("pointerdiv");
@@ -1543,15 +1497,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 							nodename2.setBackground(video.name2, "character");
 						}
 						var date = new Date(video.time);
-						var str =
-							date.getFullYear() +
-							"." +
-							(date.getMonth() + 1) +
-							"." +
-							date.getDate() +
-							" " +
-							date.getHours() +
-							":";
+						var str = date.getFullYear() + "." + (date.getMonth() + 1) + "." + date.getDate() + " " + date.getHours() + ":";
 						var minutes = date.getMinutes();
 						if (minutes < 10) {
 							str += "0";
@@ -1592,9 +1538,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 					importVideo.style.marginBottom = "80px";
 					importVideo.style.marginLeft = "13px";
 					importVideo.style.width = "calc(100% - 30px)";
-					importVideo.innerHTML =
-						'<input type="file" accept="*/*" style="width:calc(100% - 40px)">' +
-						'<button style="width:40px">确定</button>';
+					importVideo.innerHTML = '<input type="file" accept="*/*" style="width:calc(100% - 40px)">' + '<button style="width:40px">确定</button>';
 					importVideo.lastChild.onclick = function () {
 						var fileToLoad = importVideo.firstChild.files[0];
 						var fileReader = new FileReader();
@@ -1661,10 +1605,7 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 					saveButton.listen(function () {
 						var current = this.parentNode.querySelector(".videonode.active");
 						if (current) {
-							game.export(
-								lib.init.encode(JSON.stringify(current.link)),
-								"无名杀 - 录像 - " + current.link.name[0] + " - " + current.link.name[1]
-							);
+							game.export(lib.init.encode(JSON.stringify(current.link)), "无名杀 - 录像 - " + current.link.name[0] + " - " + current.link.name[1]);
 						}
 					});
 
@@ -1686,14 +1627,47 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 		if (!get.config("menu_loadondemand")) node._initLink();
 	})();
 
-	for (var i in lib.help) {
-		var page = ui.create.div("");
-		var node = ui.create.div(".menubutton.large", i, start.firstChild, clickMode);
-		node.type = "help";
-		node.link = page;
+	// 创建各模式/扩展的帮助页面
+	for (const [name, content] of Object.entries(lib.help)) {
+		// 创建帮助页面的内容元素
+		const page = ui.create.div("");
+		// 创建帮助按钮
+		// TODO: 对是否应该对按钮进行其他框架的挂载处理
+		var node = ui.create.div(".menubutton.large", name, start.firstChild, clickMode);
+		// 设置帮助按钮的类型
+		Reflect.set(node, "type", "help");
+		// 初始化帮助按钮的链接
+		Reflect.set(node, "link", page);
+		// 在非帮助页面下默认隐藏
 		node.style.display = "none";
+		// 设置帮助页面的类名
 		page.classList.add("menu-help");
-		page.innerHTML = lib.help[i];
+		
+		// 若传递的内容为对象，则特殊处理
+		if (typeof content == "object") {
+			/** @type {object} */
+			const contentObject = content;
+
+			// 如果对象拥有"mount"方式，则调用该方法进行挂载
+			if (typeof contentObject.mount == "function") {
+				contentObject.mount(page);
+			}
+			// 如果对象拥有"data"方式或"setup"方式，则视为vue组件
+			else if (typeof contentObject.data == "function" || typeof contentObject.setup == "function") {
+				// 创建vue组件
+				const component = createApp(contentObject);
+				// 挂载到页面
+				component.mount(page);
+			}
+			// 否则相信`Object#toString`的结果
+			else {
+				page.innerHTML = content;
+			}
+		}
+		// 否则将视为字符串，直接创建文本元素
+		else {
+			page.innerHTML = content;
+		}
 	}
 
 	if (!connectMenu) {

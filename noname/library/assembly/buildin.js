@@ -243,6 +243,21 @@ export const checkDamage3 = {
  */
 export const checkDamage4 = {};
 
+/**
+ * @type {(NonameAssemblyType["checkDie"])}
+ */
+export const checkDie = {};
+
+/**
+ * @type {(NonameAssemblyType["checkUpdate"])}
+ */
+export const checkUpdate = {};
+
+/**
+ * @type {(NonameAssemblyType["checkSkillAnimate"])}
+ */
+export const checkSkillAnimate = {};
+
 export const addSkillCheck = {};
 
 export const removeSkillCheck = {

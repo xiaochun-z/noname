@@ -22,8 +22,8 @@ const dynamicTranslates = {
 		return str;
 	},
 	youlong(player) {
-		if (player.storage.youlong) return '转换技，阴，每轮限一次，你可以废除你的一个装备栏，视为使用一张未以此法使用过的普通锦囊牌；<span class="bluetext">阳，每轮限一次，你可以废除你的一个装备栏，视为使用一张未以此法使用过的基本牌。</span>';
-		return '转换技，<span class="bluetext">阴，每轮限一次，你可以废除你的一个装备栏，视为使用一张未以此法使用过的普通锦囊牌；</span>阳，每轮限一次，你可以废除你的一个装备栏，视为使用一张未以此法使用过的基本牌。';
+		if (player.storage.youlong) return '转换技，每轮每项各限一次，你可以废除你的一个装备栏，视为使用一张未以此法使用过的：阴：普通锦囊牌；<span class="bluetext">阳：基本牌。</span>';
+		return '转换技，每轮每项各限一次，你可以废除你的一个装备栏，视为使用一张未以此法使用过的：<span class="bluetext">阴：普通锦囊牌；</span>阳：基本牌。';
 	},
 	luochong(player) {
 		var storage = player.getStorage("luochong");
@@ -96,21 +96,18 @@ const dynamicTranslates = {
 		const str = nameList.map(i => "【" + get.translation(i) + "】").join("/");
 		return "每轮每项限一次，你可以将一张牌当作" + str + "使用。此牌结算完毕后，将此项改为本局游戏最后一张不因使用进入弃牌堆的基本牌或普通锦囊牌的牌名，然后若〖寇钞〗的所有项均为基本牌，则你修改〖寇钞〗的所有项为【顺手牵羊】。";
 	},
-    oljinghua(player) {
-        const storage = player.storage.oljinghua;
-        var str = "当其他角色获得你的牌后，或当你交给其他角色牌后，其";
-        str += storage ? "失去" : "回复";
-        str += "1点体力。";
-        if (!storage) str += "当你失去最后的手牌后，你可以将此技能描述中的“回复”改为“失去”。";
-        return str;
-    },
-    olshuiyue(player) {
-        const storage = player.storage.olshuiyue;
-        var str = "当其他角色受到你造成的伤害后，其";
-        str += storage ? "弃置" : "摸";
-        str += "一张牌。";
-        if (!storage) str += "当你令其他角色进入濒死状态后，你可以将此技能描述中的“摸”改为“弃置”。";
-        return str;
-    },
+	olliyong(player) {
+		const storage = player.storage.olliyong;
+		let str = "转换技，出牌阶段。";
+		if (!storage) str += '<span class="bluetext">';
+		str += "阳：你可以将一张你本回合未使用过的花色的牌当作【决斗】使用";
+		if (!storage) str += "</span>";
+		str += "；";
+		if (storage) str += '<span class="bluetext">';
+		str += "阴：你可以从牌堆中获得一张你本回合使用过的花色的牌，令一名其他角色视为对你使用一张【决斗】";
+		if (storage) str += "</span>";
+		str += "。";
+		return str;
+	},
 };
 export default dynamicTranslates;

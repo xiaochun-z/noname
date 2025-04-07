@@ -11,8 +11,20 @@ export default () => {
 				lib.characterPack.mode_versus = lib.jiangeboss;
 			} else if (get.config("versus_mode") == "siguo") {
 				lib.characterPack.mode_versus = {
-					tangzi: ["male", ["wei", "wu"].randomGet(), 4, ["xingzhao"], []],
-					liuqi: ["male", ["shu", "qun"].randomGet(), 3, ["wenji", "tunjiang"], []],
+					tangzi: {
+						sex: "male",
+						group: ["wei", "wu"].randomGet(),
+						hp: 4,
+						skills: ["xingzhao"],
+						dieAudios: ["xf_tangzi"],
+					},
+					liuqi: {
+						sex: "male",
+						group: ["shu", "qun"].randomGet(),
+						hp: 3,
+						skills: ["wenji", "tunjiang"],
+						dieAudios: ["sp_liuqi"],
+					},
 				};
 				for (var i in lib.characterPack.mode_versus) {
 					lib.character[i] = lib.characterPack.mode_versus[i];
@@ -589,8 +601,6 @@ export default () => {
 					if (lib.configOL.versus_mode == "2v2") uiintro.add('<div class="text chat">四号位【飞扬】：' + (lib.configOL.olfeiyang_four ? "开启" : "关闭"));
 				}
 				var last = uiintro.add('<div class="text chat">出牌时限：' + lib.configOL.choose_timeout + "秒");
-				// uiintro.add('<div class="text chat">屏蔽弱将：'+(lib.configOL.ban_weak?'开启':'关闭'));
-				// var last=uiintro.add('<div class="text chat">屏蔽强将：'+(lib.configOL.ban_strong?'开启':'关闭'));
 				if (lib.configOL.banned.length) {
 					last = uiintro.add('<div class="text chat">禁用武将：' + get.translation(lib.configOL.banned));
 				}
@@ -4208,28 +4218,208 @@ export default () => {
 				}
 			),
 			{
-				boss_liedixuande: ["male", "shu", 5, ["boss_lingfeng", "boss_jizhen"], ["jiangeboss", "hiddenboss", "bossallowed"], "shu"],
-				boss_gongshenyueying: ["female", "shu", 4, ["boss_gongshenjg", "boss_jingmiao", "boss_zhinang"], ["jiangeboss", "hiddenboss", "bossallowed"], "shu"],
-				boss_tianhoukongming: ["male", "shu", 4, ["boss_biantian", "bazhen"], ["jiangeboss", "hiddenboss", "bossallowed"], "shu"],
-				boss_yuhuoshiyuan: ["male", "shu", 4, ["boss_yuhuojg", "boss_qiwu", "boss_tianyujg"], ["jiangeboss", "hiddenboss", "bossallowed"], "shu"],
-				boss_qiaokuijunyi: ["male", "wei", 4, ["boss_huodi", "boss_jueji"], ["jiangeboss", "hiddenboss", "bossallowed"], "wei"],
-				boss_jiarenzidan: ["male", "wei", 5, ["boss_chiying", "boss_jingfan"], ["jiangeboss", "hiddenboss", "bossallowed"], "wei"],
-				boss_duanyuzhongda: ["male", "wei", 5, ["boss_fanshi", "boss_xuanlei", "boss_skonghun"], ["jiangeboss", "hiddenboss", "bossallowed"], "wei"],
-				boss_juechenmiaocai: ["male", "wei", 5, ["boss_chuanyun", "boss_leili", "boss_fengxing"], ["jiangeboss", "hiddenboss", "bossallowed"], "wei"],
+				boss_liedixuande: {
+					sex: "male",
+					group: "shu",
+					hp: 5,
+					skills: ["boss_lingfeng", "boss_jizhen"],
+					isJiangeBoss: true,
+					isHiddenBoss: true,
+					isBossAllowed: true,
+					extraModeData: "shu",
+				},
+				boss_gongshenyueying: {
+					sex: "female",
+					group: "shu",
+					hp: 4,
+					skills: ["boss_gongshenjg", "boss_jingmiao", "boss_zhinang"],
+					isJiangeBoss: true,
+					isHiddenBoss: true,
+					isBossAllowed: true,
+					extraModeData: "shu",
+				},
+				boss_tianhoukongming: {
+					sex: "male",
+					group: "shu",
+					hp: 4,
+					skills: ["boss_biantian", "bazhen"],
+					isJiangeBoss: true,
+					isHiddenBoss: true,
+					isBossAllowed: true,
+					extraModeData: "shu",
+				},
+				boss_yuhuoshiyuan: {
+					sex: "male",
+					group: "shu",
+					hp: 4,
+					skills: ["boss_yuhuojg", "boss_qiwu", "boss_tianyujg"],
+					isJiangeBoss: true,
+					isHiddenBoss: true,
+					isBossAllowed: true,
+					extraModeData: "shu",
+				},
+				boss_qiaokuijunyi: {
+					sex: "male",
+					group: "wei",
+					hp: 4,
+					skills: ["boss_huodi", "boss_jueji"],
+					isJiangeBoss: true,
+					isHiddenBoss: true,
+					isBossAllowed: true,
+					extraModeData: "wei",
+				},
+				boss_jiarenzidan: {
+					sex: "male",
+					group: "wei",
+					hp: 5,
+					skills: ["boss_chiying", "boss_jingfan"],
+					isJiangeBoss: true,
+					isHiddenBoss: true,
+					isBossAllowed: true,
+					extraModeData: "wei",
+				},
+				boss_duanyuzhongda: {
+					sex: "male",
+					group: "wei",
+					hp: 5,
+					skills: ["boss_fanshi", "boss_xuanlei", "boss_skonghun"],
+					isJiangeBoss: true,
+					isHiddenBoss: true,
+					isBossAllowed: true,
+					extraModeData: "wei",
+				},
+				boss_juechenmiaocai: {
+					sex: "male",
+					group: "wei",
+					hp: 5,
+					skills: ["boss_chuanyun", "boss_leili", "boss_fengxing"],
+					isJiangeBoss: true,
+					isHiddenBoss: true,
+					isBossAllowed: true,
+					extraModeData: "wei",
+				},
 
-				boss_jileibaihu: ["male", "shu", 5, ["boss_jiguan", "boss_zhenwei", "boss_benlei"], ["jiangemech", "hiddenboss", "bossallowed"], "shu"],
-				boss_yunpingqinglong: ["male", "shu", 5, ["boss_jiguan", "boss_mojianjg"], ["jiangemech", "hiddenboss", "bossallowed"], "shu"],
-				boss_lingjiaxuanwu: ["male", "shu", 5, ["boss_jiguan", "yizhong", "boss_lingyu"], ["jiangemech", "hiddenboss", "bossallowed"], "shu"],
-				boss_chiyuzhuque: ["male", "shu", 5, ["boss_jiguan", "boss_yuhuojg", "boss_tianyun"], ["jiangemech", "hiddenboss", "bossallowed"], "shu"],
-				boss_fudibian: ["male", "wei", 5, ["boss_jiguan", "boss_didongjg"], ["jiangemech", "hiddenboss", "bossallowed"], "wei"],
-				boss_tuntianchiwen: ["male", "wei", 5, ["boss_jiguan", "boss_tanshi", "boss_tunshi"], ["jiangemech", "hiddenboss", "bossallowed"], "wei"],
-				boss_shihuosuanni: ["male", "wei", 5, ["boss_jiguan", "boss_lianyujg"], ["jiangemech", "hiddenboss", "bossallowed"], "wei"],
-				boss_lieshiyazi: ["male", "wei", 5, ["boss_jiguan", "boss_nailuo"], ["jiangemech", "hiddenboss", "bossallowed"], "wei"],
+				boss_jileibaihu: {
+					sex: "male",
+					group: "shu",
+					hp: 5,
+					skills: ["boss_jiguan", "boss_zhenwei", "boss_benlei"],
+					isJiangeMech: true,
+					isHiddenBoss: true,
+					isBossAllowed: true,
+					extraModeData: "shu",
+				},
+				boss_yunpingqinglong: {
+					sex: "male",
+					group: "shu",
+					hp: 5,
+					skills: ["boss_jiguan", "boss_mojianjg"],
+					isJiangeMech: true,
+					isHiddenBoss: true,
+					isBossAllowed: true,
+					extraModeData: "shu",
+				},
+				boss_lingjiaxuanwu: {
+					sex: "male",
+					group: "shu",
+					hp: 5,
+					skills: ["boss_jiguan", "yizhong", "boss_lingyu"],
+					isJiangeMech: true,
+					isHiddenBoss: true,
+					isBossAllowed: true,
+					extraModeData: "shu",
+				},
+				boss_chiyuzhuque: {
+					sex: "male",
+					group: "shu",
+					hp: 5,
+					skills: ["boss_jiguan", "boss_yuhuojg", "boss_tianyun"],
+					isJiangeMech: true,
+					isHiddenBoss: true,
+					isBossAllowed: true,
+					extraModeData: "shu",
+				},
+				boss_fudibian: {
+					sex: "male",
+					group: "wei",
+					hp: 5,
+					skills: ["boss_jiguan", "boss_didongjg"],
+					isJiangeMech: true,
+					isHiddenBoss: true,
+					isBossAllowed: true,
+					extraModeData: "wei",
+				},
+				boss_tuntianchiwen: {
+					sex: "male",
+					group: "wei",
+					hp: 5,
+					skills: ["boss_jiguan", "boss_tanshi", "boss_tunshi"],
+					isJiangeMech: true,
+					isHiddenBoss: true,
+					isBossAllowed: true,
+					extraModeData: "wei",
+				},
+				boss_shihuosuanni: {
+					sex: "male",
+					group: "wei",
+					hp: 5,
+					skills: ["boss_jiguan", "boss_lianyujg"],
+					isJiangeMech: true,
+					isHiddenBoss: true,
+					isBossAllowed: true,
+					extraModeData: "wei",
+				},
+				boss_lieshiyazi: {
+					sex: "male",
+					group: "wei",
+					hp: 5,
+					skills: ["boss_jiguan", "boss_nailuo"],
+					isJiangeMech: true,
+					isHiddenBoss: true,
+					isBossAllowed: true,
+					extraModeData: "wei",
+				},
 
-				boss_kumuyuanrang: ["male", "wei", 5, ["boss_bashi", "boss_danjing"], ["jiangeboss", "hiddenboss", "bossallowed"], "wei"],
-				boss_baijiwenyuan: ["male", "wei", 5, ["boss_jiaoxie"], ["jiangeboss", "hiddenboss", "bossallowed"], "wei"],
-				boss_yihanyunchang: ["male", "shu", 5, ["boss_xiaorui", "boss_huchen"], ["jiangeboss", "hiddenboss", "bossallowed"], "shu"],
-				boss_fuweizilong: ["male", "shu", 5, ["boss_fengjian", "boss_keding"], ["jiangeboss", "hiddenboss", "bossallowed"], "shu"],
+				boss_kumuyuanrang: {
+					sex: "male",
+					group: "wei",
+					hp: 5,
+					skills: ["boss_bashi", "boss_danjing"],
+					isJiangeBoss: true,
+					isHiddenBoss: true,
+					isBossAllowed: true,
+					extraModeData: "wei",
+				},
+				boss_baijiwenyuan: {
+					sex: "male",
+					group: "wei",
+					hp: 5,
+					skills: ["boss_jiaoxie"],
+					isJiangeBoss: true,
+					isHiddenBoss: true,
+					isBossAllowed: true,
+					extraModeData: "wei",
+				},
+				boss_yihanyunchang: {
+					sex: "male",
+					group: "shu",
+					hp: 5,
+					skills: ["boss_xiaorui", "boss_huchen"],
+					isJiangeBoss: true,
+					isHiddenBoss: true,
+					isBossAllowed: true,
+					extraModeData: "shu",
+				},
+				boss_fuweizilong: {
+					sex: "male",
+					group: "shu",
+					hp: 5,
+					skills: ["boss_fengjian", "boss_keding"],
+					isJiangeBoss: true,
+					isHiddenBoss: true,
+					isBossAllowed: true,
+					extraModeData: "shu",
+				},
 			}
 		),
 		cardsFour: [
@@ -6364,7 +6554,7 @@ export default () => {
 					if (event.cards2.length == 0) {
 						event.finish();
 					} else {
-						var dialog = ui.create.dialog("将三张牌中的锦囊牌或装备牌交给一己方名角色", "hidden");
+						var dialog = ui.create.dialog("将五张牌中的锦囊牌或装备牌交给一名己方角色", "hidden");
 						dialog.add(event.cards);
 						for (var i = 0; i < dialog.buttons.length; i++) {
 							if (event.cards2.includes(dialog.buttons[i].link)) {

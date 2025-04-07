@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
+	dcsbshimou(player) {
+		let str1 = `阳：手牌数全场最低的角色`, str2 = `阴：手牌数全场最高的角色`;
+		if (!player.storage.dcsbshimou) str1=`<span class=thundertext>${str1}</span>`;
+		else str2=`<span class=thundertext>${str2}</span>`;
+		return `转换技，游戏开始可自选阴阳状态，出牌阶段限一次，你可令一名{${str1}；${str2}}将手牌调整至体力上限（至多摸五张）并视为使用一张仅指定单目标的普通锦囊牌（此牌牌名与目标由你指定）。若以此法摸牌，此牌可额外增加一个目标；若以此法弃牌，此牌额外结算一次。`;
+	},
 	dcsbkongwu(player) {
 		let str = "转换技，出牌阶段限一次，你可以弃置至多体力上限张牌，选择一名其他角色：",
 			yin = "阴，弃置其至多等量张牌；",
@@ -11,7 +17,7 @@ const dynamicTranslates = {
 	},
 	dckengqiang(player) {
 		let str = player.storage.dcshangjue ? "每回合每项各限一次" : "每回合限一次";
-		str += "，当你造成伤害时，你可以：1.摸体力上限张牌；2.令此伤害+1并获得造成伤害的牌。";
+		str += "，当你使用伤害牌时，你可以选择一项：1.摸体力上限张牌；2.令此牌伤害+1且获得造成伤害的牌。";
 		return str;
 	},
 	xinlvli(player) {
@@ -72,7 +78,7 @@ const dynamicTranslates = {
 		return '转换技。出牌阶段限一次，<span class="bluetext">阴：你可以弃置一张不为黑色的手牌。</span>阳：你可以弃置一张黑色手牌。';
 	},
 	dcluochong(player) {
-		return "一轮游戏开始时，你可以弃置任意名角色区域里的共计至多[" + (4 - player.countMark("dcluochong")) + "]张牌，然后若你以此法弃置了一名角色的至少三张牌，则你方括号内的数字-1。";
+		return "每轮开始时，你可以弃置任意名角色区域里的共计至多[" + (4 - player.countMark("dcluochong")) + "]张牌，然后若你以此法弃置了一名角色的至少三张牌，则你方括号内的数字-1。";
 	},
 	dczhangcai(player) {
 		return "当你使用或打出" + (player.hasSkill("dczhangcai_all") ? "" : "点数为8的") + "牌时，你可以摸X张牌（X为你手牌区里" + (player.hasSkill("dczhangcai_all") ? "与此牌点数相同" : "点数为8") + "的牌数且至少为1）。";
@@ -119,6 +125,41 @@ const dynamicTranslates = {
 		str += "阴，令A依次使用这些牌中所有其可以使用的牌（无距离限制且不可被响应）。";
 		if (storage) str += "</span>";
 		return str;
+	},
+	dcjueyan(player, skill) {
+		let storage = player.storage[skill];
+		let str = lib.translate[skill + "_info"];
+		if (!storage) return str;
+		let regex = /\[\d+\]/g;
+		let index = 0;
+		let result = str.replace(regex, (match, offset, string) => {
+			if (index < storage.length - 1) {
+				const resultx = `[${storage[index]}]`;
+				index++;
+				return resultx;
+			}
+			return match;
+		});
+		if (storage[3]) {
+			result = result.replace("{与其拼点，若你赢，你}", "").replace("若你已经选择过所有选项，则你修改此技能，删除描述中{ }的内容。", "");
+		}
+		return result;
+	},
+	dcrejueyan(player, skill) {
+		let storage = player.storage[skill];
+		let str = lib.translate[skill + "_info"];
+		if (!storage) return str;
+		let regex = /\[\d+\]/g;
+		let index = 0;
+		let result = str.replace(regex, (match, offset, string) => {
+			if (index < storage.length) {
+				const resultx = `[${storage[index]}]`;
+				index++;
+				return resultx;
+			}
+			return match;
+		});
+		return result;
 	},
 };
 export default dynamicTranslates;

@@ -256,63 +256,322 @@ export default () => {
 				}
 			),
 			{
-				caocao: ["male", "wei", 4, ["jianxiong"], ["zhu"]],
-				simayi: ["male", "wei", 3, ["fankui", "guicai"]],
-				xiahoudun: ["male", "wei", 4, ["ganglie"]],
-				zhangliao: ["male", "wei", 4, ["retuxi"]],
-				xuzhu: ["male", "wei", 4, ["luoyi", "xiechan"]],
-				guojia: ["male", "wei", 3, ["tiandu", "yiji"]],
-				zhenji: ["female", "wei", 3, ["luoshen", "sgqingguo"]],
-				liubei: ["male", "shu", 4, ["sgrenwang"], ["zhu"]],
-				guanyu: ["male", "shu", 4, ["wusheng", "huwei"]],
-				zhangfei: ["male", "shu", 4, ["paoxiao"]],
-				zhugeliang: ["male", "shu", 3, ["guanxing", "kongcheng"]],
-				zhaoyun: ["male", "shu", 4, ["longdan"]],
-				machao: ["male", "shu", 4, ["xiaoxi", "tieji"]],
-				huangyueying: ["female", "shu", 3, ["jizhi", "cangji"]],
-				sunquan: ["male", "wu", 4, ["sgzhiheng"], ["zhu"]],
-				ganning: ["male", "wu", 4, ["qixi"]],
-				lvmeng: ["male", "wu", 4, ["shenju", "botu"]],
-				huanggai: ["male", "wu", 4, ["kurou"]],
-				zhouyu: ["male", "wu", 3, ["yingzi", "fanjian"]],
-				daqiao: ["female", "wu", 3, ["guose", "wanrong"]],
-				luxun: ["male", "wu", 3, ["qianxun", "lianying"]],
-				sunshangxiang: ["female", "wu", 3, ["xiaoji", "yinli"]],
-				//huatuo:['male','qun',3,['qingnang','jijiu']],
-				lvbu: ["male", "qun", 4, ["wushuang"]],
-				diaochan: ["female", "qun", 3, ["pianyi", "biyue"]],
+				caocao: {
+					sex: "male",
+					group: "wei",
+					hp: 4,
+					skills: ["jianxiong"],
+					isZhugong: true,
+				},
+				simayi: {
+					sex: "male",
+					group: "wei",
+					hp: 3,
+					skills: ["fankui", "guicai"],
+				},
+				xiahoudun: {
+					sex: "male",
+					group: "wei",
+					hp: 4,
+					skills: ["ganglie"],
+				},
+				zhangliao: {
+					sex: "male",
+					group: "wei",
+					hp: 4,
+					skills: ["retuxi"],
+				},
+				xuzhu: {
+					sex: "male",
+					group: "wei",
+					hp: 4,
+					skills: ["luoyi", "xiechan"],
+				},
+				guojia: {
+					sex: "male",
+					group: "wei",
+					hp: 3,
+					skills: ["tiandu", "yiji"],
+				},
+				zhenji: {
+					sex: "female",
+					group: "wei",
+					hp: 3,
+					skills: ["luoshen", "sgqingguo"],
+				},
+				liubei: {
+					sex: "male",
+					group: "shu",
+					hp: 4,
+					skills: ["sgrenwang"],
+					isZhugong: true,
+				},
+				guanyu: {
+					sex: "male",
+					group: "shu",
+					hp: 4,
+					skills: ["wusheng", "huwei"],
+				},
+				zhangfei: {
+					sex: "male",
+					group: "shu",
+					hp: 4,
+					skills: ["paoxiao"],
+				},
+				zhugeliang: {
+					sex: "male",
+					group: "shu",
+					hp: 3,
+					skills: ["guanxing", "kongcheng"],
+				},
+				zhaoyun: {
+					sex: "male",
+					group: "shu",
+					hp: 4,
+					skills: ["longdan"],
+				},
+				machao: {
+					sex: "male",
+					group: "shu",
+					hp: 4,
+					skills: ["xiaoxi", "tieji"],
+				},
+				huangyueying: {
+					sex: "female",
+					group: "shu",
+					hp: 3,
+					skills: ["jizhi", "cangji"],
+				},
+				sunquan: {
+					sex: "male",
+					group: "wu",
+					hp: 4,
+					skills: ["sgzhiheng"],
+					isZhugong: true,
+				},
+				ganning: {
+					sex: "male",
+					group: "wu",
+					hp: 4,
+					skills: ["qixi"],
+				},
+				lvmeng: {
+					sex: "male",
+					group: "wu",
+					hp: 4,
+					skills: ["shenju", "botu"],
+				},
+				huanggai: {
+					sex: "male",
+					group: "wu",
+					hp: 4,
+					skills: ["kurou"],
+				},
+				zhouyu: {
+					sex: "male",
+					group: "wu",
+					hp: 3,
+					skills: ["yingzi", "fanjian"],
+				},
+				daqiao: {
+					sex: "female",
+					group: "wu",
+					hp: 3,
+					skills: ["guose", "wanrong"],
+				},
+				luxun: {
+					sex: "male",
+					group: "wu",
+					hp: 3,
+					skills: ["qianxun", "lianying"],
+				},
+				sunshangxiang: {
+					sex: "female",
+					group: "wu",
+					hp: 3,
+					skills: ["xiaoji", "yinli"],
+				},
+				huatuo: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["jijiu", "puji"],
+				},
+				lvbu: {
+					sex: "male",
+					group: "qun",
+					hp: 4,
+					skills: ["wushuang"],
+				},
+				diaochan: {
+					sex: "female",
+					group: "qun",
+					hp: 3,
+					skills: ["pianyi", "biyue"],
+				},
 
-				xiahouyuan: ["male", "wei", 4, ["shensu", "suzi"]],
-				old_caoren: ["male", "wei", 4, ["jushou"]],
-				huangzhong: ["male", "shu", 4, ["sgliegong"]],
-				weiyan: ["male", "shu", 4, ["sgkuanggu"]],
-				xiaoqiao: ["female", "wu", 3, ["tianxiang", "hongyan"]],
-				old_zhoutai: ["male", "wu", 4, ["gzbuqu"]],
-				zhangjiao: ["male", "qun", 3, ["leiji", "guidao"], ["zhu"]],
+				xiahouyuan: {
+					sex: "male",
+					group: "wei",
+					hp: 4,
+					skills: ["shensu", "suzi"],
+				},
+				old_caoren: {
+					sex: "male",
+					group: "wei",
+					hp: 4,
+					skills: ["jushou"],
+				},
+				huangzhong: {
+					sex: "male",
+					group: "shu",
+					hp: 4,
+					skills: ["sgliegong"],
+				},
+				weiyan: {
+					sex: "male",
+					group: "shu",
+					hp: 4,
+					skills: ["sgkuanggu"],
+				},
+				xiaoqiao: {
+					sex: "female",
+					group: "wu",
+					hp: 3,
+					skills: ["tianxiang", "hongyan"],
+				},
+				old_zhoutai: {
+					sex: "male",
+					group: "wu",
+					hp: 4,
+					skills: ["gzbuqu"],
+				},
+				zhangjiao: {
+					sex: "male",
+					group: "qun",
+					hp: 3,
+					skills: ["leiji", "guidao"],
+					isZhugong: true,
+				},
 
-				dianwei: ["male", "wei", 4, ["qiangxi"]],
-				yanwen: ["male", "qun", 4, ["shuangxiong"]],
-				pangde: ["male", "qun", 4, ["xiaoxi", "mengjin"]],
+				dianwei: {
+					sex: "male",
+					group: "wei",
+					hp: 4,
+					skills: ["qiangxi"],
+				},
+				yanwen: {
+					sex: "male",
+					group: "qun",
+					hp: 4,
+					skills: ["shuangxiong"],
+				},
+				pangde: {
+					sex: "male",
+					group: "qun",
+					hp: 4,
+					skills: ["xiaoxi", "mengjin"],
+				},
 
-				menghuo: ["male", "shu", 4, ["manyi", "zaiqi"]],
-				zhurong: ["female", "shu", 4, ["manyi", "lieren"]],
-				xuhuang: ["male", "wei", 4, ["sgduanliang"]],
-				sunjian: ["male", "wu", 4, ["gzyinghun"]],
+				menghuo: {
+					sex: "male",
+					group: "shu",
+					hp: 4,
+					skills: ["manyi", "zaiqi"],
+				},
+				zhurong: {
+					sex: "female",
+					group: "shu",
+					hp: 4,
+					skills: ["manyi", "lieren"],
+				},
+				xuhuang: {
+					sex: "male",
+					group: "wei",
+					hp: 4,
+					skills: ["sgduanliang"],
+				},
+				sunjian: {
+					sex: "male",
+					group: "wu",
+					hp: 4,
+					skills: ["gzyinghun"],
+				},
 
-				jiangwei: ["male", "shu", 4, ["tiaoxin"]],
+				jiangwei: {
+					sex: "male",
+					group: "shu",
+					hp: 4,
+					skills: ["tiaoxin"],
+				},
 
-				hejin: ["male", "qun", 4, ["mouzhu", "yanhuo"]],
-				hansui: ["male", "qun", 4, ["xiaoxi", "niluan"]],
-				niujin: ["male", "wei", 4, ["cuorui", "liewei"]],
+				hejin: {
+					sex: "male",
+					group: "qun",
+					hp: 4,
+					skills: ["mouzhu", "yanhuo"],
+				},
+				hansui: {
+					sex: "male",
+					group: "qun",
+					hp: 4,
+					skills: ["xiaoxi", "niluan"],
+				},
+				niujin: {
+					sex: "male",
+					group: "wei",
+					hp: 4,
+					skills: ["cuorui", "liewei"],
+				},
 
-				jin_zhangchunhua: ["female", "jin", 3, ["huishi", "qingleng"]],
-				jin_simayi: ["male", "jin", 3, ["smyyingshi", "xiongzhi", "quanbian"]],
-				jin_wangyuanji: ["female", "jin", 3, ["yanxi"]],
-				jin_simazhao: ["male", "jin", 3, ["choufa", "zhaoran"]],
-				jin_xiahouhui: ["female", "jin", 3, ["jyishi", "shiduo"]],
-				jin_simashi: ["male", "jin", "3/4", ["yimie", "tairan"]],
-				zhanghuyuechen: ["male", "jin", 4, ["xijue"]],
-				duyu: ["male", "jin", 4, ["sanchen", "zhaotao"]],
+				jin_zhangchunhua: {
+					sex: "female",
+					group: "jin",
+					hp: 3,
+					skills: ["huishi", "qingleng"],
+				},
+				jin_simayi: {
+					sex: "male",
+					group: "jin",
+					hp: 3,
+					skills: ["smyyingshi", "xiongzhi", "quanbian"],
+				},
+				jin_wangyuanji: {
+					sex: "female",
+					group: "jin",
+					hp: 3,
+					skills: ["yanxi"],
+				},
+				jin_simazhao: {
+					sex: "male",
+					group: "jin",
+					hp: 3,
+					skills: ["choufa", "zhaoran"],
+				},
+				jin_xiahouhui: {
+					sex: "female",
+					group: "jin",
+					hp: 3,
+					skills: ["jyishi", "shiduo"],
+				},
+				jin_simashi: {
+					sex: "male",
+					group: "jin",
+					hp: "3/4",
+					skills: ["yimie", "tairan"],
+				},
+				zhanghuyuechen: {
+					sex: "male",
+					group: "jin",
+					hp: 4,
+					skills: ["xijue"],
+				},
+				duyu: {
+					sex: "male",
+					group: "jin",
+					hp: 4,
+					skills: ["sanchen", "zhaotao"],
+				},
 			}
 		),
 		startBefore() {},
@@ -442,12 +701,14 @@ export default () => {
 			game.gameDraw(game.zhu, function (player) {
 				if (_status.mode == "dianjiang") return 4;
 				if (_status.mode == "wuxianhuoli") return 4;
-				if (_status.mode == "normal") return player == game.zhu ? 3 : 4;
-				if (_status.mode == "changban") return player == game.fan ? 5 : 4;
-				if (player.hasSkill("cuorui")) {
-					player.logSkill("cuorui");
-					return 2 + _status.characterChoice[player.identity].length;
+				if (_status.mode == "normal") {
+					if (player.hasSkill("cuorui")) {
+						player.logSkill("cuorui");
+						return 2 + _status.characterChoice[player.identity].length;
+					}
+					return player == game.zhu ? 3 : 4;
 				}
+				if (_status.mode == "changban") return player == game.fan ? 5 : 4;
 				return player.maxHp;
 			});
 			if (_status.connectMode && lib.configOL.change_card) game.replaceHandcards(game.players.slice(0));
@@ -604,6 +865,10 @@ export default () => {
 					setTimeout(function () {
 						ui.arena.classList.remove("choose-character");
 					}, 500);
+					if (get.config("single_control")) {
+						game.addGlobalSkill("autoswap");
+						game.me.next._trueMe = game.me;
+					}
 				});
 			},
 			chooseCharacterWuxianhuoli() {
@@ -647,7 +912,7 @@ export default () => {
 					var list = _status.characterChoice[game.me.enemy.identity].randomRemove(1);
 					game.me.enemy.init(list[0]);
 					[game.me, game.me.enemy].forEach(current => {
-						if (current.storage.nohp || (lib.character[current.name1].hasHiddenSkil && !current.noclick)) {
+						if (current.storage.nohp || (lib.character[current.name1].hasHiddenSkill && !current.noclick)) {
 							current.storage.rawHp = 1;
 							current.storage.rawMaxHp = 1;
 						}
@@ -1096,7 +1361,7 @@ export default () => {
 						_status.characterChoice[current.identity].removeArray(result[i]);
 						if (!current.name) {
 							current.init(result[i][0]);
-							if (current.storage.nohp || (lib.character[current.name1].hasHiddenSkil && !current.noclick)) {
+							if (current.storage.nohp || (lib.character[current.name1].hasHiddenSkill && !current.noclick)) {
 								current.storage.rawHp = 1;
 								current.storage.rawMaxHp = 1;
 							}
@@ -1111,7 +1376,7 @@ export default () => {
 							const current = lib.playerOL[i];
 							if (!current.name) {
 								current.init(result[i][0]);
-								if (current.storage.nohp || (lib.character[current.name1].hasHiddenSkil && !current.noclick)) {
+								if (current.storage.nohp || (lib.character[current.name1].hasHiddenSkill && !current.noclick)) {
 									current.storage.rawHp = 1;
 									current.storage.rawMaxHp = 1;
 								}
@@ -1764,6 +2029,50 @@ export default () => {
 					},
 				},
 			},
+			puji: {
+				// audio: "chulao",
+				enable: "phaseUse",
+				filter(event, player) {
+					return player.countCards("he") > 0 && player.enemy && player.enemy.countCards("he") > 0;
+				},
+				filterTarget(card, player, target) {
+					return target === player.enemy && target.countCards("he") > 0;
+				},
+				filterCard: true,
+				position: "he",
+				check(card) {
+					if (get.suit(card) == "spade") return 8 - get.value(card);
+					return 5 - get.value(card);
+				},
+				usable: 1,
+				async content(event, trigger, player) {
+					const target = event.targets[0];
+					const result = await player
+						.discardPlayerCard(target, "he", true)
+						.set("ai", button => {
+							let val = get.buttonValue(button);
+							if (get.suit(button.link) === "spade") val -= 2;
+							return val;
+						})
+						.forResult();
+					if (get.suit(event.cards[0]) === "spade") await player.draw();
+					if (result.bool && get.suit(result.cards[0]) === "spade") await target.draw();
+				},
+				ai: {
+					order: 3,
+					result: {
+						player(player, target) {
+							if (!ui.selected.cards.length) return 0;
+							const card = ui.selected.cards[0];
+							let val = get.value(card) / 6;
+							if (get.suit(card) === "spade") val--;
+							return -val;
+						},
+						target: -1,
+					},
+					threaten: 1.2,
+				},
+			},
 
 			_changeHandcard: {
 				trigger: { global: "gameDrawAfter" },
@@ -2153,7 +2462,7 @@ export default () => {
 			sgzhiheng: "制衡",
 			sgzhiheng_info: "出牌阶段限一次，你可以弃置至多两张牌，然后摸等量的牌。",
 			xiechan: "挟缠",
-			xiechan_info: "限定技，出牌阶段，你可以和对手拼点。若你赢/没赢，你/其视为对其/你使用一张【决斗】。",
+			xiechan_info: "限定技，出牌阶段，你可以和对手拼点。然后赢的角色视为对没赢的角色使用一张【决斗】。",
 			huwei: "虎威",
 			huwei_info: "当你登场时，你可以视为使用一张【水淹七军】。",
 			sgliegong: "烈弓",
@@ -2175,6 +2484,8 @@ export default () => {
 			yinli_info: "其他角色的装备牌于其回合内进入弃牌堆后，你可以获得之。",
 			shenju: "慎拒",
 			shenju_info: "锁定技，你的手牌上限+X（X为你对手的体力值）。",
+			puji: "普济",
+			puji_info: "出牌阶段限一次，你可弃置你与对手各一张牌，然后被弃置黑桃牌的角色各摸一张牌。",
 		},
 		help: {
 			血战长坂: '<div style="margin:10px">游戏规则</div><ul style="margin-top:0"><li>选将阶段<br>双方在游戏开始时由系统随机分配身份。分配到先手身份的玩家优先出牌，分配到后手身份的玩家优先选将。<br>双方各自随机获得3名暗置武将，同时从将池中随机选出6名明置武将，由后手玩家开始，按照一次1张-2张-2张-1张的顺序，轮流选择获得明置武将。之后双方各从自己的6名武将中选择2名分别作为主将和副将进行游戏。<li>胜利条件<br>对方死亡。' + "<li>双将规则<br>双将主将决定角色的性别和势力，体力上限为主副将体力上限的平均值，向下取整。体力上限为3的角色可在游戏开始后更换一次起始手牌。<li>牌堆<br>牌堆中移除【木牛流马】【闪电】，♣花色的【藤甲】和【无懈可击 ♦️Q】️</ul>",

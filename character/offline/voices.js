@@ -44,7 +44,6 @@ export default {
 	"#gzpaiyi2": "非吾友，则必敌也！",
 	"#chenggong1": "吾与主公患难之交也！",
 	"#chenggong2": "我豫州人才济济，元皓之辈，不堪大用。",
-	"#yj_liru:die": "如遇明主，大业必成……",
 	"#zhaolie1": "不灭东吴，誓不归蜀！",
 	"#zhaolie2": "汝等勿劝，此战势在必行！",
 	"#shichou": "尔等叛贼，害我兄弟，饶不得汝！",

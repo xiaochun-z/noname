@@ -53,9 +53,9 @@ const cards = {
 				target: -1,
 			},
 			tag: {
-				// damage:1,
-				// natureDamage:1,
-				// thunderDamage:1,
+				damage: 0.5,
+				natureDamage: 0.5,
+				thunderDamage: 0.5,
 			},
 		},
 	},

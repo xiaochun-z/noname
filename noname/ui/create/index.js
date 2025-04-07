@@ -1667,8 +1667,8 @@ export class Create {
 			// @ts-ignore
 			const buttons = dialog.content.querySelector(".buttons");
 			const array = dialog.buttons.filter(item => !item.classList.contains("nodisplay") && item.style.display !== 'none');
-			// 传入初始配置
-			const p = new Pagination({
+			// 传入初始配置 + 渲染元素
+			dialog.addPagination({
 				// 数据
 				data: array,
 				// 总页数(向上取整)
@@ -1693,9 +1693,6 @@ export class Create {
 				// 触发什么事件来更改当前页数，默认为click
 				changePageEvent: "click",
 			});
-			dialog.paginationMap.set(buttons, p);
-			// 渲染元素
-			p.renderPageDOM();
 		}
 
 		return dialog;
@@ -2356,11 +2353,41 @@ export class Create {
 		//------添加记牌器 by Curpond-------
 		ui.deckMonitor = ui.create.system(
 			"记牌器",
-			function () {
+			async function () {
+				function getResult() {
+					return new Promise((resolve, reject) => {
+						if (game.online) {
+							try {
+								game.ws.send(JSON.stringify(['cardPile']));
+								game.ws.addEventListener('message', function (e) {
+									let data = JSON.parse(JSON.parse(e.data)[0]);
+									if (data.type == 'cardPile') {
+										resolve(data.data);
+									}
+								}, { once: true });
+
+							} catch (error) {
+								resolve(false);
+							}
+
+
+						} else {
+							resolve({
+								drawPile: ui.cardPile.children,
+								discardPile: ui.discardPile.children
+							});
+						}
+					});
+
+				}
 				if (!_status.gameStarted) return;
 				game.pause2();
-				let drawPile = ui.cardPile.children;
-				let discardPile = ui.discardPile.children;
+
+				let result = await getResult();
+				if (!result) return;
+				let drawPile = result.drawPile;
+				let discardPile = result.discardPile;
+
 				let popupContainer = ui.create.div(".popupContainer.deckMonitor", ui.window, function () {
 					this.delete(400);
 					game.resume2();
@@ -2487,6 +2514,22 @@ export class Create {
 			true,
 			true
 		);
+
+
+
+		lib.arenaReady?.push(function () {
+			if (lib.config.show_deckMonitor) {
+				ui.deckMonitor.style.display = "";
+				if (_status.connectMode && !lib.config.show_deckMonitor_online) {
+					ui.deckMonitor.style.display = "none";
+				}
+			} else {
+				ui.deckMonitor.style.display = "none";
+			}
+			document.documentElement.style.setProperty("--tip-display", lib.config.show_tip ? "flex" : "none");
+		});
+
+
 		//---------------------------------
 		ui.playerids = ui.create.system(
 			"显示身份",

@@ -196,6 +196,12 @@ export const defaultHookcompatition = {
 	checkDamage3: new NonameAssembly("checkDamage3"),
 	checkDamage4: new NonameAssembly("checkDamage4"),
 
+	checkDie: new NonameAssembly("checkDie"),
+
+	checkUpdate: new NonameAssembly("checkUpdate"),
+
+	checkSkillAnimate: new NonameAssembly("checkSkillAnimate"),
+
 	addSkillCheck: new NonameAssembly("addSkillCheck"),
 	removeSkillCheck: new NonameAssembly("removeSkillCheck"),
 };

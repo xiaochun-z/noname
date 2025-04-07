@@ -477,6 +477,26 @@ export class GameEvent {
 		game.pause();
 		return this;
 	}
+
+	/**
+	 * 在可await/异步情况下获取客机执行的结果
+	 */
+	sendAsync() {
+		return new Promise(resolve => {
+			this.send();
+			if (!lib.node?.waitForResult || !this.player.playerid) {
+				resolve(null);
+				return;
+			}
+
+			if (!Array.isArray(lib.node.waitForResult[this.player.playerid])) {
+				lib.node.waitForResult[this.player.playerid] = [resolve];
+			} else {
+				lib.node.waitForResult[this.player.playerid].push(resolve);
+			}
+		});
+	}
+
 	resume() {
 		delete this._buttonChoice;
 		delete this._cardChoice;
@@ -562,7 +582,7 @@ export class GameEvent {
 			var info = get.info(skill);
 			this.skill = skill;
 			this._aiexclude = [];
-			if (typeof info.viewAs == "function") {
+			if (info.viewAs) {
 				if (info.filterButton != undefined) this.filterButton = get.filter(info.filterButton);
 				if (info.selectButton != undefined) this.selectButton = info.selectButton;
 				if (info.filterTarget != undefined) this.filterTarget = get.filter(info.filterTarget);
@@ -579,53 +599,16 @@ export class GameEvent {
 						return get.filter(evt.filterCard2).apply(this, arguments);
 					};
 				}
-				if (info.filterOk == undefined) {
-					this.filterOk = function () {
-						var evt = _status.event;
-						var card = get.card(),
-							player = get.player();
-						var filter = evt._backup.filterCard;
-						if (filter && !filter(card, player, evt)) return false;
-						if (evt._backup.filterOk) return evt._backup.filterOk();
-						return true;
-					};
-				} else this.filterOk = info.filterOk;
-				if (info.selectCard != undefined) this.selectCard = info.selectCard;
-				if (info.position != undefined) this.position = info.position;
-				//if(info.forced!=undefined) this.forced=info.forced;
-				if (info.complexSelect != undefined) this.complexSelect = info.complexSelect;
-				if (info.complexCard != undefined) this.complexCard = info.complexCard;
-				if (info.complexTarget != undefined) this.complexTarget = info.complexTarget;
-				if (info.ai1 != undefined) this.ai1 = info.ai1;
-				if (info.ai2 != undefined) this.ai2 = info.ai2;
-			} else if (info.viewAs) {
-				if (info.filterButton != undefined) this.filterButton = get.filter(info.filterButton);
-				if (info.selectButton != undefined) this.selectButton = info.selectButton;
-				if (info.filterTarget != undefined) this.filterTarget = get.filter(info.filterTarget);
-				if (info.selectTarget != undefined) this.selectTarget = info.selectTarget;
-				if (info.filterCard != undefined) {
-					if (info.ignoreMod) this.ignoreMod = true;
-					this.filterCard2 = get.filter(info.filterCard);
-					this.filterCard = function (card, player, event) {
-						var evt = event || _status.event;
-						if (!evt.ignoreMod && player) {
-							var mod = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
-							if (mod != "unchanged") return mod;
-						}
-						return get.filter(evt.filterCard2).apply(this, arguments);
-					};
-				}
-				if (info.filterOk == undefined) {
-					this.filterOk = function () {
-						var evt = _status.event;
-						var card = get.card(),
-							player = get.player();
-						var filter = evt._backup.filterCard;
-						if (filter && !filter(card, player, evt)) return false;
-						if (evt._backup.filterOk) return evt._backup.filterOk();
-						return true;
-					};
-				} else this.filterOk = info.filterOk;
+				this.filterOk = function () {
+					var evt = _status.event;
+					var card = get.card(),
+						player = get.player();
+					var filter = evt._backup.filterCard;
+					if (filter && !filter(card, player, evt)) return false;
+					if (evt._backup.filterOk && !evt._backup.filterOk()) return false;
+					if (info.filterOk != undefined) return info.filterOk();
+					return true;
+				};
 				if (info.selectCard != undefined) this.selectCard = info.selectCard;
 				if (info.position != undefined) this.position = info.position;
 				//if(info.forced!=undefined) this.forced=info.forced;
@@ -722,17 +705,44 @@ export class GameEvent {
 					})
 				)
 					return;
-
-				const toadd = {
-					skill: skill,
-					player: player,
-					priority: get.priority(skill),
-				};
+				let toadds = [];
+				if (typeof info.getIndex === "function") {
+					const indexedResult = info.getIndex(evt.getTrigger(), player, evt.triggername);
+					if (Array.isArray(indexedResult)) {
+						indexedResult.forEach(indexedData => {
+							toadds.push({
+								skill: skill,
+								player: player,
+								priority: get.priority(skill),
+								indexedData,
+							});
+						});
+					} else if (typeof indexedResult === "number" && indexedResult > 0) {
+						for (let i = 0; i < indexedResult; i++) {
+							toadds.push({
+								skill: skill,
+								player: player,
+								priority: get.priority(skill),
+								indexedData: true,
+							});
+						}
+					}
+				} else {
+					toadds.push({
+						skill: skill,
+						player: player,
+						priority: get.priority(skill),
+					});
+				}
 				const map = info.firstDo ? firstDo : info.lastDo ? lastDo : doing;
 				if (!map) return;
-				if (map.doneList.some(i => i.skill === toadd.skill && i.player === toadd.player)) return;
-				if (map.todoList.some(i => i.skill === toadd.skill && i.player === toadd.player)) return;
-				map.todoList.add(toadd);
+				for (const toadd of toadds) {
+					if (!toadd.indexedData) {
+						if (map.doneList.some(i => i.skill === toadd.skill && i.player === toadd.player)) return;
+						if (map.todoList.some(i => i.skill === toadd.skill && i.player === toadd.player)) return;
+					}
+					map.todoList.add(toadd);
+				}
 				if (typeof map.player === "string") map.todoList.sort((a, b) => b.priority - a.priority || evt.playerMap.indexOf(a) - evt.playerMap.indexOf(b));
 				else map.todoList.sort((a, b) => b.priority - a.priority);
 			});
@@ -1027,7 +1037,7 @@ export class GameEvent {
 								},
 							})
 						);
-					}
+				  }
 				: onfulfilled,
 			onrejected
 		);
@@ -1071,10 +1081,14 @@ export class GameEvent {
 		this.#start = (async () => {
 			if (this.parent) this.parent.childEvents.push(this);
 			game.getGlobalHistory("everything").push(this);
-			if (this.manager.eventStack.length === 0) this.manager.rootEvent = this;
-			this.manager.eventStack.push(this);
-			await this.loop().finally(() => {
-				this.manager.eventStack.pop();
+			// if (this.manager.eventStack.length === 0) {
+			// 	this.manager.rootEvent = this;
+			// }
+			// this.manager.eventStack.push(this);
+			this.manager.setStatusEvent(this, true);
+			await this.loop().then(() => {
+				// this.manager.eventStack.pop();
+				this.manager.popStatusEvent();
 			});
 		})();
 		return this.#start;
