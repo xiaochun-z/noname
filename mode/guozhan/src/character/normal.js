@@ -25,4 +25,12 @@ export default {
 		hujia: 0,
 		skills: ["gz_ganglie"],
 	}),
-}
+	gz_zhangliao: new Character({
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		maxHp: 4,
+		hujia: 0,
+		skills: ["gz_tuxi"],
+	}), // ["male", "wei", 4, ["new_retuxi"]]
+};
