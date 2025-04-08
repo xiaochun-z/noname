@@ -1,8 +1,10 @@
 import { lib, game as _game, ui, get as _get, ai, _status } from "../../../../noname.js";
-import { GameEvent, Dialog, Player, Control, Button, Character } from "../../../../noname/library/element/index.js";
+import { GameEvent, Dialog, Player as _Player, Control, Button, Character } from "../../../../noname/library/element/index.js";
 import { GameGuozhan, broadcast, broadcastAll } from "./game.js";
 import { GetGuozhan } from "./get.js";
 import { delay } from "../../../../noname/util/index.js";
+
+import { PlayerGuozhan as Player } from "./player.js";
 
 /** @type {GameGuozhan} */
 // @ts-expect-error 类型就是这么定的
@@ -1032,6 +1034,7 @@ export async function showYexingsContent(event, _trigger, player) {
 export async function hideCharacter(event, _trigger, player) {
 	const { num } = event;
 
+	// @ts-expect-error 类型就是这么写的
 	game.addVideo("hideCharacter", player, num);
 
 	const log = Reflect.get(event, "log");
@@ -1095,7 +1098,7 @@ export async function hideCharacter(event, _trigger, player) {
 
 		player.skills.remove(skills[i]);
 	}
-
+	
 	player.checkConflict();
 }
 
@@ -1114,6 +1117,7 @@ export async function chooseJunlingFor(event, _trigger, player) {
 	const junlings = junlingNames.map(name => ["军令", "", name]);
 
 	if (target != undefined && !prompt) {
+		// @ts-expect-error 类型就是这么写的
 		const selfPrompt = target == player ? "（你）" : "";
 		prompt = `选择一张军令牌，令${get.translation(target)}${selfPrompt}选择是否执行`;
 	}
@@ -1134,7 +1138,7 @@ export async function chooseJunlingFor(event, _trigger, player) {
 
 	if (result.junling == "junling1") {
 		/** @type {Player[]} */
-		// @ts-expect-error 祖宗之法就是这么写的
+		// @ts-expect-error 祖宗之法就是这么做的
 		const targets = await player
 			.chooseTarget("选择一名角色，做为若该军令被执行，受到伤害的角色", true)
 			.set("ai", other => get.damageEffect(other, target, player))
@@ -1149,7 +1153,325 @@ export async function chooseJunlingFor(event, _trigger, player) {
 	Reflect.set(event, "result", result);
 }
 
+/**
+ * @param {GameEvent} event
+ * @param {GameEvent} _trigger
+ * @param {Player} player
+ */
+export async function chooseJunlingControl(event, _trigger, player) {
+	const dialog = [];
+	// @ts-expect-error 类型就是这么写的
+	const str1 = event.source == player ? "（你）" : "";
+	const str2 = event.targets ? `（被指定的角色为${get.translation(event.targets)}）` : "";
+
+	const prompt = Reflect.get(event, "prompt");
+	if (prompt) {
+		dialog.add(prompt);
+	}
+	dialog.add(`${get.translation(event.source)}${str1}选择的军令${str2}为`);
+	dialog.add([[Reflect.get(event, "junling")], "vcard"]);
+
+	let controls = [];
+
+	const choiceList = Reflect.get(event, "choiceList");
+	if (choiceList) {
+		for (let i = 0; i < choiceList.length; i++) {
+			dialog.add('<div class="popup text" style="width:calc(100% - 10px);display:inline-block">选项' + get.cnNumber(i + 1, true) + "：" + choiceList[i] + "</div>");
+			controls.push("选项" + get.cnNumber(i + 1, true));
+		}
+	} else if (Reflect.has(event, "controls")) {
+		controls = Reflect.get(event, "controls");
+	} else {
+		controls = ["执行该军令", "不执行该军令"];
+	}
+
+	if (!event.ai) {
+		event.ai = () => {
+			return Math.floor(controls.length * Math.random());
+		};
+	}
+
+	const result = await player.chooseControl(controls).set("dialog", dialog).set("ai", event.ai).forResult();
+	const result2 = {
+		index: result.index,
+		control: result.control,
+	};
+	Reflect.set(event, "result", result2);
+}
+
+/**
+ * @param {GameEvent & { junling: string }} event
+ * @param {GameEvent} _trigger
+ * @param {Player} player
+ */
+export async function carryOutJunling(event, _trigger, player) {
+	const { source, targets } = event;
+
+	switch (event.junling) {
+		case "junling1": {
+			if (targets[0].isAlive()) {
+				player.line(targets, "green");
+				await targets[0].damage(player);
+			}
+			break;
+		}
+		case "junling2":
+			await player.draw();
+
+			// @ts-expect-error 类型就是这么写的
+			if (source == player) {
+				break;
+			}
+
+			for (let i = 0; i < 2 && player.countCards("he") > 0; i++) {
+				const { result } = await player.chooseCard("交给" + get.translation(source) + "第" + get.cnNumber(i + 1) + "张牌（共两张）", "he", true);
+				if (result.cards.length) {
+					await player.give(result.cards, source);
+				}
+			}
+
+			break;
+		case "junling3":
+			await player.loseHp();
+			break;
+		case "junling4":
+			player.addTempSkill("junling4_eff");
+			player.addTempSkill("fengyin_vice");
+			player.addTempSkill("fengyin_main");
+			break;
+		case "junling5":
+			await player.turnOver();
+			player.addTempSkill("junling5_eff");
+			break;
+		case "junling6": {
+			let position = "";
+			let num0 = 0;
+			if (player.countCards("h")) {
+				position += "h";
+				num0++;
+			}
+			if (player.countCards("e")) {
+				position += "e";
+				num0++;
+			}
+			const { result } = await player
+				.chooseCard(
+					"选择一张手牌和一张装备区内牌（若有），然后弃置其余的牌",
+					position,
+					num0,
+					card => {
+						if (ui.selected.cards.length) return get.position(card) != get.position(ui.selected.cards[0]);
+						return true;
+					},
+					true
+				)
+				.set("complexCard", true)
+				.set("ai", function (card) {
+					return get.value(card);
+				});
+
+			const cards = player.getCards("he");
+			for (const card of result.cards) {
+				cards.remove(card);
+			}
+			player.discard(cards);
+		}
+	}
+}
+
+/**
+ * @param {GameEvent} _event
+ * @param {GameEvent} _trigger
+ * @param {Player} player
+ */
+export async function doubleDraw(_event, _trigger, player) {
+	if (!player.hasMark("yinyang_mark")) {
+		player.addMark("yinyang_mark", 1);
+	}
+}
+
+/**
+ * @param {GameEvent & { hidden: boolean }} event
+ * @param {GameEvent} _trigger
+ * @param {Player} player
+ */
+export async function changeViceOnline(event, _trigger, player) {
+	await player.showCharacter(2);
+	const group = lib.character[player.name1].group;
+	const characterlist = Reflect.get(_status, "characterlist");
+	characterlist?.randomSort();
+	let name;
+	for (let i = 0; i < characterlist.length; i++) {
+		let goon = false;
+		const group2 = lib.character[characterlist[i]].group;
+		if (game.hasPlayer2(current => get.nameList(current).includes(characterlist[i]))) {
+			continue;
+		}
+		if (group == "ye") {
+			if (group2 != "ye") goon = true;
+		} else {
+			if (group == group2) {
+				goon = true;
+			} else {
+				const double = get.is.double(characterlist[i], ["true"]);
+				if (double && (typeof double == "boolean" || double.includes(group))) {
+					goon = true;
+				}
+			}
+		}
+		if (goon) {
+			name = characterlist[i];
+			break;
+		}
+	}
+	if (!name) {
+		return;
+	}
+	characterlist.remove(name);
+
+	let change = false;
+	if (player.hasViceCharacter()) {
+		change = true;
+		characterlist.add(player.name2);
+	}
+
+	if (change) {
+		event.trigger("removeCharacterBefore");
+	}
+	if (event.hidden) {
+		if (!player.isUnseen(1)) {
+			await player.hideCharacter(1);
+		}
+	}
+
+	if (event.hidden) {
+		game.log(player, "替换了副将", "#g" + get.translation(player.name2));
+	} else {
+		game.log(player, "将副将从", "#g" + get.translation(player.name2), "变更为", "#g" + get.translation(name));
+	}
+	// @ts-expect-error 类型就是这么写的
+	player.viceChanged = true;
+	await player.reinitCharacter(player.name2, name, false);
+}
+
+export const changeVice = [
+	async (event, _trigger, player) => {
+		player.showCharacter(2);
+		if (!event.num) event.num = 3;
+		var group = player.identity;
+		if (!lib.group.includes(group)) group = lib.character[player.name1][1];
+		// @ts-expect-error 类型就是这么写的
+		_status.characterlist.randomSort();
+		event.tochange = [];
+		// @ts-expect-error 类型就是这么写的
+		for (var i = 0; i < _status.characterlist.length; i++) {
+			// @ts-expect-error 类型就是这么写的
+			if (_status.characterlist[i].indexOf("gz_jun_") == 0) continue;
+			// @ts-expect-error 类型就是这么写的
+			if (game.hasPlayer2(current => get.nameList(current).includes(_status.characterlist[i]))) continue;
+			var goon = false,
+				// @ts-expect-error 类型就是这么写的
+				group2 = lib.character[_status.characterlist[i]][1];
+			if (group == "ye") {
+				if (group2 != "ye") goon = true;
+			} else {
+				if (group == group2) goon = true;
+				else {
+					// @ts-expect-error 类型就是这么写的
+					var double = get.is.double(_status.characterlist[i], true);
+					// @ts-expect-error 类型就是这么写的
+					if (double && double.includes(group)) goon = true;
+				}
+			}
+			if (goon) {
+				// @ts-expect-error 类型就是这么写的
+				event.tochange.push(_status.characterlist[i]);
+				if (event.tochange.length == event.num) break;
+			}
+		}
+		if (!event.tochange.length) event.finish();
+		else {
+			if (event.tochange.length == 1)
+				event._result = {
+					bool: true,
+					links: event.tochange,
+				};
+			else
+				player.chooseButton(true, ["选择要变更的武将牌", [event.tochange, "character"]]).ai = function (button) {
+					// @ts-expect-error 类型就是这么写的
+					return get.guozhanRank(button.link);
+				};
+		}
+	},
+	async (event, _trigger, player, result) => {
+		var name = result.links[0];
+		// @ts-expect-error 类型就是这么写的
+		_status.characterlist.remove(name);
+		if (player.hasViceCharacter()) {
+			event.change = true;
+			// @ts-expect-error 类型就是这么写的
+			_status.characterlist.add(player.name2);
+		}
+		event.toRemove = player.name2;
+		event.toChange = name;
+		if (event.change) event.trigger("removeCharacterBefore");
+		if (event.hidden) {
+			if (!player.isUnseen(1)) player.hideCharacter(1);
+		}
+	},
+	async (event, _trigger, player) => {
+		var name = event.toChange;
+		if (event.hidden) game.log(player, "替换了副将", "#g" + get.translation(player.name2));
+		else game.log(player, "将副将从", "#g" + get.translation(player.name2), "变更为", "#g" + get.translation(name));
+		player.viceChanged = true;
+		player.reinitCharacter(player.name2, name, false);
+	},
+];
+
+/**
+ * @param {GameEvent} event
+ * @param {GameEvent} _trigger
+ * @param {Player} player
+ */
+export async function mayChangeVice(event, _trigger, player) {
+	const result = await player.chooseBool("是否变更副将？").set("ai", function () {
+		const player = get.player();
+		// @ts-expect-error 祖宗之法就是这么写的
+		return get.guozhanRank(player.name2, player) <= 3;
+	}).forResult();
+	if (result.bool) {
+		// @ts-expect-error 祖宗之法就是这么做的
+		if (!event.repeat) {
+			// @ts-expect-error 祖宗之法就是这么做的
+			if (!_status.changedSkills[player.playerid]) _status.changedSkills[player.playerid] = [];
+			// @ts-expect-error 祖宗之法就是这么做的
+			_status.changedSkills[player.playerid].add(event.skill);
+		}
+		// @ts-expect-error 祖宗之法就是这么做的
+		await player.changeVice(event.hidden);
+	}
+}
+
+/**
+ * 
+ * @param {GameEvent} _event 
+ * @param {GameEvent} _trigger 
+ * @param {Player} player 
+ */
+export async function zhulian(_event, _trigger, player) {
+	player.popup("珠联璧合");
+	if (!player.hasMark("zhulianbihe_mark")) {
+		player.addMark("zhulianbihe_mark", 1);
+	}
+}
+
 export default Object.freeze({
 	hideCharacter,
 	chooseJunlingFor,
+	chooseJunlingControl,
+	carryOutJunling,
+	doubleDraw,
+	changeViceOnline,
+	changeVice,
+	mayChangeVice,
 });
