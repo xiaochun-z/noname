@@ -1,5 +1,5 @@
 import character from "./character/index.js";
 
-export default Object.freeze({
+export default {
 	...character,
-});
+};

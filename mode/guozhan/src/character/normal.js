@@ -1,6 +1,6 @@
 import { Character } from "../../../../noname/library/element/index.js";
 
-export default Object.freeze({
+export default {
 	gz_caocao: new Character({
 		sex: "male",
 		group: "wei",
@@ -9,4 +9,4 @@ export default Object.freeze({
 		hujia: 0,
 		skills: ["gz_jianxiong"],
 	}),
-});
+};

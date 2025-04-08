@@ -1465,7 +1465,7 @@ export async function zhulian(_event, _trigger, player) {
 	}
 }
 
-export default Object.freeze({
+export default {
 	hideCharacter,
 	chooseJunlingFor,
 	chooseJunlingControl,
@@ -1474,4 +1474,4 @@ export default Object.freeze({
 	changeViceOnline,
 	changeVice,
 	mayChangeVice,
-});
+};

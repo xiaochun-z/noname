@@ -1,4 +1,4 @@
-export default Object.freeze({
+export default {
 	junling: "军令",
 	junling1: "军令一",
 	junling1_bg: "令",
@@ -20,4 +20,4 @@ export default Object.freeze({
 	junling6: "军令六",
 	junling6_bg: "令",
 	junling6_info: "若被执行，执行者选择一张手牌和一张装备区内牌（若有），然后弃置其余的牌。",
-});
+};

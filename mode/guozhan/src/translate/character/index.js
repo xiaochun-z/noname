@@ -1,5 +1,5 @@
 import normal from "./normal.js";
 
-export default Object.freeze({
+export default {
 	...normal,
-});
+};

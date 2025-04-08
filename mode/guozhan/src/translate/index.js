@@ -2,7 +2,7 @@ import card from "./card/index.js";
 import character from "./character/index.js";
 import skill from "./skill/index.js";
 
-export default Object.freeze({
+export default {
 	yexinjia_mark: "野心家",
 
 	bumingzhi: "不明置",
@@ -16,4 +16,4 @@ export default Object.freeze({
 	...card,
 	...character,
 	...skill,
-});
+};

@@ -1,5 +1,5 @@
 
-export default Object.freeze({
+export default {
 	junling1: {
 		type: "junling",
 		vanish: true,
@@ -33,4 +33,4 @@ export default Object.freeze({
 	zhulian_card: {
 		cardimage: "wuzhong",
 	},
-});
+} ;

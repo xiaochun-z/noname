@@ -1,6 +1,6 @@
 import { lib, game, ui, get, ai, _status } from "../../../../../noname.js";
 
-export default Object.freeze({
+export default {
 	gz_jianxiong: {
 		audio: "jianxiong",
 		trigger: { player: "damageEnd" },
@@ -48,4 +48,4 @@ export default Object.freeze({
 			},
 		},
 	},
-});
+};
