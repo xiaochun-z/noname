@@ -90,8 +90,6 @@ export default () => {
 				gz_mazhong: ["male", "shu", 4, ["twfuman"]],
 				gz_ol_lisu: ["male", "qun", 3, ["qiaoyan", "xianzhu"]],
 
-				gz_simayi: ["male", "wei", 3, ["fankui", "guicai"]],
-				gz_xiahoudun: ["male", "wei", 4, ["reganglie"]],
 				gz_zhangliao: ["male", "wei", 4, ["new_retuxi"]],
 				gz_xuzhu: ["male", "wei", 4, ["gzluoyi"]],
 				gz_guojia: ["male", "wei", 3, ["tiandu", "gzyiji"], ["gzskin"]],
