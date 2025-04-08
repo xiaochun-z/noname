@@ -90,7 +90,6 @@ export default () => {
 				gz_mazhong: ["male", "shu", 4, ["twfuman"]],
 				gz_ol_lisu: ["male", "qun", 3, ["qiaoyan", "xianzhu"]],
 
-				gz_xuzhu: ["male", "wei", 4, ["gzluoyi"]],
 				gz_guojia: ["male", "wei", 3, ["tiandu", "gzyiji"], ["gzskin"]],
 				gz_zhenji: ["female", "wei", 3, ["luoshen", "qingguo"], ["gzskin"]],
 				gz_xiahouyuan: ["male", "wei", 4, ["gzshensu"], ["gzskin"]],
@@ -8480,49 +8479,6 @@ export default () => {
 				},
 			},
 			//新国标2022
-			//许褚
-			gzluoyi: {
-				audio: "luoyi",
-				trigger: { player: "phaseDrawEnd" },
-				direct: true,
-				preHidden: true,
-				filter(event, player) {
-					return player.countCards("he") > 0;
-				},
-				content() {
-					"step 0";
-					player
-						.chooseToDiscard("he", get.prompt2("gzluoyi"))
-						.setHiddenSkill("gzluoyi")
-						.set("ai", function (card) {
-							var player = _status.event.player;
-							if (
-								player.hasCard(function (cardx) {
-									if (cardx == card) return false;
-									return (cardx.name == "sha" || cardx.name == "juedou") && player.hasValueTarget(cardx, null, true);
-								}, "hs")
-							)
-								return 5 - get.value(card);
-							return -get.value(card);
-						}).logSkill = "gzluoyi";
-					"step 1";
-					if (result.bool) player.addTempSkill("gzluoyi_buff");
-				},
-				subSkill: {
-					buff: {
-						audio: "luoyi",
-						charlotte: true,
-						forced: true,
-						trigger: { source: "damageBegin1" },
-						filter(event, player) {
-							return event.card && (event.card.name == "sha" || event.card.name == "juedou") && event.getParent().type == "card";
-						},
-						content() {
-							trigger.num++;
-						},
-					},
-				},
-			},
 			//典韦
 			gzqiangxi: {
 				audio: "qiangxi",
@@ -19270,8 +19226,6 @@ export default () => {
 			gzhongyan_info: "锁定技。①你区域内的黑桃牌和黑桃判定牌的花色视为红桃。②若你的装备区内有红桃牌，则你的手牌上限+1。",
 			gztianxiang: "天香",
 			gztianxiang_info: "每回合限一次。当你受到伤害时，你可以弃置一张红桃手牌，防止此次伤害并选择一名其他角色，然后你选择一项：1.令其受到伤害来源对其造成的1点伤害，然后摸X张牌（X为其已损失体力值且至多为5）；2.令其失去1点体力，然后获得你弃置的牌。",
-			gzluoyi: "裸衣",
-			gzluoyi_info: "摸牌阶段结束时，你可弃置一张牌，然后你于本回合内造成渠道为【杀】或【决斗】的伤害+1。",
 			gzqiangxi: "强袭",
 			gzqiangxi_info: "出牌阶段限一次，你可以弃置一张武器牌或失去1点体力，然后对一名其他角色造成1点伤害。",
 

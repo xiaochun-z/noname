@@ -1,5 +1,5 @@
 import { lib, game, ui, get, ai, _status } from "../../../../../noname.js";
-import { GameEvent, Player } from "../../../../../noname/library/element/index.js";
+import { GameEvent, Player, Card } from "../../../../../noname/library/element/index.js";
 import { PlayerGuozhan } from "../../patch/player.js";
 
 export default {
@@ -183,6 +183,90 @@ export default {
 		ai: {
 			threaten: 1.6,
 			expose: 0.2,
+		},
+	},
+
+	// gz_xuzhu
+	gz_luoyi: {
+		audio: "luoyi",
+		trigger: {
+			player: "phaseDrawEnd",
+		},
+		preHidden: true,
+		/**
+		 * @param {GameEvent} _event
+		 * @param {PlayerGuozhan} player
+		 * @returns {boolean}
+		 */
+		filter(_event, player) {
+			return player.countCards("he") > 0;
+		},
+		/**
+		 * @param {GameEvent} event
+		 * @param {GameEvent} _trigger
+		 * @param {PlayerGuozhan} player
+		 */
+		async cost(event, _trigger, player) {
+			const next = player.chooseToDiscard("he", get.prompt2("gz_luoyi"));
+
+			next.setHiddenSkill("gz_luoyi");
+			next.set("ai", check);
+
+			event.result = await next.forResult();
+
+			return;
+
+			/**
+			 * @param {Card} card 
+			 * @returns {number}
+			 */
+			function check(card) {
+				const player = get.player();
+
+				if (player.hasCard(cardx => cardx != card && (cardx.name == "sha" || cardx.name == "juedou") && player.hasValueTarget(cardx, undefined, true), "hs")) {
+					return 5 - get.value(card);
+				}
+
+				return -get.value(card);
+			}
+		},
+		/**
+		 * @param {GameEvent} _event
+		 * @param {GameEvent} _trigger
+		 * @param {PlayerGuozhan} player
+		 */
+		async content(_event, _trigger, player) {
+			player.addTempSkill("gz_luoyi_buff");
+		},
+		subSkill: {
+			buff: {
+				audio: "luoyi",
+				charlotte: true,
+				forced: true,
+				trigger: {
+					source: "damageBegin1",
+				},
+				/**
+				 * @param {GameEvent} event
+				 * @param {PlayerGuozhan} _player
+				 * @returns {boolean}
+				 */
+				filter(event, _player) {
+					const parent = event.getParent();
+					if (parent == null || !("type" in parent)) {
+						return false;
+					}
+					return event.card && (event.card.name == "sha" || event.card.name == "juedou") && parent.type == "card";
+				},
+				/**
+				 * @param {GameEvent} _event
+				 * @param {GameEvent} trigger
+				 * @param {PlayerGuozhan} _player
+				 */
+				async content(_event, trigger, _player) {
+					trigger.num++;
+				},
+			},
 		},
 	},
 };
