@@ -36,7 +36,7 @@ export class GameEvent {
 		return "GameEvent";
 	}
 	/**
-	 * @type { Result }
+	 * @type { Partial<Result> }
 	 */
 	result;
 	/**
@@ -1164,7 +1164,7 @@ export class GameEvent {
 	 * @template {keyof Result} T
 	 * @this GameEvent
 	 * @overload
-	 * @returns {Promise<Result>}
+	 * @returns {Promise<Partial<Result>>}
 	 * 
 	 * @overload
 	 * @param {T} param0
