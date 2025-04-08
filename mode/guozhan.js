@@ -1,6 +1,7 @@
 import { lib, game, ui, get, ai, _status } from "../noname.js";
 import { start, startBefore, onreinit } from "./guozhan/src/main.js";
 import { gamePatch, getPatch, contentPatch, playerPatch } from "./guozhan/src/patch/index.js";
+import { pack } from "./guozhan/src/character/index.js";
 import * as info from "./guozhan/src/info/index.js";
 import card from "./guozhan/src/card/index.js";
 import help from "./guozhan/src/help/index.js";
@@ -48,20 +49,7 @@ export default () => {
 		},
 		characterPack: {
 			mode_guozhan: {
-				gz_shibing1wei: ["male", "wei", 0, [], ["unseen"]],
-				gz_shibing2wei: ["female", "wei", 0, [], ["unseen"]],
-				gz_shibing1shu: ["male", "shu", 0, [], ["unseen"]],
-				gz_shibing2shu: ["female", "shu", 0, [], ["unseen"]],
-				gz_shibing1wu: ["male", "wu", 0, [], ["unseen"]],
-				gz_shibing2wu: ["female", "wu", 0, [], ["unseen"]],
-				gz_shibing1qun: ["male", "qun", 0, [], ["unseen"]],
-				gz_shibing2qun: ["female", "qun", 0, [], ["unseen"]],
-				gz_shibing1jin: ["male", "jin", 0, [], ["unseen"]],
-				gz_shibing2jin: ["female", "jin", 0, [], ["unseen"]],
-				gz_shibing1ye: ["male", "ye", 0, [], ["unseen"]],
-				gz_shibing2ye: ["female", "ye", 0, [], ["unseen"]],
-				gz_shibing1key: ["male", "key", 0, [], ["unseen"]],
-				gz_shibing2key: ["female", "key", 0, [], ["unseen"]],
+				...pack,
 
 				gz_zhonghui: ["male", "ye", 4, ["fakequanji", "fakepaiyi"], ["gzskin"]],
 				gz_simazhao: ["male", "ye", 3, ["gzzhaoxin", "gzsuzhi"], ["gzskin"]],

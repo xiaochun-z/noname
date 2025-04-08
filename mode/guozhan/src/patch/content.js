@@ -87,7 +87,7 @@ export async function chooseCharacterContent(event, _trigger, _player) {
 			Reflect.deleteProperty(ui, name);
 		}
 
-		if (result.buttons) {
+		if (result?.buttons) {
 			/** @type {string} */
 			// @ts-expect-error 祖宗之法就是这么写的
 			const name1 = result.buttons[0].link;
