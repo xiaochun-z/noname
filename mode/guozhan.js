@@ -3,6 +3,8 @@ import { start, startBefore, onreinit } from "./guozhan/src/main.js";
 import { gamePatch, getPatch, contentPatch, playerPatch } from "./guozhan/src/patch/index.js";
 import { pack } from "./guozhan/src/character/index.js";
 import * as info from "./guozhan/src/info/index.js";
+import skill from "./guozhan/src/skill/index.js";
+import translate from "./guozhan/src/translate/index.js";
 import card from "./guozhan/src/card/index.js";
 import help from "./guozhan/src/help/index.js";
 
@@ -88,7 +90,6 @@ export default () => {
 				gz_mazhong: ["male", "shu", 4, ["twfuman"]],
 				gz_ol_lisu: ["male", "qun", 3, ["qiaoyan", "xianzhu"]],
 
-				gz_caocao: ["male", "wei", 4, ["rejianxiong_old"]],
 				gz_simayi: ["male", "wei", 3, ["fankui", "guicai"]],
 				gz_xiahoudun: ["male", "wei", 4, ["reganglie"]],
 				gz_zhangliao: ["male", "wei", 4, ["new_retuxi"]],
@@ -263,6 +264,8 @@ export default () => {
 			},
 		},
 		skill: {
+			...skill,
+
 			//国战典藏2024-2025，启动！
 			//国战限定
 			//卑弥呼
@@ -19255,37 +19258,7 @@ export default () => {
 			},
 		},
 		translate: {
-			yexinjia_mark: "野心家",
-
-			bumingzhi: "不明置",
-			mingzhizhujiang: "明置主将",
-			mingzhifujiang: "明置副将",
-			tongshimingzhi: "同时明置",
-			mode_guozhan_character_config: "国战武将",
-			_zhenfazhaohuan: "阵法召唤",
-			_zhenfazhaohuan_info: "由拥有阵法技的角色发起，满足此阵法技条件的未确定势力角色均可按逆时针顺序依次明置其一张武将牌(响应阵法召唤)，以发挥阵法技的效果。",
-
-			junling: "军令",
-			junling1: "军令一",
-			junling1_bg: "令",
-			junling1_info: "若被执行，执行者对发起者指定的一名角色造成1点伤害。",
-			junling2: "军令二",
-			junling2_bg: "令",
-			junling2_info: "若被执行，执行者摸一张牌，然后依次交给发起者两张牌。",
-			junling3: "军令三",
-			junling3_bg: "令",
-			junling3_info: "若被执行，执行者失去1点体力。",
-			junling4: "军令四",
-			junling4_bg: "令",
-			junling4_info: "若被执行，直到回合结束，执行者不能使用或打出手牌且非锁定技全部失效。",
-			junling4_eff: "军令四",
-			junling5: "军令五",
-			junling5_bg: "令",
-			junling5_info: "若被执行，执行者将武将牌叠置，且不能回复体力直到回合结束。",
-			junling5_eff: "军令五",
-			junling6: "军令六",
-			junling6_bg: "令",
-			junling6_info: "若被执行，执行者选择一张手牌和一张装备区内牌（若有），然后弃置其余的牌。",
+			...translate,
 
 			gz_miheng: "祢衡",
 			gzshensu: "神速",

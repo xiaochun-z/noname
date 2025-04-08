@@ -1,5 +1,7 @@
 import { Character } from "../../../../noname/library/element/index.js";
 
+import normal from "./normal.js";
+
 /** @type {Record<string, Character>} */
 export const pack = {
 	gz_shibing1wei: new Character({
@@ -128,4 +130,6 @@ export const pack = {
 		skills: [],
 		isUnseen: true,
 	}),
+
+	...normal,
 };
