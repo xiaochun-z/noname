@@ -1474,4 +1474,5 @@ export default {
 	changeViceOnline,
 	changeVice,
 	mayChangeVice,
+	zhulian,
 };
