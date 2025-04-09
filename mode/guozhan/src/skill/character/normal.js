@@ -413,4 +413,67 @@ export default {
 			},
 		},
 	},
+
+	// gz_xiahouyuan
+	gz_shensu: {
+		audio: "shensu1", // TODO: 独立素材，留给后来人
+		audioname: ["xiahouba", "re_xiahouyuan", "ol_xiahouyuan"],
+		group: ["gz_shensu_1", "gz_shensu_2"],
+		preHidden: ["gz_hensu_1", "gz_shensu_2", "gz_shensu"],
+		trigger: {
+			player: "phaseDiscardBegin",
+		},
+		/**
+		 * @param {GameEvent} _event
+		 * @param {PlayerGuozhan} player
+		 * @returns {boolean}
+		 */
+		filter(_event, player) {
+			return player.hp > 0;
+		},
+		/**
+		 * @param {GameEvent} event
+		 * @param {GameEvent} _trigger
+		 * @param {PlayerGuozhan} player
+		 */
+		async cost(event, _trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt("gz_shensu"), "失去1点体力并跳过弃牌阶段，视为对一名其他角色使用一张无距离限制的【杀】", (card, player, target) => player.canUse("sha", target, false))
+				.setHiddenSkill("gz_shensu")
+				.set("goon", player.needsToDiscard())
+				.set("ai", target => {
+					/** @type {GameEvent & { goon: number }} */
+					const event = cast(get.event());
+					const player = get.player();
+					if (!event.goon || player.hp <= target.hp) return false;
+					return get.effect(target, { name: "sha", isCard: true }, player, player);
+				})
+				.forResult();
+		},
+		logTarget: "targets",
+		/**
+		 * @param {GameEvent} event
+		 * @param {GameEvent} trigger
+		 * @param {PlayerGuozhan} player
+		 */
+		async content(event, trigger, player) {
+			const { targets } = event;
+			const target = targets[0];
+			await player.loseHp();
+			trigger.cancel();
+			await player.useCard({ name: "sha", isCard: true }, target, false);
+		},
+		subSkill: {
+			// TODO: 后面或许将不存在shensu1，所以后来人需要重新填写技能信息
+			1: {
+				audio: "shensu1",
+				inherit: "shensu1",
+				sourceSkill: "gz_shensu",
+			},
+			2: {
+				inherit: "shensu2",
+				sourceSkill: "gz_shensu",
+			},
+		},
+	},
 };

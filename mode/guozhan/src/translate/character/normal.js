@@ -5,4 +5,6 @@ export default {
 	gz_zhangliao: "张辽",
 	gz_xuzhu: "许褚",
 	gz_guojia: "郭嘉",
+	gz_zhenji: "甄宓",
+	gz_xiahouyuan: "夏侯渊",
 };
