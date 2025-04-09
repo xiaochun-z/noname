@@ -1,6 +1,8 @@
 import { lib, game, ui, get, ai, _status } from "../../../../../noname.js";
 import { GameEvent, Player, Card } from "../../../../../noname/library/element/index.js";
+import { cast } from "../../../../../noname/util/index.js";
 import { PlayerGuozhan } from "../../patch/player.js";
+import { broadcastAll } from "../../patch/game.js";
 
 export default {
 	// gz_caocao
@@ -217,7 +219,7 @@ export default {
 			return;
 
 			/**
-			 * @param {Card} card 
+			 * @param {Card} card
 			 * @returns {number}
 			 */
 			function check(card) {
@@ -265,6 +267,148 @@ export default {
 				 */
 				async content(_event, trigger, _player) {
 					trigger.num++;
+				},
+			},
+		},
+	},
+
+	// gz_guojia
+	gz_yiji: {
+		audio: "yiji",
+		trigger: {
+			player: "damageEnd",
+		},
+		frequent: true,
+		preHidden: true,
+
+		/**
+		 * @param {GameEvent} event
+		 * @param {GameEvent} trigger
+		 * @param {PlayerGuozhan} player
+		 */
+		async content(event, trigger, player) {
+			const cards = game.cardsGotoOrdering(get.cards(2)).cards;
+			/** @type {Map<string, Card[]>} */
+			const givenMap = new Map();
+
+			if (_status.connectMode) {
+				broadcastAll(() => {
+					Reflect.set(_status, "noclearcountdown", true);
+				});
+			}
+
+			while (cards.length > 0) {
+				/** @type {Partial<Result>} */
+				let result;
+
+				if (cards.length > 1) {
+					result = await player
+						.chooseCardButton("遗计：请选择要分配的牌", true, cards, [1, cards.length])
+						.set("ai", () => {
+							if (ui.selected.buttons.length == 0) return 1;
+							return 0;
+						})
+						.forResult();
+				} else {
+					result = { bool: true, links: cards.slice(0) };
+				}
+
+				if (!result.bool) {
+					break;
+				}
+
+				/** @type {Card[]} */
+				const links = cast(result.links);
+				cards.removeArray(links);
+				const toGive = links.slice(0);
+
+				result = await player
+					.chooseTarget("选择一名角色获得" + get.translation(result.links), true)
+					.set("ai", (/** @type {PlayerGuozhan} */ target) => {
+						/** @type {GameEvent & { enemy: boolean }} */
+						const event = cast(get.event());
+						var att = get.attitude(event.player, target);
+						if (event.enemy) {
+							return -att;
+						} else if (att > 0) {
+							return att / (1 + target.countCards("h"));
+						} else {
+							return att / 100;
+						}
+					})
+					.set("enemy", get.value(toGive[0], player, "raw") < 0)
+					.forResult();
+
+				if (!result.bool) {
+					break;
+				}
+
+				/** @type {PlayerGuozhan[]} */
+				const targets = cast(result.targets);
+				if (targets.length) {
+					const id = targets[0].playerid ?? "";
+
+					if (!givenMap.has(id)) {
+						givenMap.set(id, []);
+					}
+					const current = givenMap.get(id);
+					current?.addArray(toGive);
+				}
+			}
+
+			if (_status.connectMode) {
+				broadcastAll(() => {
+					Reflect.deleteProperty(_status, "noclearcountdown");
+					game.stopCountChoose();
+				});
+			}
+
+			const list = [];
+			for (const [id, cards] of givenMap) {
+				const source = (_status.connectMode ? lib.playerOL : game.playerMap)[id];
+				player.line(source, "green");
+				list.push([source, cards]);
+			}
+			await game
+				.loseAsync({
+					gain_list: list,
+					giver: player,
+					animate: "draw",
+				})
+				.setContent("gaincardMultiple");
+		},
+		ai: {
+			maixie: true,
+			maixie_hp: true,
+			effect: {
+				target(card, player, target) {
+					if (get.tag(card, "damage")) {
+						if (player.hasSkillTag("jueqing", false, target)) {
+							return [1, -2];
+						}
+						if (!target.hasFriend()) {
+							return;
+						}
+
+						let num = 1;
+						if (get.attitude(player, target) > 0) {
+							if (player.needsToDiscard()) {
+								num = 0.7;
+							} else {
+								num = 0.5;
+							}
+						}
+
+						if (target.hp >= 4) {
+							return [1, num * 2];
+						}
+						if (target.hp == 3) {
+							return [1, num * 1.5];
+						}
+						if (target.hp == 2) {
+							return [1, num * 0.5];
+						}
+					}
 				},
 			},
 		},

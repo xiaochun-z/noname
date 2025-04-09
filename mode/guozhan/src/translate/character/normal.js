@@ -3,5 +3,6 @@ export default {
 	gz_simayi: "司马懿",
 	gz_xiahoudun: "夏侯惇",
 	gz_zhangliao: "张辽",
-	gz_xuzhu: "许褚"
+	gz_xuzhu: "许褚",
+	gz_guojia: "郭嘉",
 };

@@ -90,7 +90,6 @@ export default () => {
 				gz_mazhong: ["male", "shu", 4, ["twfuman"]],
 				gz_ol_lisu: ["male", "qun", 3, ["qiaoyan", "xianzhu"]],
 
-				gz_guojia: ["male", "wei", 3, ["tiandu", "gzyiji"], ["gzskin"]],
 				gz_zhenji: ["female", "wei", 3, ["luoshen", "qingguo"], ["gzskin"]],
 				gz_xiahouyuan: ["male", "wei", 4, ["gzshensu"], ["gzskin"]],
 				gz_zhanghe: ["male", "wei", 4, ["qiaobian"]],
@@ -15457,102 +15456,6 @@ export default () => {
 					threaten: 1.3,
 				},
 			},
-			gzyiji: {
-				audio: "yiji",
-				trigger: {
-					player: "damageEnd",
-				},
-				frequent: true,
-				preHidden: true,
-				content() {
-					"step 0";
-					event.cards = game.cardsGotoOrdering(get.cards(2)).cards;
-					"step 1";
-					if (_status.connectMode)
-						game.broadcastAll(function () {
-							_status.noclearcountdown = true;
-						});
-					event.given_map = {};
-					"step 2";
-					if (event.cards.length > 1) {
-						player.chooseCardButton("遗计：请选择要分配的牌", true, event.cards, [1, event.cards.length]).set("ai", function (button) {
-							if (ui.selected.buttons.length == 0) return 1;
-							return 0;
-						});
-					} else if (event.cards.length == 1) {
-						event._result = { links: event.cards.slice(0), bool: true };
-					} else {
-						event.finish();
-					}
-					"step 3";
-					if (result.bool) {
-						event.cards.removeArray(result.links);
-						event.togive = result.links.slice(0);
-						player
-							.chooseTarget("选择一名角色获得" + get.translation(result.links), true)
-							.set("ai", function (target) {
-								var att = get.attitude(_status.event.player, target);
-								if (_status.event.enemy) {
-									return -att;
-								} else if (att > 0) {
-									return att / (1 + target.countCards("h"));
-								} else {
-									return att / 100;
-								}
-							})
-							.set("enemy", get.value(event.togive[0], player, "raw") < 0);
-					}
-					"step 4";
-					if (result.targets.length) {
-						var id = result.targets[0].playerid,
-							map = event.given_map;
-						if (!map[id]) map[id] = [];
-						map[id].addArray(event.togive);
-					}
-					if (cards.length > 0) event.goto(2);
-					"step 5";
-					if (_status.connectMode) {
-						game.broadcastAll(function () {
-							delete _status.noclearcountdown;
-							game.stopCountChoose();
-						});
-					}
-					var list = [];
-					for (var i in event.given_map) {
-						var source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
-						player.line(source, "green");
-						list.push([source, event.given_map[i]]);
-					}
-					game.loseAsync({
-						gain_list: list,
-						giver: player,
-						animate: "draw",
-					}).setContent("gaincardMultiple");
-				},
-				ai: {
-					maixie: true,
-					maixie_hp: true,
-					effect: {
-						target(card, player, target) {
-							if (get.tag(card, "damage")) {
-								if (player.hasSkillTag("jueqing", false, target)) return [1, -2];
-								if (!target.hasFriend()) return;
-								var num = 1;
-								if (get.attitude(player, target) > 0) {
-									if (player.needsToDiscard()) {
-										num = 0.7;
-									} else {
-										num = 0.5;
-									}
-								}
-								if (target.hp >= 4) return [1, num * 2];
-								if (target.hp == 3) return [1, num * 1.5];
-								if (target.hp == 2) return [1, num * 0.5];
-							}
-						},
-					},
-				},
-			},
 			gzjieming: {
 				audio: "jieming",
 				trigger: {
@@ -19487,8 +19390,6 @@ export default () => {
 			baka_yinghun_info: "准备阶段，你可令一名其他角色执行一项：摸X张牌，然后弃置一张牌；或摸一张牌，然后弃置X张牌（X为你已损失的体力值）。",
 			baka_yingzi: "英姿",
 			baka_yingzi_info: "锁定技，摸牌阶段摸，你多摸一张牌；你的手牌上限+X（X为你已损失的体力值）。",
-			gzyiji: "遗计",
-			gzyiji_info: "当你受到伤害后，你可以观看牌堆顶的两张牌，并将其交给任意角色。",
 			gzjieming: "节命",
 			gzjieming_info: "当你受到伤害后，你可以令一名角色将手牌摸至X张（X为其体力上限且最多为5）。",
 			gzfangzhu: "放逐",
