@@ -7,4 +7,9 @@ export default {
 	gz_guojia: "郭嘉",
 	gz_zhenji: "甄宓",
 	gz_xiahouyuan: "夏侯渊",
+	gz_zhanghe: "张郃",
+	gz_xuhuang: "徐晃",
+	gz_caoren: "曹仁",
+	gz_dianwei: "典韦",
+	gz_xunyu: "荀彧",
 };

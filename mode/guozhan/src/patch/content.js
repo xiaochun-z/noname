@@ -1098,7 +1098,7 @@ export async function hideCharacter(event, _trigger, player) {
 
 		player.skills.remove(skills[i]);
 	}
-	
+
 	player.checkConflict();
 }
 
@@ -1225,7 +1225,7 @@ export async function carryOutJunling(event, _trigger, player) {
 
 			for (let i = 0; i < 2 && player.countCards("he") > 0; i++) {
 				const { result } = await player.chooseCard("交给" + get.translation(source) + "第" + get.cnNumber(i + 1) + "张牌（共两张）", "he", true);
-				if (result.cards.length) {
+				if (result.cards?.length) {
 					await player.give(result.cards, source);
 				}
 			}
@@ -1269,6 +1269,10 @@ export async function carryOutJunling(event, _trigger, player) {
 				.set("ai", function (card) {
 					return get.value(card);
 				});
+
+			if (!result.bool || !result.cards?.length) {
+				return;
+			}
 
 			const cards = player.getCards("he");
 			for (const card of result.cards) {
@@ -1434,11 +1438,14 @@ export const changeVice = [
  * @param {Player} player
  */
 export async function mayChangeVice(event, _trigger, player) {
-	const result = await player.chooseBool("是否变更副将？").set("ai", function () {
-		const player = get.player();
-		// @ts-expect-error 祖宗之法就是这么写的
-		return get.guozhanRank(player.name2, player) <= 3;
-	}).forResult();
+	const result = await player
+		.chooseBool("是否变更副将？")
+		.set("ai", function () {
+			const player = get.player();
+			// @ts-expect-error 祖宗之法就是这么写的
+			return get.guozhanRank(player.name2, player) <= 3;
+		})
+		.forResult();
 	if (result.bool) {
 		// @ts-expect-error 祖宗之法就是这么做的
 		if (!event.repeat) {
@@ -1453,10 +1460,10 @@ export async function mayChangeVice(event, _trigger, player) {
 }
 
 /**
- * 
- * @param {GameEvent} _event 
- * @param {GameEvent} _trigger 
- * @param {Player} player 
+ *
+ * @param {GameEvent} _event
+ * @param {GameEvent} _trigger
+ * @param {Player} player
  */
 export async function zhulian(_event, _trigger, player) {
 	player.popup("珠联璧合");

@@ -90,13 +90,6 @@ export default () => {
 				gz_mazhong: ["male", "shu", 4, ["twfuman"]],
 				gz_ol_lisu: ["male", "qun", 3, ["qiaoyan", "xianzhu"]],
 
-				gz_zhanghe: ["male", "wei", 4, ["qiaobian"]],
-				gz_xuhuang: ["male", "wei", 4, ["new_duanliang"]],
-				gz_caoren: ["male", "wei", 4, ["gzjushou"]],
-				gz_dianwei: ["male", "wei", 5, ["reqiangxi"], ["gzskin"]],
-				gz_xunyu: ["male", "wei", 3, ["quhu", "gzjieming"]],
-				gz_caopi: ["male", "wei", 3, ["xingshang", "gzfangzhu"], ["gzskin"]],
-				gz_yuejin: ["male", "wei", 4, ["fakexiaoguo"], ["gzskin"]],
 
 				gz_liubei: ["male", "shu", 4, ["rerende"]],
 				gz_guanyu: ["male", "shu", 5, ["new_rewusheng"], ["gzskin"]],
@@ -14618,104 +14611,6 @@ export default () => {
 				},
 			},
 
-			gzjushou: {
-				audio: "xinjushou",
-				trigger: {
-					player: "phaseJieshuBegin",
-				},
-				preHidden: true,
-				content() {
-					"step 0";
-					var list = [],
-						players = game.filterPlayer();
-					for (var target of players) {
-						if (target.isUnseen()) continue;
-						var add = true;
-						for (var i of list) {
-							if (i.isFriendOf(target)) {
-								add = false;
-								break;
-							}
-						}
-						if (add) list.add(target);
-					}
-					event.num = list.length;
-					player.draw(event.num);
-					if (event.num > 2) player.turnOver();
-					("step 1");
-					player
-						.chooseCard("h", true, "弃置一张手牌，若以此法弃置的是装备牌，则你改为使用之")
-						.set("ai", function (card) {
-							if (get.type(card) == "equip") {
-								return 5 - get.value(card);
-							}
-							return -get.value(card);
-						})
-						.set("filterCard", lib.filter.cardDiscardable);
-					("step 2");
-					if (result.bool && result.cards.length) {
-						if (get.type(result.cards[0]) == "equip" && player.hasUseTarget(result.cards[0])) {
-							player.chooseUseTarget(result.cards[0], true, "nopopup");
-						} else {
-							player.discard(result.cards[0]);
-						}
-					}
-				},
-			},
-			new_duanliang: {
-				subSkill: {
-					off: {
-						sub: true,
-					},
-				},
-				mod: {
-					targetInRange(card, player, target) {
-						if (card.name == "bingliang") {
-							return true;
-						}
-					},
-				},
-				locked: false,
-				audio: "duanliang1",
-				audioname2: { gz_jun_caocao: "jianan_duanliang" },
-				enable: "chooseToUse",
-				filterCard(card) {
-					if (get.type(card) != "basic" && get.type(card) != "equip") return false;
-					return get.color(card) == "black";
-				},
-				filter(event, player) {
-					if (player.hasSkill("new_duanliang_off")) return false;
-					return player.countCards("hes", { type: ["basic", "equip"], color: "black" });
-				},
-				position: "hes",
-				viewAs: {
-					name: "bingliang",
-				},
-				onuse(result, player) {
-					if (get.distance(player, result.targets[0]) > 2) player.addTempSkill("new_duanliang_off");
-				},
-				prompt: "将一黑色的基本牌或装备牌当兵粮寸断使用",
-				check(card) {
-					return 6 - get.value(card);
-				},
-				ai: {
-					order: 9,
-					basic: {
-						order: 1,
-						useful: 1,
-						value: 4,
-					},
-					result: {
-						target(player, target) {
-							if (target.hasJudge("caomu")) return 0;
-							return -1.5 / Math.sqrt(target.countCards("h") + 1);
-						},
-					},
-					tag: {
-						skip: "phaseDraw",
-					},
-				},
-			},
 			new_shushen: {
 				audio: "shushen",
 				trigger: {
@@ -15408,66 +15303,6 @@ export default () => {
 				},
 				ai: {
 					threaten: 1.3,
-				},
-			},
-			gzjieming: {
-				audio: "jieming",
-				trigger: {
-					player: "damageEnd",
-				},
-				direct: true,
-				preHidden: true,
-				content() {
-					"step 0";
-					player
-						.chooseTarget(get.prompt("gzjieming"), "令一名角色将手牌补至X张（X为其体力上限且至多为5）", function (card, player, target) {
-							return true; //target.countCards('h')<Math.min(target.maxHp,5);
-						})
-						.set("ai", function (target) {
-							var att = get.attitude(_status.event.player, target);
-							if (att > 2) {
-								return Math.max(0, Math.min(5, target.maxHp) - target.countCards("h"));
-							}
-							return att / 3;
-						})
-						.setHiddenSkill("gzjieming");
-					("step 1");
-					if (result.bool) {
-						player.logSkill("gzjieming", result.targets);
-						for (var i = 0; i < result.targets.length; i++) {
-							var num = Math.min(5, result.targets[i].maxHp) - result.targets[i].countCards("h");
-							if (num > 0) result.targets[i].draw(num);
-						}
-					}
-				},
-				ai: {
-					maixie: true,
-					maixie_hp: true,
-					effect: {
-						target(card, player, target, current) {
-							if (get.tag(card, "damage") && target.hp > 1) {
-								if (player.hasSkillTag("jueqing", false, target)) return [1, -2];
-								var max = 0;
-								var players = game.filterPlayer();
-								for (var i = 0; i < players.length; i++) {
-									if (get.attitude(target, players[i]) > 0) {
-										max = Math.max(Math.min(5, players[i].hp) - players[i].countCards("h"), max);
-									}
-								}
-								switch (max) {
-									case 0:
-										return 2;
-									case 1:
-										return 1.5;
-									case 2:
-										return [1, 2];
-									default:
-										return [0, max];
-								}
-							}
-							if ((card.name == "tao" || card.name == "caoyao") && target.hp > 1 && target.countCards("h") <= target.hp) return [0, 0];
-						},
-					},
 				},
 			},
 			gzfangzhu: {
@@ -19304,10 +19139,8 @@ export default () => {
 			_yinyang_mark_add: "阴阳鱼",
 			yinyang_add: "阴阳鱼",
 
-			gzjushou: "据守",
-			gzjushou_info: "结束阶段，你可以摸X张牌（X为亮明势力数），然后弃置一张手牌。若以此法弃置的牌为装备牌，则改为使用此牌。若X大于2，则你将武将牌叠置。",
-			new_duanliang: "断粮",
-			new_duanliang_info: "出牌阶段，你可以将一张黑色基本牌或黑色装备牌当做【兵粮寸断】使用。你使用【兵粮寸断】没有距离限制。若你对距离超过2的角色发动了〖断粮〗，则本回合不能再发动〖断粮〗。",
+			
+			
 			new_shushen: "淑慎",
 			new_shushen_info: "当你回复1点体力后，你可令一名其他角色摸一张牌。",
 			new_luanji: "乱击",
@@ -19342,8 +19175,6 @@ export default () => {
 			baka_yinghun_info: "准备阶段，你可令一名其他角色执行一项：摸X张牌，然后弃置一张牌；或摸一张牌，然后弃置X张牌（X为你已损失的体力值）。",
 			baka_yingzi: "英姿",
 			baka_yingzi_info: "锁定技，摸牌阶段摸，你多摸一张牌；你的手牌上限+X（X为你已损失的体力值）。",
-			gzjieming: "节命",
-			gzjieming_info: "当你受到伤害后，你可以令一名角色将手牌摸至X张（X为其体力上限且最多为5）。",
 			gzfangzhu: "放逐",
 			gzfangzhu_info: "当你受到伤害后，你可以令一名其他角色选择一项：⒈摸X张牌并将武将牌叠置；⒉弃置X张牌并失去1点体力（X为你已损失的体力值）。",
 			fengyin_main: "封印[主将]",

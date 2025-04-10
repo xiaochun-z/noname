@@ -1,6 +1,6 @@
 import { Character } from "../../../../noname/library/element/index.js";
 
-import normal, { intro as normalIntro } from "./normal.js";
+import normal from "./normal.js";
 
 /** @type {Record<string, Character>} */
 export const pack = {
@@ -134,6 +134,4 @@ export const pack = {
 	...normal,
 };
 
-export const intro = {
-	...normalIntro
-}
+export { default as intro } from "./intro.js";

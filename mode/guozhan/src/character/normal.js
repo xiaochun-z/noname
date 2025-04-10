@@ -68,8 +68,56 @@ export default {
 		skills: ["gz_shensu"],
 		hasSkinInGuozhan: true,
 	}),
+	gz_zhanghe: new Character({
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		maxHp: 4,
+		hujia: 0,
+		skills: ["gz_qiaobian"],
+	}),
+	gz_xuhuang: new Character({
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		maxHp: 4,
+		hujia: 0,
+		skills: ["gz_duanliang"],
+	}),
+	gz_caoren: new Character({
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		maxHp: 4,
+		hujia: 0,
+		skills: ["gz_jushou"],
+	}),
+	gz_dianwei: new Character({
+		sex: "male",
+		group: "wei",
+		hp: 5,
+		maxHp: 5,
+		hujia: 0,
+		skills: ["gz_qiangxi"],
+		hasSkinInGuozhan: true,
+	}),
+	gz_xunyu: new Character({
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		maxHp: 3,
+		hujia: 0,
+		skills: ["gz_quhu", "gz_jieming"],
+	}),
+	gz_caopi: ["male", "wei", 3, ["xingshang", "gzfangzhu"], ["gzskin"]],
+	gz_yuejin: ["male", "wei", 4, ["fakexiaoguo"], ["gzskin"]],
 };
 
 export const intro = {
-	gz_xiahouyuan: "字妙才，沛国谯人。东汉末年曹操部下名将，夏侯惇之族弟，八虎骑之一。群雄征讨董卓时随曹操一同起兵，后征战四方，屡立功勋。在平定马超叛乱后负责西北防线的镇守。公元219年刘备攻打汉中，被刘备部将黄忠所杀。"
-}
+	gz_xiahouyuan: "字妙才，沛国谯人。东汉末年曹操部下名将，夏侯惇之族弟，八虎骑之一。群雄征讨董卓时随曹操一同起兵，后征战四方，屡立功勋。在平定马超叛乱后负责西北防线的镇守。公元219年刘备攻打汉中，被刘备部将黄忠所杀。",
+	gz_zhanghe: "字儁乂，河间鄚人。三国时期魏国名将。官渡之战时，本为袁绍部将的张郃投降了曹操，并在曹操帐下多立功勋，于曹魏建立后加封为征西车骑将军。诸葛亮六出祁山之间，张郃多次抵御蜀军的进攻，于公元231年在木门道被诸葛亮设伏射死。后谥曰壮侯。为曹魏“五子良将”之一。",
+	gz_xuhuang: "字公明，河东杨人。三国时期曹魏名将，本为杨奉帐下骑都尉，杨奉被曹操击败后转投曹操，在曹操手下多立功勋，参与官渡、赤壁、关中征伐、汉中征伐等几次重大战役。",
+	gz_caoren: "字子孝，沛国谯人，曹操的从弟。三国时期曹魏名将，官至大司马。谥曰忠侯。",
+	gz_dianwei: "己吾城村人。东汉末年曹魏猛将。擅使大双戟，为人壮猛任侠，曾为乡人刘氏报仇，杀人出市，人莫敢近。相貌魁梧，膂力过人。建安二年（197），张绣背叛曹操，典韦为保护曹操而独挡叛军，击杀多人，但最终因寡不敌众而战死。",
+	gz_xunyu: "荀彧，字文若，颍川颍阴（今河南许昌）人。东汉末年曹操帐下首席谋臣，杰出的战略家。自小被世人称作“王佐之才”。",
+};
