@@ -15305,87 +15305,6 @@ export default () => {
 					threaten: 1.3,
 				},
 			},
-			gzfangzhu: {
-				audio: "fangzhu",
-				trigger: {
-					player: "damageEnd",
-				},
-				direct: true,
-				preHidden: true,
-				content() {
-					"step 0";
-					player
-						.chooseTarget(get.prompt2("gzfangzhu"), function (card, player, target) {
-							return player != target;
-						})
-						.setHiddenSkill("gzfangzhu").ai = function (target) {
-						if (target.hasSkillTag("noturn")) return 0;
-						var player = _status.event.player,
-							att = get.attitude(player, target);
-						if (att == 0) return 0;
-						if (att > 0) {
-							if (target.isTurnedOver()) return 1000 - target.countCards("h");
-							return -1;
-						} else {
-							if (target.isTurnedOver()) return -1;
-							if (player.getDamagedHp() >= 3) return -1;
-							return target.countCards("h") + 1;
-						}
-					};
-					("step 1");
-					if (result.bool) {
-						var target = result.targets[0];
-						event.target = target;
-						player.logSkill("gzfangzhu", target);
-						var num = player.getDamagedHp();
-						if (num > 0)
-							target.chooseToDiscard("he", num, "放逐：弃置" + get.cnNumber(num) + "张牌并失去1点体力", "或者点击“取消”不弃牌，改为摸" + get.cnNumber(num) + "张牌并叠置").set("ai", function (card) {
-								var player = _status.event.player;
-								if (player.isTurnedOver()) return -1;
-								return player.hp * player.hp - Math.max(1, get.value(card));
-							});
-						else {
-							target.turnOver();
-							event.finish();
-						}
-					} else event.finish();
-					("step 2");
-					if (result.bool) {
-						target.loseHp();
-					} else {
-						target.draw(player.getDamagedHp());
-						target.turnOver();
-					}
-				},
-				ai: {
-					maixie: true,
-					maixie_hp: true,
-					effect: {
-						target(card, player, target) {
-							if (get.tag(card, "damage")) {
-								if (player.hasSkillTag("jueqing", false, target)) return [1, -2];
-								if (target.hp <= 1) return;
-								if (!target.hasFriend()) return;
-								var hastarget = false;
-								var turnfriend = false;
-								var players = game.filterPlayer();
-								for (var i = 0; i < players.length; i++) {
-									if (get.attitude(target, players[i]) < 0 && !players[i].isTurnedOver()) {
-										hastarget = true;
-									}
-									if (get.attitude(target, players[i]) > 0 && players[i].isTurnedOver()) {
-										hastarget = true;
-										turnfriend = true;
-									}
-								}
-								if (get.attitude(player, target) > 0 && !hastarget) return;
-								if (turnfriend || target.hp == target.maxHp) return [0.5, 1];
-								if (target.hp > 1) return [1, 0.5];
-							}
-						},
-					},
-				},
-			},
 			fengyin_main: {
 				init(player, skill) {
 					player.addSkillBlocker(skill);
@@ -19175,8 +19094,6 @@ export default () => {
 			baka_yinghun_info: "准备阶段，你可令一名其他角色执行一项：摸X张牌，然后弃置一张牌；或摸一张牌，然后弃置X张牌（X为你已损失的体力值）。",
 			baka_yingzi: "英姿",
 			baka_yingzi_info: "锁定技，摸牌阶段摸，你多摸一张牌；你的手牌上限+X（X为你已损失的体力值）。",
-			gzfangzhu: "放逐",
-			gzfangzhu_info: "当你受到伤害后，你可以令一名其他角色选择一项：⒈摸X张牌并将武将牌叠置；⒉弃置X张牌并失去1点体力（X为你已损失的体力值）。",
 			fengyin_main: "封印[主将]",
 			fengyin_main_info: "",
 			fengyin_vice: "封印[副将]",

@@ -5,4 +5,5 @@ export default {
 	"#gz_caoren:die": "长江以南，再无王土矣……",
 	"#gz_dianwei:die": "主公，快走！",
 	"#gz_xunyu:die": "主公要臣死，臣不得不死……",
+	"#gz_caopi:die": "子建，子建……",
 };

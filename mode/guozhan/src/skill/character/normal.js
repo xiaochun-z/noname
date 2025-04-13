@@ -919,4 +919,129 @@ export default {
 			},
 		},
 	},
+
+	// gz_caopi
+	/** @type {Skill} */
+	gz_xingshang: {
+		audio: "xingshang",
+		trigger: {
+			global: "die",
+		},
+		preHidden: true,
+		filter(event) {
+			return event.player.countCards("he") > 0;
+		},
+		async content(_event, trigger, player) {
+			const toGain = trigger.player.getCards("he");
+			await player.gain(toGain, trigger.player, "giveAuto", "bySelf");
+		},
+	},
+	/** @type {Skill} */
+	gz_fangzhu: {
+		audio: "fangzhu",
+		trigger: {
+			player: "damageEnd",
+		},
+		preHidden: true,
+		async cost(event, _trigger, player) {
+			const next = player.chooseTarget(get.prompt2("gz_fangzhu"), (_card, player, target) => player != target);
+
+			next.setHiddenSkill("gz_fangzhu");
+			next.set("ai", check);
+
+			event.result = await next.forResult();
+
+			return;
+
+			function check(target) {
+				if (target.hasSkillTag("noturn")) {
+					return 0;
+				}
+
+				const player = get.player();
+				const att = get.attitude(player, target);
+
+				if (att == 0) return 0;
+				if (att > 0) {
+					if (target.isTurnedOver()) return 1000 - target.countCards("h");
+					return -1;
+				} else {
+					if (target.isTurnedOver()) return -1;
+					if (player.getDamagedHp() >= 3) return -1;
+					return target.countCards("h") + 1;
+				}
+			}
+		},
+		logTarget: "targets",
+		async content(event, _trigger, player) {
+			const { targets } = event;
+			const target = targets[0];
+			const num = player.getDamagedHp();
+
+			/**
+			 * @type {Partial<Result>}
+			 */
+			let result;
+
+			if (num > 0) {
+				const str = [`放逐：弃置${get.cnNumber(num)}张牌并失去1点体力`, `或者点击“取消”不弃牌，改为摸${get.cnNumber(num)}张牌并叠置`];
+				const next = target.chooseToDiscard(num, "he", ...str);
+				next.set("ai", check);
+
+				result = await next.forResult();
+			} else {
+				result = {
+					bool: false,
+					cards: [],
+				};
+			}
+
+			if (result.bool) {
+				await target.loseHp();
+			} else {
+				if (num > 0) {
+					await target.draw(num);
+				}
+				await target.turnOver(false);
+			}
+
+			return;
+
+			function check(card) {
+				const player = get.player();
+				if (player.isTurnedOver()) {
+					return -1;
+				}
+				return player.hp * player.hp - Math.max(1, get.value(card));
+			}
+		},
+		ai: {
+			maixie: true,
+			maixie_hp: true,
+			effect: {
+				target(card, player, target) {
+					if (get.tag(card, "damage")) {
+						if (player.hasSkillTag("jueqing", false, target)) return [1, -2];
+						if (target.hp <= 1) return;
+						if (!target.hasFriend()) return;
+						var hastarget = false;
+						var turnfriend = false;
+						var players = game.filterPlayer(lib.filter.all);
+						for (var i = 0; i < players.length; i++) {
+							if (get.attitude(target, players[i]) < 0 && !players[i].isTurnedOver()) {
+								hastarget = true;
+							}
+							if (get.attitude(target, players[i]) > 0 && players[i].isTurnedOver()) {
+								hastarget = true;
+								turnfriend = true;
+							}
+						}
+						if (get.attitude(player, target) > 0 && !hastarget) return;
+						if (turnfriend || target.hp == target.maxHp) return [0.5, 1];
+						if (target.hp > 1) return [1, 0.5];
+					}
+				},
+			},
+		},
+	},
 };
