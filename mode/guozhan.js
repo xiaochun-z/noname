@@ -1120,51 +1120,6 @@ export default () => {
 				},
 			},
 			//官盗2023
-			fakexiaoguo: {
-				audio: "xiaoguo",
-				audioname2: { gz_jun_caocao: "jianan_xiaoguo" },
-				trigger: { global: "phaseZhunbeiBegin" },
-				filter(event, player) {
-					return (
-						event.player != player &&
-						player.countCards("h", card => {
-							if (_status.connectMode) return true;
-							return get.type(card) == "basic" && lib.filter.cardDiscardable(card, player);
-						})
-					);
-				},
-				async cost(event, trigger, player) {
-					event.result = await player
-						.chooseToDiscard(
-							get.prompt2("fakexiaoguo", trigger.player),
-							(card, player) => {
-								return get.type(card) == "basic";
-							},
-							[1, Infinity]
-						)
-						.set("complexSelect", true)
-						.set("ai", card => {
-							const player = get.event("player"),
-								target = get.event().getTrigger().player;
-							const effect = get.damageEffect(target, player, player);
-							const cards = target.getCards("e", card => get.attitude(player, target) * get.value(card, target) < 0);
-							if (effect <= 0 && !cards.length) return 0;
-							if (ui.selected.cards.length > cards.length - (effect <= 0 ? 1 : 0)) return 0;
-							return 1 / (get.value(card) || 0.5);
-						})
-						.set("logSkill", ["fakexiaoguo", trigger.player])
-						.setHiddenSkill("fakexiaoguo")
-						.forResult();
-				},
-				popup: false,
-				preHidden: true,
-				async content(event, trigger, player) {
-					const num = trigger.player.countCards("e"),
-						num2 = event.cards.length;
-					await player.discardPlayerCard(trigger.player, "e", num2, true);
-					if (num2 > num) await trigger.player.damage();
-				},
-			},
 			fakeduanbing: {
 				audio: "duanbing",
 				inherit: "reduanbing",
@@ -19396,8 +19351,6 @@ export default () => {
 			ushio_xilv_info: "锁定技，此武将牌可作为任意单势力武将牌的副将。当你进行判定后，你令你的手牌上限+1直至你的下个结束阶段。",
 
 			//官盗2023
-			fakexiaoguo: "骁果",
-			fakexiaoguo_info: "一名其他角色的准备阶段，你可以弃置任意张基本牌，然后弃置其装备区等量的牌，若其装备区的牌数小于你弃置的牌数，则你对其造成1点伤害。",
 			fakeduanbing: "短兵",
 			fakeduanbing_info: "①你使用【杀】可以额外指定一名距离为1或以内的目标。②当你使用【杀】指定唯一目标后，你令目标角色需要额外使用一张【闪】响应此【杀】。",
 			fakeduoshi: "度势",

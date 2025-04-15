@@ -118,7 +118,15 @@ export default {
 		skills: ["gz_xingshang", "gz_fangzhu"],
 		hasSkinInGuozhan: true,
 	}),
-	gz_yuejin: ["male", "wei", 4, ["fakexiaoguo"], ["gzskin"]],
+	gz_yuejin: new Character({
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		maxHp: 4,
+		hujia: 0,
+		skills: ["gz_xiaoguo"],
+		hasSkinInGuozhan: true,
+	}), // ["male", "wei", 4, ["fakexiaoguo"], ["gzskin"]]
 };
 
 export const intro = {
@@ -129,4 +137,5 @@ export const intro = {
 	gz_dianwei: "己吾城村人。东汉末年曹魏猛将。擅使大双戟，为人壮猛任侠，曾为乡人刘氏报仇，杀人出市，人莫敢近。相貌魁梧，膂力过人。建安二年（197），张绣背叛曹操，典韦为保护曹操而独挡叛军，击杀多人，但最终因寡不敌众而战死。",
 	gz_xunyu: "荀彧，字文若，颍川颍阴（今河南许昌）人。东汉末年曹操帐下首席谋臣，杰出的战略家。自小被世人称作“王佐之才”。",
 	gz_caopi: "字子桓，三国时期著名的政治家、文学家，曹魏的开国皇帝，公元220－226年在位。沛国谯人，魏武帝曹操与武宣卞皇后的长子。去世后庙号高祖，谥为文皇帝，葬于首阳陵。",
+	gz_yuejin: "字文谦，魏“五子良将”之一。容貌短小，以胆烈跟从曹操，南征北讨，战功无数。从击袁绍于官渡，奋勇力战，斩袁绍部将淳于琼。又从击袁绍子谭、尚于黎阳，斩其大将严敬。从平荆州，留屯襄阳，进击关羽、苏非等人，击退其众，南郡诸郡的山谷蛮夷都前往乐进处投降。后来从曹操征孙权，假进节。曹操回师后，留乐进与张辽、李典屯于合肥。又以乐进数有军功，迁右将军。建安二十三年逝世，谥曰威侯。",
 };

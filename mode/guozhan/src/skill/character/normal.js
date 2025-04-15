@@ -928,6 +928,7 @@ export default {
 			global: "die",
 		},
 		preHidden: true,
+		target: "player",
 		filter(event) {
 			return event.player.countCards("he") > 0;
 		},
@@ -1042,6 +1043,59 @@ export default {
 					}
 				},
 			},
+		},
+	},
+
+	// gz_yuejin
+	/** @type {Skill} */
+	gz_xiaoguo: {
+		audio: "xiaoguo",
+		audioname2: {
+			gz_jun_caocao: "jianan_xiaoguo",
+		},
+		trigger: {
+			global: "phaseZhunbeiBegin",
+		},
+		filter(event, player) {
+			return (
+				event.player != player &&
+				player.countCards("h", card => {
+					if (_status.connectMode) return true;
+					// @ts-expect-error 类型系统未来可期
+					return get.type(card) == "basic" && lib.filter.cardDiscardable(card, player);
+				}) > 0
+			);
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseToDiscard(
+					get.prompt2("gz_xiaoguo", trigger.player),
+					(card, player) => {
+						return get.type(card) == "basic";
+					},
+					[1, Infinity]
+				)
+				.set("complexSelect", true)
+				.set("ai", card => {
+					const player = get.event("player"),
+						target = get.event().getTrigger().player;
+					const effect = get.damageEffect(target, player, player);
+					const cards = target.getCards("e", card => get.attitude(player, target) * get.value(card, target) < 0);
+					if (effect <= 0 && !cards.length) return 0;
+					if (ui.selected.cards.length > cards.length - (effect <= 0 ? 1 : 0)) return 0;
+					return 1 / (get.value(card) || 0.5);
+				})
+				.set("logSkill", ["gz_xiaoguo", trigger.player])
+				.setHiddenSkill("gz_xiaoguo")
+				.forResult();
+		},
+		popup: false,
+		preHidden: true,
+		async content(event, trigger, player) {
+			const num = trigger.player.countCards("e");
+			const num2 = event.cards.length;
+			await player.discardPlayerCard(trigger.player, "e", num2, true);
+			if (num2 > num) await trigger.player.damage();
 		},
 	},
 };

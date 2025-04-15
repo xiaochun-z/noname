@@ -6,4 +6,5 @@ export default {
 	"#gz_dianwei:die": "主公，快走！",
 	"#gz_xunyu:die": "主公要臣死，臣不得不死……",
 	"#gz_caopi:die": "子建，子建……",
+	"#gz_yuejin:die": "箭疮发作，吾命休矣……",
 };

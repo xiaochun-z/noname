@@ -12,4 +12,6 @@ export default {
 	gz_caoren: "曹仁",
 	gz_dianwei: "典韦",
 	gz_xunyu: "荀彧",
+	gz_caopi: "曹丕",
+	gz_yuejin: "乐进",
 };
