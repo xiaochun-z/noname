@@ -90,22 +90,6 @@ export default () => {
 				gz_mazhong: ["male", "shu", 4, ["twfuman"]],
 				gz_ol_lisu: ["male", "qun", 3, ["qiaoyan", "xianzhu"]],
 
-
-				gz_liubei: ["male", "shu", 4, ["rerende"]],
-				gz_guanyu: ["male", "shu", 5, ["new_rewusheng"], ["gzskin"]],
-				gz_zhangfei: ["male", "shu", 4, ["gzpaoxiao"]],
-				gz_zhugeliang: ["male", "shu", 3, ["guanxing", "new_kongcheng"], ["gzskin"]],
-				gz_zhaoyun: ["male", "shu", 4, ["new_longdan"]],
-				gz_machao: ["male", "shu", 4, ["mashu", "new_tieji"]],
-				gz_huangyueying: ["female", "shu", 3, ["jizhi", "qicai"], ["gzskin"]],
-				gz_huangzhong: ["male", "shu", 4, ["gzliegong"], ["gzskin"]],
-				gz_weiyan: ["male", "shu", 4, ["xinkuanggu"]],
-				gz_pangtong: ["male", "shu", 3, ["lianhuan", "oldniepan"]],
-				gz_sp_zhugeliang: ["male", "shu", 3, ["huoji", "bazhen", "kanpo"], ["gzskin"]],
-				gz_liushan: ["male", "shu", 3, ["xiangle", "fangquan"]],
-				gz_menghuo: ["male", "shu", 4, ["huoshou", "rezaiqi"]],
-				gz_zhurong: ["female", "shu", 4, ["juxiang", "lieren"]],
-				gz_ganfuren: ["female", "shu", 3, ["gzshushen_new", "shenzhi"], ["gzskin"]],
 				gz_yuji: ["male", "qun", 3, ["qianhuan"], ["gzskin"]],
 
 				gz_sunquan: ["male", "wu", 4, ["gzzhiheng"]],

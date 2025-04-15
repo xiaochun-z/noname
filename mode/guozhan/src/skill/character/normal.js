@@ -1098,4 +1098,121 @@ export default {
 			if (num2 > num) await trigger.player.damage();
 		},
 	},
+
+	// gz_liubei
+	/** @type {Skill} */
+	gz_rende: {
+		audio: "rerende",
+		audioname: ["gz_jun_liubei"],
+		enable: "phaseUse",
+		filter(_event, player) {
+			// @ts-expect-error 类型系统未来可期
+			return player.countCards("h") > 0 && game.hasPlayer(current => get.info("gz_rende").filterTarget?.(null, player, current));
+		},
+		filterTarget(_card, player, target) {
+			if (player == target) return false;
+			return !player.getStorage("rerende_targeted").includes(target);
+		},
+		filterCard: true,
+		selectCard: [1, Infinity],
+		discard: false,
+		lose: false,
+		delay: false,
+		check(card) {
+			if (ui.selected.cards.length && ui.selected.cards[0].name == "du") return 0;
+			if (!ui.selected.cards.length && card.name == "du") return 20;
+			var player = get.owner(card);
+			if (player == null) {
+				return 0;
+			}
+			if (ui.selected.cards.length >= Math.max(2, player.countCards("h") - player.hp)) return 0;
+			if (player.hp == player.maxHp || player.storage.rerende < 0 || player.countCards("h") <= 1) {
+				var players = game.filterPlayer(lib.filter.all);
+				for (var i = 0; i < players.length; i++) {
+					if (players[i].hasSkill("haoshi") && !players[i].isTurnedOver() && !players[i].hasJudge("lebu") && get.attitude(player, players[i]) >= 3 && get.attitude(players[i], player) >= 3) {
+						return 11 - get.value(card);
+					}
+				}
+				if (player.countCards("h") > player.hp) return 10 - get.value(card);
+				if (player.countCards("h") > 2) return 6 - get.value(card);
+				return -1;
+			}
+			return 10 - get.value(card);
+		},
+		async content(event, _trigger, player) {
+			const { target, cards, name } = event;
+			player.addTempSkill(name + "_targeted", "phaseUseAfter");
+			player.markAuto(name + "_targeted", [target]);
+			let num = 0;
+			player.getHistory("lose", evt => {
+				// @ts-expect-error 类型系统未来可期
+				if (evt.getParent(2)?.name == name) {
+					num += evt.cards.length;
+				}
+				return true;
+			});
+			await player.give(cards, target);
+			const list = get.inpileVCardList(info => {
+				return get.type(info[2]) == "basic" && player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3] }), null, true);
+			});
+			if (num < 2 && num + cards.length > 1 && list.length) {
+				const links = await player
+					.chooseButton(["是否视为使用一张基本牌？", [list, "vcard"]])
+					.set("ai", button => {
+						return get.player().getUseValue({ name: button.link[2], nature: button.link[3], isCard: true });
+					})
+					.forResultLinks();
+				if (!links?.length) return;
+				await player.chooseUseTarget(get.autoViewAs({ name: links[0][2], nature: links[0][3], isCard: true }), true);
+			}
+		},
+		ai: {
+			fireAttack: true,
+			order(skill, player) {
+				if (player.hp < player.maxHp && player.storage.rerende < 2 && player.countCards("h") > 1) {
+					return 10;
+				}
+				return 4;
+			},
+			result: {
+				target(player, target) {
+					if (target.hasSkillTag("nogain")) return 0;
+					if (ui.selected.cards.length && ui.selected.cards[0].name == "du") {
+						if (target.hasSkillTag("nodu")) return 0;
+						return -10;
+					}
+					if (target.hasJudge("lebu")) return 0;
+					var nh = target.countCards("h");
+					var np = player.countCards("h");
+					if (player.hp == player.maxHp || player.storage.rerende < 0 || player.countCards("h") <= 1) {
+						if (nh >= np - 1 && np <= player.hp && !target.hasSkill("haoshi")) return 0;
+					}
+					return Math.max(1, 5 - nh);
+				},
+			},
+			effect: {
+				// @ts-expect-error 类型系统未来可期
+				target_use(card, player, target) {
+					if (player == target && get.type(card) == "equip") {
+						if (player.countCards("e", { subtype: get.subtype(card) })) {
+							if (
+								game.hasPlayer(function (current) {
+									return current != player && get.attitude(player, current) > 0;
+								})
+							) {
+								return 0;
+							}
+						}
+					}
+				},
+			},
+			threaten: 0.8,
+		},
+		subSkill: {
+			targeted: {
+				onremove: true,
+				charlotte: true,
+			},
+		},
+	},
 };
