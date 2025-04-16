@@ -221,14 +221,14 @@ export class GameGuozhan extends Game {
 		group = group.filter(group => group !== "shen" && group !== "western" && data[group]);
 		// 将战绩记录转换为字符串
 		const strs = group.map(id => {
-			const name = get.translation(`${group[id]}2`);
+			const name = get.translation(`${id}2`);
 			const [win, lose] = data[id];
 
 			return `${name}: ${win}胜 ${lose}负`;
 		});
-		const str = strs.join("<br/>");
+		const str = strs.join("<br />");
 
-		lib.config.gameRecord.guozhan.str = str;
+		lib.config.gameRecord.guozhan.str = `${str}<br />`;
 
 		await game.promises.saveConfig("gameRecord", lib.config.gameRecord);
 	}
