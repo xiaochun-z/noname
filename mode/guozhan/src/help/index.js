@@ -1,4 +1,4 @@
-import App from "./App.js";
+import App from "./App.vue";
 
 export default {
 	国战模式: App,
