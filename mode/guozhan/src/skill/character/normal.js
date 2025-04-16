@@ -1153,7 +1153,7 @@ export default {
 			});
 			await player.give(cards, target);
 			const list = get.inpileVCardList(info => {
-				return get.type(info[2]) == "basic" && player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3] }), null, true);
+				return get.type(info[2]) == "basic" && player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3] }), void 0, true);
 			});
 			if (num < 2 && num + cards.length > 1 && list.length) {
 				const links = await player
@@ -1266,6 +1266,285 @@ export default {
 				} else {
 					if (!player.countCards("hes", { color: "red" })) return false;
 				}
+			},
+		},
+	},
+
+	// gz_zhangfei
+	/** @type {Skill} */
+	gz_paoxiao: {
+		audio: "paoxiao",
+		audioname2: {
+			gz_jun_liubei: "shouyue_paoxiao",
+		},
+		trigger: {
+			player: "useCard",
+		},
+		filter(event, player) {
+			// @ts-expect-error 类型系统未来可期
+			if (_status.currentPhase != player) return false;
+			if (event.card.name != "sha") return false;
+			const history = player.getHistory("useCard", evt => {
+				return evt.card.name == "sha";
+			});
+			return history && history.indexOf(event) == 1;
+		},
+		forced: true,
+		preHidden: true,
+		async content(_event, _trigger, player) {
+			await player.draw();
+		},
+		mod: {
+			cardUsable(card, player, num) {
+				if (card.name == "sha") return Infinity;
+			},
+		},
+		ai: {
+			unequip: true,
+			skillTagFilter(player, tag, arg) {
+				if (!get.zhu(player, "shouyue")) return false;
+				if (arg && arg.name == "sha") return true;
+				return false;
+			},
+		},
+	},
+
+	// gz_zhugeliang
+	/** @type {Skill} */
+	gz_kongcheng: {
+		audio: "kongcheng",
+		trigger: {
+			target: "useCardToTarget",
+		},
+		locked: true,
+		forced: true,
+		check(event, player) {
+			return get.effect(event.target, event.card, event.player, player) < 0;
+		},
+		filter(event, player) {
+			return player.countCards("h") == 0 && (event.card.name == "sha" || event.card.name == "juedou");
+		},
+		async content(_event, trigger, player) {
+			// @ts-expect-error 类型系统未来可期
+			trigger.getParent()?.targets.remove(player);
+		},
+		onremove(player, skill) {
+			var cards = player.getExpansions(skill);
+			if (cards.length) player.loseToDiscardpile(cards);
+		},
+		ai: {
+			effect: {
+				target(card, _player, target, _current) {
+					if (target.countCards("h") == 0 && (card.name == "sha" || card.name == "juedou")) return "zeroplayertarget";
+				},
+			},
+		},
+		intro: {
+			markcount: "expansion",
+			mark(dialog, _content, player) {
+				const contents = player.getExpansions("gz_kongcheng");
+				if (contents?.length) {
+					if (player == game.me || player.isUnderControl(void 0, void 0)) {
+						dialog.addAuto(contents);
+					} else {
+						return "共有" + get.cnNumber(contents.length) + "张牌";
+					}
+				}
+			},
+			content(_content, player) {
+				const contents = player.getExpansions("gz_kongcheng");
+				if (contents && contents.length) {
+					if (player == game.me || player.isUnderControl(void 0, void 0)) {
+						return get.translation(contents);
+					}
+					return "共有" + get.cnNumber(contents.length) + "张牌";
+				}
+			},
+		},
+		group: ["gz_kongcheng_gain", "gz_kongcheng_got"],
+		subSkill: {
+			gain: {
+				audio: "kongcheng",
+				trigger: {
+					player: "gainBefore",
+				},
+				filter(event, player) {
+					// @ts-expect-error 类型系统未来可期
+					return event.source && event.source != player && player != _status.currentPhase && !event.bySelf && player.countCards("h") == 0;
+				},
+				async content(_event, trigger, _player) {
+					trigger.name = "addToExpansion";
+					trigger.setContent("addToExpansion");
+					// @ts-expect-error 类型系统未来可期
+					trigger.gaintag = ["gz_kongcheng"];
+					// @ts-expect-error 类型系统未来可期
+					trigger.untrigger();
+					trigger.trigger("addToExpansionBefore");
+				},
+				sub: true,
+				forced: true,
+			},
+			got: {
+				trigger: {
+					player: "phaseDrawBegin1",
+				},
+				filter(_event, player) {
+					return player.getExpansions("gz_kongcheng").length > 0;
+				},
+				async content(_event, _trigger, player) {
+					player.gain(player.getExpansions("gz_kongcheng"), "draw");
+				},
+				sub: true,
+				forced: true,
+			},
+		},
+	},
+
+	// gz_zhaoyun
+	/** @type {Skill} */
+	new_longdan: {
+		audio: "longdan_sha",
+		audioname2: { gz_jun_liubei: "shouyue_longdan" },
+		group: ["gz_longdan_sha", "gz_longdan_shan", "gz_longdan_draw", "gz_longdan_shamiss", "gz_longdan_shanafter"],
+		subSkill: {
+			shanafter: {
+				sub: true,
+				audio: "longdan_sha",
+				audioname2: { gz_jun_liubei: "shouyue_longdan" },
+				trigger: {
+					player: "useCard",
+				},
+				//priority:1,
+				filter(event, _player) {
+					// @ts-expect-error 类型系统未来可期
+					return event.skill == "gz_longdan_shan" && event.getParent(2)?.name == "sha";
+				},
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseTarget("是否发动【龙胆】令一名其他角色回复1点体力？", function (card, player, target) {
+							return target != _status.event?.source && target != player && target.isDamaged();
+						})
+						.set("ai", function (target) {
+							return get.attitude(_status.event?.player, target);
+						})
+						// @ts-expect-error 类型系统未来可期
+						.set("source", trigger.getParent(2)?.player)
+						.forResult();
+				},
+				logTarget: "targets",
+				async content(event, _trigger, _player) {
+					await event.targets[0].recover();
+				},
+			},
+			shamiss: {
+				sub: true,
+				audio: "longdan_sha",
+				audioname2: { gz_jun_liubei: "shouyue_longdan" },
+				trigger: {
+					player: "shaMiss",
+				},
+				direct: true,
+				filter(event, player) {
+					return event.skill == "gz_longdan_sha";
+				},
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseTarget("是否发动【龙胆】对一名其他角色造成1点伤害？", function (card, player, target) {
+							return target != _status.event?.target && target != player;
+						})
+						.set("ai", function (target) {
+							return -get.attitude(_status.event?.player, target);
+						})
+						.set("target", trigger.target)
+						.forResult();
+				},
+				logTarget: "targets",
+				async content(event, _trigger, _player) {
+					await event.targets[0].damage();
+				},
+			},
+			draw: {
+				trigger: {
+					player: ["useCard", "respond"],
+				},
+				audio: "longdan_sha",
+				audioname2: { gz_jun_liubei: "shouyue_longdan" },
+				forced: true,
+				locked: false,
+				filter(event, player) {
+					if (!get.zhu(player, "shouyue")) return false;
+					return event.skill == "gz_longdan_sha" || event.skill == "gz_longdan_shan";
+				},
+				async content(_event, _trigger, player) {
+					player.draw();
+					//player.storage.fanghun2++;
+				},
+				sub: true,
+			},
+			sha: {
+				audio: "longdan_sha",
+				audioname2: { gz_jun_liubei: "shouyue_longdan" },
+				enable: ["chooseToUse", "chooseToRespond"],
+				filterCard: {
+					name: "shan",
+				},
+				viewAs: {
+					name: "sha",
+				},
+				position: "hs",
+				viewAsFilter(player) {
+					if (!player.countCards("hs", "shan")) return false;
+				},
+				prompt: "将一张闪当杀使用或打出",
+				check() {
+					return 1;
+				},
+				ai: {
+					effect: {
+						target(card, player, target, current) {
+							if (get.tag(card, "respondSha") && current < 0) return 0.6;
+						},
+					},
+					respondSha: true,
+					skillTagFilter(player) {
+						if (!player.countCards("hs", "shan")) return false;
+					},
+					order() {
+						return get.order({ name: "sha" }) + 0.1;
+					},
+				},
+				sub: true,
+			},
+			shan: {
+				audio: "longdan_sha",
+				audioname2: { gz_jun_liubei: "shouyue_longdan" },
+				enable: ["chooseToRespond", "chooseToUse"],
+				filterCard: {
+					name: "sha",
+				},
+				viewAs: {
+					name: "shan",
+				},
+				position: "hs",
+				prompt: "将一张杀当闪使用或打出",
+				check() {
+					return 1;
+				},
+				viewAsFilter(player) {
+					if (!player.countCards("hs", "sha")) return false;
+				},
+				ai: {
+					respondShan: true,
+					skillTagFilter(player) {
+						if (!player.countCards("hs", "sha")) return false;
+					},
+					effect: {
+						target(card, player, target, current) {
+							if (get.tag(card, "respondShan") && current < 0) return 0.6;
+						},
+					},
+				},
+				sub: true,
 			},
 		},
 	},

@@ -17,4 +17,7 @@ export default {
 
 	gz_liubei: "刘备",
 	gz_guanyu: "关羽",
+	gz_zhangfei: "张飞",
+	gz_zhugeliang: "诸葛亮",
+	gz_zhaoyun: "赵云",
 };
