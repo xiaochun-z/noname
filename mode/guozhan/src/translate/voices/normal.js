@@ -1,4 +1,11 @@
 export default {
+	"#gz_caocao:die": "霸业未成未成啊！",
+	"#gz_simayi:die": "难道真是天意难违？",
+	"#gz_xiahoudun:die": "两，两边都看不见了……",
+	"#gz_zhangliao:die": "真的没想到……",
+	"#gz_xuzhu:die": "冷，好冷啊……",
+	"#gz_guojia:die": "咳，咳……",
+	"#gz_zhenji:die": "悼良会之永绝兮，哀一逝而异乡……",
 	"#gz_xiahouyuan:die": "竟然……比我还……快……",
 	"#gz_zhanghe:die": "啊……膝盖……中箭了……",
 	"#gz_xuhuang:die": "一顿不吃，饿得慌……",
@@ -7,4 +14,7 @@ export default {
 	"#gz_xunyu:die": "主公要臣死，臣不得不死……",
 	"#gz_caopi:die": "子建，子建……",
 	"#gz_yuejin:die": "箭疮发作，吾命休矣……",
+
+	"#gz_liubei:die": "这就是桃园吗？",
+	"#gz_guanyu:die": "什么？此地名叫麦城？",
 };

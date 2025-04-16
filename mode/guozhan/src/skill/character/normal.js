@@ -1215,4 +1215,58 @@ export default {
 			},
 		},
 	},
+
+	// gz_guanyu
+	/** @type {Skill} */
+	gz_wusheng: {
+		audio: "wusheng",
+		audioname: ["re_guanyu", "jsp_guanyu", "re_guanzhang", "dc_jsp_guanyu"],
+		audioname2: {
+			dc_guansuo: "wusheng_guansuo",
+			guanzhang: "wusheng_guanzhang",
+			guansuo: "wusheng_guansuo",
+			gz_jun_liubei: "shouyue_wusheng",
+			std_guanxing: "wusheng_guanzhang",
+			ty_guanxing: "wusheng_guanzhang",
+		},
+		enable: ["chooseToRespond", "chooseToUse"],
+		filterCard(card, player) {
+			if (get.zhu(player, "shouyue")) return true;
+			return get.color(card) == "red";
+		},
+		locked: false,
+		position: "hes",
+		viewAs: {
+			name: "sha",
+		},
+		viewAsFilter(player) {
+			if (get.zhu(player, "shouyue")) {
+				if (!player.countCards("hes")) return false;
+			} else {
+				if (!player.countCards("hes", { color: "red" })) return false;
+			}
+		},
+		prompt: "将一张红色牌当杀使用或打出",
+		check(card) {
+			const val = get.value(card);
+			const event = get.event();
+			if (event.name == "chooseToRespond") return 1 / Math.max(0.1, val);
+			return 5 - val;
+		},
+		mod: {
+			targetInRange(card) {
+				if (get.suit(card) == "diamond" && card.name == "sha") return true;
+			},
+		},
+		ai: {
+			respondSha: true,
+			skillTagFilter(player) {
+				if (get.zhu(player, "shouyue")) {
+					if (!player.countCards("hes")) return false;
+				} else {
+					if (!player.countCards("hes", { color: "red" })) return false;
+				}
+			},
+		},
+	},
 };

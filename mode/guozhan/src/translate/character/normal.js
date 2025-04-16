@@ -16,4 +16,5 @@ export default {
 	gz_yuejin: "乐进",
 
 	gz_liubei: "刘备",
+	gz_guanyu: "关羽",
 };
