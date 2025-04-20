@@ -20,4 +20,5 @@ export default {
 	"#gz_zhangfei:die": "实在是，杀不动了……",
 	"#gz_zhugeliang:die": "将星陨落，天命难违……",
 	"#gz_zhaoyun:die": "这，就是失败的滋味吗？",
+	"#gz_machao:die": "（马蹄声远去……）",
 };

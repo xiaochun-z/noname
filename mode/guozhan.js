@@ -14293,7 +14293,7 @@ export default () => {
 						},
 						content() {
 							"step 0";
-							var list = ["new_rewusheng", "gzpaoxiao", "new_longdan", "new_tieji", "liegong", "xinkuanggu"];
+							var list = ["gz_wusheng", "gz_paoxiao", "gz_longdan", "gz_tieji", "liegong", "xinkuanggu"];
 							player
 								.chooseControl(list)
 								.set("ai", function () {
@@ -14306,20 +14306,20 @@ export default () => {
 									(function () {
 										let shas = player.mayHaveSha(player, "use", null, "count"),
 											count = player.getCardUsable("sha");
-										if (shas > count) return "gzpaoxiao";
-										if (shas < count) return "new_rewusheng";
+										if (shas > count) return "gz_paoxiao";
+										if (shas < count) return "gz_wusheng";
 										if (!shas) return "xinkuanggu";
-										return ["new_longdan", "new_tieji", "liegong"].randomGet(); //脑子不够用了
+										return ["gz_longdan", "gz_tieji", "liegong"].randomGet(); //脑子不够用了
 									})()
 								)
 								.set("prompt", "选择并获得一项技能直到回合结束");
 							("step 1");
 							player.popup(result.control);
 							var map = {
-								new_rewusheng: "fz_wusheng",
-								gzpaoxiao: "fz_new_paoxiao",
-								new_longdan: "fz_new_longdan",
-								new_tieji: "fz_new_tieji",
+								gz_wusheng: "fz_wusheng",
+								gz_paoxiao: "fz_new_paoxiao",
+								gz_longdan: "fz_new_longdan",
+								gz_tieji: "fz_new_tieji",
 								liegong: "fz_liegong",
 								xinkuanggu: "fz_xinkuanggu",
 							};
@@ -14340,15 +14340,15 @@ export default () => {
 			},
 			fz_new_paoxiao: {
 				audio: true,
-				inherit: "gzpaoxiao",
+				inherit: "gz_paoxiao",
 			},
 			fz_new_tieji: {
 				audio: true,
-				inherit: "new_tieji",
+				inherit: "gz_tieji",
 			},
 			fz_wusheng: {
 				audio: true,
-				inherit: "new_rewusheng",
+				inherit: "gz_wusheng",
 			},
 			fz_liegong: {
 				audio: true,
@@ -14776,89 +14776,6 @@ export default () => {
 					},
 				},
 			},
-			new_kongcheng: {
-				group: ["new_kongcheng_gain", "new_kongcheng_got"],
-				subSkill: {
-					gain: {
-						audio: "kongcheng",
-						trigger: {
-							player: "gainBefore",
-						},
-						filter(event, player) {
-							return event.source && event.source != player && player != _status.currentPhase && !event.bySelf && player.countCards("h") == 0;
-						},
-						content() {
-							trigger.name = "addToExpansion";
-							trigger.setContent("addToExpansion");
-							trigger.gaintag = ["new_kongcheng"];
-							trigger.untrigger();
-							trigger.trigger("addToExpansionBefore");
-						},
-						sub: true,
-						forced: true,
-					},
-					got: {
-						trigger: {
-							player: "phaseDrawBegin1",
-						},
-						filter(event, player) {
-							return player.getExpansions("new_kongcheng").length > 0;
-						},
-						content() {
-							player.gain(player.getExpansions("new_kongcheng"), "draw");
-						},
-						sub: true,
-						forced: true,
-					},
-				},
-				audio: "kongcheng",
-				trigger: {
-					target: "useCardToTarget",
-				},
-				forced: true,
-				check(event, player) {
-					return get.effect(event.target, event.card, event.player, player) < 0;
-				},
-				filter(event, player) {
-					return player.countCards("h") == 0 && (event.card.name == "sha" || event.card.name == "juedou");
-				},
-				content() {
-					trigger.getParent().targets.remove(player);
-				},
-				ai: {
-					effect: {
-						target(card, player, target, current) {
-							if (target.countCards("h") == 0 && (card.name == "sha" || card.name == "juedou")) return "zeroplayertarget";
-						},
-					},
-				},
-				intro: {
-					markcount: "expansion",
-					mark(dialog, content, player) {
-						var content = player.getExpansions("new_kongcheng");
-						if (content && content.length) {
-							if (player == game.me || player.isUnderControl()) {
-								dialog.addAuto(content);
-							} else {
-								return "共有" + get.cnNumber(content.length) + "张牌";
-							}
-						}
-					},
-					content(content, player) {
-						var content = player.getExpansions("new_kongcheng");
-						if (content && content.length) {
-							if (player == game.me || player.isUnderControl()) {
-								return get.translation(content);
-							}
-							return "共有" + get.cnNumber(content.length) + "张牌";
-						}
-					},
-				},
-				onremove(player, skill) {
-					var cards = player.getExpansions(skill);
-					if (cards.length) player.loseToDiscardpile(cards);
-				},
-			},
 			new_keji: {
 				audio: "keji",
 				forced: true,
@@ -14914,186 +14831,7 @@ export default () => {
 					player.moveCard();
 				},
 			},
-			new_longdan: {
-				audio: "longdan_sha",
-				audioname2: { gz_jun_liubei: "shouyue_longdan" },
-				group: ["new_longdan_sha", "new_longdan_shan", "new_longdan_draw", "new_longdan_shamiss", "new_longdan_shanafter"],
-				subSkill: {
-					shanafter: {
-						sub: true,
-						audio: "longdan_sha",
-						audioname2: { gz_jun_liubei: "shouyue_longdan" },
-						trigger: {
-							player: "useCard",
-						},
-						//priority:1,
-						filter(event, player) {
-							return event.skill == "new_longdan_shan" && event.getParent(2).name == "sha";
-						},
-						direct: true,
-						content() {
-							"step 0";
-							player
-								.chooseTarget("是否发动【龙胆】令一名其他角色回复1点体力？", function (card, player, target) {
-									return target != _status.event.source && target != player && target.isDamaged();
-								})
-								.set("ai", function (target) {
-									return get.attitude(_status.event.player, target);
-								})
-								.set("source", trigger.getParent(2).player);
-							("step 1");
-							if (result.bool && result.targets && result.targets.length) {
-								player.logSkill("new_longdan", result.targets[0]);
-								result.targets[0].recover();
-							}
-						},
-					},
-					shamiss: {
-						sub: true,
-						audio: "longdan_sha",
-						audioname2: { gz_jun_liubei: "shouyue_longdan" },
-						trigger: {
-							player: "shaMiss",
-						},
-						direct: true,
-						filter(event, player) {
-							return event.skill == "new_longdan_sha";
-						},
-						content() {
-							"step 0";
-							player
-								.chooseTarget("是否发动【龙胆】对一名其他角色造成1点伤害？", function (card, player, target) {
-									return target != _status.event.target && target != player;
-								})
-								.set("ai", function (target) {
-									return -get.attitude(_status.event.player, target);
-								})
-								.set("target", trigger.target);
-							("step 1");
-							if (result.bool && result.targets && result.targets.length) {
-								player.logSkill("new_longdan", result.targets[0]);
-								result.targets[0].damage();
-							}
-						},
-					},
-					draw: {
-						trigger: {
-							player: ["useCard", "respond"],
-						},
-						audio: "longdan_sha",
-						audioname2: { gz_jun_liubei: "shouyue_longdan" },
-						forced: true,
-						locked: false,
-						filter(event, player) {
-							if (!get.zhu(player, "shouyue")) return false;
-							return event.skill == "new_longdan_sha" || event.skill == "new_longdan_shan";
-						},
-						content() {
-							player.draw();
-							//player.storage.fanghun2++;
-						},
-						sub: true,
-					},
-					sha: {
-						audio: "longdan_sha",
-						audioname2: { gz_jun_liubei: "shouyue_longdan" },
-						enable: ["chooseToUse", "chooseToRespond"],
-						filterCard: {
-							name: "shan",
-						},
-						viewAs: {
-							name: "sha",
-						},
-						position: "hs",
-						viewAsFilter(player) {
-							if (!player.countCards("hs", "shan")) return false;
-						},
-						prompt: "将一张闪当杀使用或打出",
-						check() {
-							return 1;
-						},
-						ai: {
-							effect: {
-								target(card, player, target, current) {
-									if (get.tag(card, "respondSha") && current < 0) return 0.6;
-								},
-							},
-							respondSha: true,
-							skillTagFilter(player) {
-								if (!player.countCards("hs", "shan")) return false;
-							},
-							order() {
-								return get.order({ name: "sha" }) + 0.1;
-							},
-						},
-						sub: true,
-					},
-					shan: {
-						audio: "longdan_sha",
-						audioname2: { gz_jun_liubei: "shouyue_longdan" },
-						enable: ["chooseToRespond", "chooseToUse"],
-						filterCard: {
-							name: "sha",
-						},
-						viewAs: {
-							name: "shan",
-						},
-						position: "hs",
-						prompt: "将一张杀当闪使用或打出",
-						check() {
-							return 1;
-						},
-						viewAsFilter(player) {
-							if (!player.countCards("hs", "sha")) return false;
-						},
-						ai: {
-							respondShan: true,
-							skillTagFilter(player) {
-								if (!player.countCards("hs", "sha")) return false;
-							},
-							effect: {
-								target(card, player, target, current) {
-									if (get.tag(card, "respondShan") && current < 0) return 0.6;
-								},
-							},
-						},
-						sub: true,
-					},
-				},
-			},
-			gzpaoxiao: {
-				audio: "paoxiao",
-				audioname2: { gz_jun_liubei: "shouyue_paoxiao" },
-				trigger: {
-					player: "useCard",
-				},
-				filter(event, player) {
-					if (_status.currentPhase != player) return false;
-					if (event.card.name != "sha") return false;
-					var history = player.getHistory("useCard", function (evt) {
-						return evt.card.name == "sha";
-					});
-					return history && history.indexOf(event) == 1;
-				},
-				forced: true,
-				preHidden: true,
-				content() {
-					player.draw();
-				},
-				mod: {
-					cardUsable(card, player, num) {
-						if (card.name == "sha") return Infinity;
-					},
-				},
-				ai: {
-					unequip: true,
-					skillTagFilter(player, tag, arg) {
-						if (!get.zhu(player, "shouyue")) return false;
-						if (arg && arg.name == "sha") return true;
-						return false;
-					},
-				},
-			},
+
 			new_kurou: {
 				audio: "rekurou",
 				enable: "phaseUse",
@@ -15288,83 +15026,6 @@ export default () => {
 						if (list.length) return "失效技能：" + get.translation(list);
 						return "无失效技能";
 					},
-				},
-			},
-			new_tieji: {
-				audio: "retieji",
-				audioname2: { gz_jun_liubei: "shouyue_tieji" },
-				trigger: {
-					player: "useCardToPlayered",
-				},
-				check(event, player) {
-					return get.attitude(player, event.target) < 0;
-				},
-				filter(event) {
-					return event.card.name == "sha";
-				},
-				logTarget: "target",
-				content() {
-					"step 0";
-					var target = trigger.target;
-					var controls = [];
-					if (get.zhu(player, "shouyue")) {
-						if (!target.isUnseen(0)) target.addTempSkill("fengyin_main");
-						if (!target.isUnseen(1)) target.addTempSkill("fengyin_vice");
-						event.goto(2);
-					}
-					if (!target.isUnseen(0) && !target.hasSkill("fengyin_main")) controls.push("主将");
-					if (!target.isUnseen(1) && !target.hasSkill("fengyin_vice")) controls.push("副将");
-					if (controls.length > 0) {
-						if (controls.length == 1) event._result = { control: controls[0] };
-						else {
-							player
-								.chooseControl(controls)
-								.set("ai", function () {
-									var choice = "主将";
-									var skills = lib.character[target.name2][3];
-									for (var i = 0; i < skills.length; i++) {
-										var info = get.info(skills[i]);
-										if (info && info.ai && info.ai.maixie) {
-											choice = "副将";
-											break;
-										}
-									}
-									return choice;
-								})
-								.set("prompt", "请选择一个武将牌，令" + get.translation(target) + "该武将牌上的非锁定技全部失效。");
-						}
-					} else event.goto(2);
-					("step 1");
-					if (result.control) {
-						player.popup(result.control, "fire");
-						var target = trigger.target;
-						if (result.control == "主将") target.addTempSkill("fengyin_main");
-						else target.addTempSkill("fengyin_vice");
-					}
-					("step 2");
-					player.judge(function () {
-						return 0;
-					});
-					("step 3");
-					var suit = get.suit(result.card);
-					var target = trigger.target;
-					var num = target.countCards("h", "shan");
-					target
-						.chooseToDiscard("请弃置一张" + get.translation(suit) + "牌，否则不能使用闪抵消此杀", "he", function (card) {
-							return get.suit(card) == _status.event.suit;
-						})
-						.set("ai", function (card) {
-							var num = _status.event.num;
-							if (num == 0) return 0;
-							if (card.name == "shan") return num > 1 ? 2 : 0;
-							return 8 - get.value(card);
-						})
-						.set("num", num)
-						.set("suit", suit);
-					("step 4");
-					if (!result.bool) {
-						trigger.getParent().directHit.add(trigger.target);
-					}
 				},
 			},
 			hmkyuanyu: {
@@ -17326,7 +16987,7 @@ export default () => {
 				unique: true,
 				forceunique: true,
 				global: "wuhujiangdaqi",
-				derivation: ["wuhujiangdaqi", "new_rewusheng", "gzpaoxiao", "new_longdan", "new_tieji", "gzliegong"],
+				derivation: ["wuhujiangdaqi", "gz_wusheng", "gz_paoxiao", "gz_longdan", "gz_tieji", "gzliegong"],
 				mark: true,
 				lordSkill: true,
 				init(player) {
@@ -19007,20 +18668,16 @@ export default () => {
 			new_qingcheng_info: "出牌阶段，你可以弃置一张黑色牌并选择一名武将牌均明置的其他角色，然后你暗置其一张武将牌。若你以此法弃置的牌为装备牌，则你可以暗置另一名武将牌均明置的角色的一张武将牌。",
 			huoshui: "祸水",
 			huoshui_info: "锁定技。你的回合内，①其他角色不能明置武将牌。②当你使用【杀】或【万箭齐发】指定目标后，若目标角色与你势力不同且有暗置武将牌，则其不能使用或出【闪】直到此牌结算结束。",
-			new_kongcheng: "空城",
-			new_kongcheng_info: "锁定技，若你没有手牌，1.当你成为【杀】或【决斗】的目标时，取消之；2.你的回合外，其他角色交给你牌后，你将这些牌置于你的武将牌上。摸牌阶段开始时，你获得武将牌上的这些牌。",
 			new_keji: "克己",
 			new_keji_info: "锁定技，若你没有在出牌阶段内使用过颜色不同的牌，则你本回合的手牌上限+4。",
 			keji_add: "克己",
 			keji_add_info: "",
 			new_mouduan: "谋断",
 			new_mouduan_info: "结束阶段，若你于本回合内使用过四种花色或三种类别的牌，则你可以移动场上的一张牌。",
-			new_longdan: "龙胆",
-			new_longdan_info: "你可以将【杀】当【闪】，【闪】当【杀】使用或打出。当你发动〖龙胆〗使用的【杀】被【闪】抵消时，你可以对另一名角色造成1点伤害；当你发动〖龙胆〗使用的【闪】抵消了【杀】时，你可以令一名其他角色回复1点体力（不能是【杀】的使用者）。",
+			
 			fz_new_longdan: "龙胆",
 			fz_new_longdan_info: "你可以将【杀】当【闪】，【闪】当【杀】使用或打出。当你发动〖龙胆〗使用的【杀】被【闪】抵消时，你可以对另一名角色造成1点伤害；当你发动〖龙胆〗使用的【闪】抵消了【杀】时，你可以令一名其他角色回复1点体力（不能是【杀】的使用者）。",
-			gzpaoxiao: "咆哮",
-			gzpaoxiao_info: "锁定技，你使用【杀】无数量限制；当你于一回合内使用第二张【杀】时，摸一张牌。",
+
 			new_kurou: "苦肉",
 			new_kurou_info: "出牌阶段限一次，你可以弃置一张牌，然后失去1点体力并摸三张牌，本回合使用【杀】的次数上限+1。",
 			kurou_effect: "苦肉",
@@ -19037,8 +18694,7 @@ export default () => {
 			fengyin_main_info: "",
 			fengyin_vice: "封印[副将]",
 			fengyin_vice_info: "",
-			new_tieji: "铁骑",
-			new_tieji_info: "当你使用【杀】指定目标后，你可以令其一张明置的武将牌上的非锁定技于本回合内失效，然后你进行判定，除非该角色弃置与结果花色相同的一张牌，否则其不能使用【闪】响应此【杀】。",
+			
 			hmkyuanyu: "远域",
 			hmkyuanyu_info: "锁定技，当你受到伤害时，若伤害来源与你的座次不相邻，防止此伤害。",
 			hmkguishu: "鬼术",

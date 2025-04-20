@@ -168,9 +168,16 @@ export default {
 		hp: 4,
 		maxHp: 4,
 		hujia: 0,
-		skills: ["longdan", "gz_xingshang"],
+		skills: ["gz_longdan"],
 	}),
-	gz_machao: ["male", "shu", 4, ["mashu", "new_tieji"]],
+	gz_machao: new Character({
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		maxHp: 4,
+		hujia: 0,
+		skills: ["mashu", "gz_tieji"],
+	}), // ["male", "shu", 4, ["mashu", "new_tieji"]]
 	gz_huangyueying: ["female", "shu", 3, ["jizhi", "qicai"], ["gzskin"]],
 	gz_huangzhong: ["male", "shu", 4, ["gzliegong"], ["gzskin"]],
 	gz_weiyan: ["male", "shu", 4, ["xinkuanggu"]],
@@ -204,4 +211,5 @@ export const intro = {
 	gz_zhangfei: "字翼德，涿郡人，燕颔虎须，豹头环眼。有诗云：“长坂坡头杀气生，横枪立马眼圆睁。一声好似轰雷震，独退曹家百万兵”。",
 	gz_zhugeliang: "字孔明，号卧龙，琅琊阳都人，蜀汉丞相。在世时被封为武乡侯，谥曰忠武侯。著有《出师表》、《诫子书》等。怀不世之才，以空城戏司马，能观星象而通鬼神。",
 	gz_zhaoyun: "字子龙，常山真定人。身长八尺，姿颜雄伟。长坂坡单骑救阿斗，先主云：“子龙一身都是胆也。”",
+	gz_machao: "字孟起，扶风茂陵人。面如冠玉，目如流星，虎体猿臂，彪腹狼腰，声雄力猛。因衣着讲究，举止非凡，故人称“锦马超”。麾铁骑，捻金枪。",
 };

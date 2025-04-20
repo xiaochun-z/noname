@@ -1402,7 +1402,7 @@ export default {
 
 	// gz_zhaoyun
 	/** @type {Skill} */
-	new_longdan: {
+	gz_longdan: {
 		audio: "longdan_sha",
 		audioname2: { gz_jun_liubei: "shouyue_longdan" },
 		group: ["gz_longdan_sha", "gz_longdan_shan", "gz_longdan_draw", "gz_longdan_shamiss", "gz_longdan_shanafter"],
@@ -1546,6 +1546,115 @@ export default {
 				},
 				sub: true,
 			},
+		},
+	},
+
+	// gz_machao
+	/** @type {Skill} */
+	gz_tieji: {
+		audio: "retieji",
+		audioname2: {
+			gz_jun_liubei: "shouyue_tieji",
+		},
+		trigger: {
+			player: "useCardToPlayered",
+		},
+		check(event, player) {
+			return get.attitude(player, event.target) < 0;
+		},
+		filter(event) {
+			return event.card.name == "sha";
+		},
+		logTarget: "target",
+		async content(_event, trigger, player) {
+			const { target } = trigger;
+
+			/** @type {string[]} */
+			const addingSkills = [];
+			const targetMainShowing = !target.isUnseen(0);
+			const targetViceShowing = !target.isUnseen(1);
+			if (get.zhu(player, "shouyue")) {
+				if (targetMainShowing) {
+					addingSkills.push("fengyin_main");
+				}
+				if (targetViceShowing) {
+					addingSkills.push("fengyin_vice");
+				}
+			} else {
+				const controls = [];
+				if (targetMainShowing && !target.hasSkill("fengyin_main")) {
+					controls.push("主将");
+				}
+				if (targetViceShowing && !target.hasSkill("fengyin_vice")) {
+					controls.push("副将");
+				}
+
+				/** @type {?Partial<Result>} */
+				let result = null;
+
+				if (controls.length == 1) {
+					result = { control: controls[0] };
+				} else if (controls.length > 1) {
+					result = await player
+						.chooseControl(controls)
+						.set("ai", () => {
+							let choice = "主将";
+							const skills = lib.character[target.name2][3];
+							for (const skill of skills) {
+								const info = get.info(skill);
+								if (info?.ai?.maixie) {
+									choice = "副将";
+									break;
+								}
+							}
+							return choice;
+						})
+						.set("prompt", `请选择一个武将牌，令${get.translation(target)}该武将牌上的非锁定技全部失效。`)
+						.forResult();
+				}
+
+				if (result?.control) {
+					const map = {
+						"主将": "fengyin_main",
+						"副将": "fengyin_vice",
+					}
+
+					addingSkills.push(map[result.control]);
+				}
+			}
+
+			addingSkills.forEach(skill => {
+				target.addTempSkill(skill);
+			});
+
+			const result = await player.judge(() => 0).forResult();
+
+			// @ts-expect-error 类型系统未来可期
+			const suit = get.suit(result.card);
+			const num = target.countCards("h", "shan");
+			const result2 = await target
+				.chooseToDiscard("请弃置一张" + get.translation(suit) + "牌，否则不能使用闪抵消此杀", "he", function (card) {
+					// @ts-expect-error 类型系统未来可期
+					return get.suit(card) == get.event().suit;
+				})
+				.set("ai", card => {
+					const num = get.event().num;
+					if (num == 0) {
+						return 0;
+					}
+					if (card.name == "shan") {
+						return num > 1 ? 2 : 0;
+					}
+					return 8 - get.value(card);
+				})
+				.set("num", num)
+				.set("suit", suit)
+				.forResult();
+
+			if (!result2.bool) {
+				// @ts-expect-error 类型系统未来可期
+				trigger.getParent().directHit.add(trigger.target);
+			}
 		},
 	},
 };

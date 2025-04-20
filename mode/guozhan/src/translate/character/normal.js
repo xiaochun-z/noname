@@ -20,4 +20,5 @@ export default {
 	gz_zhangfei: "张飞",
 	gz_zhugeliang: "诸葛亮",
 	gz_zhaoyun: "赵云",
+	gz_machao: "马超",
 };
