@@ -21,4 +21,8 @@ export default {
 	"#gz_zhugeliang:die": "将星陨落，天命难违……",
 	"#gz_zhaoyun:die": "这，就是失败的滋味吗？",
 	"#gz_machao:die": "（马蹄声远去……）",
+	"#gz_huangyueying:die": "亮……",
+	"#gz_huangzhong:die": "不得不服老啦~",
+	"#gz_weiyan:die": "谁敢杀我？！呃啊……",
+	"#gz_pangtong:die": "看来我命中注定将丧命于此……",
 };

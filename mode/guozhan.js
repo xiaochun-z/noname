@@ -946,29 +946,7 @@ export default () => {
 				},
 			},
 			//甘夫人
-			gzshushen_new: {
-				audio: "shushen",
-				trigger: { player: "recoverEnd" },
-				getIndex: event => event.num || 1,
-				preHidden: true,
-				async cost(event, trigger, player) {
-					event.result = await player
-						.chooseTarget(get.prompt2("gzshushen_new"), lib.filter.notMe)
-						.set("ai", target => {
-							const player = get.player();
-							return get.effect(target, { name: "draw" }, player, player) * (1 + !Boolean(target.countCards("h")));
-						})
-						.setHiddenSkill("gzshushen_new")
-						.forResult();
-				},
-				content() {
-					event.targets[0].draw(Boolean(event.targets[0].countCards("h")) ? 1 : 2);
-				},
-				ai: {
-					threaten: 0.8,
-					expose: 0.1,
-				},
-			},
+			
 			//徐盛
 			gzyicheng_new: {
 				audio: "yicheng",
@@ -8516,66 +8494,7 @@ export default () => {
 					},
 				},
 			},
-			//黄忠
-			gzliegong: {
-				audio: "liegong",
-				audioname2: { gz_jun_liubei: "shouyue_liegong" },
-				locked: false,
-				mod: {
-					targetInRange(card, player, target) {
-						if (card.name == "sha" && target.countCards("h") < player.countCards("h")) return true;
-					},
-					attackRange(player, distance) {
-						if (get.zhu(player, "shouyue")) return distance + 1;
-					},
-				},
-				trigger: { player: "useCardToPlayered" },
-				filter(event, player) {
-					return event.card.name == "sha" && player.hp <= event.target.hp;
-				},
-				direct: true,
-				preHidden: true,
-				content() {
-					"step 0";
-					var str = get.translation(trigger.target),
-						card = get.translation(trigger.card);
-					player
-						.chooseControl("cancel2")
-						.set("choiceList", ["令" + card + "对" + str + "的伤害+1", "令" + str + "不能响应" + card])
-						.set("prompt", get.prompt("gzliegong", trigger.target))
-						.setHiddenSkill("gzliegong")
-						.set("ai", function () {
-							var player = _status.event.player,
-								target = _status.event.getTrigger().target;
-							if (get.attitude(player, target) > 0) return 2;
-							return target.mayHaveShan(
-								player,
-								"use",
-								target.getCards("h", i => {
-									return i.hasGaintag("sha_notshan");
-								})
-							)
-								? 1
-								: 0;
-						});
-					("step 1");
-					if (result.control != "cancel2") {
-						var target = trigger.target;
-						player.logSkill("gzliegong", target);
-						if (result.index == 1) {
-							game.log(trigger.card, "不可被", target, "响应");
-							trigger.directHit.add(target);
-						} else {
-							game.log(trigger.card, "对", target, "的伤害+1");
-							var map = trigger.getParent().customArgs,
-								id = target.playerid;
-							if (!map[id]) map[id] = {};
-							if (!map[id].extraDamage) map[id].extraDamage = 0;
-							map[id].extraDamage++;
-						}
-					}
-				},
-			},
+			
 			//潘凤
 			gzkuangfu: {
 				audio: "kuangfu",
@@ -16987,7 +16906,7 @@ export default () => {
 				unique: true,
 				forceunique: true,
 				global: "wuhujiangdaqi",
-				derivation: ["wuhujiangdaqi", "gz_wusheng", "gz_paoxiao", "gz_longdan", "gz_tieji", "gzliegong"],
+				derivation: ["wuhujiangdaqi", "gz_wusheng", "gz_paoxiao", "gz_longdan", "gz_tieji", "gz_liegong"],
 				mark: true,
 				lordSkill: true,
 				init(player) {
@@ -18429,8 +18348,7 @@ export default () => {
 			gzwushuang_info: "锁定技。①当你使用【杀】指定一名角色为目标后，其需使用两张【闪】才能抵消；②当你使用【决斗】指定其他角色为目标后，或成为其他角色使用【决斗】的目标后，其每次响应需打出两张【杀】。③当你使用非转化的【决斗】选择目标后，你可为此【决斗】增加两个目标。",
 			gzkuangfu: "狂斧",
 			gzkuangfu_info: "出牌阶段限一次。当你使用【杀】指定目标后，你可获得目标角色装备区内的一张牌。然后若此【杀】未造成伤害，则你弃置两张手牌。",
-			gzliegong: "烈弓",
-			gzliegong_info: "①你对手牌数不大于你的角色使用【杀】不受距离关系的限制。②当你使用【杀】指定目标后，若其体力值不小于你，则你可以选择一项：⒈令此【杀】对其的伤害值基数+1。⒉令其不可响应此【杀】。",
+		
 			gzhongyan: "红颜",
 			gzhongyan_info: "锁定技。①你区域内的黑桃牌和黑桃判定牌的花色视为红桃。②若你的装备区内有红桃牌，则你的手牌上限+1。",
 			gztianxiang: "天香",
@@ -19151,8 +19069,7 @@ export default () => {
 			gzsidi: "司敌",
 			gzsidi_info: "①一名与你势力相同的角色受到伤害后，你可以将一张与武将牌上的“驭”类别均不同的一张牌称为“驭”置于武将牌上。②与你势力不同的角色的回合开始时，你可以移去至多三张“驭”，然后选择执行等量项：⒈选择移去“驭”中的一个类别，令其本回合无法使用此类别的牌。⒉选择其一个已明置武将牌上的一个技能，令此技能于本回合失效。⒊选择一名与你势力相同的已受伤其他角色，令其回复1点体力。",
 			gz_ol_lisu: "李肃",
-			gzshushen_new: "淑慎",
-			gzshushen_new_info: "当你回复1点体力后，你可令一名其他角色摸一张牌（若其没有手牌则改为摸两张牌）。",
+			
 			gzyicheng_new: "疑城",
 			gzyicheng_new_info: "与你势力相同的角色使用【杀】指定第一个目标后或成为【杀】的目标后，你可以令其摸一张牌，然后其弃置一张牌。",
 			gzduoshi: "度势",

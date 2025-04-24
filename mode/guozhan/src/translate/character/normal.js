@@ -21,4 +21,8 @@ export default {
 	gz_zhugeliang: "诸葛亮",
 	gz_zhaoyun: "赵云",
 	gz_machao: "马超",
+	gz_huangyueying: "黄月英",
+	gz_huangzhong: "黄忠",
+	gz_weiyan: "魏延",
+	gz_pangtong: "庞统",
 };

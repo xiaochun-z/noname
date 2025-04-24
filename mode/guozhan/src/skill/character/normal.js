@@ -1615,9 +1615,9 @@ export default {
 
 				if (result?.control) {
 					const map = {
-						"主将": "fengyin_main",
-						"副将": "fengyin_vice",
-					}
+						主将: "fengyin_main",
+						副将: "fengyin_vice",
+					};
 
 					addingSkills.push(map[result.control]);
 				}
@@ -1655,6 +1655,303 @@ export default {
 				// @ts-expect-error 类型系统未来可期
 				trigger.getParent().directHit.add(trigger.target);
 			}
+		},
+	},
+
+	// gz_huangzhong
+	/** @type {Skill} */
+	gz_liegong: {
+		audio: "liegong",
+		audioname2: {
+			gz_jun_liubei: "shouyue_liegong",
+		},
+		trigger: {
+			player: "useCardToPlayered",
+		},
+		locked: false,
+		filter(event, player) {
+			return event.card.name == "sha" && player.hp <= event.target.hp;
+		},
+		preHidden: true,
+		async cost(event, trigger, player) {
+			const target = get.translation(trigger.target);
+			const card = get.translation(trigger.card);
+
+			const next = player.chooseControl("cancel2");
+
+			next.set("prompt", get.prompt("gz_liegong", trigger.target));
+			next.set("choiceList", [`令${card}对${target}的伤害+1`, `令${target}不能响应${card}`]);
+			next.set("ai", check);
+			next.setHiddenSkill("gz_liegong");
+
+			const result = await next.forResult();
+
+			event.result = {
+				bool: result.control != "cancel2",
+				targets: [trigger.target],
+				cost_data: {
+					index: result.index,
+					control: result.control,
+				},
+			};
+
+			return;
+
+			function check() {
+				const player = get.player();
+				const target = get.event().getTrigger().target;
+
+				if (get.attitude(player, target) > 0) {
+					return 2;
+				}
+
+				const cards = target.getCards("h", card => card.hasGaintag("sha_notshan"));
+				return target.mayHaveShan(player, "use", cards) ? 1 : 0;
+			}
+		},
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			const [target] = event.targets;
+
+			const { index } = event.cost_data;
+
+			if (index == 1) {
+				game.log(trigger.card, "不可被", target, "响应");
+				// @ts-expect-error 类型系统未来可期
+				trigger.directHit.add(target);
+			} else {
+				game.log(trigger.card, "对", target, "的伤害+1");
+				// @ts-expect-error 类型系统未来可期
+				const map = trigger.getParent()?.customArgs;
+				const id = target.playerid;
+				map[id] ??= {};
+				map[id].extraDamage ??= 0;
+				map[id].extraDamage++;
+			}
+		},
+		mod: {
+			targetInRange(card, player, target) {
+				if (card.name == "sha" && target.countCards("h") < player.countCards("h")) return true;
+			},
+			attackRange(player, distance) {
+				if (get.zhu(player, "shouyue")) return distance + 1;
+			},
+		},
+	},
+
+	// gz_weiyan
+	/** @type {Skill} */
+	gz_kuanggu: {
+		audio: "kuanggu",
+		audioname: ["re_weiyan", "ol_weiyan"],
+		trigger: {
+			source: "damageSource",
+		},
+		filter(event, _player) {
+			// @ts-expect-error 类型系统未来可期
+			return event.checkKuanggu && event.num > 0;
+		},
+		getIndex(event, _player, _triggername) {
+			return event.num;
+		},
+		preHidden: true,
+		async cost(event, _trigger, player) {
+			let choice;
+			if (
+				player.isDamaged() &&
+				get.recoverEffect(player) > 0 &&
+				player.countCards("hs", function (card) {
+					return card.name == "sha" && player.hasValueTarget(card);
+				}) >= player.getCardUsable("sha", void 0)
+			) {
+				choice = "recover_hp";
+			} else {
+				choice = "draw_card";
+			}
+			const next = player.chooseDrawRecover("###" + get.prompt("xinkuanggu") + "###摸一张牌或回复1点体力");
+			next.set("choice", choice);
+			next.set("ai", function () {
+				// @ts-expect-error 类型系统未来可期
+				return _status.event.getParent().choice;
+			});
+			next.setHiddenSkill("xinkuanggu");
+			const control = await next.forResultControl();
+			if (control == "cancel2") return;
+			event.result = { bool: true };
+		},
+		async content(_event, _trigger, _player) {},
+	},
+
+	// gz_pangtong
+	/** @type {Skill} */
+	gz_lianhuan: {
+		audio: "lianhuan",
+		hiddenCard(player, name) {
+			return name == "tiesuo" && player.hasCard(card => get.suit(card) == "club", "sh");
+		},
+		enable: "chooseToUse",
+		filter(event, player) {
+			if (!player.hasCard(card => get.suit(card) == "club", "sh")) return false;
+			return event.type == "phase" || event.filterCard(get.autoViewAs({ name: "tiesuo" }, "unsure"), player, event);
+		},
+		position: "hs",
+		filterCard(card, player, event) {
+			if (!event) event = _status.event;
+			if (get.suit(card) != "club") return false;
+			if (event.type == "phase" && get.position(card) != "s" && player.canRecast(card)) {
+				return true;
+			} else {
+				// @ts-expect-error 类型系统未来可期
+				if (game.checkMod(card, player, "unchanged", "cardEnabled2", player) === false) return false;
+				const cardx = get.autoViewAs({ name: "tiesuo" }, [card]);
+				return event._backup.filterCard(cardx, player, event);
+			}
+		},
+		filterTarget(fuck, player, target) {
+			const card = ui.selected.cards[0];
+			const event = get.event();
+			const backup = event._backup;
+			// @ts-expect-error 类型系统未来可期
+			if (!card || game.checkMod(card, player, "unchanged", "cardEnabled2", player) === false) return false;
+			const cardx = get.autoViewAs({ name: "tiesuo" }, [card]);
+			return backup.filterCard(cardx, player, event) && backup.filterTarget(cardx, player, target);
+		},
+		selectTarget() {
+			const card = ui.selected.cards[0];
+			const event = get.event();
+			const player = event.player;
+			const backup = event._backup;
+			let recast = false;
+			let use = false;
+			const cardx = get.autoViewAs({ name: "tiesuo" }, [card]);
+			if (event.type == "phase" && player.canRecast(card)) recast = true;
+			// @ts-expect-error 类型系统未来可期
+			if (card && game.checkMod(card, player, "unchanged", "cardEnabled2", player) !== false) {
+				if (backup.filterCard(cardx, player, event)) use = true;
+			}
+			if (!use) return [0, 0];
+			else {
+				const select = backup.selectTarget(cardx, player);
+				if (recast && select[0] > 0) select[0] = 0;
+				return select;
+			}
+		},
+		filterOk() {
+			const card = ui.selected.cards[0];
+			const event = get.event();
+			const player = event.player;
+			const backup = event._backup;
+			const selected = ui.selected.targets.length;
+			let recast = false,
+				use = false;
+			const cardx = get.autoViewAs({ name: "tiesuo" }, [card]);
+			if (event.type == "phase" && player.canRecast(card)) recast = true;
+			// @ts-expect-error 类型系统未来可期
+			if (card && game.checkMod(card, player, "unchanged", "cardEnabled2", player) !== false) {
+				if (backup.filterCard(cardx, player, event)) use = true;
+			}
+			if (recast && selected == 0) {
+				return true;
+			} else if (use) {
+				const select = backup.selectTarget(cardx, player);
+				if (select[0] <= -1) return true;
+				return selected >= select[0] && selected <= select[1];
+			}
+		},
+		discard: false,
+		lose: false,
+		delay: false,
+		async precontent(event, trigger, player) {
+			const result = event.result;
+			// @ts-expect-error 类型系统未来可期
+			if (result.targets.length > 0) result.card = get.autoViewAs({ name: "tiesuo" }, result.cards);
+		},
+		async content(event, trigger, player) {
+			await player.recast(event.cards);
+		},
+	},
+	/** @type {Skill} */
+	gz_niepan: {
+		audio: "niepan",
+		audioname2: {
+			sb_pangtong: "sbniepan",
+		},
+		unique: true,
+		enable: "chooseToUse",
+		mark: true,
+		skillAnimation: true,
+		limited: true,
+		animationColor: "orange",
+		init(player) {
+			player.storage.gz_niepan = false;
+		},
+		filter(event, player) {
+			if (player.storage.gz_niepan) return false;
+			if (event.type == "dying") {
+				// @ts-expect-error 类型系统未来可期
+				if (player != event.dying) return false;
+				return true;
+			}
+			return false;
+		},
+		async content(event, trigger, player) {
+			player.awakenSkill("gz_niepan", void 0);
+			player.storage.gz_niepan = true;
+			await player.discard(player.getCards("hej"));
+			await player.link(false);
+			await player.turnOver(false);
+			await player.draw(3);
+			if (player.hp < 3) {
+				await player.recover(3 - player.hp);
+			}
+		},
+		ai: {
+			order: 1,
+			skillTagFilter(player, arg, target) {
+				if (player != target || player.storage.oldniepan) return false;
+			},
+			save: true,
+			result: {
+				player(player) {
+					if (player.hp <= 0) return 10;
+					if (player.hp <= 2 && player.countCards("he") <= 1) return 10;
+					return 0;
+				},
+			},
+			threaten(player, target) {
+				if (!target.storage.oldniepan) return 0.6;
+			},
+		},
+		intro: {
+			content: "limited",
+		},
+	},
+
+	// gz_ganfuren
+	/** @type {Skill} */
+	gz_shushen: {
+		audio: "shushen",
+		trigger: {
+			player: "recoverEnd",
+		},
+		getIndex: event => event.num || 1,
+		preHidden: true,
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2("gzshushen_new"), lib.filter.notMe)
+				.set("ai", target => {
+					const player = get.player();
+					return get.effect(target, { name: "draw" }, player, player) * (1 + !Boolean(target.countCards("h")));
+				})
+				.setHiddenSkill("gzshushen_new")
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			event.targets[0].draw(Boolean(event.targets[0].countCards("h")) ? 1 : 2);
+		},
+		ai: {
+			threaten: 0.8,
+			expose: 0.1,
 		},
 	},
 };
