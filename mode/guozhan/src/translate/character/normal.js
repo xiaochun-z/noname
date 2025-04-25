@@ -26,3 +26,5 @@ export default {
 	gz_weiyan: "魏延",
 	gz_pangtong: "庞统",
 };
+
+export const sort = ["guozhan_default", "国战标准"];

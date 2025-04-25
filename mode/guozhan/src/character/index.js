@@ -135,3 +135,4 @@ export const pack = {
 };
 
 export { default as intro } from "./intro.js";
+export { default as sort } from "./sort.js";
