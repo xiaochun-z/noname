@@ -1,8 +1,12 @@
-import { lib, game, ui, get, ai, _status } from "../../../../../noname.js";
+import { lib, game, ui, get as _get, ai, _status } from "../../../../../noname.js";
 import { GameEvent, Player, Card } from "../../../../../noname/library/element/index.js";
 import { cast } from "../../../../../noname/util/index.js";
+import { GetGuozhan } from "../../patch/get.js";
 import { PlayerGuozhan } from "../../patch/player.js";
 import { broadcastAll } from "../../patch/game.js";
+
+/** @type {GetGuozhan}  */
+const get = cast(_get);
 
 export default {
 	// gz_caocao
@@ -2491,7 +2495,7 @@ export default {
 					player.judge().set("callback", get.info("gz_shuangxiong").subSkill?.effect.callback);
 					trigger.changeToZero();
 				},
-				async  callback(event, trigger, player) {
+				async callback(event, trigger, player) {
 					player.addTempSkill("shuangxiong2");
 					player.markAuto("shuangxiong2", [event.judgeResult.color]);
 				},
@@ -2502,6 +2506,143 @@ export default {
 				filter(event, player) {
 					// @ts-expect-error 类型系统未来可期
 					return _status.currentPhase == player && get.info("tiandu").filter(event, player);
+				},
+			},
+		},
+	},
+
+	// gz_jiaxu
+	/** @type {Skill} */
+	gz_weimu: {
+		audio: "weimu",
+		trigger: {
+			target: "useCardToTarget",
+			player: "addJudgeBefore",
+		},
+		forced: true,
+		priority: 15,
+		preHidden: true,
+		check(event, player) {
+			return event.name == "addJudge" || (event.card.name != "chiling" && get.effect(event.target, event.card, event.player, player) < 0);
+		},
+		filter(event, player) {
+			if (event.name == "addJudge") return get.color(event.card) == "black";
+			return get.type(event.card, null, false) == "trick" && get.color(event.card) == "black";
+		},
+		async content(event, trigger, player) {
+			if (trigger.name == "addJudge") {
+				trigger.cancel(undefined, undefined, undefined);
+				const owner = get.owner(trigger.card);
+				if (owner?.getCards("hej").includes(trigger.card)) {
+					await owner.lose(trigger.card, ui.discardPile);
+				} else {
+					await game.cardsDiscard(trigger.card);
+				}
+				game.log(trigger.card, "进入了弃牌堆");
+			} else {
+				// @ts-expect-error 类型系统未来可期
+				trigger.getParent()?.targets.remove(player);
+			}
+		},
+		ai: {
+			effect: {
+				target(card, player, target, current) {
+					if (get.type(card, "trick") == "trick" && get.color(card) == "black") return "zeroplayertarget";
+				},
+			},
+		},
+	},
+
+	// gz_caiwenji
+	/** @type {Skill} */
+	gz_duanchang: {
+		audio: "duanchang",
+		trigger: {
+			player: "die",
+		},
+		forced: true,
+		forceDie: true,
+		filter(event, player) {
+			/** @type {PlayerGuozhan} */
+			const source = cast(event.source);
+			return event.source && event.source.isIn() && event.source != player && (source.hasMainCharacter() || source.hasViceCharacter());
+		},
+		logTarget: "source",
+		async content(event, trigger, player) {
+			/** @type {PlayerGuozhan} */
+			const source = cast(trigger.source);
+
+			const main = source.hasMainCharacter();
+			const vice = source.hasViceCharacter();
+
+			/** @type {Partial<Result>} */
+			let result;
+			if (!vice) {
+				result = { control: "主将" };
+			} else if (!main) {
+				result = { control: "副将" };
+			} else {
+				result = await player
+					// @ts-expect-error 类型系统未来可期
+					.chooseControl("主将", "副将", () => get.event().choice)
+					.set("prompt", "令" + get.translation(trigger.source) + "失去一张武将牌的所有技能")
+					.set("forceDie", true)
+					.set(
+						"choice",
+						(() => {
+							let rank = get.guozhanRank(trigger.source.name1, cast(source)) - get.guozhanRank(trigger.source.name2, cast(source));
+							if (rank == 0) {
+								rank = Math.random() > 0.5 ? 1 : -1;
+							}
+							return rank * get.attitude(player, trigger.source) > 0 ? "副将" : "主将";
+						})()
+					)
+					.forResult();
+			}
+
+			let skills;
+			if (result.control == "主将") {
+				trigger.source.showCharacter(0);
+				broadcastAll(player => {
+					player.node.avatar.classList.add("disabled");
+				}, trigger.source);
+				skills = lib.character[trigger.source.name][3];
+				game.log(trigger.source, "失去了主将技能");
+			} else {
+				trigger.source.showCharacter(1);
+				broadcastAll(player => {
+					player.node.avatar2.classList.add("disabled");
+				}, trigger.source);
+				skills = lib.character[trigger.source.name2][3];
+				game.log(trigger.source, "失去了副将技能");
+			}
+			const list = [];
+			for (let i = 0; i < skills.length; i++) {
+				list.add(skills[i]);
+				const info = lib.skill[skills[i]];
+				if (info.charlotte) {
+					list.splice(i--);
+					continue;
+				}
+				if (typeof info.derivation == "string") {
+					list.add(info.derivation);
+				} else if (Array.isArray(info.derivation)) {
+					list.addArray(info.derivation);
+				}
+			}
+			trigger.source.removeSkill(list);
+			trigger.source.syncSkills();
+			player.line(trigger.source, "green");
+		},
+		ai: {
+			threaten(player, target) {
+				if (target.hp == 1) return 0.2;
+				return 1.5;
+			},
+			effect: {
+				target(card, player, target, current) {
+					if (!target.hasFriend()) return;
+					if (target.hp <= 1 && get.tag(card, "damage")) return [1, 0, 0, -2];
 				},
 			},
 		},

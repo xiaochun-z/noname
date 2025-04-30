@@ -426,7 +426,7 @@ export default {
 		hp: 3,
 		maxHp: 3,
 		hujia: 0,
-		skills: ["wansha", "luanwu", "gzweimu"],
+		skills: ["wansha", "luanwu", "gz_weimu"],
 		hasSkinInGuozhan: true,
 	}),
 	gz_pangde: new Character({
@@ -451,7 +451,7 @@ export default {
 		hp: 3,
 		maxHp: 3,
 		hujia: 0,
-		skills: ["beige", "gzduanchang"],
+		skills: ["beige", "gz_duanchang"],
 	}),
 	gz_mateng: new Character({
 		sex: "male",

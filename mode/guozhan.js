@@ -3444,10 +3444,10 @@ export default () => {
 				},
 				check(event, player) {
 					if (event.player == player) {
-						if (event.targets.some(i => i.hasSkill("gzduanchang"))) return true;
+						if (event.targets.some(i => i.hasSkill("gz_duanchang"))) return true;
 						return !event.targets.some(i => i.getHp() == 1 && !i.hasSkill("gzbuqu") && i.isEnemyOf(player));
 					}
-					if (event.targets.some(i => i.hasSkill("gzduanchang"))) return false;
+					if (event.targets.some(i => i.hasSkill("gz_duanchang"))) return false;
 					return event.targets.some(i => i.getHp() == 1 && !i.hasSkill("gzbuqu") && i.isEnemyOf(player));
 				},
 				usable: 1,
@@ -17142,115 +17142,7 @@ export default () => {
 					}
 				},
 			},
-			gzduanchang: {
-				audio: "duanchang",
-				trigger: { player: "die" },
-				forced: true,
-				forceDie: true,
-				filter(event, player) {
-					return event.source && event.source.isIn() && event.source != player && (event.source.hasMainCharacter() || event.source.hasViceCharacter());
-				},
-				content() {
-					"step 0";
-					if (!trigger.source.hasViceCharacter()) {
-						event._result = { control: "主将" };
-					} else if (!trigger.source.hasMainCharacter()) {
-						event._result = { control: "副将" };
-					} else {
-						player
-							.chooseControl("主将", "副将", function () {
-								return _status.event.choice;
-							})
-							.set("prompt", "令" + get.translation(trigger.source) + "失去一张武将牌的所有技能")
-							.set("forceDie", true)
-							.set(
-								"choice",
-								(function () {
-									var rank = get.guozhanRank(trigger.source.name1, trigger.source) - get.guozhanRank(trigger.source.name2, trigger.source);
-									if (rank == 0) rank = Math.random() > 0.5 ? 1 : -1;
-									return rank * get.attitude(player, trigger.source) > 0 ? "副将" : "主将";
-								})()
-							);
-					}
-					("step 1");
-					var skills;
-					if (result.control == "主将") {
-						trigger.source.showCharacter(0);
-						game.broadcastAll(function (player) {
-							player.node.avatar.classList.add("disabled");
-						}, trigger.source);
-						skills = lib.character[trigger.source.name][3];
-						game.log(trigger.source, "失去了主将技能");
-					} else {
-						trigger.source.showCharacter(1);
-						game.broadcastAll(function (player) {
-							player.node.avatar2.classList.add("disabled");
-						}, trigger.source);
-						skills = lib.character[trigger.source.name2][3];
-						game.log(trigger.source, "失去了副将技能");
-					}
-					var list = [];
-					for (var i = 0; i < skills.length; i++) {
-						list.add(skills[i]);
-						var info = lib.skill[skills[i]];
-						if (info.charlotte) {
-							list.splice(i--);
-							continue;
-						}
-						if (typeof info.derivation == "string") {
-							list.add(info.derivation);
-						} else if (Array.isArray(info.derivation)) {
-							list.addArray(info.derivation);
-						}
-					}
-					trigger.source.removeSkill(list);
-					trigger.source.syncSkills();
-					player.line(trigger.source, "green");
-				},
-				logTarget: "source",
-				ai: {
-					threaten(player, target) {
-						if (target.hp == 1) return 0.2;
-						return 1.5;
-					},
-					effect: {
-						target(card, player, target, current) {
-							if (!target.hasFriend()) return;
-							if (target.hp <= 1 && get.tag(card, "damage")) return [1, 0, 0, -2];
-						},
-					},
-				},
-			},
-			gzweimu: {
-				audio: "weimu",
-				trigger: { target: "useCardToTarget", player: "addJudgeBefore" },
-				forced: true,
-				priority: 15,
-				preHidden: true,
-				check(event, player) {
-					return event.name == "addJudge" || (event.card.name != "chiling" && get.effect(event.target, event.card, event.player, player) < 0);
-				},
-				filter(event, player) {
-					if (event.name == "addJudge") return get.color(event.card) == "black";
-					return get.type(event.card, null, false) == "trick" && get.color(event.card) == "black";
-				},
-				content() {
-					if (trigger.name == "addJudge") {
-						trigger.cancel();
-						var owner = get.owner(trigger.card);
-						if (owner && owner.getCards("hej").includes(trigger.card)) owner.lose(trigger.card, ui.discardPile);
-						else game.cardsDiscard(trigger.card);
-						game.log(trigger.card, "进入了弃牌堆");
-					} else trigger.getParent().targets.remove(player);
-				},
-				ai: {
-					effect: {
-						target(card, player, target, current) {
-							if (get.type(card, "trick") == "trick" && get.color(card) == "black") return "zeroplayertarget";
-						},
-					},
-				},
-			},
+			
 			
 			gzkongcheng: {
 				audio: "kongcheng",
@@ -18220,10 +18112,8 @@ export default () => {
 			gz_shibing2ye: "士兵",
 			gz_shibing1key: "键兵",
 			gz_shibing2key: "键兵",
-			gzduanchang: "断肠",
-			gzduanchang_info: "锁定技，当你死亡时，你令杀死你的角色失去一张武将牌上的所有技能。",
-			gzweimu: "帷幕",
-			gzweimu_info: "锁定技，当你成为黑色普通锦囊牌的目标时，或有黑色延时锦囊牌进入你的判定区时，取消之。",
+			
+			
 			
 			gzkongcheng: "空城",
 			gzkongcheng_info: "锁定技，当你成为【杀】或【决斗】的目标时，若你没有手牌，则取消之。",
