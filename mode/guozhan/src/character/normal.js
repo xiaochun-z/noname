@@ -502,6 +502,34 @@ export default {
 		hujia: 0,
 		skills: ["huoshui", "new_qingcheng"],
 	}),
+	gz_zhonghui: new Character({
+		sex: "male",
+		group: "ye",
+		hp: 4,
+		maxHp: 4,
+		hujia: 0,
+		skills: ["fakequanji", "fakepaiyi"],
+		hasSkinInGuozhan: true,
+	}),
+	gz_shimazhao: new Character({
+		sex: "male",
+		group: "ye",
+		hp: 3,
+		maxHp: 3,
+		hujia: 0,
+		skills: ["gzzhaoxin", "gzsuzhi"],
+		hasSkinInGuozhan: true,
+	}),
+	gz_gongsunyuan: new Character({
+		sex: "male",
+		group: "ye",
+		hp: 4,
+		maxHp: 4,
+		hujia: 0,
+		skills: ["gzhuaiyi", "gzzisui"],
+		hasSkinInGuozhan: true,
+	}),
+
 };
 
 export const intro = {
