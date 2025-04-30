@@ -5,6 +5,7 @@ import { pack, intro, sort } from "./guozhan/src/character/index.js";
 import * as info from "./guozhan/src/info/index.js";
 import skill from "./guozhan/src/skill/index.js";
 import translate from "./guozhan/src/translate/index.js";
+import voices from "./guozhan/src/voices/index.js";
 import card from "./guozhan/src/card/index.js";
 import help from "./guozhan/src/help/index.js";
 
@@ -92,8 +93,6 @@ export default () => {
 				gz_ol_lisu: ["male", "qun", 3, ["qiaoyan", "xianzhu"]],
 
 				gz_yuji: ["male", "qun", 3, ["qianhuan"], ["gzskin"]],
-
-				
 
 				gz_dengai: ["male", "wei", 4, ["tuntian", "ziliang", "gzjixi"], ["gzskin"]],
 				gz_caohong: ["male", "wei", 4, ["fakehuyuan", "heyi"], ["gzskin"]],
@@ -917,7 +916,7 @@ export default () => {
 				},
 			},
 			//甘夫人
-			
+
 			//徐盛
 			gzyicheng_new: {
 				audio: "yicheng",
@@ -936,7 +935,7 @@ export default () => {
 				},
 			},
 			//陆逊
-			
+
 			//臧霸
 			gzhengjiang: {
 				audio: "hengjiang",
@@ -1042,7 +1041,7 @@ export default () => {
 				},
 			},
 			//官盗2023
-			
+
 			fakeduoshi: {
 				audio: "duoshi",
 				global: "fakeduoshi_global",
@@ -1139,8 +1138,7 @@ export default () => {
 					},
 				},
 			},
-			
-			
+
 			fakeyicheng: {
 				audio: "yicheng",
 				inherit: "yicheng",
@@ -8241,55 +8239,11 @@ export default () => {
 				},
 			},
 			//小乔
-			
-			
-			
+
 			//潘凤
-			gzkuangfu: {
-				audio: "kuangfu",
-				trigger: { player: "useCardToPlayered" },
-				preHidden: true,
-				logTarget: "target",
-				filter(event, player) {
-					return event.card.name == "sha" && player.isPhaseUsing() && !player.hasSkill("gzkuangfu_extra") && event.target.countGainableCards(player, "e") > 0;
-				},
-				check(event, player) {
-					if (
-						get.attitude(player, event.target) > 0 ||
-						!event.target.hasCard(function (card) {
-							return lib.filter.canBeGained(card, player, event.target) && get.value(card, event.target) > 0;
-						}, "e")
-					)
-						return false;
-					return true;
-				},
-				content() {
-					trigger.getParent()._gzkuangfued = true;
-					player.gainPlayerCard(trigger.target, "e", true);
-					player.addTempSkill("gzkuangfu_extra", "phaseUseAfter");
-				},
-				subSkill: {
-					extra: {
-						trigger: { player: "useCardAfter" },
-						charlotte: true,
-						forced: true,
-						filter(event, player) {
-							return (
-								event._gzkuangfued &&
-								!player.hasHistory("sourceDamage", function (evt) {
-									return evt.card && event.card;
-								}) &&
-								player.countCards("h") > 0
-							);
-						},
-						content() {
-							player.chooseToDiscard("h", 2, true);
-						},
-					},
-				},
-			},
+
 			//吕布
-			
+
 			//吕玲绮
 			gzshenwei: {
 				audio: "llqshenwei",
@@ -9095,69 +9049,8 @@ export default () => {
 				},
 			},
 			//邹氏
-			huoshui: {
-				audio: 2,
-				forced: true,
-				global: "huoshui_mingzhi",
-				trigger: { player: "useCardToTargeted" },
-				preHidden: true,
-				filter(event, player) {
-					return (event.card.name == "sha" || event.card.name == "wanjian") && event.target.isUnseen(2) && event.target.isEnemyOf(player);
-				},
-				logTarget: "target",
-				content() {
-					var target = trigger.target;
-					target.addTempSkill("huoshui_norespond");
-					target.markAuto("huoshui_norespond", [trigger.card]);
-				},
-			},
-			huoshui_norespond: {
-				charlotte: true,
-				trigger: { global: "useCardEnd" },
-				onremove: true,
-				forced: true,
-				popup: false,
-				silent: true,
-				firstDo: true,
-				filter(event, player) {
-					return player.getStorage("huoshui_norespond").includes(event.card);
-				},
-				content() {
-					player.unmarkAuto("huoshui_norespond", [trigger.card]);
-					if (!player.storage.huoshui_norespond.length) player.removeSkill("huoshui_norespond");
-				},
-				mod: {
-					cardEnabled(card) {
-						if (card.name == "shan") return false;
-					},
-					cardRespondable(card) {
-						if (card.name == "shan") return false;
-					},
-				},
-			},
-			huoshui_mingzhi: {
-				ai: {
-					nomingzhi: true,
-					skillTagFilter(player) {
-						if (_status.currentPhase && _status.currentPhase != player && _status.currentPhase.hasSkill("huoshui")) {
-							return true;
-						}
-						return false;
-					},
-				},
-			},
-			qingcheng: {
-				audio: 2,
-			},
-			qingcheng_ai: {
-				ai: {
-					effect: {
-						target(card) {
-							if (get.tag(card, "damage")) return 2;
-						},
-					},
-				},
-			},
+			
+			
 			//朱灵
 			gzjuejue: {
 				audio: 2,
@@ -14204,104 +14097,9 @@ export default () => {
 					expose: 0.1,
 				},
 			},
+
 			
-			new_qingcheng: {
-				audio: "qingcheng",
-				enable: "phaseUse",
-				filter(event, player) {
-					return (
-						player.countCards("he", { color: "black" }) &&
-						game.hasPlayer(function (current) {
-							return current != player && !current.isUnseen(2);
-						})
-					);
-				},
-				filterCard: {
-					color: "black",
-				},
-				position: "he",
-				filterTarget(card, player, target) {
-					if (target == player) return false;
-					return !target.isUnseen(2);
-				},
-				check(card) {
-					return 6 - get.value(card, _status.event.player);
-				},
-				content() {
-					"step 0";
-					event.target = target;
-					event.done = false;
-					("step 1");
-					if (get.is.jun(event.target)) {
-						event._result = { control: "副将" };
-					} else {
-						var choice = "主将";
-						var skills = lib.character[event.target.name2][3];
-						for (var i = 0; i < skills.length; i++) {
-							var info = get.info(skills[i]);
-							if (info && info.ai && info.ai.maixie) {
-								choice = "副将";
-								break;
-							}
-						}
-						if (get.character(event.target.name, 3).includes("buqu")) {
-							choice = "主将";
-						} else if (get.character(event.target.name2, 3).includes("buqu")) {
-							choice = "副将";
-						}
-						player
-							.chooseControl("主将", "副将", function () {
-								return _status.event.choice;
-							})
-							.set("prompt", "暗置" + get.translation(event.target) + "的一张武将牌")
-							.set("choice", choice);
-					}
-					("step 2");
-					if (result.control == "主将") {
-						event.target.hideCharacter(0);
-					} else {
-						event.target.hideCharacter(1);
-					}
-					event.target.addTempSkill("qingcheng_ai");
-					if (get.type(cards[0]) == "equip" && !event.done) {
-						player
-							.chooseTarget("是否暗置一名武将牌均为明置的角色的一张武将牌？", function (card, player, target) {
-								return target != player && !target.isUnseen(2);
-							})
-							.set("ai", function (target) {
-								return -get.attitude(_status.event.player, target);
-							});
-					} else event.finish();
-					("step 3");
-					if (result.bool && result.targets && result.targets.length) {
-						player.line(result.targets[0], "green");
-						event.done = true;
-						event.target = result.targets[0];
-						event.goto(1);
-					}
-				},
-				ai: {
-					order: 8,
-					result: {
-						target(player, target) {
-							if (target.hp <= 0) return -5;
-							if (player.getStat().skill.new_qingcheng) return 0;
-							if (!target.hasSkillTag("maixie")) return 0;
-							if (get.attitude(player, target) >= 0) return 0;
-							if (
-								player.hasCard(function (card) {
-									return get.tag(card, "damage") && player.canUse(card, target, true, true);
-								})
-							) {
-								if (target.maxHp > 3) return -0.5;
-								return -1;
-							}
-							return 0;
-						},
-					},
-				},
-			},
-			
+
 			keji_add: {
 				charlotte: true,
 				mod: {
@@ -14310,9 +14108,7 @@ export default () => {
 					},
 				},
 			},
-			
 
-			
 			kurou_effect: {
 				mod: {
 					cardUsable(card, player, num) {
@@ -16053,34 +15849,7 @@ export default () => {
 					},
 				},
 			},
-			gzsuishi: {
-				audio: "suishi",
-				preHidden: ["gzsuishi2"],
-				trigger: { global: "dying" },
-				forced: true,
-				logAudio: () => "suishi1.mp3",
-				check() {
-					return false;
-				},
-				filter(event, player) {
-					return event.player != player && event.parent.name == "damage" && event.parent.source && event.parent.source.isFriendOf(player);
-				},
-				content() {
-					player.draw();
-				},
-				group: "gzsuishi2",
-			},
-			gzsuishi2: {
-				audio: "suishi2.mp3",
-				trigger: { global: "dieAfter" },
-				forced: true,
-				filter(event, player) {
-					return event.player.isFriendOf(player);
-				},
-				content() {
-					player.loseHp();
-				},
-			},
+
 			hongfa_respond: {
 				audio: ["huangjintianbingfu", 2],
 				forceaudio: true,
@@ -17025,31 +16794,7 @@ export default () => {
 				},
 				derivation: "benghuai",
 			},
-			gzmingshi: {
-				audio: "mingshi",
-				trigger: { player: "damageBegin3" },
-				forced: true,
-				preHidden: true,
-				filter(event, player) {
-					return event.num > 0 && event.source && event.source.isUnseen(2);
-				},
-				content() {
-					trigger.num--;
-				},
-				ai: {
-					effect: {
-						target(card, player, target) {
-							if (player.hasSkillTag("jueqing", false, target)) return;
-							if (!player.isUnseen(2)) return;
-							var num = get.tag(card, "damage");
-							if (num) {
-								if (num > 1) return 0.5;
-								return 0;
-							}
-						},
-					},
-				},
-			},
+
 			hunshang: {
 				init(player) {
 					if (player.checkViceSkill("hunshang") && !player.viceChanged) {
@@ -17142,8 +16887,7 @@ export default () => {
 					}
 				},
 			},
-			
-			
+
 			gzkongcheng: {
 				audio: "kongcheng",
 				trigger: { target: "useCardToTarget" },
@@ -17166,7 +16910,7 @@ export default () => {
 					},
 				},
 			},
-			
+
 			gzrende: {
 				audio: "rende",
 				group: ["gzrende1"],
@@ -17702,14 +17446,10 @@ export default () => {
 		},
 		translate: {
 			...translate,
+			...voices,
 
 			gz_miheng: "祢衡",
-		
-			gzkuangfu: "狂斧",
-			gzkuangfu_info: "出牌阶段限一次。当你使用【杀】指定目标后，你可获得目标角色装备区内的一张牌。然后若此【杀】未造成伤害，则你弃置两张手牌。",
-		
-			
-			
+
 			gzqiangxi: "强袭",
 			gzqiangxi_info: "出牌阶段限一次，你可以弃置一张武器牌或失去1点体力，然后对一名其他角色造成1点伤害。",
 
@@ -17933,23 +17673,15 @@ export default () => {
 			_yinyang_mark_add: "阴阳鱼",
 			yinyang_add: "阴阳鱼",
 
-			
-			
 			new_shushen: "淑慎",
 			new_shushen_info: "当你回复1点体力后，你可令一名其他角色摸一张牌。",
-			
-			new_qingcheng: "倾城",
-			new_qingcheng_info: "出牌阶段，你可以弃置一张黑色牌并选择一名武将牌均明置的其他角色，然后你暗置其一张武将牌。若你以此法弃置的牌为装备牌，则你可以暗置另一名武将牌均明置的角色的一张武将牌。",
-			huoshui: "祸水",
-			huoshui_info: "锁定技。你的回合内，①其他角色不能明置武将牌。②当你使用【杀】或【万箭齐发】指定目标后，若目标角色与你势力不同且有暗置武将牌，则其不能使用或出【闪】直到此牌结算结束。",
+
 			keji_add: "克己",
 			keji_add_info: "",
-			
-			
+
 			fz_new_longdan: "龙胆",
 			fz_new_longdan_info: "你可以将【杀】当【闪】，【闪】当【杀】使用或打出。当你发动〖龙胆〗使用的【杀】被【闪】抵消时，你可以对另一名角色造成1点伤害；当你发动〖龙胆〗使用的【闪】抵消了【杀】时，你可以令一名其他角色回复1点体力（不能是【杀】的使用者）。",
 
-			
 			kurou_effect: "苦肉",
 			kurou_effect_info: "",
 			new_chuli: "除疠",
@@ -17964,7 +17696,7 @@ export default () => {
 			fengyin_main_info: "",
 			fengyin_vice: "封印[副将]",
 			fengyin_vice_info: "",
-			
+
 			hmkyuanyu: "远域",
 			hmkyuanyu_info: "锁定技，当你受到伤害时，若伤害来源与你的座次不相邻，防止此伤害。",
 			hmkguishu: "鬼术",
@@ -18053,14 +17785,11 @@ export default () => {
 			jizhao_info: "限定技。当你处于濒死状态时，你可以将手牌补至体力上限，体力回复至2点，失去技能〖授钺〗并获得技能〖仁德〗。",
 			gzshoucheng: "守成",
 			gzshoucheng_info: "当与你势力相同的一名角色于其回合外失去手牌时，若其没有手牌，则你可以令其摸一张牌。",
-			gzmingshi: "名士",
-			gzmingshi_info: "锁定技，当你受到伤害时，若伤害来源有暗置的武将牌，此伤害-1。",
+
 			fengshi: "锋矢",
 			fengshi_sha: "锋矢",
 			fengshi_info: "阵法技，在一个围攻关系中，若你是围攻角色，则你或另一名围攻角色使用【杀】指定被围攻角色为目标后，可令该角色弃置装备区内的一张牌。",
-			gzsuishi: "随势",
-			gzsuishi2: "随势",
-			gzsuishi_info: "锁定技，其他角色进入濒死状态时，若伤害来源与你势力相同，你摸一张牌；其他角色死亡时，若其与你势力相同，你失去1点体力。",
+
 			baoling: "暴凌",
 			baoling_info: "主将技，锁定技，出牌阶段结束时，若你有副将，则你移除副将，然后加3点体力上限，回复3点体力，失去技能〖暴凌〗并获得〖崩坏〗。",
 			yingyang: "鹰扬",
@@ -18112,12 +17841,10 @@ export default () => {
 			gz_shibing2ye: "士兵",
 			gz_shibing1key: "键兵",
 			gz_shibing2key: "键兵",
-			
-			
-			
+
 			gzkongcheng: "空城",
 			gzkongcheng_info: "锁定技，当你成为【杀】或【决斗】的目标时，若你没有手牌，则取消之。",
-			
+
 			gzrende: "仁德",
 			gzrende_info: "出牌阶段，你可以将任意张手牌交给其他角色，然后若你于此阶段内给出第三张“仁德”牌时，你回复1点体力。",
 			duoshi: "度势",
@@ -18255,7 +17982,7 @@ export default () => {
 			ushio_xilv_info: "锁定技，此武将牌可作为任意单势力武将牌的副将。当你进行判定后，你令你的手牌上限+1直至你的下个结束阶段。",
 
 			//官盗2023
-			
+
 			fakeduoshi: "度势",
 			fakeduoshi_info: "每轮限一次，友方角色可以将一张红色手牌当作【以逸待劳】使用，然后若你为小势力角色，你可以令一名友方角色将X张手牌当作不可被响应的【火烧连营】使用（X为此【以逸待劳】指定的目标数）。",
 			fakeyicheng: "疑城",
@@ -18410,10 +18137,10 @@ export default () => {
 			gzsidi: "司敌",
 			gzsidi_info: "①一名与你势力相同的角色受到伤害后，你可以将一张与武将牌上的“驭”类别均不同的一张牌称为“驭”置于武将牌上。②与你势力不同的角色的回合开始时，你可以移去至多三张“驭”，然后选择执行等量项：⒈选择移去“驭”中的一个类别，令其本回合无法使用此类别的牌。⒉选择其一个已明置武将牌上的一个技能，令此技能于本回合失效。⒊选择一名与你势力相同的已受伤其他角色，令其回复1点体力。",
 			gz_ol_lisu: "李肃",
-			
+
 			gzyicheng_new: "疑城",
 			gzyicheng_new_info: "与你势力相同的角色使用【杀】指定第一个目标后或成为【杀】的目标后，你可以令其摸一张牌，然后其弃置一张牌。",
-			
+
 			gzhengjiang: "横江",
 			gzhengjiang_info: "当你受到伤害后，你可以令当前回合角色本回合的手牌上限-X（X为其装备区牌数且至少为1）。然后其本回合弃牌阶段结束时，若其未于此阶段弃牌，则你将手牌摸至体力上限。",
 			gzchengshang: "承赏",
@@ -18545,8 +18272,6 @@ export default () => {
 			"#jianchu2": "杀到你丢盔弃甲！",
 			"#gz_mateng:die": "儿子，为爹报仇啊！",
 			"#shuangren1": "吃我一记三尖两刃刀！",
-			"#huoshui1": "别走了，再玩一会儿嘛。",
-			"#huoshui2": "走不动了嘛？",
 			"#qingcheng1": "我和你们真是投缘啊。",
 			"#qingcheng2": "哼，眼睛都直了呀。",
 			"#tuntian_gz_dengai1": "积谷于此，以制四方。",
