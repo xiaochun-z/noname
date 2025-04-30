@@ -2934,8 +2934,9 @@ export default {
 					if (get.attitude(player, target) >= 0) return 0;
 					if (
 						player.hasCard(function (card) {
-							return get.tag(card, "damage") && player.canUse(card, target, true, true);
-						})
+							// ?????
+							return get.tag(card, "damage") && player.canUse(card, target, cast(true), true);
+						}, undefined)
 					) {
 						if (target.maxHp > 3) return -0.5;
 						return -1;
