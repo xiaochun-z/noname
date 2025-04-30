@@ -54,7 +54,15 @@ export default () => {
 			mode_guozhan: {
 				...pack,
 
-				gz_zhonghui: ["male", "ye", 4, ["fakequanji", "fakepaiyi"], ["gzskin"]],
+				gz_zhonghui: new Character({
+					sex: "male",
+					group: "ye",
+					hp: 4,
+					maxHp: 4,
+					hujia: 0,
+					skills: ["fakequanji", "fakepaiyi"],
+					hasSkinInGuozhan: true,
+				}),
 				gz_simazhao: ["male", "ye", 3, ["gzzhaoxin", "gzsuzhi"], ["gzskin"]],
 				gz_gongsunyuan: ["male", "ye", 4, ["gzhuaiyi", "gzzisui"], ["gzskin"]], //致敬存活一年的传奇野心家公孙瓒
 				gz_sunchen: ["male", "ye", 4, ["fakeshilu", "fakexiongnve"]],
@@ -93,7 +101,7 @@ export default () => {
 
 				gz_yuji: ["male", "qun", 3, ["qianhuan"], ["gzskin"]],
 
-				
+
 
 				gz_dengai: ["male", "wei", 4, ["tuntian", "ziliang", "gzjixi"], ["gzskin"]],
 				gz_caohong: ["male", "wei", 4, ["fakehuyuan", "heyi"], ["gzskin"]],
@@ -917,7 +925,7 @@ export default () => {
 				},
 			},
 			//甘夫人
-			
+
 			//徐盛
 			gzyicheng_new: {
 				audio: "yicheng",
@@ -936,7 +944,7 @@ export default () => {
 				},
 			},
 			//陆逊
-			
+
 			//臧霸
 			gzhengjiang: {
 				audio: "hengjiang",
@@ -1042,7 +1050,7 @@ export default () => {
 				},
 			},
 			//官盗2023
-			
+
 			fakeduoshi: {
 				audio: "duoshi",
 				global: "fakeduoshi_global",
@@ -1139,8 +1147,8 @@ export default () => {
 					},
 				},
 			},
-			
-			
+
+
 			fakeyicheng: {
 				audio: "yicheng",
 				inherit: "yicheng",
@@ -8241,9 +8249,9 @@ export default () => {
 				},
 			},
 			//小乔
-			
-			
-			
+
+
+
 			//潘凤
 			gzkuangfu: {
 				audio: "kuangfu",
@@ -8289,7 +8297,7 @@ export default () => {
 				},
 			},
 			//吕布
-			
+
 			//吕玲绮
 			gzshenwei: {
 				audio: "llqshenwei",
@@ -8774,7 +8782,7 @@ export default () => {
 						}
 					},
 					// content:function(storage,player){
-					// 	return '共有'+get.cnNumber(storage.length)+'张“戮”';
+					//	 return '共有'+get.cnNumber(storage.length)+'张“戮”';
 					// },
 				},
 				group: "gzshilu_zhiheng",
@@ -14204,7 +14212,7 @@ export default () => {
 					expose: 0.1,
 				},
 			},
-			
+
 			new_qingcheng: {
 				audio: "qingcheng",
 				enable: "phaseUse",
@@ -14301,7 +14309,7 @@ export default () => {
 					},
 				},
 			},
-			
+
 			keji_add: {
 				charlotte: true,
 				mod: {
@@ -14310,9 +14318,9 @@ export default () => {
 					},
 				},
 			},
-			
 
-			
+
+
 			kurou_effect: {
 				mod: {
 					cardUsable(card, player, num) {
@@ -17251,7 +17259,7 @@ export default () => {
 					},
 				},
 			},
-			
+
 			gzkongcheng: {
 				audio: "kongcheng",
 				trigger: { target: "useCardToTarget" },
@@ -17274,7 +17282,7 @@ export default () => {
 					},
 				},
 			},
-			
+
 			gzrende: {
 				audio: "rende",
 				group: ["gzrende1"],
@@ -17753,18 +17761,18 @@ export default () => {
 		ui: {
 			click: {
 				// identity:function(){
-				// 	if(this.touched) {this.touched=false;return;}
-				// 	_status.clicked=true;
-				// 	if(this.parentNode.isUnseen()&&this.parentNode!=game.me){
-				// 		switch(this.firstChild.innerHTML){
-				// 			case '魏':this.firstChild.innerHTML='蜀';this.dataset.color='shu';break;
-				// 			case '蜀':this.firstChild.innerHTML='吴';this.dataset.color='wu';break;
-				// 			case '吴':this.firstChild.innerHTML='群';this.dataset.color='qun';break;
-				// 			case '群':this.firstChild.innerHTML='野';this.dataset.color='ye';break;
-				// 			case '野':this.firstChild.innerHTML='猜';this.dataset.color='unknown';break;
-				// 			default:this.firstChild.innerHTML='魏';this.dataset.color='wei';break;
-				// 		}
-				// 	}
+				//	 if(this.touched) {this.touched=false;return;}
+				//	 _status.clicked=true;
+				//	 if(this.parentNode.isUnseen()&&this.parentNode!=game.me){
+				//		 switch(this.firstChild.innerHTML){
+				//			 case '魏':this.firstChild.innerHTML='蜀';this.dataset.color='shu';break;
+				//			 case '蜀':this.firstChild.innerHTML='吴';this.dataset.color='wu';break;
+				//			 case '吴':this.firstChild.innerHTML='群';this.dataset.color='qun';break;
+				//			 case '群':this.firstChild.innerHTML='野';this.dataset.color='ye';break;
+				//			 case '野':this.firstChild.innerHTML='猜';this.dataset.color='unknown';break;
+				//			 default:this.firstChild.innerHTML='魏';this.dataset.color='wei';break;
+				//		 }
+				//	 }
 				// }
 			},
 		},
@@ -17812,12 +17820,12 @@ export default () => {
 			...translate,
 
 			gz_miheng: "祢衡",
-		
+
 			gzkuangfu: "狂斧",
 			gzkuangfu_info: "出牌阶段限一次。当你使用【杀】指定目标后，你可获得目标角色装备区内的一张牌。然后若此【杀】未造成伤害，则你弃置两张手牌。",
-		
-			
-			
+
+
+
 			gzqiangxi: "强袭",
 			gzqiangxi_info: "出牌阶段限一次，你可以弃置一张武器牌或失去1点体力，然后对一名其他角色造成1点伤害。",
 
@@ -18041,23 +18049,23 @@ export default () => {
 			_yinyang_mark_add: "阴阳鱼",
 			yinyang_add: "阴阳鱼",
 
-			
-			
+
+
 			new_shushen: "淑慎",
 			new_shushen_info: "当你回复1点体力后，你可令一名其他角色摸一张牌。",
-			
+
 			new_qingcheng: "倾城",
 			new_qingcheng_info: "出牌阶段，你可以弃置一张黑色牌并选择一名武将牌均明置的其他角色，然后你暗置其一张武将牌。若你以此法弃置的牌为装备牌，则你可以暗置另一名武将牌均明置的角色的一张武将牌。",
 			huoshui: "祸水",
 			huoshui_info: "锁定技。你的回合内，①其他角色不能明置武将牌。②当你使用【杀】或【万箭齐发】指定目标后，若目标角色与你势力不同且有暗置武将牌，则其不能使用或出【闪】直到此牌结算结束。",
 			keji_add: "克己",
 			keji_add_info: "",
-			
-			
+
+
 			fz_new_longdan: "龙胆",
 			fz_new_longdan_info: "你可以将【杀】当【闪】，【闪】当【杀】使用或打出。当你发动〖龙胆〗使用的【杀】被【闪】抵消时，你可以对另一名角色造成1点伤害；当你发动〖龙胆〗使用的【闪】抵消了【杀】时，你可以令一名其他角色回复1点体力（不能是【杀】的使用者）。",
 
-			
+
 			kurou_effect: "苦肉",
 			kurou_effect_info: "",
 			new_chuli: "除疠",
@@ -18072,7 +18080,7 @@ export default () => {
 			fengyin_main_info: "",
 			fengyin_vice: "封印[副将]",
 			fengyin_vice_info: "",
-			
+
 			hmkyuanyu: "远域",
 			hmkyuanyu_info: "锁定技，当你受到伤害时，若伤害来源与你的座次不相邻，防止此伤害。",
 			hmkguishu: "鬼术",
@@ -18224,10 +18232,10 @@ export default () => {
 			gzduanchang_info: "锁定技，当你死亡时，你令杀死你的角色失去一张武将牌上的所有技能。",
 			gzweimu: "帷幕",
 			gzweimu_info: "锁定技，当你成为黑色普通锦囊牌的目标时，或有黑色延时锦囊牌进入你的判定区时，取消之。",
-			
+
 			gzkongcheng: "空城",
 			gzkongcheng_info: "锁定技，当你成为【杀】或【决斗】的目标时，若你没有手牌，则取消之。",
-			
+
 			gzrende: "仁德",
 			gzrende_info: "出牌阶段，你可以将任意张手牌交给其他角色，然后若你于此阶段内给出第三张“仁德”牌时，你回复1点体力。",
 			duoshi: "度势",
@@ -18365,7 +18373,7 @@ export default () => {
 			ushio_xilv_info: "锁定技，此武将牌可作为任意单势力武将牌的副将。当你进行判定后，你令你的手牌上限+1直至你的下个结束阶段。",
 
 			//官盗2023
-			
+
 			fakeduoshi: "度势",
 			fakeduoshi_info: "每轮限一次，友方角色可以将一张红色手牌当作【以逸待劳】使用，然后若你为小势力角色，你可以令一名友方角色将X张手牌当作不可被响应的【火烧连营】使用（X为此【以逸待劳】指定的目标数）。",
 			fakeyicheng: "疑城",
@@ -18520,10 +18528,10 @@ export default () => {
 			gzsidi: "司敌",
 			gzsidi_info: "①一名与你势力相同的角色受到伤害后，你可以将一张与武将牌上的“驭”类别均不同的一张牌称为“驭”置于武将牌上。②与你势力不同的角色的回合开始时，你可以移去至多三张“驭”，然后选择执行等量项：⒈选择移去“驭”中的一个类别，令其本回合无法使用此类别的牌。⒉选择其一个已明置武将牌上的一个技能，令此技能于本回合失效。⒊选择一名与你势力相同的已受伤其他角色，令其回复1点体力。",
 			gz_ol_lisu: "李肃",
-			
+
 			gzyicheng_new: "疑城",
 			gzyicheng_new_info: "与你势力相同的角色使用【杀】指定第一个目标后或成为【杀】的目标后，你可以令其摸一张牌，然后其弃置一张牌。",
-			
+
 			gzhengjiang: "横江",
 			gzhengjiang_info: "当你受到伤害后，你可以令当前回合角色本回合的手牌上限-X（X为其装备区牌数且至少为1）。然后其本回合弃牌阶段结束时，若其未于此阶段弃牌，则你将手牌摸至体力上限。",
 			gzchengshang: "承赏",
