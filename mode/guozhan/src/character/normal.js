@@ -426,7 +426,7 @@ export default {
 		hp: 3,
 		maxHp: 3,
 		hujia: 0,
-		skills: ["wansha", "luanwu", "gzweimu"],
+		skills: ["wansha", "luanwu", "gz_weimu"],
 		hasSkinInGuozhan: true,
 	}),
 	gz_pangde: new Character({
@@ -451,7 +451,7 @@ export default {
 		hp: 3,
 		maxHp: 3,
 		hujia: 0,
-		skills: ["beige", "gzduanchang"],
+		skills: ["beige", "gz_duanchang"],
 	}),
 	gz_mateng: new Character({
 		sex: "male",
@@ -467,7 +467,7 @@ export default {
 		hp: 3,
 		maxHp: 3,
 		hujia: 0,
-		skills: ["gzmingshi", "lirang"],
+		skills: ["gz_mingshi", "lirang"],
 	}),
 	gz_jiling: new Character({
 		sex: "male",
@@ -483,7 +483,7 @@ export default {
 		hp: 3,
 		maxHp: 3,
 		hujia: 0,
-		skills: ["sijian", "gzsuishi"],
+		skills: ["sijian", "gz_suishi"],
 	}),
 	gz_panfeng: new Character({
 		sex: "male",
@@ -491,7 +491,7 @@ export default {
 		hp: 4,
 		maxHp: 4,
 		hujia: 0,
-		skills: ["gzkuangfu"],
+		skills: ["gz_kuangfu"],
 		hasSkinInGuozhan: true,
 	}),
 	gz_zoushi: new Character({
@@ -500,7 +500,7 @@ export default {
 		hp: 3,
 		maxHp: 3,
 		hujia: 0,
-		skills: ["huoshui", "new_qingcheng"],
+		skills: ["gz_huoshui", "gz_qingcheng"],
 	}),
 	gz_zhonghui: new Character({
 		sex: "male",

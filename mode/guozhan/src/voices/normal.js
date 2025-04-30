@@ -25,4 +25,7 @@ export default {
 	"#gz_huangzhong:die": "不得不服老啦~",
 	"#gz_weiyan:die": "谁敢杀我？！呃啊……",
 	"#gz_pangtong:die": "看来我命中注定将丧命于此……",
+
+	"#gz_huoshui1": "别走了，再玩一会儿嘛。",
+	"#gz_huoshui2": "走不动了嘛？",
 };
