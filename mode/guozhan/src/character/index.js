@@ -1,5 +1,6 @@
 import { Character } from "../../../../noname/library/element/index.js";
 
+import restCharacter from "./rest.js";
 import normal from "./normal.js";
 
 /** @type {Record<string, Character>} */
@@ -132,6 +133,7 @@ export const pack = {
 	}),
 
 	...normal,
+	...restCharacter,
 };
 
 export { default as intro } from "./intro.js";
