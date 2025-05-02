@@ -16,7 +16,7 @@ export default {
 		hp: 4,
 		maxHp: 4,
 		hujia: 0,
-		skills: ["fakehuyuan", "heyi"],
+		skills: ["fake_huyuan", "heyi"],
 		hasSkinInGuozhan: true,
 	}),
 	gz_jiangfei: new Character({
@@ -25,7 +25,7 @@ export default {
 		hp: 3,
 		maxHp: 3,
 		hujia: 0,
-		skills: ["shengxi", "gzshoucheng"],
+		skills: ["shengxi", "gz_shoucheng"],
 		hasSkinInGuozhan: true,
 	}),
 	gz_jiangwei: new Character({
@@ -43,7 +43,7 @@ export default {
 		hp: 4,
 		maxHp: 4,
 		hujia: 0,
-		skills: ["gzyicheng_new"],
+		skills: ["gz_yicheng_new"],
 		hasSkinInGuozhan: true,
 	}),
 	gz_jiangqing: new Character({
@@ -52,7 +52,7 @@ export default {
 		hp: 4,
 		maxHp: 4,
 		hujia: 0,
-		skills: ["gzshangyi", "niaoxiang"],
+		skills: ["gz_shangyi", "niaoxiang"],
 	}),
 	gz_hetaihou: new Character({
 		sex: "female",

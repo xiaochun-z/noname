@@ -1007,7 +1007,7 @@ export default {
 				if (num > 0) {
 					await target.draw(num);
 				}
-				await target.turnOver(false);
+				await target.turnOver(void 0);
 			}
 
 			return;

@@ -787,22 +787,7 @@ export default () => {
 			//甘夫人
 
 			//徐盛
-			gzyicheng_new: {
-				audio: "yicheng",
-				trigger: { global: ["useCardToPlayered", "useCardToTargeted"] },
-				filter(event, player, name) {
-					const bool = name === "useCardToPlayered";
-					if (bool && !event.isFirstTarget) return false;
-					return event.card.name == "sha" && event[bool ? "player" : "target"].isFriendOf(player);
-				},
-				logTarget(event, player, name) {
-					return event[name === "useCardToPlayered" ? "player" : "target"];
-				},
-				async content(event, trigger, player) {
-					await event.targets[0].draw();
-					await event.targets[0].chooseToDiscard("he", true);
-				},
-			},
+			
 			//陆逊
 
 			//臧霸
@@ -4866,79 +4851,7 @@ export default () => {
 					},
 				},
 			},
-			fakehuyuan: {
-				audio: "yuanhu",
-				trigger: { player: "phaseJieshuBegin" },
-				filter(event, player) {
-					return (
-						player.countCards("he", card => {
-							if (get.position(card) == "h" && _status.connectMode) return true;
-							return get.type(card) == "equip";
-						}) > 0
-					);
-				},
-				async cost(event, trigger, player) {
-					event.result = await player
-						.chooseCardTarget({
-							prompt: get.prompt2("yuanhu"),
-							filterCard(card) {
-								return get.type(card) == "equip";
-							},
-							position: "he",
-							filterTarget(card, player, target) {
-								return target.canEquip(card);
-							},
-							ai1(card) {
-								return 6 - get.value(card);
-							},
-							ai2(target) {
-								return get.attitude(_status.event.player, target) - 3;
-							},
-						})
-						.setHiddenSkill("fakehuyuan")
-						.forResult();
-				},
-				preHidden: true,
-				async content(event, trigger, player) {
-					const card = event.cards[0],
-						target = event.targets[0];
-					if (target != player) player.$give(card, target, false);
-					await target.equip(card);
-				},
-				group: "fakehuyuan_discard",
-				subSkill: {
-					discard: {
-						trigger: { global: "equipEnd" },
-						filter(event, player) {
-							return (
-								_status.currentPhase == player &&
-								game.hasPlayer(target => {
-									return get.distance(event.player, target) <= 1 && target != event.player && target.countCards("hej");
-								})
-							);
-						},
-						async cost(event, trigger, player) {
-							event.result = await player
-								.chooseTarget(get.prompt("fakehuyuan"), "弃置一名与" + get.translation(trigger.player) + "距离为1以内的另一名角色区域里的一张牌", (card, player, target) => {
-									const trigger = get.event().getTrigger();
-									return get.distance(trigger.player, target) <= 1 && target != trigger.player && target.countCards("hej");
-								})
-								.set("ai", target => {
-									const player = get.event("player");
-									return get.effect(target, { name: "guohe" }, player, player);
-								})
-								.setHiddenSkill("fakehuyuan")
-								.forResult();
-						},
-						popup: false,
-						async content(event, trigger, player) {
-							const target = event.targets[0];
-							player.logSkill("fakehuyuan", target);
-							await player.discardPlayerCard(target, "hej", true);
-						},
-					},
-				},
-			},
+			
 			fakekeshou: {
 				audio: "keshou",
 				trigger: { player: "damageBegin3" },
@@ -14647,121 +14560,7 @@ export default () => {
 					},
 				},
 			},
-			qianhuan: {
-				group: ["qianhuan_add", "qianhuan_use"],
-				intro: {
-					content: "expansion",
-					markcount: "expansion",
-				},
-				onremove(player, skill) {
-					var cards = player.getExpansions(skill);
-					if (cards.length) player.loseToDiscardpile(cards);
-				},
-				ai: {
-					threaten: 1.8,
-				},
-				audio: 2,
-				preHidden: true,
-				subSkill: {
-					add: {
-						trigger: { global: "damageEnd" },
-						filter(event, player) {
-							var suits = [],
-								cards = player.getExpansions("qianhuan");
-							for (var i = 0; i < cards.length; i++) {
-								suits.add(get.suit(cards[i]));
-							}
-							if (suits.length >= lib.suit.length) return false;
-							return (
-								player.isFriendOf(event.player) &&
-								player.hasCard(function (card) {
-									if (_status.connectMode && get.position(card) == "h") return true;
-									return !suits.includes(get.suit(card));
-								}, "he")
-							);
-						},
-						direct: true,
-						content() {
-							"step 0";
-							var suits = [],
-								cards = player.getExpansions("qianhuan");
-							for (var i = 0; i < cards.length; i++) {
-								suits.add(get.suit(cards[i]));
-							}
-							player
-								.chooseCard("he", get.prompt2("qianhuan"), function (card) {
-									return !_status.event.suits.includes(get.suit(card));
-								})
-								.set("ai", function (card) {
-									return 9 - get.value(card);
-								})
-								.set("suits", suits)
-								.setHiddenSkill("qianhuan");
-							("step 1");
-							if (result.bool) {
-								player.logSkill("qianhuan");
-								var card = result.cards[0];
-								player.addToExpansion(card, player, "give").gaintag.add("qianhuan");
-							}
-						},
-					},
-					use: {
-						trigger: { global: "useCardToTarget" },
-						filter(event, player) {
-							if (!["basic", "trick"].includes(get.type(event.card, "trick"))) return false;
-							return event.target && player.isFriendOf(event.target) && event.targets.length == 1 && player.getExpansions("qianhuan").length;
-						},
-						direct: true,
-						content() {
-							"step 0";
-							var goon = get.effect(trigger.target, trigger.card, trigger.player, player) < 0;
-							if (goon) {
-								if (["tiesuo", "diaohulishan", "lianjunshengyan", "zhibi", "chiling", "lulitongxin"].includes(trigger.card.name)) {
-									goon = false;
-								} else if (trigger.card.name == "sha") {
-									if (
-										trigger.target.mayHaveShan(
-											player,
-											"use",
-											trigger.target.getCards("h", i => {
-												return i.hasGaintag("sha_notshan");
-											})
-										) ||
-										trigger.target.hp >= 3
-									) {
-										goon = false;
-									}
-								} else if (trigger.card.name == "guohe") {
-									if (trigger.target.countCards("he") >= 3 || !trigger.target.countCards("h")) {
-										goon = false;
-									}
-								} else if (trigger.card.name == "shuiyanqijunx") {
-									if (trigger.target.countCards("e") <= 1 || trigger.target.hp >= 3) {
-										goon = false;
-									}
-								} else if (get.tag(trigger.card, "damage") && trigger.target.hp >= 3) {
-									goon = false;
-								}
-							}
-							player
-								.chooseButton()
-								.set("goon", goon)
-								.set("ai", function (button) {
-									if (_status.event.goon) return 1;
-									return 0;
-								})
-								.set("createDialog", [get.prompt("qianhuan"), '<div class="text center">移去一张“千幻”牌令' + get.translation(trigger.player) + "对" + get.translation(trigger.target) + "的" + get.translation(trigger.card) + "失效</div>", player.getExpansions("qianhuan")]);
-							("step 1");
-							if (result.bool) {
-								player.logSkill("qianhuan", trigger.player);
-								trigger.getParent().targets.remove(trigger.target);
-								var card = result.links[0];
-								player.loseToDiscardpile(card);
-							}
-						},
-					},
-				},
-			},
+			
 			gzsanyao: {
 				audio: "sanyao",
 				inherit: "sanyao",
@@ -16151,46 +15950,7 @@ export default () => {
 					content: "limited",
 				},
 			},
-			gzshoucheng: {
-				inherit: "shoucheng",
-				audio: "shoucheng",
-				preHidden: true,
-				filter(event, player) {
-					return game.hasPlayer(function (current) {
-						if (current == _status.currentPhase || !current.isFriendOf(player)) return false;
-						var evt = event.getl(current);
-						return evt && evt.hs && evt.hs.length && current.countCards("h") == 0;
-					});
-				},
-				content() {
-					"step 0";
-					event.list = game
-						.filterPlayer(function (current) {
-							if (current == _status.currentPhase || !current.isFriendOf(player)) return false;
-							var evt = trigger.getl(current);
-							return evt && evt.hs && evt.hs.length;
-						})
-						.sortBySeat(_status.currentPhase);
-					("step 1");
-					var target = event.list.shift();
-					event.target = target;
-					if (target.isAlive() && target.countCards("h") == 0) {
-						player
-							.chooseBool(get.prompt2("gzshoucheng", target))
-							.set("ai", function () {
-								return get.attitude(_status.event.player, _status.event.getParent().target) > 0;
-							})
-							.setHiddenSkill(event.name);
-					} else event.goto(3);
-					("step 2");
-					if (result.bool) {
-						player.logSkill(event.name, target);
-						target.draw();
-					}
-					("step 3");
-					if (event.list.length) event.goto(1);
-				},
-			},
+			
 			gzyicheng: {
 				audio: "yicheng",
 				trigger: {
@@ -16222,21 +15982,7 @@ export default () => {
 					}
 				},
 			},
-			yicheng: {
-				audio: 2,
-				trigger: { global: "useCardToTargeted" },
-				filter(event, player) {
-					return event.card.name == "sha" && event.target.isFriendOf(player);
-				},
-				preHidden: true,
-				logTarget: "target",
-				content() {
-					"step 0";
-					event.targets[0].draw();
-					("step 1");
-					event.targets[0].chooseToDiscard("he", true);
-				},
-			},
+			
 			
 			gzhuyuan: {
 				audio: "huyuan",
@@ -16376,115 +16122,11 @@ export default () => {
 					}
 				},
 			},
-			heyi: {
-				zhenfa: "inline",
-				global: "heyi_distance",
-			},
-			heyi_distance: {
-				mod: {
-					globalTo(from, to, distance) {
-						if (
-							game.hasPlayer(function (current) {
-								return current.hasSkill("heyi") && current.inline(to);
-							})
-						) {
-							return distance + 1;
-						}
-					},
-				},
-			},
-			tianfu: {
-				init(player) {
-					player.checkMainSkill("tianfu");
-				},
-				mainSkill: true,
-				inherit: "kanpo",
-				zhenfa: "inline",
-				viewAsFilter(player) {
-					return _status.currentPhase && _status.currentPhase.inline(player) && !player.hasSkill("kanpo") && player.countCards("h", { color: "black" }) > 0;
-				},
-			},
-			yizhi: {
-				init(player) {
-					if (player.checkViceSkill("yizhi") && !player.viceChanged) {
-						player.removeMaxHp();
-					}
-				},
-				viceSkill: true,
-				inherit: "guanxing",
-				filter(event, player) {
-					return !player.hasSkill("guanxing");
-				},
-			},
-			gzshangyi: {
-				audio: "shangyi",
-				enable: "phaseUse",
-				usable: 1,
-				filter(event, player) {
-					return player.countCards("h") > 0;
-				},
-				filterTarget(card, player, target) {
-					return player != target && (target.countCards("h") || target.isUnseen(2));
-				},
-				content() {
-					"step 0";
-					target.viewHandcards(player);
-					("step 1");
-					if (!target.countCards("h")) {
-						event._result = { index: 1 };
-					} else if (!target.isUnseen(2)) {
-						event._result = { index: 0 };
-					} else {
-						player.chooseControl().set("choiceList", ["观看" + get.translation(target) + "的手牌并可以弃置其中的一张黑色牌", "观看" + get.translation(target) + "的所有暗置的武将牌"]);
-					}
-					("step 2");
-					if (result.index == 0) {
-						player
-							.discardPlayerCard(target, "h")
-							.set("filterButton", function (button) {
-								return get.color(button.link) == "black";
-							})
-							.set("visible", true);
-					} else {
-						player.viewCharacter(target, 2);
-					}
-				},
-				ai: {
-					order: 11,
-					result: {
-						target(player, target) {
-							return -target.countCards("h");
-						},
-					},
-					threaten: 1.1,
-				},
-			},
-			niaoxiang: {
-				zhenfa: "siege",
-				audio: "zniaoxiang",
-				global: "niaoxiang_sha",
-				preHidden: true,
-				trigger: { global: "useCardToPlayered" },
-				filter(event, player) {
-					if (event.card.name != "sha") return false;
-					if (game.countPlayer() < 4) return false;
-					return player.siege(event.target) && event.player.siege(event.target);
-				},
-				forced: true,
-				locked: false,
-				forceaudio: true,
-				logTarget: "target",
-				content() {
-					var id = trigger.target.playerid;
-					var map = trigger.getParent().customArgs;
-					if (!map[id]) map[id] = {};
-					if (typeof map[id].shanRequired == "number") {
-						map[id].shanRequired++;
-					} else {
-						map[id].shanRequired = 2;
-					}
-				},
-			},
+			
+			
+			
+			
+			
 			fengshi: {
 				audio: "zfengshi",
 				zhenfa: "siege",
@@ -17558,9 +17200,7 @@ export default () => {
 			_lianheng: "合纵",
 			lianheng_tag: "合纵",
 			guo_tag: "国",
-			qianhuan: "千幻",
-			qianhuan_bg: "幻",
-			qianhuan_info: "当与你势力相同的一名角色受到伤害后，你可以将一张与你武将牌上花色均不同的牌置于你的武将牌上。当一名与你势力相同的角色成为基本牌或锦囊牌的唯一目标时，你可以移去一张“千幻”牌，取消之。",
+			
 			gzsanyao_info: "出牌阶段限一次。你可以弃置一张牌，对一名手牌数或体力值大于你的角色造成1点伤害。",
 			gzzhiman: "制蛮",
 			gzzhiman_info: "当你对其他角色造成伤害时，你可以防止此伤害。若如此做，你获得其装备区或判定区里的一张牌。然后若该角色与你势力相同，该角色可以变更副将。",
@@ -17619,8 +17259,7 @@ export default () => {
 			jizhao: "激诏",
 			jizhao_bg: "诏",
 			jizhao_info: "限定技。当你处于濒死状态时，你可以将手牌补至体力上限，体力回复至2点，失去技能〖授钺〗并获得技能〖仁德〗。",
-			gzshoucheng: "守成",
-			gzshoucheng_info: "当与你势力相同的一名角色于其回合外失去手牌时，若其没有手牌，则你可以令其摸一张牌。",
+			
 
 			fengshi: "锋矢",
 			fengshi_sha: "锋矢",
@@ -17640,25 +17279,13 @@ export default () => {
 			gzyongjue_info: "与你势力相同的一名角色于其回合内使用【杀】结算完成后，若此牌是其本回合内使用的第一张牌，则其可以获得此牌对应的所有实体牌。",
 			gzqianxi: "潜袭",
 			gzqianxi_info: "准备阶段，你可以进行判定，然后你选择距离为1的一名角色，直到回合结束，该角色不能使用或打出与结果颜色相同的手牌。",
-			gzshangyi: "尚义",
-			gzshangyi_info: "出牌阶段限一次，你可以令一名其他角色观看你的手牌。若如此做，你选择一项：1.观看其手牌并可以弃置其中的一张黑色牌；2.观看其所有暗置的武将牌。",
-			niaoxiang: "鸟翔",
-			niaoxiang_sha: "鸟翔",
-			niaoxiang_info: "阵法技，在同一个围攻关系中，若你是围攻角色，则你或另一名围攻角色使用【杀】指定被围攻角色为目标后，该角色需依次使用两张【闪】才能抵消。",
-			yicheng: "疑城",
-			yicheng_info: "当与你势力相同的一名角色成为【杀】的目标后，你可以令该角色摸一张牌，然后弃置一张牌。",
+			
+			
+			
 			gzyicheng: "疑城",
 			gzyicheng_info: "阵法技。当你和你队列中的角色使用【杀】指定第一个目标后，或成为【杀】的目标后，其可以摸一张牌，然后弃置一张牌。",
-			yizhi: "遗志",
-			yizhi_info: "副将技，此武将牌减少半个阴阳鱼。若你的主将拥有技能〖观星〗，则将其描述中的X改为5；若你的主将没有技能〖观星〗，则你视为拥有技能〖观星〗。",
-			tianfu: "天覆",
-			tianfu_info: "主将技，阵法技，若当前回合角色与你处于同一队列，则你视为拥有技能〖看破〗。",
-			
-			
 			huyuan: "护援",
 			huyuan_info: "结束阶段，你可以将一张装备牌置入一名角色的装备区，然后你可以弃置该角色距离为1的一名角色的一张牌。",
-			heyi: "鹤翼",
-			heyi_info: "阵法技。与你处于同一队列的角色视为拥有技能〖飞影〗。",
 			gzhuyuan: "护援",
 			gzhuyuan_info: "结束阶段，你可以选择一项：⒈将一张非装备牌交给一名其他角色。⒉将一张装备牌置入其他角色的装备区内，然后你可以弃置场上的一张牌。",
 			gz_shibing1wei: "魏兵",
@@ -17936,8 +17563,7 @@ export default () => {
 			fakecaiwang_info: "①你可以助战自己。②每回合每项各限一次，当你响应助战后，若你弃置的牌和被强化的牌：颜色相同，你可以弃置一名其他角色的一张牌；颜色不同，你摸一张牌。",
 			fakenaxiang: "纳降",
 			fakenaxiang_info: "锁定技。①当你对与你势力不同的角色造成伤害后，或受到与你势力不同的角色对你造成的伤害后。你对其发起军令，若其不执行，则你不能对其发动〖纳降①〗直到你的下个回合开始。②你响应助战弃牌无类别限制，且你触发具有应变的卡牌的条件均视为助战。",
-			fakehuyuan: "护援",
-			fakehuyuan_info: "①你的回合内，当一张装备牌进入一名角色的装备区后，你可以弃置与其距离为1以内的另一名角色区域里的一张牌。②结束阶段，你可以将一张装备牌置入一名角色的装备区。",
+			
 			fakekeshou: "恪守",
 			fakekeshou_info: "①当你受到伤害时，你可以弃置两张颜色相同的牌并令此伤害-1。②当你因弃置而一次性失去至少两张牌后，若你的势力已确定且场上没有与你势力相同的其他角色，则你可以进行判定，若结果判定为红色，你摸一张牌。",
 			gz_re_xusheng: "界徐盛",
@@ -17971,9 +17597,6 @@ export default () => {
 			gzsidi: "司敌",
 			gzsidi_info: "①一名与你势力相同的角色受到伤害后，你可以将一张与武将牌上的“驭”类别均不同的一张牌称为“驭”置于武将牌上。②与你势力不同的角色的回合开始时，你可以移去至多三张“驭”，然后选择执行等量项：⒈选择移去“驭”中的一个类别，令其本回合无法使用此类别的牌。⒉选择其一个已明置武将牌上的一个技能，令此技能于本回合失效。⒊选择一名与你势力相同的已受伤其他角色，令其回复1点体力。",
 			gz_ol_lisu: "李肃",
-
-			gzyicheng_new: "疑城",
-			gzyicheng_new_info: "与你势力相同的角色使用【杀】指定第一个目标后或成为【杀】的目标后，你可以令其摸一张牌，然后其弃置一张牌。",
 
 			gzhengjiang: "横江",
 			gzhengjiang_info: "当你受到伤害后，你可以令当前回合角色本回合的手牌上限-X（X为其装备区牌数且至少为1）。然后其本回合弃牌阶段结束时，若其未于此阶段弃牌，则你将手牌摸至体力上限。",
@@ -18096,8 +17719,7 @@ export default () => {
 			"#gzfangyuan1": "布阵合围，滴水不漏，待敌自溃。",
 			"#gzfangyuan2": "乘敌阵未稳，待我斩将刈旗，先奋士气！",
 			"#gz_zhuling:die": "半生曹家麾下将，终是，丞相眼中，倒戈臣……",
-			"#qianhuan1": "幻变迷踪，虽飞鸟亦难觅踪迹。",
-			"#qianhuan2": "幻化于阴阳，藏匿于乾坤。",
+			
 			"#gz_yuji:die": "幻化之物，终是算不得真呐……",
 			"#duoshi1": "国之大计，审势为先。",
 			"#duoshi2": "依今日之大势，当行此计。",
@@ -18108,22 +17730,15 @@ export default () => {
 			"#shuangren1": "吃我一记三尖两刃刀！",
 			"#qingcheng1": "我和你们真是投缘啊。",
 			"#qingcheng2": "哼，眼睛都直了呀。",
-			"#tuntian_gz_dengai1": "积谷于此，以制四方。",
-			"#tuntian_gz_dengai2": "留得良田在，何愁不破敌？",
 			
-			"#jixi_gz_dengai1": "哪里走！！",
-			"#jixi_gz_dengai2": "谁占到先机，谁就胜了。",
-			"#gz_dengai:die": "君不知臣，臣不知君，罢了……罢了……",
-			"#gz_jiangwei:die": "臣等正欲死战，陛下何故先降！",
-			"#tiaoxin_gz_jiangwei1": "小小娃娃，乳臭未干。",
-			"#tiaoxin_gz_jiangwei2": "快滚回去，叫你主将出来！",
-			"#yizhi1": "天文地理，丞相所教，维铭记于心。",
-			"#yizhi2": "哪怕只有一线生机，我也不会放弃！",
-			"#tianfu1": "丞相已教我识得此计！",
-			"#tianfu2": "哼，有破绽！",
-			"#yicheng1": "不怕死，就尽管放马过来！",
-			"#yicheng2": "待末将布下疑城，以退曹贼。",
-			"#gz_xusheng:die": "可怜一身胆略，尽随一抔黄土……",
+			
+			
+			
+			
+			
+			
+			
+			
 			"#yingyang1": "此战，我必取胜！",
 			"#yingyang2": "相斗之趣，吾常胜之。",
 			"#baoling1": "待吾大开杀戒，哈哈哈哈！",
