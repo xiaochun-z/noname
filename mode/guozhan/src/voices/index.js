@@ -1,5 +1,5 @@
-import normalVoice from "./normal.js";
+import character from "./character/index.js";
 
 export default {
-	...normalVoice,
+	...character,
 };

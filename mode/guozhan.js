@@ -2,6 +2,7 @@ import { lib, game, ui, get, ai, _status } from "../noname.js";
 import { start, startBefore, onreinit } from "./guozhan/src/main.js";
 import { gamePatch, getPatch, contentPatch, playerPatch } from "./guozhan/src/patch/index.js";
 import { pack, intro, sort } from "./guozhan/src/character/index.js";
+import { Character } from "../noname/library/element/index.js";
 import * as info from "./guozhan/src/info/index.js";
 import skill from "./guozhan/src/skill/index.js";
 import translate from "./guozhan/src/translate/index.js";
@@ -16236,40 +16237,7 @@ export default () => {
 					event.targets[0].chooseToDiscard("he", true);
 				},
 			},
-			gzjixi: {
-				inherit: "jixi",
-				audio: "jixi",
-				mainSkill: true,
-				init(player) {
-					if (player.checkMainSkill("gzjixi")) {
-						player.removeMaxHp();
-					}
-				},
-			},
-			ziliang: {
-				audio: 2,
-				trigger: { global: "damageEnd" },
-				filter(event, player) {
-					return event.player.isIn() && event.player.isFriendOf(player) && player.getExpansions("tuntian").length;
-				},
-				init(player) {
-					player.checkViceSkill("ziliang");
-				},
-				viceSkill: true,
-				direct: true,
-				content() {
-					"step 0";
-					player.chooseCardButton(get.prompt("ziliang", trigger.player), player.getExpansions("tuntian")).set("ai", function (button) {
-						return get.value(button.link);
-					});
-					("step 1");
-					if (result.bool) {
-						var card = result.links[0];
-						player.logSkill("ziliang", trigger.player);
-						player.give(card, trigger.player);
-					}
-				},
-			},
+			
 			gzhuyuan: {
 				audio: "huyuan",
 				trigger: { player: "phaseJieshuBegin" },
@@ -17685,10 +17653,8 @@ export default () => {
 			yizhi_info: "副将技，此武将牌减少半个阴阳鱼。若你的主将拥有技能〖观星〗，则将其描述中的X改为5；若你的主将没有技能〖观星〗，则你视为拥有技能〖观星〗。",
 			tianfu: "天覆",
 			tianfu_info: "主将技，阵法技，若当前回合角色与你处于同一队列，则你视为拥有技能〖看破〗。",
-			ziliang: "资粮",
-			ziliang_info: "副将技，当与你势力相同的一名角色受到伤害后，你可以将一张“田”交给该角色。",
-			gzjixi: "急袭",
-			gzjixi_info: "主将技，此武将牌减少半个阴阳鱼。你可以将一张“田”当作【顺手牵羊】使用。",
+			
+			
 			huyuan: "护援",
 			huyuan_info: "结束阶段，你可以将一张装备牌置入一名角色的装备区，然后你可以弃置该角色距离为1的一名角色的一张牌。",
 			heyi: "鹤翼",
@@ -18014,7 +17980,7 @@ export default () => {
 			gzchengshang: "承赏",
 			gzchengshang_info: "每回合限一次，当你使用指定了目标的牌结算完毕后，若你未因此牌造成过伤害，则你可以令其中一名目标角色交给你一张牌，若此牌和你使用的牌的花色和点数均相同，则你失去此技能。",
 
-			guozhan_zhen: "君临天下·阵",
+			
 			guozhan_shi: "君临天下·势",
 			guozhan_bian: "君临天下·变",
 			guozhan_quan: "君临天下·权",
@@ -18144,8 +18110,7 @@ export default () => {
 			"#qingcheng2": "哼，眼睛都直了呀。",
 			"#tuntian_gz_dengai1": "积谷于此，以制四方。",
 			"#tuntian_gz_dengai2": "留得良田在，何愁不破敌？",
-			"#ziliang1": "吃饱了，才有力气为国效力。",
-			"#ziliang2": "兵，断不可无粮啊。",
+			
 			"#jixi_gz_dengai1": "哪里走！！",
 			"#jixi_gz_dengai2": "谁占到先机，谁就胜了。",
 			"#gz_dengai:die": "君不知臣，臣不知君，罢了……罢了……",
