@@ -791,67 +791,7 @@ export default () => {
 			//陆逊
 
 			//臧霸
-			gzhengjiang: {
-				audio: "hengjiang",
-				trigger: { player: "damageEnd" },
-				preHidden: true,
-				check(event, player) {
-					return get.attitude(player, _status.currentPhase) < 0 || !_status.currentPhase.needsToDiscard(2);
-				},
-				filter(event) {
-					return _status.currentPhase && _status.currentPhase.isIn() && event.num > 0;
-				},
-				logTarget() {
-					return _status.currentPhase;
-				},
-				content() {
-					const source = _status.currentPhase;
-					const num = Math.max(source.countVCards("e"), 1);
-					if (source.hasSkill("gzhengjiang_effect")) {
-						source.storage.gzhengjiang_effect += num;
-						source.storage.gzhengjiang3.add(player);
-						source.updateMarks();
-					} else {
-						source.storage.gzhengjiang3 = [player];
-						source.storage.gzhengjiang_effect = num;
-						source.addTempSkill("gzhengjiang_effect");
-					}
-				},
-				ai: { maixie_defend: true },
-				subSkill: {
-					effect: {
-						mark: true,
-						charlotte: true,
-						intro: { content: "手牌上限-#" },
-						mod: {
-							maxHandcard(player, num) {
-								return num - player.storage.gzhengjiang_effect;
-							},
-						},
-						onremove(player) {
-							delete player.storage.gzhengjiang_effect;
-							delete player.storage.gzhengjiang3;
-						},
-						trigger: { player: "phaseDiscardEnd" },
-						filter(event, player) {
-							if (event.cards?.length) return false;
-							return player.storage.gzhengjiang3.some(target => target?.isIn() && target.countCards("h") < target.maxHp);
-						},
-						forced: true,
-						popup: false,
-						async content(event, trigger, player) {
-							const players = player.storage.gzhengjiang3;
-							for (var i = 0; i < players.length; i++) {
-								const target = players[i];
-								if (target.isIn() && target.countCards("h") < target.maxHp) {
-									target.logSkill("gzhengjiang", player);
-									await target.drawTo(target.maxHp);
-								}
-							}
-						},
-					},
-				},
-			},
+			
 			//宗预
 			gzchengshang: {
 				audio: "chengshang",
@@ -1012,79 +952,9 @@ export default () => {
 					target.addMark("fakeyicheng", 1, false);
 				},
 			},
-			fakefenming: {
-				audio: "fenming",
-				enable: "phaseUse",
-				filter(event, player) {
-					return player.isLinked();
-				},
-				filterTarget(card, player, target) {
-					return target.isLinked();
-				},
-				selectTarget: -1,
-				usable: 1,
-				multiline: true,
-				multitarget: true,
-				async content(event, trigger, player) {
-					for (const target of event.targets) {
-						if (player == target) await player.chooseToDiscard(true, "he");
-						else await player.discardPlayerCard(true, "he", target);
-					}
-				},
-				ai: {
-					order(item, player) {
-						return get.order({ name: "sha" }, player) + 0.1;
-					},
-					result: {
-						target(player, target) {
-							return get.sgn(get.attitude(player, target)) * get.effect(target, { name: "guohe_copy2" }, player, player);
-						},
-					},
-				},
-			},
-			fakebaoling: {
-				audio: "baoling",
-				inherit: "baoling",
-				init(player) {
-					player.checkMainSkill("fakebaoling");
-				},
-				content() {
-					"step 0";
-					player.removeCharacter(1);
-					("step 1");
-					player.gainMaxHp(3);
-					player.recover(3);
-					("step 2");
-					player.addSkills("fakebenghuai");
-				},
-				derivation: "fakebenghuai",
-			},
-			fakebenghuai: {
-				audio: "benghuai",
-				inherit: "benghuai",
-				async content(event, trigger, player) {
-					const {
-						result: { control },
-					} = await player
-						.chooseControl("体力", "上限", "背水！")
-						.set("prompt", "崩坏：请选择一项")
-						.set("choiceList", ["失去1点体力", "减1点体力上限", "背水！依次执行前两项，然后执行一个额外的摸牌阶段"])
-						.set("ai", () => {
-							const player = get.event("player");
-							if (player.maxHp > 1 && (player.getHp() == 2 || !player.countCards("h"))) return "背水！";
-							return player.isDamaged() ? "上限" : "体力";
-						});
-					player.popup(control);
-					game.log(player, "选择了", "#g" + control);
-					if (control != "上限") await player.loseHp();
-					if (control != "体力") await player.loseMaxHp();
-					if (control == "背水！") {
-						const next = player.phaseDraw();
-						event.next.remove(next);
-						trigger.getParent().next.push(next);
-					}
-				},
-			},
+			
+			
+			
 			fakediaodu: {
 				audio: "diaodu",
 				inherit: "xindiaodu",
@@ -13953,69 +13823,7 @@ export default () => {
 					order: 3,
 				},
 			},
-			baka_hunshang: {
-				skillAnimation: true,
-				animationColor: "wood",
-				audio: "hunzi",
-				preHidden: true,
-				derivation: ["baka_yingzi", "baka_yinghun"],
-				viceSkill: true,
-				init(player) {
-					if (player.checkViceSkill("baka_hunshang") && !player.viceChanged) {
-						player.removeMaxHp();
-					}
-				},
-				trigger: {
-					player: "phaseZhunbeiBegin",
-				},
-				filter(event, player) {
-					return player.hp <= 1;
-				},
-				forced: true,
-				locked: false,
-				//priority:3,
-				content() {
-					player.addTempSkills(["baka_yingzi", "baka_yinghun"]);
-				},
-				ai: {
-					threaten(player, target) {
-						if (target.hp == 1) return 2;
-						return 0.5;
-					},
-					maixie: true,
-					effect: {
-						target(card, player, target) {
-							if (!target.hasFriend()) return;
-							if (get.tag(card, "damage") == 1 && target.hp == 2 && !target.isTurnedOver() && _status.currentPhase != target && get.distance(_status.currentPhase, target, "absolute") <= 3) return [0.5, 1];
-						},
-					},
-				},
-			},
-			baka_yinghun: {
-				inherit: "yinghun",
-				audio: "yinghun_sunce",
-			},
-			baka_yingzi: {
-				mod: {
-					maxHandcardBase(player, num) {
-						return player.maxHp;
-					},
-				},
-				audio: "reyingzi_sunce",
-				trigger: {
-					player: "phaseDrawBegin2",
-				},
-				frequent: true,
-				filter(event) {
-					return !event.numFixed;
-				},
-				content() {
-					trigger.num++;
-				},
-				ai: {
-					threaten: 1.3,
-				},
-			},
+			
 			fengyin_main: {
 				init(player, skill) {
 					player.addSkillBlocker(skill);
@@ -16127,83 +15935,9 @@ export default () => {
 			
 			
 			
-			fengshi: {
-				audio: "zfengshi",
-				zhenfa: "siege",
-				trigger: { global: "useCardToPlayered" },
-				filter(event, player) {
-					if (event.card.name != "sha" || game.countPlayer() < 4) return false;
-					return player.siege(event.target) && event.player.siege(event.target) && event.target.countCards("e");
-				},
-				logTarget: "target",
-				content() {
-					trigger.target.chooseToDiscard("e", true);
-				},
-			},
-			gzguixiu: {
-				unique: true,
-				audio: "guixiu",
-				trigger: { player: ["showCharacterAfter", "removeCharacterBefore"] },
-				filter(event, player) {
-					if (event.name == "removeCharacter" || event.name == "changeVice") return get.character(event.toRemove, 3).includes("gzguixiu") && player.isDamaged();
-					return event.toShow.some(name => {
-						return get.character(name, 3).includes("gzguixiu");
-					});
-				},
-				content() {
-					if (trigger.name == "showCharacter") {
-						player.draw(2);
-					} else {
-						player.recover();
-					}
-				},
-			},
-			gzcunsi: {
-				derivation: "gzyongjue",
-				enable: "phaseUse",
-				audio: "cunsi",
-				filter(event, player) {
-					return player.checkMainSkill("gzcunsi", false) || player.checkViceSkill("gzcunsi", false);
-				},
-				unique: true,
-				forceunique: true,
-				filterTarget: true,
-				skillAnimation: true,
-				animationColor: "orange",
-				content() {
-					"step 0";
-					if (player.checkMainSkill("gzcunsi", false)) {
-						player.removeCharacter(0);
-					} else {
-						player.removeCharacter(1);
-					}
-					("step 1");
-					target.addSkills("gzyongjue");
-					if (target != player) {
-						target.draw(2);
-					}
-				},
-				ai: {
-					order: 9,
-					result: {
-						player(player, target) {
-							var num = 0;
-							if (player.isDamaged() && target.isFriendOf(player)) {
-								num++;
-								if (target.hasSkill("kanpo")) num += 0.5;
-								if (target.hasSkill("liegong")) num += 0.5;
-								if (target.hasSkill("tieji")) num += 0.5;
-								if (target.hasSkill("gzrende")) num += 1.2;
-								if (target.hasSkill("longdan")) num += 1.2;
-								if (target.hasSkill("paoxiao")) num += 1.2;
-								if (target.hasSkill("zhangwu")) num += 1.5;
-								if (target != player) num += 0.5;
-							}
-							return num;
-						},
-					},
-				},
-			},
+			
+			
+			
 			gzyongjue: {
 				audio: "yongjue",
 				trigger: { global: "useCardAfter" },
@@ -16298,49 +16032,7 @@ export default () => {
 					return player.hp <= 1 && player.isDamaged() && !player.hasSkill("yinghun");
 				},
 			},
-			yingyang: {
-				audio: 2,
-				trigger: { player: "compare", target: "compare" },
-				filter(event) {
-					return !event.iwhile;
-				},
-				direct: true,
-				preHidden: true,
-				content() {
-					"step 0";
-					player
-						.chooseControl("点数+3", "点数-3", "cancel2")
-						.set("prompt", get.prompt2("yingyang"))
-						.set("ai", function () {
-							if (_status.event.small) return 1;
-							else return 0;
-						})
-						.set("small", trigger.small);
-					("step 1");
-					if (result.index != 2) {
-						player.logSkill("yingyang");
-						if (result.index == 0) {
-							game.log(player, "拼点牌点数+3");
-							if (player == trigger.player) {
-								trigger.num1 += 3;
-								if (trigger.num1 > 13) trigger.num1 = 13;
-							} else {
-								trigger.num2 += 3;
-								if (trigger.num2 > 13) trigger.num2 = 13;
-							}
-						} else {
-							game.log(player, "拼点牌点数-3");
-							if (player == trigger.player) {
-								trigger.num1 -= 3;
-								if (trigger.num1 < 1) trigger.num1 = 1;
-							} else {
-								trigger.num2 -= 3;
-								if (trigger.num2 < 1) trigger.num2 = 1;
-							}
-						}
-					}
-				},
-			},
+			
 			gzqianxi: {
 				audio: "qianxi",
 				trigger: { player: "phaseZhunbeiBegin" },
@@ -17164,12 +16856,7 @@ export default () => {
 			kurou_effect_info: "",
 			new_chuli: "除疠",
 			new_chuli_info: "出牌阶段限一次，若你有牌，你可以选择至多三名势力各不相同或未确定势力的其他角色，你弃置你和这些角色的各一张牌。然后所有以此法弃置过黑桃牌的角色各摸一张牌。",
-			baka_hunshang: "魂殇",
-			baka_hunshang_info: "副将技，此武将牌减少半个阴阳鱼；准备阶段，若你的体力值不大于1，则你获得〖英姿〗和〖英魂〗直到回合结束。",
-			baka_yinghun: "英魂",
-			baka_yinghun_info: "准备阶段，你可令一名其他角色执行一项：摸X张牌，然后弃置一张牌；或摸一张牌，然后弃置X张牌（X为你已损失的体力值）。",
-			baka_yingzi: "英姿",
-			baka_yingzi_info: "锁定技，摸牌阶段摸，你多摸一张牌；你的手牌上限+X（X为你已损失的体力值）。",
+			
 			fengyin_main: "封印[主将]",
 			fengyin_main_info: "",
 			fengyin_vice: "封印[副将]",
@@ -17261,20 +16948,15 @@ export default () => {
 			jizhao_info: "限定技。当你处于濒死状态时，你可以将手牌补至体力上限，体力回复至2点，失去技能〖授钺〗并获得技能〖仁德〗。",
 			
 
-			fengshi: "锋矢",
-			fengshi_sha: "锋矢",
-			fengshi_info: "阵法技，在一个围攻关系中，若你是围攻角色，则你或另一名围攻角色使用【杀】指定被围攻角色为目标后，可令该角色弃置装备区内的一张牌。",
+			
 
 			baoling: "暴凌",
 			baoling_info: "主将技，锁定技，出牌阶段结束时，若你有副将，则你移除副将，然后加3点体力上限，回复3点体力，失去技能〖暴凌〗并获得〖崩坏〗。",
-			yingyang: "鹰扬",
-			yingyang_info: "当你的拼点牌亮出后，你可以令此牌的点数+3或-3（至多为K，至少为1）。",
+			
 			hunshang: "魂殇",
 			hunshang_info: "副将技，此武将牌减少半个阴阳鱼；准备阶段，若你的体力值不大于1，则你本回合获得“英姿”和“英魂”。",
-			gzguixiu: "闺秀",
-			gzguixiu_info: "当你明置此武将牌时，你可以摸两张牌；当你移除此武将牌时，你可以回复1点体力。",
-			gzcunsi: "存嗣",
-			gzcunsi_info: "出牌阶段，你可以移除此武将牌并选择一名角色，然后其获得技能〖勇决〗，若你选择的目标角色不是自己，则其摸两张牌。",
+			
+			
 			gzyongjue: "勇决",
 			gzyongjue_info: "与你势力相同的一名角色于其回合内使用【杀】结算完成后，若此牌是其本回合内使用的第一张牌，则其可以获得此牌对应的所有实体牌。",
 			gzqianxi: "潜袭",
@@ -17448,12 +17130,9 @@ export default () => {
 			fakeduoshi_info: "每轮限一次，友方角色可以将一张红色手牌当作【以逸待劳】使用，然后若你为小势力角色，你可以令一名友方角色将X张手牌当作不可被响应的【火烧连营】使用（X为此【以逸待劳】指定的目标数）。",
 			fakeyicheng: "疑城",
 			fakeyicheng_info: "与你势力相同的角色成为【杀】的目标后，你可以令其摸一张牌，然后其可以使用一张装备牌，其于此回合结束时弃置X张牌（X为你本回合对其发动此技能的次数）。",
-			fakefenming: "奋命",
-			fakefenming_info: "出牌阶段限一次，若你处于横置状态，你可以弃置所有处于横置状态的角色的各一张牌。",
-			fakebaoling: "暴凌",
-			fakebaoling_info: "主将技，锁定技，出牌阶段结束时，若你有副将，则你移除副将，加3点体力上限并回复3点体力，然后获得〖崩坏〗。",
-			fakebenghuai: "崩坏",
-			fakebenghuai_info: "结束阶段，若你的体力值不为全场最低，则你选择一项：①失去1点体力；②减1点体力上限；③背水：执行一个额外的摸牌阶段。",
+			
+			
+			
 			fakediaodu: "调度",
 			fakediaodu_info: "①每回合每种牌的类别限一次，与你势力相同的角色使用牌时，若此牌有目标且包含其，则其可以摸一张牌。②出牌阶段开始时，你可以获得与你势力相同的一名角色装备区内的一张牌，然后你可以将此牌交给另一名与你势力相同的其他角色。",
 			fakeyigui: "役鬼",
@@ -17598,8 +17277,7 @@ export default () => {
 			gzsidi_info: "①一名与你势力相同的角色受到伤害后，你可以将一张与武将牌上的“驭”类别均不同的一张牌称为“驭”置于武将牌上。②与你势力不同的角色的回合开始时，你可以移去至多三张“驭”，然后选择执行等量项：⒈选择移去“驭”中的一个类别，令其本回合无法使用此类别的牌。⒉选择其一个已明置武将牌上的一个技能，令此技能于本回合失效。⒊选择一名与你势力相同的已受伤其他角色，令其回复1点体力。",
 			gz_ol_lisu: "李肃",
 
-			gzhengjiang: "横江",
-			gzhengjiang_info: "当你受到伤害后，你可以令当前回合角色本回合的手牌上限-X（X为其装备区牌数且至少为1）。然后其本回合弃牌阶段结束时，若其未于此阶段弃牌，则你将手牌摸至体力上限。",
+			
 			gzchengshang: "承赏",
 			gzchengshang_info: "每回合限一次，当你使用指定了目标的牌结算完毕后，若你未因此牌造成过伤害，则你可以令其中一名目标角色交给你一张牌，若此牌和你使用的牌的花色和点数均相同，则你失去此技能。",
 
@@ -17739,8 +17417,7 @@ export default () => {
 			
 			
 			
-			"#yingyang1": "此战，我必取胜！",
-			"#yingyang2": "相斗之趣，吾常胜之。",
+			
 			"#baoling1": "待吾大开杀戒，哈哈哈哈！",
 			"#baoling2": "大丈夫，岂能妇人之仁？",
 			"#zhangwu1": "遁剑归一，有凤来仪。",

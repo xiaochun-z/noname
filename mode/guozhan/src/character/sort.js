@@ -1,10 +1,11 @@
 import normal, { sort as normalSort } from "./normal.js";
 import zhen, { sort as zhenSort } from "./zhen.js";
+import shi, { sort as shiSort } from "./shi.js";
 
 export default {
 	[normalSort]: Object.keys(normal),
 	[zhenSort]: Object.keys(zhen),
-	guozhan_shi: ["gz_re_lidian", "gz_zangba", "gz_madai", "gz_mifuren", "gz_sunce", "gz_chendong", "gz_sp_dongzhuo", "gz_zhangren"],
+	[shiSort]: Object.keys(shi),
 	guozhan_bian: ["gz_liqueguosi", "gz_zuoci", "gz_bianfuren", "gz_xunyou", "gz_lingtong", "gz_lvfan", "gz_masu", "gz_shamoke"],
 	guozhan_quan: ["gz_cuimao", "gz_yujin", "gz_wangping", "gz_fazheng", "gz_wuguotai", "gz_lukang", "gz_yuanshu", "gz_zhangxiu"],
 	guozhan_jun: ["gz_jun_caocao", "gz_jun_sunquan", "gz_jun_liubei", "gz_jun_zhangjiao"],
