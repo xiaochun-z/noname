@@ -1,9 +1,7 @@
 import { lib, game, ui, get as _get, ai, _status } from "../../../../../noname.js";
-import { GameEvent, Player, Card } from "../../../../../noname/library/element/index.js";
 import { cast } from "../../../../../noname/util/index.js";
 import { GetGuozhan } from "../../patch/get.js";
 import { PlayerGuozhan } from "../../patch/player.js";
-import { broadcastAll } from "../../patch/game.js";
 
 /** @type {GetGuozhan}  */
 const get = cast(_get);
@@ -146,8 +144,10 @@ export default {
 				mod: {
 					globalTo(from, to, distance) {
 						if (
-							game.hasPlayer(function (current) {
-								return current.hasSkill("heyi") && current.inline(to);
+							game.hasPlayer(current => {
+								/** @type {PlayerGuozhan} */
+								const currentRef = cast(current);
+								return current.hasSkill("heyi") && currentRef.inline(to);
 							})
 						) {
 							return distance + 1;
