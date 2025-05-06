@@ -3,6 +3,7 @@ import { Character } from "../../../../noname/library/element/index.js";
 import normal from "./normal.js";
 import zhen from "./zhen.js";
 import shi from "./shi.js";
+import bian from "./bian.js";
 
 import restCharacter from "./rest.js";
 
@@ -138,6 +139,7 @@ export const pack = {
 	...normal,
 	...zhen,
 	...shi,
+	...bian,
 	...restCharacter,
 };
 
