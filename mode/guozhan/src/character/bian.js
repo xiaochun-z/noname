@@ -7,7 +7,7 @@ export default {
 		hp: 4,
 		maxHp: 4,
 		hujia: 0,
-		skills: ["gzxiongsuan"],
+		skills: ["gz_xiongsuan"],
 		hasSkinInGuozhan: true,
 	}),
 	gz_zuoci: new Character({
@@ -16,7 +16,7 @@ export default {
 		hp: 3,
 		maxHp: 3,
 		hujia: 0,
-		skills: ["fakeyigui", "fakejihun"],
+		skills: ["fake_yigui", "fake_jihun"],
 		hasSkinInGuozhan: true,
 	}),
 	gz_bianfuren: new Character({
@@ -25,7 +25,7 @@ export default {
 		hp: 3,
 		maxHp: 3,
 		hujia: 0,
-		skills: ["wanwei", "gzyuejian"],
+		skills: ["wanwei", "gz_yuejian"],
 		dieAudios: ["ol_bianfuren"],
 	}),
 	gz_xunyou: new Character({
@@ -34,7 +34,7 @@ export default {
 		hp: 3,
 		maxHp: 3,
 		hujia: 0,
-		skills: ["gzqice", "zhiyu"],
+		skills: ["gz_qice", "zhiyu"],
 		hasSkinInGuozhan: true,
 	}),
 	gz_lingtong: new Character({
@@ -52,7 +52,7 @@ export default {
 		hp: 3,
 		maxHp: 3,
 		hujia: 0,
-		skills: ["gzdiaodu_backports", "gzdiancai"],
+		skills: ["gz_diaodu_best", "gz_diancai"],
 		hasSkinInGuozhan: true,
 	}),
 	gz_masu: new Character({
@@ -61,7 +61,7 @@ export default {
 		hp: 3,
 		maxHp: 3,
 		hujia: 0,
-		skills: ["gzsanyao", "gzzhiman"],
+		skills: ["gz_sanyao", "gz_zhiman"],
 		hasSkinInGuozhan: true,
 	}),
 	gz_shamoke: new Character({
@@ -70,7 +70,7 @@ export default {
 		hp: 4,
 		maxHp: 4,
 		hujia: 0,
-		skills: ["gzjili"],
+		skills: ["gzjili"], // ???
 		hasSkinInGuozhan: true,
 	}),
 };
