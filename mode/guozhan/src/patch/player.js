@@ -92,8 +92,8 @@ export class PlayerGuozhan extends Player {
 
 	/**
 	 *
-	 * @param {*} repeat
-	 * @param {*} hidden
+	 * @param {*} [repeat]
+	 * @param {*} [hidden]
 	 * @returns
 	 */
 	mayChangeVice(repeat, hidden) {
