@@ -16544,8 +16544,6 @@ export default () => {
 			gzchengshang: "承赏",
 			gzchengshang_info: "每回合限一次，当你使用指定了目标的牌结算完毕后，若你未因此牌造成过伤害，则你可以令其中一名目标角色交给你一张牌，若此牌和你使用的牌的花色和点数均相同，则你失去此技能。",
 
-
-			guozhan_quan: "君临天下·权",
 			guozhan_jun: "君主武将",
 			guozhan_jin: "文德武备",
 			guozhan_single: "君临天下EX",

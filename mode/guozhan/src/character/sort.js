@@ -2,13 +2,14 @@ import normal, { sort as normalSort } from "./normal.js";
 import zhen, { sort as zhenSort } from "./zhen.js";
 import shi, { sort as shiSort } from "./shi.js";
 import bian, { sort as bianSort } from "./bian.js";
+import quan, { sort as quanSort } from "./quan.js";
 
 export default {
 	[normalSort]: Object.keys(normal),
 	[zhenSort]: Object.keys(zhen),
 	[shiSort]: Object.keys(shi),
 	[bianSort]: Object.keys(bian),
-	guozhan_quan: ["gz_cuimao", "gz_yujin", "gz_wangping", "gz_fazheng", "gz_wuguotai", "gz_lukang", "gz_yuanshu", "gz_zhangxiu"],
+	[quanSort]: Object.keys(quan),
 	guozhan_jun: ["gz_jun_caocao", "gz_jun_sunquan", "gz_jun_liubei", "gz_jun_zhangjiao"],
 	guozhan_single: ["gz_re_xushu", "gz_yanbaihu", "gz_wujing", "gz_dongzhao", "gz_huangzu", "gz_zhugeke", "gz_liuba", "gz_zhuling"],
 	// 谷爱凌
@@ -23,5 +24,4 @@ export default {
 	guozhan_qunxiong: ["gz_xf_huangquan", "gz_guohuai", "gz_guanqiujian", "gz_zhujun", "gz_chengong", "gz_re_xugong"],
 	guozhan_tw: ["gz_tw_tianyu", "gz_tw_liufuren"],
 	guozhan_others: ["gz_ol_lisu", "gz_mazhong", "gz_bulianshi", "gz_caoang", "gz_caozhen", "gz_maliang", "gz_re_panshu", "gz_tengyin", "gz_xurong", "gz_xianglang", "gz_zumao", "gz_zhugejin", "gz_zhouyi", "gz_lingcao", "gz_yangxiu", "gz_tw_xiahoushang", "gz_beimihu", "gz_fuwan", "gz_old_huaxiong", "gz_lvlingqi", "gz_yangwan", "gz_chendao", "gz_lifeng", "gz_liaohua", "gz_jianggan", "gz_wangyi", "gz_key_ushio", "gz_re_nanhualaoxian", "gz_re_xusheng", "gz_ol_sb_sunjian"],
-
 };
