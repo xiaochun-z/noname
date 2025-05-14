@@ -1,7 +1,7 @@
 import { lib, game, ui, get, ai, _status } from "../noname.js";
 import { start, startBefore, onreinit } from "./guozhan/src/main.js";
 import { gamePatch, getPatch, contentPatch, playerPatch } from "./guozhan/src/patch/index.js";
-import { pack, intro, sort } from "./guozhan/src/character/index.js";
+import { pack, intro, sort, yingbian } from "./guozhan/src/character/index.js";
 import { Character } from "../noname/library/element/index.js";
 import * as info from "./guozhan/src/info/index.js";
 import skill from "./guozhan/src/skill/index.js";
@@ -24,53 +24,12 @@ export default () => {
 		card,
 		aozhanRank: info.rank.aozhan,
 		guozhanRank: info.rank.guozhan,
-		yingbian_guozhan: {
-			gz_sp_duyu: new Character({
-				sex: "male",
-				group: "qun",
-				hp: 4,
-				maxHp: 4,
-				hujia: 0,
-				skills: ["fakezhufu"],
-			}),
-			gz_wangji: new Character({
-				sex: "male",
-				group: "wei",
-				hp: 3,
-				maxHp: 3,
-				hujia: 0,
-				skills: ["fakeqizhi", "fakejinqu"],
-			}),
-			gz_yangyan: new Character({
-				sex: "female",
-				group: "jin",
-				hp: 3,
-				maxHp: 3,
-				hujia: 0,
-				skills: ["fakexuanbei", "xianwan"],
-			}),
-			gz_shibao: new Character({
-				sex: "male",
-				group: "jin",
-				hp: 4,
-				maxHp: 4,
-				hujia: 0,
-				skills: ["fakezhuosheng", "fakejuhou"],
-			}),
-			gz_simazhou: new Character({
-				sex: "male",
-				group: "jin",
-				hp: 4,
-				maxHp: 4,
-				hujia: 0,
-				skills: ["fakecaiwang", "fakenaxiang"],
-			}),
-		},
+		yingbian_guozhan: yingbian,
 		characterSort: {
-			mode_guozhan: { ...sort },
+			mode_guozhan: sort,
 		},
 		characterPack: {
-			mode_guozhan: { ...pack },
+			mode_guozhan: pack,
 		},
 		characterIntro: intro,
 		skill: {

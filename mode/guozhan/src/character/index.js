@@ -145,3 +145,4 @@ export const pack = {
 
 export { default as intro } from "./intro.js";
 export { default as sort } from "./sort.js";
+export { default as yingbian } from "./yingbian.js";
