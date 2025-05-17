@@ -495,22 +495,22 @@ const skills = {
 				await player.draw(num);
 			}
 			if (count > 1) {
-				player.addTempSkill("twhuazhang_hs");
-				player.addMark("twhuazhang_hs", num, false);
+				player.addTempSkill("twhuazhang_handcard");
+				player.addMark("twhuazhang_handcard", num, false);
 			}
 			if (count > 2) {
 				await player.draw(num);
-				player.addMark("twhuazhang_hs", num, false);
+				player.addMark("twhuazhang_handcard", num, false);
 			}
 		},
 		subSkill: {
-			hs: {
+			handcard: {
 				onremove: true,
 				charlotte: true,
-				marktext: "image/card/handcard.png",
+				markimage: "image/card/handcard.png",
 				mod: {
 					maxHandcard(player, num) {
-						return num + player.countMark("twhuazhang_hs");
+						return num + player.countMark("twhuazhang_handcard");
 					},
 				},
 				intro: {
