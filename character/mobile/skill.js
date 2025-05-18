@@ -3696,6 +3696,7 @@ const skills = {
 			return player.countCards("h") > 0 && game.hasPlayer(target => target !== player);
 		},
 		filterCard: true,
+		position: "he",
 		selectCard: () => [1, Infinity],
 		filterTarget: lib.filter.notMe,
 		selectTarget: () => ui.selected.cards.length,
