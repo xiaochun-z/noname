@@ -405,7 +405,6 @@ const skills = {
 				content() {
 					player.draw(2);
 					if (!player.getExpansions("olxiewei").some(card => get.suit(card) == "spade")) player.tempBanSkill("olyouque", "phaseUseAfter");
-					player.removeSkill(event.name);
 				},
 			},
 		},

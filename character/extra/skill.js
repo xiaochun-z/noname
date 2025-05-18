@@ -574,6 +574,7 @@ const skills = {
 			game.filterPlayer(target => target !== player).forEach(target => target.clearMark("dclinjie"));
 			if (num > 0) player.addMark("dclinjie", num);
 			await player.draw(player.countMark("dclinjie"));
+			await player.gainMaxHp();
 			await player.removeSkills("dclinjie");
 			await player.addSkills("dclishi");
 			player.markSkill("dclinjie");
