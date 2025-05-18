@@ -33076,7 +33076,7 @@ const skills = {
 			const { result } = await player
 				.chooseButton(["凌人：猜测其有哪些类别的手牌", [list, "vcard"]], [0, 3], true)
 				.set("ai", button => {
-					return get.event("choice").includes(button.link[2]);
+					return get.event("choice").includes(button.link[2].slice(8));
 				})
 				.set(
 					"choice",
