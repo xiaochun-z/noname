@@ -864,22 +864,22 @@ const skills = {
 							target = event.targets[0];
 						player.logSkill("chunqiubi_skill", target);
 						let funcs = [
-							async target => {
-								await target.loseHp();
-							},
-							async target => {
-								if (!target.getDamagedHp()) return;
-								await target.draw(target.getDamagedHp());
-							},
-							async target => {
-								if (!target.isDamaged()) return;
-								await target.recover();
-							},
-							async target => {
-								if (!target.countDiscardableCards(target, "h") || !target.isDamaged()) return;
-								await target.chooseToDiscard("h", target.getDamagedHp(), true);
-							},
-						],
+								async target => {
+									await target.loseHp();
+								},
+								async target => {
+									if (!target.getDamagedHp()) return;
+									await target.draw(target.getDamagedHp());
+								},
+								async target => {
+									if (!target.isDamaged()) return;
+									await target.recover();
+								},
+								async target => {
+									if (!target.countDiscardableCards(target, "h") || !target.isDamaged()) return;
+									await target.chooseToDiscard("h", target.getDamagedHp(), true);
+								},
+							],
 							prompts = lib.skill.chunqiubi_skill.prompts.slice();
 						//对描述和效果重新组合
 						prompts = prompts.slice(link, 4).concat(prompts.slice(0, link));
