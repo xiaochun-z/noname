@@ -2050,12 +2050,12 @@ const skills = {
 				const judgeEvent = player.judge();
 				judgeEvent.judge2 = result => result.bool;
 				judgeEvent.set("callback", async event => {
-					event.getParent().orderingCards.remove(event.judgeResult.card);
 					event.getParent(2).cards.push(event.judgeResult.card);
 				});
 				await judgeEvent;
 			}
-			if (!event.cards.length) return;
+			if (!event.cards.someInD("d")) return;
+			event.cards = event.cards.filterInD("d");
 			const list = Object.keys(lib.color);
 			const color = event.cards
 				.map(card => get.color(card))
