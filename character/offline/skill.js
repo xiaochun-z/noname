@@ -641,7 +641,7 @@ const skills = {
 						);
 					}
 					let list = [get.effect(source, { name: "losehp" }, player, player) + get.recoverEffect(player, player, player)];
-					let cards = sourcegetCards("h", card => get.name(card) === "sha" && source.canUse(card, target));
+					let cards = source.getCards("h", card => get.name(card) === "sha" && source.canUse(card, target));
 					if (cards.length) {
 						cards.sort((a, b) => get.effect(target, b, source, source) - get.effect(target, a, source, source));
 						list.push(get.effect(target, cards[0], source, player));
@@ -4143,7 +4143,7 @@ const skills = {
 			const distanceChanged = [];
 			for (const i of game.players) {
 				for (const j of game.players) {
-					if (storage[i.playerid][j.playerid] != get.distance(i, j)) {
+					if (storage[i.playerid]?.[j.playerid] != get.distance(i, j)) {
 						distanceChanged.add(i);
 					}
 				}
@@ -5637,7 +5637,7 @@ const skills = {
 		},
 	},
 	xkjizhong: {
-		forced: true,
+		locked: true,
 		global: "xkjizhong_global",
 		subSkill: {
 			global: {
@@ -6602,6 +6602,7 @@ const skills = {
 		},
 	},
 	yylinzhen: {
+		locked: true,
 		zhuSkill: true,
 		global: "yylinzhen_global",
 		subSkill: {
@@ -17337,7 +17338,7 @@ const skills = {
 						return get.effect(target, { name: "draw" }, player, player);
 					})
 					.forResult();
-				if (result?.targets) {
+				if (result?.targets?.length) {
 					const target = result.targets[0];
 					if (!logged) {
 						logged = true;
@@ -17347,10 +17348,8 @@ const skills = {
 				}
 			}
 			if (num > 1 && player.isDamaged()) {
-				const {
-					result: { bool },
-				} = await player.chooseBool(get.prompt("zylianji"), "回复1点体力").set("ai", () => true);
-				if (bool) {
+				const { result } = await player.chooseBool(get.prompt("zylianji"), "回复1点体力");
+				if (result?.bool) {
 					if (!logged) {
 						logged = true;
 						player.logSkill("zylianji");
@@ -17363,28 +17362,29 @@ const skills = {
 				const evt = trigger.getParent("phase", true);
 				if (evt) list = evt.phaseList.slice(evt.num + 1);
 				if (!list.length) return;
-				const {
-					result: { targets },
-				} = await player.chooseTarget(get.prompt("zylianji"), `跳过本回合的剩余阶段，然后令一名其他角色执行一个只有${get.translation(list)}的回合`, lib.filter.notMe).set("ai", target => {
-					var att = get.attitude(_status.event.player, target),
-						num = target.needsToDiscard(),
-						numx = player.needsToDiscard();
-					if (att < 0 && num > 0) return (-att * Math.sqrt(num)) / 3 + numx;
-					var skills = target.getSkills();
-					var val = 0;
-					for (var skill of skills) {
-						var info = get.info(skill);
-						if (info.trigger && info.trigger.player && (info.trigger.player.indexOf("phaseJieshu") == 0 || (Array.isArray(info.trigger.player) && info.trigger.player.some(i => i.indexOf("phaseJieshu") == 0)))) {
-							var threaten = info.ai && info.ai.threaten ? info.ai.threaten : 1;
-							if (info.ai && info.ai.neg) val -= 3 * threaten;
-							else if (info.ai && info.ai.halfneg) val -= 1.5 * threaten;
-							else val += threaten;
+				const result = await player
+					.chooseTarget(get.prompt("zylianji"), `跳过本回合的剩余阶段，然后令一名其他角色执行一个只有${get.translation(list)}的回合`, lib.filter.notMe)
+					.set("ai", target => {
+						var att = get.attitude(_status.event.player, target),
+							num = target.needsToDiscard(),
+							numx = player.needsToDiscard();
+						if (att < 0 && num > 0) return (-att * Math.sqrt(num)) / 3 + numx;
+						var skills = target.getSkills();
+						var val = 0;
+						for (var skill of skills) {
+							var info = get.info(skill);
+							if (info.trigger && info.trigger.player && (info.trigger.player.indexOf("phaseJieshu") == 0 || (Array.isArray(info.trigger.player) && info.trigger.player.some(i => i.indexOf("phaseJieshu") == 0)))) {
+								var threaten = info.ai && info.ai.threaten ? info.ai.threaten : 1;
+								if (info.ai && info.ai.neg) val -= 3 * threaten;
+								else if (info.ai && info.ai.halfneg) val -= 1.5 * threaten;
+								else val += threaten;
+							}
 						}
-					}
-					return (att * val) / 2 + numx;
-				});
-				if (targets.length) {
-					const target = targets[0];
+						return (att * val) / 2 + numx;
+					})
+					.forResult();
+				if (result?.targets?.length) {
+					const target = result.targets[0];
 					if (!logged) {
 						logged = true;
 						player.logSkill("zylianji", target);

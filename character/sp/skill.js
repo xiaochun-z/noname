@@ -58,19 +58,18 @@ const skills = {
 			player: "phaseJieshuBegin",
 		},
 		async cost(event, trigger, player) {
-			const result = await player
-				.chooseTarget(get.prompt2("olcunze"))
-				.set("ai", function (target) {
-					let att = get.attitude(_status.event.player, target);
+			const { result } = await player
+				.chooseTarget(get.prompt2(event.skill))
+				.set("ai", target => {
+					let att = get.attitude(get.player(), target);
 					if (att > 0) return att + 1;
 					if (att == 0) return Math.random();
 					return att;
 				})
-				.set("animate", false)
-				.forResult();
+				.set("animate", false);
 			event.result = {
-				bool: true,
-				cost_data: result.targets[0],
+				bool: result?.targets?.length,
+				cost_data: result?.targets?.[0],
 			};
 		},
 		async content(event, trigger, player) {
@@ -507,7 +506,7 @@ const skills = {
 					.chooseTarget(`###${get.prompt("oljiyun")}###令至多${get.cnNumber(max)}名角色各摸一张牌`, [1, max])
 					.set("ai", target => {
 						const player = get.player();
-						return effect(target, { name: "draw" }, player, player);
+						return get.effect(target, { name: "draw" }, player, player);
 					})
 					.forResult();
 			} else {
@@ -743,7 +742,7 @@ const skills = {
 			order: 0.1,
 			result: {
 				player(player, target) {
-					return target.countCards("h") - player.countCards("h");
+					return Math.abs(target.countCards("h") - player.countCards("h"));
 				},
 			},
 		},
@@ -4008,6 +4007,7 @@ const skills = {
 			if (player.isHealthy()) return false;
 			return game.hasPlayer2(target => event.getl?.(target)?.es?.some(card => get.suit(card, target) === "spade"));
 		},
+		locked: true,
 		async cost(event, trigger, player) {
 			if (trigger.name === "damage") {
 				const target = trigger.player;
@@ -9570,20 +9570,12 @@ const skills = {
 		audio: 2,
 		enable: "chooseToUse",
 		onChooseToUse(event) {
-			const sum = ui.cardPile.childNodes.length;
-			if (game.online || !sum || !event.player.hasSkill("olxiaofan") || event.player.isTempBanned("olxiaofan")) return;
-			const cards = [],
-				num = lib.skill.olxiaofan.getNum(event.player) + 1;
-			for (let i = 0; i < num; i++) {
-				const card = ui.cardPile.childNodes[sum - 1 - i];
-				if (card) cards.push(card);
-				else break;
-			}
-			event.set("olxiaofan_cards", cards);
+			if (game.online || !ui.cardPile.childElementCount || Array.isArray(event.olxiaofan_cards)) return;
+			const num = lib.skill.olxiaofan.getNum(event.player) + 1;
+			event.set("olxiaofan_cards", Array.from(ui.cardPile.childNodes).slice(-num).reverse());
 		},
 		hiddenCard(player, name) {
-			if (player.isTempBanned("olxiaofan")) return false;
-			return lib.inpile.includes(name);
+			return !player.isTempBanned("olxiaofan") && lib.inpile.includes(name);
 		},
 		getNum(player) {
 			return player.getHistory("useCard").reduce((list, evt) => list.add(get.type2(evt.card)), []).length;
@@ -9594,7 +9586,7 @@ const skills = {
 		},
 		chooseButton: {
 			dialog(event, player) {
-				return ui.create.dialog("嚣翻", event.olxiaofan_cards, "hidden");
+				return ui.create.dialog(lib.translate["olxiaofan"], event.olxiaofan_cards, "hidden");
 			},
 			filter(button, player) {
 				const evt = _status.event.getParent();
@@ -9603,7 +9595,7 @@ const skills = {
 			check(button) {
 				const card = button.link,
 					player = get.player();
-				if (get.type(card) == "equip") return 0;
+				if (player.getHistory("useCard").reduce((list, evt) => list.add(get.type2(evt.card)), [get.type(card)]).length > 2) return 0;
 				return player.getUseValue(card);
 			},
 			backup(links, player) {
@@ -9740,9 +9732,9 @@ const skills = {
 				},
 				trigger: { player: "useCard1" },
 				filter(event, player) {
-					if (!event.targets || !event.targets.length) return false;
+					if (!Array.isArray(event.targets) || !event.targets.length) return false;
 					let num = 0;
-					if (event.cards && event.cards.length) {
+					if (Array.isArray(event.cards) && event.cards.length) {
 						const history = player.getHistory("lose", evt => {
 							if (evt.getParent() != event) return false;
 							return event.cards.some(card => evt.hs.includes(card));
@@ -18227,7 +18219,7 @@ const skills = {
 		filterCard: () => false,
 		selectCard: -1,
 		precontent() {
-			player.awakenSkill(event.name);
+			player.awakenSkill("juesheng");
 			player.addTempSkill("juesheng_counter");
 		},
 		ai: {
@@ -22775,6 +22767,7 @@ const skills = {
 	},
 	//统率三军诸葛瑾和文聘
 	zhenwei_three: {
+		locked: true,
 		global: "zhenwei_three_others",
 		subSkill: {
 			others: {
@@ -28002,6 +27995,7 @@ const skills = {
 		},
 	},
 	luoyan: {
+		locked: true,
 		group: ["luoyan_tianxiang", "luoyan_liuli"],
 		derivation: ["tianxiang", "liuli"],
 		ai: {
