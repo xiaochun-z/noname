@@ -1293,7 +1293,7 @@ const skills = {
 				if (info.ai && (info.ai.combo || info.ai.notemp || info.ai.neg)) continue;
 				//筛选跟转化相关的
 				const str = get.plainText(get.skillInfoTranslation(skill));
-            	if (!["当","当做","当作"].some(s=>str.includes(s))) continue;
+				if (!["当","当做","当作"].some(s=>str.includes(s))) continue;
 				list.add(skill);
 			}*/
 
