@@ -9358,18 +9358,18 @@ const skills = {
 		},
 		subSkill: {
 			mark: {
-				intro: {
-					content: "$参与了〖雄争〗的争斗",
-					onunmark: true,
-				},
 				charlotte: true,
-				onremove: true,
+				onremove(player, skill) {
+					delete player.storage[skill];
+					delete player.storage.twxiongzheng_target;
+				},
+				intro: { content: "$参与了〖雄争〗的争斗" },
 				trigger: { global: "damage" },
-				firstDo: true,
-				direct: true,
 				filter(event, player) {
 					return event.player == player.storage.twxiongzheng_target && get.itemtype(event.source) == "player";
 				},
+				direct: true,
+				firstDo: true,
 				content() {
 					player.markAuto("twxiongzheng_mark", [trigger.source]);
 				},
