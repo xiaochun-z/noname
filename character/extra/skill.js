@@ -574,7 +574,6 @@ const skills = {
 			game.filterPlayer(target => target !== player).forEach(target => target.clearMark("dclinjie"));
 			if (num > 0) player.addMark("dclinjie", num);
 			await player.draw(player.countMark("dclinjie"));
-			await player.gainMaxHp();
 			await player.removeSkills("dclinjie");
 			await player.addSkills("dclishi");
 			player.markSkill("dclinjie");
@@ -2536,7 +2535,7 @@ const skills = {
 	//神许褚
 	zhengqing: {
 		audio: 2,
-		trigger: { global: "roundStart" },
+		trigger: { global: "roundEnd" },
 		forced: true,
 		filter() {
 			return (
@@ -2549,8 +2548,8 @@ const skills = {
 			let max = -1,
 				players = [];
 			const history = game.getAllGlobalHistory();
-			if (history.length <= 2) return [max, players];
-			for (let i = history.length - 2; i >= 0; i--) {
+			if (history.length <= 1) return [max, players];
+			for (let i = history.length - 1; i >= 0; i--) {
 				const evts = history[i]["everything"].filter(evt => {
 					if (evt.name !== "damage") return false;
 					const source = evt.source;

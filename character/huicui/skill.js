@@ -10964,19 +10964,15 @@ const skills = {
 	},
 	dczecai: {
 		audio: 2,
-		trigger: { global: "roundStart" },
+		trigger: { global: "roundEnd" },
 		limited: true,
 		skillAnimation: true,
-		direct: true,
 		animationColor: "soil",
-		filter(event, player) {
-			return game.roundNumber > 1;
-		},
 		getMax() {
-			var getNum = function (current) {
+			const getNum = function (current) {
 				var history = current.actionHistory;
 				var num = 0;
-				for (var i = history.length - 2; i >= 0; i--) {
+				for (var i = history.length - 1; i >= 0; i--) {
 					for (var j = 0; j < history[i].useCard.length; j++) {
 						if (get.type2(history[i].useCard[j].card, false) == "trick") num++;
 					}
@@ -10984,11 +10980,11 @@ const skills = {
 				}
 				return num;
 			};
-			var max = 0,
+			let max = 0,
 				current = false,
 				targets = game.filterPlayer();
-			for (var target of targets) {
-				var num = getNum(target);
+			for (const target of targets) {
+				const num = getNum(target);
 				if (num > max) {
 					max = num;
 					current = target;
@@ -10996,36 +10992,25 @@ const skills = {
 			}
 			return current;
 		},
-		content() {
-			"step 0";
-			event.target = lib.skill.dczecai.getMax();
-			var str = "令一名其他角色于本轮内获得〖集智〗";
-			if (event.target && event.target != player) str += "；若选择的目标为" + get.translation(event.target) + "，则其获得一个额外的回合";
-			player
+		async cost(event, trigger, player) {
+			const target = lib.skill.dczecai.getMax();
+			let str = "令一名其他角色获得〖集智〗直到下一轮结束";
+			if (target && target != player) str += "；若选择的目标为" + get.translation(target) + "，则其获得一个额外的回合";
+			event.result = await player
 				.chooseTarget(lib.filter.notMe, get.prompt("dczecai"), str)
 				.set("maximum", event.target)
 				.set("ai", function (target) {
 					if (target != _status.event.maximum) return 0;
 					return get.attitude(_status.event.player, target);
-				});
-			"step 1";
-			if (result.bool) {
-				player.awakenSkill(event.name);
-				var target = result.targets[0];
-				player.logSkill("dczecai", target);
-				target.addAdditionalSkills("dczecai_effect", "rejizhi");
-				target.addTempSkill("dczecai_effect", "roundStart");
-				if (target == event.target) {
-					var evt = trigger;
-					target.insertPhase();
-					if (evt.player != target && !evt._finished) {
-						evt.finish();
-						evt._triggered = 5;
-						var evtx = evt.player.insertPhase();
-						delete evtx.skill;
-					}
-				}
-			}
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			const target = event.targets[0];
+			await target.addAdditionalSkills("dczecai_effect", "rejizhi");
+			target.addTempSkill("dczecai_effect", "roundEnd");
+			if (target == lib.skill.dczecai.getMax()) target.insertPhase();
 		},
 		derivation: "rejizhi",
 		subSkill: {
@@ -14750,64 +14735,68 @@ const skills = {
 	//周善
 	dcmiyun: {
 		audio: 2,
-		trigger: { global: "roundStart" },
+		trigger: { global: ["roundStart", "roundEnd"] },
+		filter(event, player, name) {
+			if (name === "roundStart") return game.hasPlayer(current => current != player && current.countGainableCards(player, "he"));
+			return player.hasCard(card => card.hasGaintag("dcmiyun_tag"), "h") && game.hasPlayer(current => current != player);
+		},
 		forced: true,
 		direct: true,
 		group: "dcmiyun_lose",
-		content() {
-			"step 0";
-			if (player.hasCard(card => card.hasGaintag("dcmiyun_tag"), "h")) {
-				player.chooseCardTarget({
-					prompt: "密运：将包括“安”在内的任意张手牌交给一名其他角色",
-					forced: true,
-					filterTarget: lib.filter.notMe,
-					selectCard: [1, Infinity],
-					filterOk() {
-						for (var card of ui.selected.cards) {
-							if (card.hasGaintag("dcmiyun_tag")) return true;
-						}
-						return false;
-					},
-					goon: game.hasPlayer(current => player != current && get.attitude(player, current) > 0),
-					ai1(card) {
-						if (get.itemtype(card) != "card") return 0;
-						if (card.hasGaintag("dcmiyun_tag")) return 100;
-						if (_status.event.goon) return 8 - get.value(card);
-						return -get.value(card);
-					},
-					ai2(target) {
-						return get.attitude(_status.event.player, target);
-					},
-				});
-			} else event.goto(3);
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0],
-					cards = result.cards;
-				player.logSkill("dcmiyun", target);
-				player.give(cards, target);
-			} else event.goto(3);
-			"step 2";
-			player.drawTo(player.maxHp);
-			"step 3";
-			if (game.hasPlayer(current => current != player && current.countGainableCards(player, "he"))) {
-				player
-					.chooseTarget("密运：获得一名其他角色的一张牌，称为“安”", true, (card, player, target) => {
-						return target != player && target.countGainableCards(player, "he");
-					})
-					.set("ai", target => {
-						return get.effect(target, { name: "shunshou" }, _status.event.player, _status.event.player);
-					});
-			} else event.finish();
-			"step 4";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("dcmiyun", target);
-				player.gainPlayerCard(target, true, "visibleMove").chooseonly = true;
-			} else event.finish();
-			"step 5";
-			if (result.bool) {
-				player.gain(result.cards).gaintag.add("dcmiyun_tag");
+		async content(event, trigger, player) {
+			switch (event.triggername) {
+				case "roundStart":
+					const result = await player
+						.chooseTarget("密运：获得一名其他角色的一张牌，称为“安”", true, (card, player, target) => {
+							return target != player && target.countGainableCards(player, "he");
+						})
+						.set("ai", target => {
+							return get.effect(target, { name: "shunshou" }, _status.event.player, _status.event.player);
+						})
+						.forResult();
+					if (result?.bool && result.targets?.length) {
+						const target = result.targets[0];
+						player.logSkill("dcmiyun", target);
+						const next = player.gainPlayerCard(target, true, "visibleMove");
+						next.gaintag.add("dcmiyun_tag");
+						await next;
+					}
+					break;
+				case "roundEnd":
+					const result2 = await player
+						.chooseCardTarget({
+							prompt: "密运：将包括“安”在内的任意张手牌交给一名其他角色",
+							forced: true,
+							filterTarget: lib.filter.notMe,
+							selectCard: [1, Infinity],
+							filterOk() {
+								for (var card of ui.selected.cards) {
+									if (card.hasGaintag("dcmiyun_tag")) return true;
+								}
+								return false;
+							},
+							goon: game.hasPlayer(current => player != current && get.attitude(player, current) > 0),
+							ai1(card) {
+								if (get.itemtype(card) != "card") return 0;
+								if (card.hasGaintag("dcmiyun_tag")) return 100;
+								if (_status.event.goon) return 8 - get.value(card);
+								return -get.value(card);
+							},
+							ai2(target) {
+								return get.attitude(_status.event.player, target);
+							},
+						})
+						.forResult();
+					if (result2?.bool && result2.cards?.length && result2.targets?.length) {
+						const {
+							targets: [target],
+							cards,
+						} = result2;
+						player.logSkill("dcmiyun", target);
+						await player.give(cards, target);
+						await player.drawTo(player.maxHp);
+					}
+					break;
 			}
 		},
 		mod: {
