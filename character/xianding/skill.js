@@ -15111,6 +15111,9 @@ const skills = {
 				.set("ai", target => get.attitude(get.player(), target))
 				.forResult();
 		},
+		onRound(event) {
+			return !event.wumei_phase;
+		},
 		async content(event, trigger, player) {
 			const [target] = event.targets;
 			const next = target.insertPhase();
@@ -15120,7 +15123,11 @@ const skills = {
 				trigger.finish();
 				trigger.untrigger(true);
 				trigger._triggered = 5;
+				if (!lib.onround.includes(lib.skill.dcwumei.onRound)) {
+					lib.onround.push(lib.skill.dcwumei.onRound);
+				}
 				const evt = player.insertPhase();
+				evt.wumei_phase = true;
 				evt.relatedEvent = trigger.relatedEvent || trigger.getParent(2);
 				evt.skill = trigger.skill;
 				evt._noTurnOver = true;
@@ -21795,21 +21802,20 @@ const skills = {
 		audio: "lvli",
 		trigger: { player: "damageEnd", source: "damageSource" },
 		filter(event, player, name) {
-			var stat = player.getStat().skill;
-			if (!stat.xinlvli) stat.xinlvli = 0;
 			if (name == "damageEnd" && !player.storage.beishui) return false;
-			if (stat.xinlvli > 1) return false;
-			if (stat.xinlvli > 0 && (player != _status.currentPhase || !player.storage.choujue)) return false;
 			if (player.hp == player.countCards("h")) return false;
 			if (player.hp < player.countCards("h") && player.isHealthy()) return false;
 			return true;
 		},
-		content() {
-			var stat = player.getStat().skill;
-			stat.xinlvli++;
-			var num = player.hp - player.countCards("h");
-			if (num > 0) player.draw(num);
-			else player.recover(-num);
+		usable(skill, player) {
+			let num = 1;
+			if (player.storage.choujue && player === _status.currentPhase) num++;
+			return num;
+		},
+		async content(event, trigger, player) {
+			const num = player.hp - player.countCards("h");
+			if (num > 0) await player.draw(num);
+			else await player.recover(-num);
 		},
 		//group:'lvli3',
 	},
