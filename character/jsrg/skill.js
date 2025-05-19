@@ -2453,70 +2453,51 @@ const skills = {
 		},
 		group: "jsrgzhendan_damage",
 		subSkill: {
+			backup: {},
 			damage: {
 				audio: "jsrgzhendan",
 				trigger: {
 					player: "damageEnd",
-					global: "roundStart",
+					global: "roundEnd",
 				},
 				filter(event, player) {
-					let count = 0;
-					let roundCount = 1 + (event.name != "damage");
-					const curLen = player.actionHistory.length;
-					for (let i = curLen - 1; i >= 0; i--) {
-						if (
-							roundCount == 1 &&
-							game.hasPlayer(current => {
-								const history = current.actionHistory[i];
-								if (!history.isMe || history.isSkipped) return false;
+					if (event.name === "damage" && !player.isTempBanned("jsrgzhendan")) return true;
+					const history = _status.globalHistory;
+					if (event.name !== "damage" || !history[history.length - 1].isRound) {
+						for (let i = history.length - (event.name === "damage" ? 2 : 1); i >= 0; i--) {
+							if (
+								game.hasPlayer2(current => {
+									const actionHistory = current.actionHistory[i];
+									return actionHistory.isMe && !actionHistory.isSkipped;
+								})
+							)
 								return true;
-							})
-						) {
-							count++;
+							if (history[i].isRound) break;
 						}
-						if (player.actionHistory[i].isRound) roundCount--;
-						if (roundCount <= 0) break;
 					}
-					if (!player.storage.jsrgzhendan_mark && count > 0) return true;
 					return false;
 				},
 				forced: true,
 				locked: false,
 				async content(event, trigger, player) {
-					let count = 0;
-					let roundCount = 1 + (trigger.name != "damage");
-					const curLen = player.actionHistory.length;
-					for (let i = curLen - 1; i >= 0; i--) {
-						if (
-							roundCount == 1 &&
-							game.hasPlayer(current => {
-								const history = current.actionHistory[i];
-								if (!history.isMe || history.isSkipped) return false;
-								return true;
-							})
-						) {
-							count++;
+					const history = _status.globalHistory;
+					let num = 0;
+					if (trigger.name !== "damage" || !history[history.length - 1].isRound) {
+						for (let i = history.length - (trigger.name === "damage" ? 2 : 1); i >= 0; i--) {
+							if (
+								game.hasPlayer2(current => {
+									const actionHistory = current.actionHistory[i];
+									return actionHistory.isMe && !actionHistory.isSkipped;
+								})
+							)
+								num++;
+							if (num === 5 || history[i].isRound) break;
 						}
-						if (player.actionHistory[i].isRound) roundCount--;
-						if (roundCount <= 0) break;
 					}
-					count = Math.min(5, count);
-					await player.draw(count);
-					if (trigger.name == "damage") {
-						player.tempBanSkill("jsrgzhendan", "roundStart");
-						player.storage.jsrgzhendan_mark = true;
-						player
-							.when({ global: "roundStart" })
-							.assign({
-								lastDo: true,
-							})
-							.then(() => {
-								delete player.storage.jsrgzhendan_mark;
-							});
-					}
+					if (num > 0) await player.draw(num);
+					if (trigger.name === "damage") player.tempBanSkill("jsrgzhendan", "roundStart");
 				},
 			},
-			backup: {},
 		},
 	},
 	//司马懿
@@ -2594,19 +2575,17 @@ const skills = {
 			const jiejia = new lib.element.VCard({ name: "jiejia", storage: { jsrgtuigu: true } });
 			if (player.hasUseTarget(jiejia)) {
 				player.addTempSkill("jsrgtuigu_block");
-				player.chooseUseTarget(jiejia, true);
+				await player.chooseUseTarget(jiejia, true);
 			}
 		},
 		subSkill: {
 			insert: {
 				audio: "jsrgtuigu",
-				trigger: { global: "roundStart" },
+				trigger: { global: "roundEnd" },
 				filter(event, player) {
-					const curLen = player.actionHistory.length;
-					if (curLen <= 2) return false;
-					for (let i = curLen - 2; i >= 0; i--) {
+					for (let i = player.actionHistory.length - 1; i >= 0; i--) {
 						const history = player.actionHistory[i];
-						if (history.isMe && !history.isSkipped && !history._jsrgtuigu) return false;
+						if (history.isMe && !history.isSkipped) return false;
 						if (history.isRound) break;
 					}
 					return true;
@@ -2614,26 +2593,7 @@ const skills = {
 				forced: true,
 				locked: false,
 				async content(event, trigger, player) {
-					const evt = trigger,
-						evtx = player.insertPhase();
-					player
-						.when("phaseBeforeStart")
-						.filter(evtt => evtt == evtx)
-						.then(() => {
-							game.players
-								.slice()
-								.concat(game.dead)
-								.forEach(current => {
-									current.getHistory()._jsrgtuigu = true;
-									current.getStat()._jsrgtuigu = true;
-								});
-						});
-					if (evt.player != player && !evt._finished) {
-						evt.finish();
-						evt._triggered = 5;
-						const evtxx = evt.player.insertPhase();
-						delete evtxx.skill;
-					}
+					player.insertPhase();
 				},
 			},
 			recover: {
