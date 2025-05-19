@@ -540,7 +540,7 @@ export const Content = {
 			if (!player.disabledSlots) player.disabledSlots = {};
 			if (!player.disabledSlots[slot_key]) player.disabledSlots[slot_key] = 0;
 			player.disabledSlots[slot_key] += lose;
-			var cards = player.getEquips(slot).filter(card => !event.cards.includes(card));
+			var cards = player.getCards("e", card => get.subtypes(card).includes(slot) && !event.cards.includes(card));
 			if (cards.length > 0) {
 				if (lose >= left) {
 					event._result = { bool: true, links: cards };
