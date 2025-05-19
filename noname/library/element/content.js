@@ -3144,37 +3144,38 @@ player.removeVirtualEquip(card);
 			event.finish();
 		}
 	},
-	phaseLoop: function () {
-		"step 0";
-		var num = 1,
+	async phaseLoop(event, trigger, player) {
+		let num = 1,
 			current = player;
-		while (current.getSeatNum() == 0) {
+		while (current.getSeatNum() === 0) {
 			current.setSeatNum(num);
 			current = current.next;
 			num++;
 		}
-		"step 1";
-		for (var i = 0; i < lib.onphase.length; i++) {
-			lib.onphase[i]();
-		}
-		player.phase();
-		"step 2";
-		event.trigger("phaseOver");
-		"step 3";
-		let findNext = current => {
-			let players = game.players
-				.slice(0)
-				.concat(game.dead)
-				.sort((a, b) => parseInt(a.dataset.position) - parseInt(b.dataset.position));
-			let position = parseInt(current.dataset.position);
-			for (let i = 0; i < players.length; i++) {
-				if (parseInt(players[i].dataset.position) > position) return players[i];
+		while (true) {
+			let list = [];
+			while ([...game.players, ...game.dead].some(i => !list.includes(i))) {
+				list.push(event.player);
+				if (game.players.includes(event.player)) {
+					lib.onphase.forEach(i => i());
+					await event.player.phase();
+				}
+				await event.trigger("phaseOver");
+				let findNext = current => {
+					let players = game.players
+						.slice(0)
+						.concat(game.dead)
+						.sort((a, b) => parseInt(a.dataset.position) - parseInt(b.dataset.position));
+					let position = parseInt(current.dataset.position);
+					for (let i = 0; i < players.length; i++) {
+						if (parseInt(players[i].dataset.position) > position) return players[i];
+					}
+					return players[0];
+				};
+				event.player = findNext(event.player);
 			}
-			return players[0];
-		};
-		event.player = findNext(event.player);
-		if (game.players.includes(event.player)) event.goto(1);
-		else event.goto(2);
+			await event.trigger("roundEnd");
+		}
 	},
 	loadPackage: function () {
 		"step 0";
