@@ -9382,6 +9382,7 @@ const skills = {
 			},
 			effect: {
 				charlotte: true,
+				audio: "twxiongzheng",
 				trigger: { global: "roundEnd" },
 				filter(event, player) {
 					const sha = new lib.element.VCard({ name: "sha" });
