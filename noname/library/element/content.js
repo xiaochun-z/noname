@@ -8287,12 +8287,12 @@ player.removeVirtualEquip(card);
 	},
 	draw: function () {
 		// if(lib.config.background_audio){
-		// 	game.playAudio('effect','draw');
+		//     game.playAudio('effect','draw');
 		// }
 		// game.broadcast(function(){
 		//     if(lib.config.background_audio){
-		// 		game.playAudio('effect','draw');
-		// 	}
+		//         game.playAudio('effect','draw');
+		//     }
 		// });
 		if (typeof event.minnum == "number" && num < event.minnum) {
 			num = event.minnum;
@@ -8327,22 +8327,24 @@ player.removeVirtualEquip(card);
 		if (event.drawDeck) {
 			cards = cards.concat(player.getDeckCards(event.drawDeck));
 		}
-		let next;
-		if (event.animate != false) {
-			if (event.visible) {
-				next = player.gain(cards, "gain2").set("log", false);
-				logList.addArray(["（", cards, "）"]);
+		if (get.itemtype(cards) == "cards") {
+			let next;
+			if (event.animate != false) {
+				if (event.visible) {
+					next = player.gain(cards, "gain2").set("log", false);
+					logList.addArray(["（", cards, "）"]);
+				} else {
+					next = player.gain(cards, "draw");
+				}
 			} else {
-				next = player.gain(cards, "draw");
+				next = player.gain(cards);
+				if (event.$draw) {
+					player.$draw(cards.length);
+				}
 			}
-		} else {
-			next = player.gain(cards);
-			if (event.$draw) {
-				player.$draw(cards.length);
-			}
+			if (logList?.length) game.log(...logList);
+			next.gaintag.addArray(event.gaintag);
 		}
-		if (logList?.length) game.log(...logList);
-		next.gaintag.addArray(event.gaintag);
 		event.result = cards;
 	},
 	discard: function () {
