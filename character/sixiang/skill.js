@@ -99,9 +99,13 @@ const skills = {
 						if (!selected.length) return false;
 						return selected.reduce((sum, card) => (sum += get.number(card, get.player())), 0) >= 13;
 					},
-					check(card) {
-						if (ui.selected.cards.length >= 2) return 0;
-						return (7 - get.value(card)) * get.number(card, get.player());
+					ai1(card) {
+						const player = get.player();
+						const name = lib.skill.stdzhitu_backup.viewAs.name;
+						if (ui.selected.cards.length > 1 || card.name == name) return 0;
+						const sum = ui.selected.cards.reduce((sumx, cardx) => sumx + get.number(cardx, player), 0);
+						if (sum + get.number(card, player) == 13) return 7 - get.value(card);
+						return 6 - get.value(card);
 					},
 					position: "hes",
 					popname: true,
