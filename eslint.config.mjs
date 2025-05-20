@@ -5,6 +5,7 @@ export default [
 	js.configs.recommended,
 	{
 		rules: {
+			"no-class-assign": 0,
 			"no-console": 0,
 			"no-constant-condition": [
 				"error",
@@ -24,6 +25,7 @@ export default [
 			"no-unused-vars": 0,
 			"require-yield": 0,
 			"no-fallthrough": ["error", { commentPattern: "\\[falls[\\s\\w]*through\\]" }],
+			"curly": "error",
 		},
 		languageOptions: {
 			ecmaVersion: 13,
