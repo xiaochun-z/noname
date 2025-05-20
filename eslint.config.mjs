@@ -4,6 +4,8 @@ import globals from "globals";
 export default [
 	js.configs.recommended,
 	{
+		files: ["**/*.ts"],
+		ignores: ["node_modules/", "noname-server.js", "tsconfig.json"],
 		rules: {
 			"no-class-assign": 0,
 			"no-console": 0,
@@ -25,7 +27,7 @@ export default [
 			"no-unused-vars": 0,
 			"require-yield": 0,
 			"no-fallthrough": ["error", { commentPattern: "\\[falls[\\s\\w]*through\\]" }],
-			"curly": "error",
+			curly: "error",
 		},
 		languageOptions: {
 			ecmaVersion: 13,
