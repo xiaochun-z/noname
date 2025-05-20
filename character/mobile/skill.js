@@ -3192,7 +3192,7 @@ const skills = {
 					} else await player.gain(gains[0], "gain2");
 				}
 			}
-			if (names.length) {
+			if (names.length && target.isIn()) {
 				const choose =
 					names.length > 1
 						? await player
@@ -3213,7 +3213,7 @@ const skills = {
 						: names[0];
 				if (choose) {
 					player.line(target);
-					player.popup(choice);
+					player.popup(choose);
 					target.addSkill("mbzengou_debuff");
 					target.storage["mbzengou_debuff"][choose] = 1 + (target.storage["mbzengou_debuff"][choose] || 0);
 					target.markSkill("mbzengou_debuff");
