@@ -3092,14 +3092,14 @@ const skills = {
 		enable: "phaseUse",
 		filterTarget(card, player, target) {
 			if (player.getStorage("mbfeili_effect").includes(target)) return false;
-			return target.countCards("h");
+			return target !== player && target.countCards("h");
 		},
 		usable: 1,
 		async content(event, trigger, player) {
 			const target = event.target;
 			player.chat(get.translation(target) + "也干了");
 			await game.delayx();
-			target.chat("孩子我没干");
+			target.chat("孩子我" + (["xizhicai", "xiahoumao"].some(i => get.is.playerNames(target, i)) ? "也干了" : "没干"));
 			await game.delayx();
 			await player.viewHandcards(target);
 			const names = lib.inpile.filter(i => get.type(i) === "basic");
@@ -3195,7 +3195,7 @@ const skills = {
 					} else await player.gain(gains[0], "gain2");
 				}
 			}
-			if (names.length) {
+			if (names.length && target.isIn()) {
 				const choose =
 					names.length > 1
 						? await player
@@ -3215,6 +3215,8 @@ const skills = {
 								.forResult("control")
 						: names[0];
 				if (choose) {
+					player.line(target);
+					player.popup(choose);
 					target.addSkill("mbzengou_debuff");
 					target.storage["mbzengou_debuff"][choose] = 1 + (target.storage["mbzengou_debuff"][choose] || 0);
 					target.markSkill("mbzengou_debuff");
@@ -3285,6 +3287,7 @@ const skills = {
 						return;
 					}
 					if (player.storage[event.name][trigger.card.name] === 0) delete player.storage[event.name][trigger.card.name];
+					player.markSkill(event.name);
 				},
 				mod: {
 					aiOrder(player, card, num) {

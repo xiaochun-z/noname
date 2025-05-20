@@ -862,19 +862,39 @@ const skills = {
 				.getRoundHistory("useCard", evt => get.type(evt.card) === "basic")
 				.map(evt => evt.card.name)
 				.unique(),
-		group: ["olzhendan_damage", "olzhendan_round"],
+		group: "olzhendan_damage",
 		subSkill: {
 			backup: {},
 			damage: {
-				audio: "olzhendan",
-				trigger: { player: "damageEnd" },
+				audio: "jsrgzhendan",
+				trigger: {
+					player: "damageEnd",
+					global: "roundEnd",
+				},
+				filter(event, player) {
+					if (event.name === "damage" && !player.isTempBanned("olzhendan")) return true;
+					const history = _status.globalHistory;
+					if (event.name !== "damage" || !history[history.length - 1].isRound) {
+						for (let i = history.length - (event.name === "damage" ? 2 : 1); i >= 0; i--) {
+							if (
+								game.hasPlayer2(current => {
+									const actionHistory = current.actionHistory[i];
+									return actionHistory.isMe && !actionHistory.isSkipped;
+								})
+							)
+								return true;
+							if (history[i].isRound) break;
+						}
+					}
+					return false;
+				},
 				forced: true,
 				locked: false,
-				content() {
+				async content(event, trigger, player) {
 					const history = _status.globalHistory;
-					if (!history[history.length - 1].isRound) {
-						let num = 0;
-						for (let i = history.length - 2; i >= 0; i--) {
+					let num = 0;
+					if (trigger.name !== "damage" || !history[history.length - 1].isRound) {
+						for (let i = history.length - (trigger.name === "damage" ? 2 : 1); i >= 0; i--) {
 							if (
 								game.hasPlayer2(current => {
 									const actionHistory = current.actionHistory[i];
@@ -884,47 +904,9 @@ const skills = {
 								num++;
 							if (num === 5 || history[i].isRound) break;
 						}
-						player.draw(num);
 					}
-					player.tempBanSkill("olzhendan", "roundStart");
-				},
-			},
-			round: {
-				audio: "olzhendan",
-				trigger: { global: "roundStart" },
-				filter(event, player) {
-					if (game.roundNumber <= 1) return false;
-					if (player.getRoundHistory("useSkill", evt => evt.skill === "olzhendan_damage", 1).length > 0) return false;
-					const history = _status.globalHistory;
-					for (let i = history.length - 2; i >= 0; i--) {
-						if (
-							game.hasPlayer2(current => {
-								const actionHistory = current.actionHistory[i];
-								return actionHistory.isMe && !actionHistory.isSkipped;
-							})
-						)
-							return true;
-						if (history[i].isRound) break;
-					}
-					return false;
-				},
-				forced: true,
-				locked: false,
-				firstDo: true,
-				content() {
-					let num = 0;
-					const history = _status.globalHistory;
-					for (let i = history.length - 2; i >= 0; i--) {
-						if (
-							game.hasPlayer2(current => {
-								const actionHistory = current.actionHistory[i];
-								return actionHistory.isMe && !actionHistory.isSkipped;
-							})
-						)
-							num++;
-						if (num === 5 || history[i].isRound) break;
-					}
-					player.draw(num);
+					if (num > 0) await player.draw(num);
+					if (trigger.name === "damage") player.tempBanSkill("olzhendan", "roundStart");
 				},
 			},
 		},
@@ -1139,9 +1121,9 @@ const skills = {
 		subSkill: {
 			effect: {
 				audio: "olsbchenzhi",
-				trigger: { global: "roundStart" },
+				trigger: { global: "roundEnd" },
 				filter(event, player) {
-					if (game.roundNumber <= 1 || player.getRoundHistory("useSkill", evt => evt.skill === "olsbchenzhi", 1).length > 0) return false;
+					if (player.getRoundHistory("useSkill", evt => evt.skill === "olsbchenzhi").length > 0) return false;
 					return game.hasPlayer(target => {
 						return target.getSkills(null, false, false).some(skill => {
 							const info = get.info(skill);
