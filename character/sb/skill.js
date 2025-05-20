@@ -124,6 +124,7 @@ const skills = {
 				}
 			}
 		},
+		derivation: "sbwushuang",
 	},
 	//谋夏侯渊
 	sbshensu: {

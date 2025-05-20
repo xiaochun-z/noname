@@ -5929,6 +5929,7 @@ const skills = {
 				}
 			}
 		},
+		derivation: "twdengjian",
 		subSkill: {
 			0: { charlotte: true },
 			1: { charlotte: true },
@@ -17657,6 +17658,7 @@ const skills = {
 				game.delayx();
 			}
 		},
+		derivation: ["twfeifu", "twfuzuan"],
 	},
 	twfeifu: {
 		audio: 2,
