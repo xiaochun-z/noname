@@ -1,10 +1,10 @@
 import js from "@eslint/js";
 import globals from "globals";
+import { defineConfig } from "eslint/config";
 
-export default [
+export default defineConfig([
 	js.configs.recommended,
 	{
-		files: ["**/*.ts"],
 		ignores: ["node_modules/", "noname-server.js", "tsconfig.json"],
 		rules: {
 			"no-class-assign": 0,
@@ -41,4 +41,4 @@ export default [
 			},
 		},
 	},
-];
+]);
