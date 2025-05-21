@@ -29,7 +29,7 @@ import { ErrorManager } from "../util/error.js";
 import { Concurrent } from "./concurrent/index.js";
 
 import { defaultSplashs } from "../init/onload/index.js";
-import dedent from "../../game/dedent.js"
+import dedent from "../../game/dedent.js";
 
 export class Library {
 	configprefix = "noname_0.9_";
@@ -13525,6 +13525,9 @@ export class Library {
 					ui.click.cancel();
 					if (_status.event.getParent().name == "chooseToUse" && _status.event.getParent().id == id) {
 						_status.event.getParent().cancel(null, null, false);
+						if (ui.confirm) {
+							ui.confirm.close();
+						}
 					}
 				}
 				if (_status.event.id == id) {
@@ -14026,7 +14029,7 @@ export class Library {
 		],
 		[
 			"长安",
-			{	
+			{
 				showName: "镐",
 				color: "#40e0d0",
 				nature: "shenmm",

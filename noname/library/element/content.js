@@ -3174,6 +3174,7 @@ player.removeVirtualEquip(card);
 				};
 				event.player = findNext(event.player);
 			}
+			game.log();
 			await event.trigger("roundEnd");
 		}
 	},
@@ -7502,7 +7503,7 @@ player.removeVirtualEquip(card);
 			var owner = get.owner(cards[0]) || player;
 			owner.getCards("ej").forEach(card => {
 				const cardsx = card?.[card.cardSymbol]?.cards?.filter(cardx => cards.includes(cardx));
-				if (!cardsx.length) return;
+				if (!cardsx?.length) return;
 				cards.removeArray(cardsx);
 				cards.add(card);
 			});
@@ -8426,7 +8427,7 @@ player.removeVirtualEquip(card);
 			var owner = get.owner(cards[0]) || player;
 			owner.getCards("ej").forEach(card => {
 				const cardsx = card?.[card.cardSymbol]?.cards?.filter(cardx => cards.includes(cardx));
-				if (!cardsx.length) return;
+				if (!cardsx?.length) return;
 				cards.removeArray(cardsx);
 				cards.add(card);
 			});

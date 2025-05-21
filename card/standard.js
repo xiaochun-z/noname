@@ -3659,6 +3659,10 @@ game.import("card", function () {
 								return function () {
 									event.resultOL = _status.event.resultOL;
 								};
+							} else {
+								return () => {
+									if (get.event().name == "_wuxie" && result.id == id) game.resume();
+								};
 							}
 						}
 					};

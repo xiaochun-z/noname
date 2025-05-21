@@ -155,28 +155,28 @@ game.import("card", function () {
 					return false;
 				},
 				cardPrompt(card) {
-					var str = "出牌阶段，对你使用。你将【浮雷】置入判定区。若判定结果为♠，则目标角色受到X点雷电伤害（X为此牌判定结果为♠的次数）。判定完成后，将此牌移动到下家的判定区里。";
-					if (card.storage && card.storage.fulei) str += '<br><span style="font-family:yuanli">此牌已判定命中过：' + card.storage.fulei + "次</span>";
+					let str = "出牌阶段，对你使用。你将【浮雷】置入判定区。若判定结果为♠，则目标角色受到X点雷电伤害（X为此牌判定结果为♠的次数）。判定完成后，将此牌移动到下家的判定区里。";
+					if (card.storage?.fulei) {
+						str += '<br><span style="font-family:yuanli">此牌已判定命中过：' + card.storage.fulei + "次</span>";
+					}
 					return str;
 				},
-				effect() {
-					"step 0";
+				async effect(event, trigger, player, result) {
+					const { card } = event;
 					if (result.bool == false) {
-						var card = cards[0];
 						if (card) {
-							if (!card.storage.fulei) {
+							if (typeof card.storage.fulei != "number") {
 								card.storage.fulei = 1;
 							} else {
 								card.storage.fulei++;
 							}
-							player.damage(card.storage.fulei, "thunder", "nosource");
+							await player.damage(card.storage.fulei, "thunder", "nosource");
 						}
 					}
-					"step 1";
-					player.addJudgeNext(card);
+					await player.addJudgeNext(card);
 				},
-				cancel() {
-					player.addJudgeNext(card);
+				async cancel(event, trigger, player) {
+					await player.addJudgeNext(event.card);
 				},
 				ai: {
 					basic: {
