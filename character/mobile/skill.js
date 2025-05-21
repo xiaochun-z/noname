@@ -3735,8 +3735,9 @@ const skills = {
 				game.countPlayer(current => {
 					return current != player && get.attitude(player, current) > 0;
 				})
-			)
+			) {
 				return 0;
+			}
 			return 6 - get.value(card);
 		},
 		multiline: true,
@@ -3781,8 +3782,12 @@ const skills = {
 			result: {
 				target(player, target) {
 					var card = ui.selected.cards[ui.selected.targets.length];
-					if (!card) return 0;
-					if (get.value(card) < 0) return -1;
+					if (!card) {
+						return 0;
+					}
+					if (get.value(card) < 0) {
+						return -1;
+					}
 					return Math.sqrt(5 - Math.min(4, target.countCards("h")));
 				},
 			},
@@ -3800,21 +3805,28 @@ const skills = {
 						!ori_event ||
 						ori_event.name !== "useCard" ||
 						!player.hasHistory("lose", evt => {
-							if (evt.getParent() !== ori_event) return false;
+							if (evt.getParent() !== ori_event) {
+								return false;
+							}
 							return Object.values(evt.gaintag_map).flat().includes("potfuji");
 						})
-					)
+					) {
 						return false;
+					}
 					return name === "useCard" || ori_event.card.name === (event.name === "damage" ? "sha" : "shan");
 				},
 				forced: true,
 				logTarget: "player",
 				popup: false,
 				async content(event, trigger, player) {
-					if (trigger.name === "damage" || event.triggername === "useCardAfter") player.logSkill("potfuji", null, null, null, [trigger.name === "damage" ? 4 : 5]);
-					if (trigger.name === "damage") trigger.num++;
-					else if (event.triggername === "useCardAfter") await player.draw();
-					else {
+					if (trigger.name === "damage" || event.triggername === "useCardAfter") {
+						player.logSkill("potfuji", null, null, null, [trigger.name === "damage" ? 4 : 5]);
+					}
+					if (trigger.name === "damage") {
+						trigger.num++;
+					} else if (event.triggername === "useCardAfter") {
+						await player.draw();
+					} else {
 						const history = player.getHistory("lose", evt => {
 								if (evt.getParent() !== trigger) return false;
 								return Object.values(evt.gaintag_map).flat().includes("potfuji");
@@ -3823,9 +3835,13 @@ const skills = {
 						let gains = [];
 						for (const card of cards) {
 							const gain = get.cardPile2(gain => !gains.includes(gain) && get.suit(gain) === get.suit(card, false));
-							if (gain) gains.push(gain);
+							if (gain) {
+								gains.push(gain);
+							}
 						}
-						if (gains.length) await player.gain(gains, "gain2");
+						if (gains.length) {
+							await player.gain(gains, "gain2");
+						}
 					}
 				},
 			},
@@ -7126,7 +7142,7 @@ const skills = {
 		persevereSkill: true,
 		trigger: { player: "phaseUseBegin" },
 		filter(event, player) {
-			return player.countCards("h") > 0;
+			return player.countCards("h") > 0 && game.hasPlayer(current => player != current && current.countCards("h") > 0);
 		},
 		/**
 		 * player选择target的一种花色的牌
@@ -7319,10 +7335,14 @@ const skills = {
 					resolve(result);
 				});
 				next = promise;
-			} else next = Promise.resolve(ai());
+			} else {
+				next = Promise.resolve(ai());
+			}
 			let result;
 			result = await next;
-			if (!result?.bool || !result?.cards?.length) return;
+			if (!result?.bool || !result?.cards?.length) {
+				return;
+			}
 			const { cards } = result;
 			result = await player
 				.chooseTarget("清正：观看一名其他角色的手牌并弃置其中一种花色的所有牌", (card, player, target) => {
@@ -7348,7 +7368,9 @@ const skills = {
 				cost_data: cards1,
 			} = event;
 			await player.discard(cards1);
-			if (!target.countCards("h")) return;
+			if (!target.countCards("h")) {
+				return;
+			}
 			let next,
 				str2 = `清正：弃置${get.translation(target)}一种花色的所有牌`;
 			let ai2 = function () {
@@ -7373,20 +7395,32 @@ const skills = {
 					resolve(result);
 				});
 				next = promise;
-			} else next = Promise.resolve(ai2());
+			} else {
+				next = Promise.resolve(ai2());
+			}
 			let result;
 			result = await next;
-			if (!result?.cards?.length) return;
+			if (!result?.cards?.length) {
+				return;
+			}
 			const cards2 = result.cards.slice().filter(card => lib.filter.canBeDiscarded(card, player, target));
-			if (cards2.length) await target.discard(cards2, "notBySelf");
-			if (cards1.length > cards2.length) await target.damage(player);
-			if (event.name !== "sbqingzheng" || player.countMark("sbjianxiong") >= 2) return;
+			if (cards2.length) {
+				await target.discard(cards2, "notBySelf");
+			}
+			if (cards1.length > cards2.length) {
+				await target.damage(player);
+			}
+			if (event.name !== "sbqingzheng" || player.countMark("sbjianxiong") >= 2) {
+				return;
+			}
 			if (["sbjianxiong", "jdjianxiong"].some(skill => player.hasSkill(skill, null, null, false))) {
 				result = await player
 					.chooseBool("是否获得1枚“治世”？")
 					.set("choice", Math.random() >= 0.5)
 					.forResult();
-				if (result?.bool) player.addMark("sbjianxiong", 1);
+				if (result?.bool) {
+					player.addMark("sbjianxiong", 1);
+				}
 			}
 		},
 	},
