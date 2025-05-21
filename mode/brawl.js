@@ -669,7 +669,7 @@ export default () => {
 										content: function () {
 											"step 0";
 											player.changeLingli(-2);
-											("step 1");
+											"step 1";
 											event.skills = lib.huanhuazhizhan.skills;
 											var skills = event.skills;
 											skills.randomSort();
@@ -694,7 +694,7 @@ export default () => {
 											player.chooseControl(event.list).set("ai", function () {
 												return 0;
 											}).dialog = dialog;
-											("step 2");
+											"step 2";
 											if (result.control == "刷新") {
 												player.changeLingli(-1);
 												event.goto(1);
@@ -705,7 +705,7 @@ export default () => {
 												event.lose = true;
 												player.chooseControl(player.skillH).prompt = "选择失去1个已有技能";
 											}
-											("step 3");
+											"step 3";
 											if (event.lose) {
 												player.removeSkillH(result.control);
 											}
@@ -772,13 +772,13 @@ export default () => {
 											if (trigger._lastDead == undefined) {
 												event.goto(2);
 											}
-											("step 1");
+											"step 1";
 											var type = get.rand(1, 8);
 											event.type = type;
 											trigger._lastDead.playerfocus(1200);
 											player.$fullscreenpop("乾坤八卦·" + ["离", "坎", "乾", "震", "兑", "艮", "巽", "坤"][type - 1], get.groupnature(trigger._lastDead.group, "raw"));
 											game.delay(1.5);
-											("step 2");
+											"step 2";
 											var type = event.type;
 											switch (type) {
 												case 1: {
@@ -851,7 +851,7 @@ export default () => {
 													break;
 												}
 											}
-											("step 3");
+											"step 3";
 											if (game.playerx().length <= 4 && !_status._aozhan) {
 												game.countPlayer2(function (current) {
 													delete current._toKill;
@@ -1209,11 +1209,11 @@ export default () => {
 										}
 										ui.arena.classList.add("choose-character");
 										game.me.chooseButton(["请选择角色形象", [_status.characterlist.randomRemove(5), "character"]], true).onfree = true;
-										("step 1");
+										"step 1";
 										game.me.init(result.links[0]);
 										var list = ["xiandeng", "shulv", "xisheng"];
 										game.me.chooseControl(list).dialog = game.getSkillDialog(list, "选择要获得的初始技能");
-										("step 2");
+										"step 2";
 										var list = ["_lingli", "_lingli_round", "_lingli_draw", "_lingli_save", "_hhzz_qiankunbagua", "_lingli_damage"];
 										for (var i = 0; i < list.length; i++) {
 											game.addGlobalSkill(list[i]);
@@ -1228,14 +1228,14 @@ export default () => {
 											current.markSkill("_lingli");
 										});
 										game.showIdentity(true);
-										("step 3");
+										"step 3";
 										game.randomMission();
 										var list = [game.createCard("hhzz_fudichouxin"), game.createCard("hhzz_toulianghuanzhu"), game.createCard("hhzz_toulianghuanzhu"), game.createCard("hhzz_toulianghuanzhu")];
 										for (var i = 0; i < list.length; i++) {
 											ui.cardPile.insertBefore(list[i], ui.cardPile.childNodes[get.rand(ui.cardPile.childElementCount)]);
 										}
 										game.updateRoundNumber();
-										("step 4");
+										"step 4";
 										setTimeout(function () {
 											ui.arena.classList.remove("choose-character");
 										}, 500);
@@ -3173,7 +3173,7 @@ export default () => {
 											ui.discardPile.appendChild(cards.shift());
 										}
 									}
-									("step 1");
+									"step 1";
 									if (game.fellow) {
 										game.dead.remove(game.fellow);
 										game.fellow.remove();
@@ -3203,7 +3203,7 @@ export default () => {
 											.set("choiceList", list)
 											.set("prompt", "请选择一项奖励（当前已通过" + _status.qianlidanji.completeNumber + "关）");
 									}
-									("step 2");
+									"step 2";
 									if (_status.qianlidanji.completeNumber != 5) {
 										if (result.index == 3) {
 											game.over(true);
@@ -3217,7 +3217,7 @@ export default () => {
 									} else {
 										game.zhu.chooseButton(["选择下一关出战的对手", [_status.characterlist.randomGets(3), "character"]], true);
 									}
-									("step 3");
+									"step 3";
 									_status.event.getParent("phaseLoop").player = game.zhu;
 									var source = game.fan;
 									var name = result.links[0];
@@ -3257,7 +3257,7 @@ export default () => {
 									if (event.reward) {
 										event.reward();
 									}
-									("step 4");
+									"step 4";
 									var cards = Array.from(ui.ordering.childNodes);
 									while (cards.length) {
 										cards.shift().discard();

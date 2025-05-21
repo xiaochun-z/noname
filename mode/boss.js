@@ -210,7 +210,7 @@ export default () => {
 				}
 				game.save("current", event.current.name);
 			}
-			("step 2");
+			"step 2";
 			game.bossinfo = lib.boss.global;
 			for (var i in lib.boss[event.current.name]) {
 				game.bossinfo[i] = lib.boss[event.current.name][i];
@@ -2935,7 +2935,7 @@ export default () => {
 					if (result.cards && result.cards.length) {
 						event.giver.give(result.cards, event.gainner);
 					}
-					("step 4");
+					"step 4";
 					if (targets.length > 0) {
 						event.goto(1);
 					}
@@ -2969,7 +2969,7 @@ export default () => {
 							}
 							return 1;
 						});
-					("step 1");
+					"step 1";
 					if (result.control == "cancel2") {
 						event.finish();
 						return;
@@ -3057,7 +3057,7 @@ export default () => {
 							}
 							return 0;
 						});
-					("step 1");
+					"step 1";
 					if (result.bool) {
 						trigger.target.addTempSkill("noda_axe2");
 					}
@@ -4103,7 +4103,7 @@ export default () => {
 							return _status.event.choice;
 						})
 						.set("choice", event.suitchoice).prompt = get.prompt2(event.name);
-					("step 2");
+					"step 2";
 					if (result.control != "cancel2") {
 						if (!event.logged) {
 							event.logged = true;
@@ -4901,7 +4901,7 @@ export default () => {
 					} else {
 						event.finish();
 					}
-					("step 1");
+					"step 1";
 					if (player.getCards("h").includes(card) && get.type(card) == "equip") {
 						player.chooseUseTarget(card, true, "nopopup", "noanimate");
 					}
@@ -7258,7 +7258,7 @@ export default () => {
 						})
 						.set("prompt", get.prompt("boss_yuance"))
 						.set("choiceList", ["若判定结果为黑色，" + playername + "失去1点体力，否则" + sourcename + "失去1点体力", "若判定结果为红色，" + playername + "回复1点体力，否则" + sourcename + "回复1点体力"]);
-					("step 1");
+					"step 1";
 					var att1 = get.attitude(player, trigger.player);
 					var att2 = get.attitude(player, trigger.source);
 					if (result.control == "选项一") {
@@ -7457,7 +7457,7 @@ export default () => {
 							return 0;
 						})
 						.set("logSkill", ["boss_zhangwu", trigger.source]);
-					("step 1");
+					"step 1";
 					if (result.bool) {
 						var num = result.cards.length;
 						var cnum = get.cnNumber(num);
@@ -9208,7 +9208,7 @@ export default () => {
 						}
 						return true;
 					});
-					("step 2");
+					"step 2";
 					if (result.bool == false) {
 						event.current.loseHp();
 					}
@@ -9834,7 +9834,7 @@ export default () => {
 						return 2;
 					};
 					next.logSkill = "xiuluo";
-					("step 1");
+					"step 1";
 					if (result.bool && player.countCards("j")) {
 						event.goto(0);
 					}
@@ -9940,7 +9940,7 @@ export default () => {
 							return "暴怒战神";
 						})
 						.set("prompt", "选择一个形态");
-					("step 2");
+					"step 2";
 					var hp = player.hp;
 					player.removeSkill("boss_baonu", true);
 					if (result.control == "暴怒战神") {
