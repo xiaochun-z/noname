@@ -4473,7 +4473,7 @@ const skills = {
 				num = 0,
 				keep = true;
 			while (i < game.roundNumber) {
-				if (player.getRoundHistory("useSkill", evt => evt.skill == "olleiluan_backup", i).length + player.getRoundHistory("useSkill", evt => evt.skill == "olleiluan_effect", i - 1).length > 0) {
+				if (player.getRoundHistory("useSkill", evt => evt.skill == "olleiluan_backup" || evt.skill == "olleiluan_effect", i).length > 0) {
 					keep = false;
 					num++;
 				} else if (!keep) break;
@@ -4575,28 +4575,19 @@ const skills = {
 		subSkill: {
 			backup: {},
 			effect: {
-				trigger: { global: "roundStart" },
+				trigger: { global: "roundEnd" },
 				filter(event, player) {
-					if (game.roundNumber <= 1) return false;
-					return (
-						player.getRoundHistory(
-							"useCard",
-							evt => {
-								return get.type(evt.card) == "basic";
-							},
-							1
-						).length >= lib.skill.olleiluan.getNum(player)
-					);
+					return player.getRoundHistory("useCard", evt => get.type(evt.card) == "basic").length >= lib.skill.olleiluan.getNum(player);
 				},
 				frequent: true,
 				prompt2(event, player) {
-					return "摸" + get.cnNumber(lib.skill.olleiluan.getNum(player)) + "张牌，然后视为使用一张上一轮进入弃牌堆的普通锦囊牌";
+					return "摸" + get.cnNumber(lib.skill.olleiluan.getNum(player)) + "张牌，然后视为使用一张本轮进入弃牌堆的普通锦囊牌";
 				},
 				async content(event, trigger, player) {
 					await player.draw(lib.skill.olleiluan.getNum(player));
 					let cards = [];
 					const historys = _status.globalHistory;
-					for (let i = historys.length - 2; i >= 0; i--) {
+					for (let i = historys.length - 1; i >= 0; i--) {
 						const history = historys[i].everything;
 						for (let j = history.length - 1; j >= 0; j--) {
 							const evt = history[j];
@@ -4646,9 +4637,7 @@ const skills = {
 		forced: true,
 		logTarget: event => event.respondTo[0],
 		async content(event, trigger, player) {
-			const evt = game.getGlobalHistory("everything", evt => {
-				return evt.name === "useCard" && evt.card == trigger.respondTo[1];
-			})[0];
+			const evt = game.getGlobalHistory("useCard", evt => evt.card == trigger.respondTo[1])[0];
 			let result;
 			if (!player.countCards("he") && !evt.player.countCards("he")) {
 				result = { index: 1 };
@@ -19593,6 +19582,7 @@ const skills = {
 			if (!control) return;
 			await target.addSkills(control);
 		},
+		derivation: ["olfengzi", "oljizhan"],
 	},
 	//邓芝
 	olxiuhao: {
@@ -25834,6 +25824,7 @@ const skills = {
 			player.addMark("fanghun", trigger.num || 1);
 			player.addMark("fanghun2", trigger.num || 1, false);
 		},
+		derivation: "fanghun_sha",
 		group: ["fanghun_sha", "fanghun_draw"],
 		subSkill: {
 			draw: {
