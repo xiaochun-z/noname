@@ -1791,6 +1791,7 @@ export default () => {
 									delete _status.roundStart;
 									event.redo();
 									await game.delay();
+									game.log();
 									await event.trigger("roundEnd");
 									return;
 								}
@@ -1858,6 +1859,7 @@ export default () => {
 							}
 							if (_status.roundStart && _status.roundStart.side == player.side) {
 								delete _status.roundStart;
+								game.log();
 								await event.trigger("roundEnd");
 							}
 							let num2 = game.players.length - num1;

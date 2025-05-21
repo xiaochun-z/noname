@@ -4784,7 +4784,7 @@ const skills = {
 				},
 				filter(event, player) {
 					if (event.name == "useCard") {
-						if (event.addCount === false || !event.targets.some(target => player.getStorage("dclvecheng_xiongluan").includes(target))) return false;
+						if (event.addCount === false || !event.targets?.some(target => player.getStorage("dclvecheng_xiongluan").includes(target))) return false;
 						return player.hasHistory("lose", evt => {
 							if (evt.getParent() != event) return false;
 							return Object.values(evt.gaintag_map).flat().includes("dclvecheng_xiongluan");
@@ -4795,7 +4795,7 @@ const skills = {
 				async content(event, trigger, player) {
 					if (trigger.name == "useCard") {
 						trigger.addCount = false;
-						trigger.player.getStat().card.sha--;
+						trigger.player.getStat().card[trigger.card.name]--;
 						return;
 					}
 					const targets = player.getStorage("dclvecheng_xiongluan").slice().sortBySeat();

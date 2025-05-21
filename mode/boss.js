@@ -1735,6 +1735,7 @@ export default () => {
 									event.player = game.boss.nextSeat;
 									//如果当前角色为boss且下一个角色从头开始才触发每轮结束时的时机
 									delete _status.roundStart;
+									game.log();
 									await event.trigger("roundEnd");
 								} else {
 									event.player = _status.last.nextSeat;
