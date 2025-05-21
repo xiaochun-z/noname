@@ -26,8 +26,12 @@ game.import("card", function () {
 					order: 9.5,
 					basic: {
 						equipValue(card, player) {
-							if (!player.isTurnedOver()) return 6;
-							if (player.isTurnedOver()) return -10;
+							if (!player.isTurnedOver()) {
+								return 6;
+							}
+							if (player.isTurnedOver()) {
+								return -10;
+							}
 							return 0;
 						},
 					},
@@ -52,7 +56,9 @@ game.import("card", function () {
 							function (card) {
 								var player = _status.event.player;
 								var source = _status.event.getParent().player;
-								if (get.damageEffect(player, source, player) > 0) return -1;
+								if (get.damageEffect(player, source, player) > 0) {
+									return -1;
+								}
 								return 7 - get.value(card);
 							};
 					}
@@ -136,7 +142,9 @@ game.import("card", function () {
 							event.player != player &&
 							event.cards.filterInD().length > 0
 						)
-							return true;
+							{
+								return true;
+							}
 					}
 					return false;
 				},
@@ -168,7 +176,9 @@ game.import("card", function () {
 					noturnOver: true,
 					effect: {
 						target(card, player, target, current) {
-							if (get.tag(card, "turnOver")) return "zeroplayertarget";
+							if (get.tag(card, "turnOver")) {
+								return "zeroplayertarget";
+							}
 						},
 					},
 				},
@@ -181,7 +191,9 @@ game.import("card", function () {
 				forced: true,
 				equipSkill: true,
 				filter(event, player) {
-					if (event._notrigger.includes(event.player)) return false;
+					if (event._notrigger.includes(event.player)) {
+						return false;
+					}
 					return (
 						event.card &&
 						event.card.name == "sha" &&
@@ -231,18 +243,24 @@ game.import("card", function () {
 						const info = get.info(skill);
 						return info && !info.charlotte;
 					});
-					if (!skills.length) return;
+					if (!skills.length) {
+						return;
+					}
 					const links = await player
 						.chooseButton(["选择获得一个技能", [skills, "skill"]])
 						.set("displayIndex", false)
 						.set("ai", button => {
 							const player = get.player();
 							let info = get.info(button.link);
-							if (info?.ai?.neg || info?.ai?.halfneg) return 0;
+							if (info?.ai?.neg || info?.ai?.halfneg) {
+								return 0;
+							}
 							return get.skillRank(button.link, "inout");
 						})
 						.forResultLinks();
-					if (!links?.length) return;
+					if (!links?.length) {
+						return;
+					}
 					await player.addTempSkills(links[0]);
 				},
 			},
