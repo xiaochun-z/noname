@@ -3473,7 +3473,7 @@ const skills = {
 				};
 				await Promise.all(
 					humans.map(current => {
-						return new Promise(async (resolve, reject) => {
+						return new Promise((resolve, reject) => {
 							if (current.isOnline()) {
 								current.send(send, current, targets, eventId);
 								current.wait(solve(resolve, reject));
@@ -3483,12 +3483,13 @@ const skills = {
 								if (_status.connectMode) {
 									game.me.wait(solver);
 								}
-								const result = await next.forResult();
-								if (_status.connectMode) {
-									game.me.unwait(result, current);
-								} else {
-									solver(result, current);
-								}
+								return next.forResult().then(result => {
+									if (_status.connectMode) {
+										game.me.unwait(result, current);
+									} else {
+										solver(result, current);
+									}
+								});
 							}
 						});
 					})
@@ -4404,7 +4405,7 @@ const skills = {
 				};
 				await Promise.all(
 					humans.map(current => {
-						return new Promise(async (resolve, reject) => {
+						return new Promise((resolve, reject) => {
 							if (current.isOnline()) {
 								current.send(send, current, targets, eventId);
 								current.wait(solve(resolve, reject));
@@ -4414,12 +4415,13 @@ const skills = {
 								if (_status.connectMode) {
 									game.me.wait(solver);
 								}
-								const result = await next.forResult();
-								if (_status.connectMode) {
-									game.me.unwait(result, current);
-								} else {
-									solver(result, current);
-								}
+								return next.forResult().then(result => {
+									if (_status.connectMode) {
+										game.me.unwait(result, current);
+									} else {
+										solver(result, current);
+									}
+								});
 							}
 						});
 					})
@@ -4642,7 +4644,7 @@ const skills = {
 				};
 				await Promise.all(
 					humans.map(current => {
-						return new Promise(async (resolve, reject) => {
+						return new Promise((resolve, reject) => {
 							if (current.isOnline()) {
 								current.send(send, current, trigger, eventId);
 								current.wait(solve(resolve, reject));
@@ -4652,12 +4654,13 @@ const skills = {
 								if (_status.connectMode) {
 									game.me.wait(solver);
 								}
-								const result = await next.forResult();
-								if (_status.connectMode) {
-									game.me.unwait(result, current);
-								} else {
-									solver(result, current);
-								}
+								return next.forResult().then(result => {
+									if (_status.connectMode) {
+										game.me.unwait(result, current)
+									} else {
+										solver(result, current)
+									}
+								});
 							}
 						});
 					})
@@ -5294,7 +5297,7 @@ const skills = {
 				if (get.attitude(player, target) <= 0) {
 					return 0;
 				}
-				const num = target.getUseValue(new lib.element.VCard({ name: "sha" }), false);
+				let num = target.getUseValue(new lib.element.VCard({ name: "sha" }), false);
 				if (target.hasSkillTag("nogain")) {
 					num /= 4;
 				}

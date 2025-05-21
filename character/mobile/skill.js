@@ -2554,7 +2554,7 @@ const skills = {
 					function createCustom(suit, count) {
 						return function (itemContainer) {
 							function formatStr(str) {
-								return str.replace(/[♥︎♦︎]/g, '<span style="color: red; ">$&</span>');
+								return str.replace(/(?:♥︎|♦︎)/g, '<span style="color: red; ">$&</span>');
 							}
 							let div = ui.create.div(itemContainer);
 							if (count) {
@@ -4474,7 +4474,7 @@ const skills = {
 					.getHistory("lose", evt => {
 						return evt.getParent("phaseUse") === event;
 					})
-					.reduce((sum, evt) => sum + evt.getl?.(player)?.hs?.length ?? 0, 0) >= 3
+					.reduce((sum, evt) => sum + (evt.getl?.(player)?.hs?.length ?? 0), 0) >= 3
 			);
 		},
 		frequent: true,
@@ -8187,7 +8187,9 @@ const skills = {
 				//点击容器的回调
 				/**@type {Row_Item_Option['clickItemContainer']} */
 				const clickItemContainer = function (container, item, allContainer) {
-					if (!item?.length || item.some(card => !lib.filter.cardDiscardable(card, player, event.name))) return;
+					if (!item?.length || item.some(card => !lib.filter.cardDiscardable(card, player, event.name))) {
+						return;
+					}
 					if (event.selectedButtons.includes(container)) {
 						container.classList.remove("selected");
 						event.selectedButtons.remove(container);
@@ -8211,7 +8213,7 @@ const skills = {
 				function createCustom(suit, count) {
 					return function (itemContainer) {
 						function formatStr(str) {
-							return str.replace(/[♥︎♦︎]/g, '<span style="color: red; ">$&</span>');
+							return str.replace(/(?:♥︎|♦︎)/g, '<span style="color: red; ">$&</span>');
 						}
 						let div = ui.create.div(itemContainer);
 						if (count) {
@@ -8274,7 +8276,9 @@ const skills = {
 		async cost(event, trigger, player) {
 			await Promise.all(event.next);
 			event.videoId = lib.status.videoId++;
-			if (player.isUnderControl()) game.swapPlayerAuto(player);
+			if (player.isUnderControl()) {
+				game.swapPlayerAuto(player);
+			}
 			const { chooseOneSuitCard } = get.info("mbcmqingzheng");
 			let limit = event.skill === "sbqingzheng" ? 3 - player.countMark("sbjianxiong") : 1;
 			let next,
@@ -23853,10 +23857,10 @@ const skills = {
 	},
 	rebiaozhao: {
 		audio: "biaozhao",
-		intro: {
-			content: "expansion",
-			markcount: "expansion",
-		},
+		// intro: {
+		// 	content: "expansion",
+		// 	markcount: "expansion",
+		// },
 		trigger: {
 			player: "phaseJieshuBegin",
 		},

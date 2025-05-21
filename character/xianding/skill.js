@@ -509,7 +509,7 @@ const skills = {
 					},
 					backup(links, player) {
 						return {
-							filterCard: true,
+							// filterCard: true,
 							audio: "dcsugang",
 							filterCard: card => card.hasGaintag("dcsugang_viewAs"),
 							popname: true,
@@ -2494,7 +2494,7 @@ const skills = {
 				case 1:
 					await player.gain(Array.from(ui.discardPile.childNodes).randomGets(storage[1]));
 					break;
-				case 2:
+				case 2: {
 					const result = await player
 						.chooseTarget(
 							true,
@@ -2521,6 +2521,7 @@ const skills = {
 						}
 					}
 					break;
+				}
 			}
 			player.storage[event.name][index] = 1;
 			const nums = Array.from({ length: 3 })
@@ -4696,28 +4697,29 @@ const skills = {
 				};
 				await Promise.all(
 					humans.map(current => {
-						return new Promise(async (resolve, reject) => {
+						return new Promise((resolve, reject) => {
 							if (current.isOnline()) {
 								current.send(send, player, current);
 								current.wait((result, player) => {
 									solve(result, player);
-									resolve();
+									resolve(void 0);
 								});
 							} else if (current == game.me) {
 								const next = lib.skill.dcsbyaozuo.chooseCard(player, current);
 								const solver = (result, player) => {
 									solve(result, player);
-									resolve();
+									resolve(void 0);
 								};
 								if (_status.connectMode) {
 									game.me.wait(solver);
 								}
-								const result = await next.forResult();
-								if (_status.connectMode) {
-									game.me.unwait(result, current);
-								} else {
-									solver(result, current);
-								}
+								return next.forResult().then(result => {
+									if (_status.connectMode) {
+										game.me.unwait(result, current);
+									} else {
+										solver(result, current);
+									}
+								});
 							}
 						});
 					})
@@ -6115,7 +6117,7 @@ const skills = {
 					const card = {
 						name: get.name(button.link),
 						suit: get.suit(button.link),
-						nature: get.nature(button.link),
+						// nature: get.nature(button.link),
 						nature: button.link.nature,
 						isCard: true,
 					};
@@ -14257,7 +14259,8 @@ const skills = {
 					switch (name) {
 						case "phaseJieshu":
 							target = target.next;
-						case "phaseZhunbei":
+							// [falls through]
+						case "phaseZhunbei": {
 							let att = get.sgn(get.attitude(player, target)),
 								judges = target.getCards("j"),
 								needs = 0,
@@ -14299,6 +14302,7 @@ const skills = {
 							}
 							bottom.addArray(cards);
 							return [top, bottom];
+						}
 						default:
 							cards.sort((a, b) => {
 								return get.value(b, target) - get.value(a, target);
@@ -15207,7 +15211,7 @@ const skills = {
 											}, 0) /
 												3
 										);
-									case "选项三":
+									case "选项三": {
 										var e2 = target.getEquip(2);
 										if (target.isHealthy()) {
 											return -1.8 * target.countCards("e") - (e2 ? 1 : 0);
@@ -15225,6 +15229,7 @@ const skills = {
 											rec += 2;
 										}
 										return rec;
+									}
 								}
 							};
 							var choicesx = choices.map(i => [i, func(i, target)]).sort((a, b) => b[1] - a[1]);
@@ -22664,7 +22669,7 @@ const skills = {
 	},
 	wfyuyan: {
 		audio: 2,
-		derivation: "refenyin",
+		// derivation: "refenyin",
 		trigger: { global: "roundStart" },
 		forced: true,
 		locked: false,
@@ -25532,8 +25537,9 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
 		filter(event, player) {
-			if (!ui.cardPile.hasChildNodes() && !ui.discardPile.hasChildNodes()) {
-			}
+			// /-?
+			// if (!ui.cardPile.hasChildNodes() && !ui.discardPile.hasChildNodes()) {
+			// }
 			var hs = player.getCards("h");
 			if (!hs.length) {
 				return false;
@@ -26602,10 +26608,9 @@ const skills = {
 				case "red":
 					player.recover();
 					break;
-
 				case "black":
 					player.draw(2);
-
+					break;
 				default:
 					break;
 			}
