@@ -3174,6 +3174,7 @@ player.removeVirtualEquip(card);
 				};
 				event.player = findNext(event.player);
 			}
+			game.log();
 			await event.trigger("roundEnd");
 		}
 	},

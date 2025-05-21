@@ -3717,7 +3717,7 @@ const skills = {
 		enable: "phaseUse",
 		logAudio: () => 2,
 		filter(event, player) {
-			return player.countCards("h") > 0 && game.hasPlayer(target => target !== player);
+			return player.countCards("he") > 0 && game.hasPlayer(target => target !== player);
 		},
 		filterCard: true,
 		position: "he",
@@ -3729,10 +3729,15 @@ const skills = {
 			return ["获得", get.translation(links[ui.selected.targets.length - 1])].join("<br>");
 		},
 		check(card) {
-			const player = get.player(),
-				targets = game.filterPlayer(t => ![player, ...ui.selected.targets].includes(t));
-			if (!targets.length) return 0;
-			return Math.max(...targets.map(target => get.value(card, target) * get.attitude(player, target)));
+			const player = get.player();
+			if (
+				ui.selected.cards.length >=
+				game.countPlayer(current => {
+					return current != player && get.attitude(player, current) > 0;
+				})
+			)
+				return 0;
+			return 6 - get.value(card);
 		},
 		multiline: true,
 		multitarget: true,
@@ -3774,9 +3779,11 @@ const skills = {
 		ai: {
 			order: 10,
 			result: {
-				player(player, target) {
-					const links = ui.selected.cards;
-					return get.value(links[ui.selected.targets.length], target) * get.attitude(player, target);
+				target(player, target) {
+					var card = ui.selected.cards[ui.selected.targets.length];
+					if (!card) return 0;
+					if (get.value(card) < 0) return -1;
+					return Math.sqrt(5 - Math.min(4, target.countCards("h")));
 				},
 			},
 		},
@@ -3804,7 +3811,7 @@ const skills = {
 				logTarget: "player",
 				popup: false,
 				async content(event, trigger, player) {
-					if(trigger.name === "damage" || event.triggername === "useCardAfter") player.logSkill("potfuji", null, null, null, [trigger.name === "damage" ? 4 : 5]);
+					if (trigger.name === "damage" || event.triggername === "useCardAfter") player.logSkill("potfuji", null, null, null, [trigger.name === "damage" ? 4 : 5]);
 					if (trigger.name === "damage") trigger.num++;
 					else if (event.triggername === "useCardAfter") await player.draw();
 					else {

@@ -3872,6 +3872,7 @@ export default () => {
 								delete _status.roundStart;
 								event.redo();
 								await game.delay();
+								game.log();
 								await event.trigger("roundEnd");
 								return;
 							}
@@ -3940,6 +3941,7 @@ export default () => {
 							if (_status.round >= 2 * Math.max(game.friend.length, game.enemy.length)) {
 								//行动次数达到上限，触发轮次结束的时机
 								_status.round = 0;
+								game.log();
 								await event.trigger("roundEnd");
 								for (let i = 0; i < game.players.length; i++) {
 									game.players[i].classList.remove("acted");
@@ -3994,6 +3996,7 @@ export default () => {
 						await event.trigger("phaseOver");
 						event.num++;
 						if (event.num == _status.actlist.length) {
+							game.log();
 							await event.trigger("roundEnd");
 						}
 					}
