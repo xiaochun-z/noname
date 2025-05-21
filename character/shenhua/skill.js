@@ -7274,7 +7274,7 @@ const skills = {
 			const [target] = event.targets;
 			const next = target.judge(card => {
 				if (get.suit(card) == "spade") return -4;
-				return 0;
+				return 4;
 			});
 			next.judge2 = result => !result.bool;
 			const { result } = await next;
