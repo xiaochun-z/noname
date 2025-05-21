@@ -1011,7 +1011,9 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			if (!get.info("kud_qiaoshou").getList(event).length) return false;
+			if (!get.info("kud_qiaoshou").getList(event).length) {
+				return false;
+			}
 			return player.countCards("h") && !player.hasVCard(card => card.storage?.kud_qiaoshou, "e");
 		},
 		chooseButton: {
@@ -1103,7 +1105,9 @@ const skills = {
 			end: {
 				trigger: { player: "phaseJieshuBegin" },
 				filter(event, player) {
-					if (!get.info("kud_qiaoshou").getList(event).length) return false;
+					if (!get.info("kud_qiaoshou").getList(event).length) {
+						return false;
+					}
 					return player.countCards("h") && !player.hasVCard(card => card.storage?.kud_qiaoshou, "e");
 				},
 				async cost(event, trigger, player) {
@@ -1117,17 +1121,25 @@ const skills = {
 						.set("ai", button => {
 							const player = get.player();
 							const name = button.link[2];
-							if (get.subtype(name) == "equip3" || player.getEquip(name)) return false;
+							if (get.subtype(name) == "equip3" || player.getEquip(name)) {
+								return false;
+							}
 							switch (name) {
 								case "yexingyi":
-									if (player.hp > 2 || player.getEquip("bagua") || player.getEquip("tengjia")) return 1.5 + Math.random();
+									if (player.hp > 2 || player.getEquip("bagua") || player.getEquip("tengjia")) {
+										return 1.5 + Math.random();
+									}
 									return 0.5 + Math.random();
 								case "rewrite_bagua":
 								case "rewrite_renwang":
-									if (player.getEquip("bagua") || player.getEquip("tengjia") || player.getEquip("renwang")) return Math.random();
+									if (player.getEquip("bagua") || player.getEquip("tengjia") || player.getEquip("renwang")) {
+										return Math.random();
+									}
 									return 1.2 + Math.random();
 								case "rewrite_tengjia":
-									if (player.getEquip("baiyin")) return 1.3 + Math.random();
+									if (player.getEquip("baiyin")) {
+										return 1.3 + Math.random();
+									}
 									return Math.random();
 								case "rewrite_baiyin":
 									return 0.4 + Math.random();
@@ -1136,7 +1148,9 @@ const skills = {
 							}
 						})
 						.forResult();
-					if (!result?.bool || !result?.links?.length) return;
+					if (!result?.bool || !result?.links?.length) {
+						return;
+					}
 					const cardname = result.links[0][2];
 					result = await player.chooseCard("h", `选择一张手牌，将之视为${get.translation(cardname)}然后装备之`).forResult();
 					event.result = {
@@ -1165,7 +1179,9 @@ const skills = {
 				charlotte: true,
 				onremove(player, skill) {
 					const cards = player.getCards("e", card => card[card.cardSymbol]?.storage?.kud_qiaoshou);
-					if (cards.length) player.loseToDiscardpile(cards);
+					if (cards.length) {
+						player.loseToDiscardpile(cards);
+					}
 				},
 				mark: true,
 				intro: {
