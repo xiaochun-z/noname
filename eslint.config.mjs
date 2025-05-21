@@ -30,6 +30,12 @@ export default ts.config(
 			"vue/multi-word-component-names": 0,
 			"no-class-assign": 0,
 			"no-console": 0,
+			"@typescript-eslint/ban-ts-comment": [
+				"error",
+				{
+					"ts-nocheck": false,
+				},
+			],
 			"no-constant-condition": [
 				"error",
 				{
@@ -43,6 +49,7 @@ export default ts.config(
 					skipTemplates: true,
 				},
 			],
+			"prefer-const": 0,
 			"no-redeclare": 0,
 			"no-undef": 0,
 			"no-empty": [
