@@ -13,7 +13,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install modules
-        run: yarn global add eslint @eslint/js globals typescript-eslint eslint-plugin-vue
+        run: |
+          yarn add -D eslint @eslint/js globals typescript-eslint eslint-plugin-vue
+          yarn global add eslint
 
       - name: Run ESLint
         run: yarn exec eslint card/ character/ extension/ game/game.js game/entry.js mode/ noname/ noname.js noname-compatible.js service-worker.js
