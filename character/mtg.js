@@ -43,13 +43,19 @@ game.import("character", function () {
 				},
 				ai: {
 					threaten(player, target) {
-						if (target.hp == 1) return 0.6;
+						if (target.hp == 1) {
+							return 0.6;
+						}
 						return 1;
 					},
 					effect: {
 						target(card, player, target, current) {
-							if (!target.hasFriend()) return;
-							if (target.hp <= 1 && get.tag(card, "damage")) return [1, 0, 0, -1];
+							if (!target.hasFriend()) {
+								return;
+							}
+							if (target.hp <= 1 && get.tag(card, "damage")) {
+								return [1, 0, 0, -1];
+							}
 						},
 					},
 				},
@@ -153,12 +159,20 @@ game.import("character", function () {
 						onremove: true,
 						group: "mhuanyi_die",
 						filter(event, player) {
-							if (!player.storage.mhuanyi_target) return false;
-							if (event.player == player.storage.mhuanyi_target[0]) return false;
+							if (!player.storage.mhuanyi_target) {
+								return false;
+							}
+							if (event.player == player.storage.mhuanyi_target[0]) {
+								return false;
+							}
 							if (get.type(event.card) == "basic") {
-								if (player.storage.mhuanyi_target[1] != 0) return false;
+								if (player.storage.mhuanyi_target[1] != 0) {
+									return false;
+								}
 							} else {
-								if (player.storage.mhuanyi_target[1] != 1) return false;
+								if (player.storage.mhuanyi_target[1] != 1) {
+									return false;
+								}
 							}
 							if (
 								!lib.filter.targetEnabled2(
@@ -183,7 +197,9 @@ game.import("character", function () {
 						trigger: { global: "dieAfter" },
 						silent: true,
 						filter(event, player) {
-							if (!player.storage.mhuanyi_target) return false;
+							if (!player.storage.mhuanyi_target) {
+								return false;
+							}
 							return event.player == player.storage.mhuanyi_target[0];
 						},
 						content() {
@@ -199,8 +215,12 @@ game.import("character", function () {
 				round: 1,
 				filter(event, player) {
 					if (get.type(event.card) == "trick" && event.card.isCard) {
-						if (event.player == player) return false;
-						if (!player.countCards("he", { suit: get.suit(event.card) })) return false;
+						if (event.player == player) {
+							return false;
+						}
+						if (!player.countCards("he", { suit: get.suit(event.card) })) {
+							return false;
+						}
 						return true;
 					}
 					return false;
@@ -233,7 +253,9 @@ game.import("character", function () {
 				filter(event, player) {
 					var enemies = player.getEnemies();
 					for (var i = 0; i < enemies.length; i++) {
-						if (enemies[i].countCards("h")) return true;
+						if (enemies[i].countCards("h")) {
+							return true;
+						}
 					}
 					return false;
 				},
