@@ -8353,8 +8353,7 @@ const skills = {
 			if (!target.countCards("h")) {
 				return;
 			}
-			let next,
-				str2 = `清正：弃置${get.translation(target)}一种花色的所有牌`;
+			let str2 = `清正：弃置${get.translation(target)}一种花色的所有牌`;
 			let ai2 = function () {
 				let list = lib.suits.slice().filter(i => target.hasCard({ suit: i }, "h"));
 				let getv = cards => cards.map(i => get.value(i)).reduce((p, c) => p + c, 0);
