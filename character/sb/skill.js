@@ -1156,6 +1156,7 @@ const skills = {
 			return get.attitude(player, event.player) <= 0;
 		},
 		logTarget: "player",
+		round: 1,
 		async content(event, trigger, player) {
 			const target = trigger.player,
 				position = player.storage.sbwansha ? "hej" : "h";
@@ -1781,7 +1782,7 @@ const skills = {
 													return card.hasGaintag("sbyicong");
 												})
 										)
-									)}张【杀】置于你的武将牌上，称为“扈”`
+								  )}张【杀】置于你的武将牌上，称为“扈”`
 						}`,
 						`其他角色于本轮内至你的距离+1${
 							player.countCards("s", card => {
@@ -1796,7 +1797,7 @@ const skills = {
 													return card.hasGaintag("sbyicong");
 												})
 										)
-									)}张【闪】置于你的武将牌上，称为“扈”`
+								  )}张【闪】置于你的武将牌上，称为“扈”`
 						}`,
 					])
 					.set("ai", () => {
@@ -2501,15 +2502,12 @@ const skills = {
 				game.broadcastAll(lose_list => {
 					lose_list.forEach(list => list[0].prompt(`${get.cnNumber(list[1].length)}张`, "wood"));
 				}, lose_list);
-				setTimeout(
-					() => {
-						game.broadcastAll(lose_list => {
-							lose_list.forEach(list => list[0].unprompt());
-						}, lose_list);
-						resolve();
-					},
-					2000 / (lib.config.game_speed == "vvfast" ? 3 : 1)
-				);
+				setTimeout(() => {
+					game.broadcastAll(lose_list => {
+						lose_list.forEach(list => list[0].unprompt());
+					}, lose_list);
+					resolve();
+				}, 2000 / (lib.config.game_speed == "vvfast" ? 3 : 1));
 			});
 			if (isMin) {
 				await mostPlayer.gain(myCards, "give", player);
@@ -5198,7 +5196,7 @@ const skills = {
 					return player.hasMark("sbjiang")
 						? game.countPlayer(current => {
 								return current.group == "wu" && current != player;
-							}) + 1
+						  }) + 1
 						: 1;
 				},
 				viewAs: { name: "juedou" },
@@ -5210,7 +5208,7 @@ const skills = {
 					var limit = player.hasMark("sbjiang")
 						? game.countPlayer(current => {
 								return current.group == "wu" && current != player;
-							}) + 1
+						  }) + 1
 						: 1;
 					return "出牌阶段限" + get.cnNumber(limit) + "次。你可以将所有手牌当【决斗】使用";
 				},
@@ -5244,7 +5242,7 @@ const skills = {
 							let limit = player.hasMark("sbjiang")
 								? game.countPlayer(current => {
 										return current.group == "wu" && current != player;
-									}) + 1
+								  }) + 1
 								: 1;
 							return player.isPhaseUsing() && (player.getStat("skill").sbjiang_qiben || 0) < limit && player.hasCard(card => get.name(card) != "tao", "h");
 						}
@@ -6383,15 +6381,12 @@ const skills = {
 		content() {
 			"step 0";
 			target
-				.chooseToUse(
-					function (card, player, event) {
-						if (get.name(card) != "sha") {
-							return false;
-						}
-						return lib.filter.filterCard.apply(this, arguments);
-					},
-					"挑衅：对" + get.translation(player) + "使用一张杀，或交给其一张牌"
-				)
+				.chooseToUse(function (card, player, event) {
+					if (get.name(card) != "sha") {
+						return false;
+					}
+					return lib.filter.filterCard.apply(this, arguments);
+				}, "挑衅：对" + get.translation(player) + "使用一张杀，或交给其一张牌")
 				.set("targetRequired", true)
 				.set("complexSelect", true)
 				.set("filterTarget", function (card, player, target) {
@@ -10164,15 +10159,12 @@ const skills = {
 				if (target.isIn()) {
 					event.target = target;
 					target
-						.chooseToUse(
-							function (card, player, event) {
-								if (get.name(card) != "sha") {
-									return false;
-								}
-								return lib.filter.filterCard.apply(this, arguments);
-							},
-							"对" + get.translation(player) + "使用一张杀，否则交给其一张牌，且其摸一张牌"
-						)
+						.chooseToUse(function (card, player, event) {
+							if (get.name(card) != "sha") {
+								return false;
+							}
+							return lib.filter.filterCard.apply(this, arguments);
+						}, "对" + get.translation(player) + "使用一张杀，否则交给其一张牌，且其摸一张牌")
 						.set("targetRequired", true)
 						.set("complexSelect", true)
 						.set("filterTarget", function (card, player, target) {
@@ -10444,7 +10436,7 @@ const skills = {
 									return 1;
 								}
 								return 0;
-							});
+						  });
 				if (!bool) {
 					return;
 				}

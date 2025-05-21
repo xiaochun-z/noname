@@ -605,7 +605,7 @@ game.import("card", function () {
 					return event.card.name == "leigong";
 				},
 				content() {
-					const num = game.countPlayer2(target => target.hasHistory("damage", evt => evt.getParent(4) == trigger && evt.notLink()));
+					const num = game.countPlayer2(target => target.hasHistory("damage", evt => evt.getParent(2) == trigger && evt.notLink()));
 					if (num > 0) {
 						player.draw(num);
 					}

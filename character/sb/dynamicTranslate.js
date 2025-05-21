@@ -49,7 +49,7 @@ const dynamicTranslates = {
 	},
 	sbwansha(player) {
 		const storage = player.storage.sbwansha;
-		var str = "①你的回合内，不处于濒死状态的其他角色不能使用【桃】。②一名角色进入濒死状态时，你可以观看其手牌并选择其";
+		var str = "①你的回合内，不处于濒死状态的其他角色不能使用【桃】。②每轮限一次，一名角色进入濒死状态时，你可以观看其手牌并选择其";
 		str += storage ? "区域内的" : "中";
 		str += "零至两张牌（其他角色不可见），然后其选择一项：1.你将这些牌分配给任意名不为其的角色；2.其弃置除这些牌以外的牌。";
 		return str;
