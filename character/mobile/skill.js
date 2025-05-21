@@ -7307,7 +7307,9 @@ const skills = {
 			let ai = function () {
 				let suits = lib.suits.slice().filter(suit => {
 					let cards = player.getCards("h", { suit: suit });
-					if (!cards.length || cards.filter(card => lib.filter.cardDiscardable(card, player, event.skill)).length !== cards.length) return false;
+					if (!cards.length || cards.filter(card => lib.filter.cardDiscardable(card, player, event.skill)).length !== cards.length) {
+						return false;
+					}
 					return 15 - cards.map(i => get.value(i)).reduce((p, c) => p + c, 0) > 0;
 				});
 				if (suits.length < limit) return { bool: false };
@@ -7351,7 +7353,9 @@ const skills = {
 				.set("ai", target => {
 					const player = get.player(),
 						att = get.attitude(player, target);
-					if (att >= 0) return 0;
+					if (att >= 0) {
+						return 0;
+					}
 					return 1 - att / 2 + Math.sqrt(target.countCards("h"));
 				})
 				.forResult();
