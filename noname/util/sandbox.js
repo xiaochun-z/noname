@@ -3348,7 +3348,7 @@ class Sandbox {
 		this.#domainDocument = null; // 默认不开放DOM，而且我们也缺少BrowserContext
 		this.#domainObject = this.#domainWindow.Object;
 		this.#domainFunction = this.#domainWindow.Function;
-		this.#domainEval = this.#domainWindow.eval;
+		// this.#domainEval = this.#domainWindow.eval;
 		Sandbox.#domainMap.set(this.#domain, this);
 		Sandbox.#initDomainFunctions(this, this.#domainWindow);
 		Sandbox.#createScope(this);
