@@ -24,6 +24,7 @@ export default ts.config(
 		rules: {
 			"@typescript-eslint/no-require-imports": 0,
 			"@typescript-eslint/no-unused-vars": 0,
+			"@typescript-eslint/no-unused-expressions": 0,
 			"no-class-assign": 0,
 			"no-console": 0,
 			"no-constant-condition": [
