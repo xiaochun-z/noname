@@ -2756,12 +2756,9 @@ const skills = {
 						} else {
 							result = { bool: false };
 						}
-						}
-							await player.removeSkills("clanbaozu");
-						} else {
-						}
+					} else {
+						await player.removeSkills("clanbaozu");
 					}
-					break;
 			}
 		},
 		ai: {

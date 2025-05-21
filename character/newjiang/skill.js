@@ -1046,7 +1046,9 @@ const skills = {
 			if (num > 0) {
 				await player.draw(num);
 			}
-			if (player.countCards("he") > 0) await player.chooseToDiscard(2, "he", true);
+			if (player.countCards("he") > 0) {
+				await player.chooseToDiscard(2, "he", true);
+			}
 		},
 		subSkill: {
 			used: {

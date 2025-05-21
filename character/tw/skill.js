@@ -10601,7 +10601,9 @@ const skills = {
 				.set("ai", target => {
 					var player = _status.event.player,
 						att = get.attitude(player, target);
-					if (game.roundNumber <= 1 && player.hasUnknown()) return 0;
+					if (game.roundNumber <= 1 && player.hasUnknown()) {
+						return 0;
+					}
 					return -att;
 				})
 				.forResult();
@@ -10656,11 +10658,15 @@ const skills = {
 					if (list2.length) {
 						choices.push("选项一");
 						choiceList[0] += "（" + get.translation(list2) + "）";
-					} else choiceList[0] = '<span style="opacity:0.5">' + choiceList[0] + "</span>";
+					} else {
+						choiceList[0] = '<span style="opacity:0.5">' + choiceList[0] + "</span>";
+					}
 					if (list.length) {
 						choices.push("选项二");
 						choiceList[1] += "（" + get.translation(list) + "）";
-					} else choiceList[1] = '<span style="opacity:0.5">' + choiceList[1] + "</span>";
+					} else {
+						choiceList[1] = '<span style="opacity:0.5">' + choiceList[1] + "</span>";
+					}
 					choices.push("cancel2");
 					const control = await player
 						.chooseControl(choices)
@@ -10671,18 +10677,28 @@ const skills = {
 						.set("ai", function () {
 							const { player, list, list2 } = get.event();
 							const eff1 = list.reduce((acc, target) => {
-									if (target === player) return acc;
+									if (target === player) {
+										return acc;
+									}
 									const eff = get.effect(target, { name: "sha" }, player, player);
-									if (eff > 0) return acc + eff;
+									if (eff > 0) {
+										return acc + eff;
+									}
 									return acc;
 								}, 0),
 								eff2 = list2.reduce((acc, target) => {
 									const eff = get.effect(target, { name: "draw" }, player, player);
-									if (eff > 0) return acc + eff;
+									if (eff > 0) {
+										return acc + eff;
+									}
 									return acc;
 								}, 0);
-							if (eff2 > eff1 && _status.event.controls.includes("选项二")) return "选项二";
-							if (eff1 > 0) return 0;
+							if (eff2 > eff1 && _status.event.controls.includes("选项二")) {
+								return "选项二";
+							}
+							if (eff1 > 0) {
+								return 0;
+							}
 							return "cancel2";
 						})
 						.forResult("control");
@@ -10700,7 +10716,9 @@ const skills = {
 							prompt,
 							(card, player, target) => {
 								const { goon, list } = get.event();
-								if (!list.includes(target)) return false;
+								if (!list.includes(target)) {
+									return false;
+								}
 								return !goon || player.canUse(new lib.element.VCard({ name: "sha" }), target, false);
 							},
 							[1, list.length]

@@ -2852,8 +2852,12 @@ const skills = {
 							break;
 						}
 					}
-					if (num > 0) await player.draw(num);
-					if (trigger.name === "damage") player.tempBanSkill("jsrgzhendan", "roundStart");
+					if (num > 0) {
+						await player.draw(num);
+					}
+					if (trigger.name === "damage") {
+						player.tempBanSkill("jsrgzhendan", "roundStart");
+					}
 				},
 			},
 		},

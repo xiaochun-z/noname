@@ -3626,7 +3626,9 @@ const skills = {
 								gaintag: ["mbzengou_effect"],
 							})
 							.setContent("gaincardMultiple");
-					} else await player.gain(gains[0], "gain2");
+					} else {
+						await player.gain(gains[0], "gain2");
+					}
 				}
 			}
 			if (names.length && target.isIn()) {
@@ -8124,7 +8126,9 @@ const skills = {
 		async content(event, trigger, player) {
 			await Promise.all(event.next);
 			event.videoId = lib.status.videoId++;
-			if (player.isUnderControl()) game.swapPlayerAuto(player);
+			if (player.isUnderControl()) {
+				game.swapPlayerAuto(player);
+			}
 			/**
 			 * player选择target的一种花色的牌
 			 * @param {Player} player
@@ -8193,7 +8197,9 @@ const skills = {
 					//点击容器的回调
 					/**@type {Row_Item_Option['clickItemContainer']} */
 					const clickItemContainer = function (container, item, allContainer) {
-						if (!item?.length || item.some(card => !lib.filter.cardDiscardable(card, player, event.name))) return;
+						if (!item?.length || item.some(card => !lib.filter.cardDiscardable(card, player, event.name))) {
+							return;
+						}
 						if (event.selectedButtons.includes(container)) {
 							container.classList.remove("selected");
 							event.selectedButtons.remove(container);

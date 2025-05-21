@@ -283,7 +283,9 @@ const skills = {
 		forced: true,
 		locked: false,
 		async content(event, trigger, player) {
-			if (!_status.damageSkills) lib.skill.olzhouxi.initList();
+			if (!_status.damageSkills) {
+				lib.skill.olzhouxi.initList();
+			}
 			const skills = _status.damageSkills.filter(skill => !player.hasSkill(skill, null, null, false)).randomGets(3);
 			/*const skills = get
 				.info(event.name)
