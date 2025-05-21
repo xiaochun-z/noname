@@ -43,6 +43,12 @@ export default ts.config(
 			],
 			"no-redeclare": 0,
 			"no-undef": 0,
+			"no-empty": [
+				"error",
+				{
+					allowEmptyCatch: true,
+				},
+			],
 			"no-unused-vars": 0,
 			"require-yield": 0,
 			"no-fallthrough": ["error", { commentPattern: "\\[falls[\\s\\w]*through\\]" }],
