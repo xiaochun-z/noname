@@ -2343,7 +2343,9 @@ game.import("character", function () {
 					}
 					for (var i = 0; i < ui.discardPile.childElementCount; i++) {
 						var card = ui.discardPile.childNodes[i];
-						if (card.vanishtag.includes("_gwshenyu")) {continue;}
+						if (card.vanishtag.includes("_gwshenyu")) {
+							continue;
+						}
 						if (get.type(card) == "spell" && get.subtype(card) != "spell_gold") {
 							return true;
 						}
@@ -2355,7 +2357,9 @@ game.import("character", function () {
 					var list = [];
 					for (var i = 0; i < ui.discardPile.childElementCount; i++) {
 						var card = ui.discardPile.childNodes[i];
-						if (card.vanishtag.includes("_gwshenyu")) {continue;}
+						if (card.vanishtag.includes("_gwshenyu")) {
+							continue;
+						}
 						if (get.type(card) == "spell" && get.subtype(card) != "spell_gold") {
 							list.push(card);
 						}
@@ -3441,7 +3445,9 @@ game.import("character", function () {
 					for (var i = 0; i < player.storage.huihun.length; i++) {
 						if (get.position(player.storage.huihun[i]) == "d") {
 							list.push(player.storage.huihun[i]);
-							if (list.length >= 2) {break;}
+							if (list.length >= 2) {
+								break;
+							}
 						}
 					}
 					player.gain(list, "gain2", "log");

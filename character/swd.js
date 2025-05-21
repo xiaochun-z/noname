@@ -5785,7 +5785,9 @@ game.import("character", function () {
 						for (var i = 0; i < content.length; i++) {
 							if (get.owner(content[i]) != player && get.position(content[i]) != "s") {
 								cards.push(content[i]);
-								if (cards.length >= 4) {break;}
+								if (cards.length >= 4) {
+									break;
+								}
 							}
 						}
 						if (cards.length) {
@@ -5800,7 +5802,9 @@ game.import("character", function () {
 						for (var i = 0; i < content.length; i++) {
 							if (get.owner(content[i]) != player && get.position(content[i]) != "s") {
 								cards.push(content[i]);
-								if (cards.length >= 4) {break;}
+								if (cards.length >= 4) {
+									break;
+								}
 							}
 						}
 						if (cards.length) {
@@ -7425,8 +7429,12 @@ game.import("character", function () {
 					"step 0";
 					var list = [];
 					for (var i in lib.card) {
-						if (lib.card[i].mode && lib.card[i].mode.includes(lib.config.mode) == false) {continue;}
-						if (lib.card[i].type == "delay") {list.push([cards[0].suit, cards[0].number, i]);}
+						if (lib.card[i].mode && lib.card[i].mode.includes(lib.config.mode) == false) {
+							continue;
+						}
+						if (lib.card[i].type == "delay") {
+							list.push([cards[0].suit, cards[0].number, i]);
+						}
 					}
 					var dialog = ui.create.dialog("玄咒", [list, "vcard"]);
 					var bing = target.countCards("h") <= 1;
@@ -8247,7 +8255,9 @@ game.import("character", function () {
 							game.resume();
 						};
 						for (var i = 0; i < 8; i++) {
-							if (i == 0 && player.maxHp == 6) {continue;}
+							if (i == 0 && player.maxHp == 6) {
+								continue;
+							}
 							var item = event.dialog.add('<div class="popup pointerdiv" style="width:70%;display:inline-block"><div class="skill">【' + get.cnNumber(i + 1, true) + "】</div><div>" + effects[i] + "</div></div>");
 							item.addEventListener("click", clickItem);
 							item.link = i + 1;

@@ -1888,7 +1888,9 @@ game.import("character", function () {
 						min = 0,
 						players = game.filterPlayer();
 					for (var i = 0; i < players.length; i++) {
-						if (!lib.skill.bingqiang.filterTarget(null, player, players[i])) {continue;}
+						if (!lib.skill.bingqiang.filterTarget(null, player, players[i])) {
+							continue;
+						}
 						var num = lib.skill.bingqiang.ai.result.playerx(player, players[i]);
 						if (num > max) {
 							max = num;
@@ -2240,7 +2242,9 @@ game.import("character", function () {
 							var num = 0;
 							var players = game.filterPlayer();
 							for (var i = 0; i < players.length; i++) {
-								if (players[i] == player || players[i].hasSkillTag("nofire") || get.distance(player, players[i]) > 2) {continue;}
+								if (players[i] == player || players[i].hasSkillTag("nofire") || get.distance(player, players[i]) > 2) {
+									continue;
+								}
 								var nh = players[i].countCards("h");
 								var att = get.attitude(player, players[i]);
 								if (nh < player.storage.jijia) {

@@ -773,7 +773,9 @@ game.import("character", function () {
 					for (var i = 0; i < lib.cardPack.mode_derivation.length; i++) {
 						var name = lib.cardPack.mode_derivation[i];
 						var info = lib.card[name];
-						if (info.gainable == false || info.destroy) {continue;}
+						if (info.gainable == false || info.destroy) {
+							continue;
+						}
 						if (lib.characterPack.hearth[info.derivation]) {
 							list.push(name);
 						}
@@ -1042,7 +1044,9 @@ game.import("character", function () {
 					}
 					for (var i = 0; i < lib.inpile.length; i++) {
 						var info = lib.card[lib.inpile[i]];
-						if (info.multitarget) {continue;}
+						if (info.multitarget) {
+							continue;
+						}
 						if (lib.filter.targetEnabled2({ name: lib.inpile[i] }, event.player, player)) {
 							return true;
 						}
@@ -1063,7 +1067,9 @@ game.import("character", function () {
 						list2 = [];
 					for (var i = 0; i < lib.inpile.length; i++) {
 						var info = lib.card[lib.inpile[i]];
-						if (info.multitarget) {continue;}
+						if (info.multitarget) {
+							continue;
+						}
 						if (lib.filter.targetEnabled2({ name: lib.inpile[i] }, trigger.player, trigger.targets[0])) {
 							var cardinfo = [trigger.card.suit || "", trigger.card.number || "", lib.inpile[i]];
 							list1.push(cardinfo);
@@ -2249,7 +2255,9 @@ game.import("character", function () {
 					for (var i = 0; i < lib.cardPack.mode_derivation.length; i++) {
 						var name = lib.cardPack.mode_derivation[i];
 						var info = lib.card[name];
-						if (info.gainable == false || info.destroy) {continue;}
+						if (info.gainable == false || info.destroy) {
+							continue;
+						}
 						if (lib.characterPack.hearth[info.derivation]) {
 							list.push(name);
 						}
@@ -2382,9 +2390,13 @@ game.import("character", function () {
 								case "jiu":
 									return 3.01;
 								case "sha":
-									if (button.link[3] == "fire") {return 2.95;}
-									else if (button.link[3] == "thunder") {return 2.92;}
-									else {return 2.9;}
+									if (button.link[3] == "fire") {
+										return 2.95;
+									} else if (button.link[3] == "thunder") {
+										return 2.92;
+									} else {
+										return 2.9;
+									}
 								default:
 									return 2 + _status.event.getRand() * 2;
 							}
@@ -2678,7 +2690,9 @@ game.import("character", function () {
 					"step 0";
 					var list = [];
 					for (var i in lib.card) {
-						if (game.bannedcards && game.bannedcards.includes(i)) {continue;}
+						if (game.bannedcards && game.bannedcards.includes(i)) {
+							continue;
+						}
 						if (lib.card[i].type == "delay") {
 							list.push(["锦囊", "", i]);
 						}
@@ -3222,10 +3236,14 @@ game.import("character", function () {
 							if (info.selectTarget != -1) {
 								var num = info.selectTarget;
 								if (Array.isArray(num)) {
-									if (targets.length < num[0]) {continue;}
+									if (targets.length < num[0]) {
+										continue;
+									}
 									num = num[0] + Math.floor(Math.random() * (num[1] - num[0] + 1));
 								} else {
-									if (targets.length < num) {continue;}
+									if (targets.length < num) {
+										continue;
+									}
 								}
 								targets = targets.randomGets(num);
 							}
@@ -3753,18 +3771,32 @@ game.import("character", function () {
 					var equip = Math.random() < 0.5;
 					var equips = [];
 					for (var i = 0; i < inpile.length; i++) {
-						if (lib.inpile[i] == "chuansongmen") {continue;}
+						if (lib.inpile[i] == "chuansongmen") {
+							continue;
+						}
 						var info = lib.card[inpile[i]];
-						if (!info.enable) {continue;}
-						if (!info.filterTarget) {continue;}
-						if (typeof info.selectTarget == "function") {continue;}
-						if (inpile[i].indexOf("_") != -1) {continue;}
+						if (!info.enable) {
+							continue;
+						}
+						if (!info.filterTarget) {
+							continue;
+						}
+						if (typeof info.selectTarget == "function") {
+							continue;
+						}
+						if (inpile[i].indexOf("_") != -1) {
+							continue;
+						}
 						if (info.type == "equip") {
 							equips.push(inpile[i]);
 							continue;
 						}
-						if (equip && names.length >= 2) {continue;}
-						if (names.length >= 3) {continue;}
+						if (equip && names.length >= 2) {
+							continue;
+						}
+						if (names.length >= 3) {
+							continue;
+						}
 						var select = get.select(info.selectTarget);
 						if (select[0] == -1 && select[1] == -1) {
 							names.push(inpile[i]);
@@ -3805,8 +3837,12 @@ game.import("character", function () {
 						var names = info.names;
 						for (var i = 0; i < names.length; i++) {
 							var info2 = lib.card[names[i]];
-							if (get.select(info2.selectTarget)[0] == -1 && !info2.modTarget) {continue;}
-							if (!lib.filter.targetEnabled2({ name: names[i] }, player, target)) {return false;}
+							if (get.select(info2.selectTarget)[0] == -1 && !info2.modTarget) {
+								continue;
+							}
+							if (!lib.filter.targetEnabled2({ name: names[i] }, player, target)) {
+								return false;
+							}
 						}
 						return true;
 					},
@@ -3853,7 +3889,9 @@ game.import("character", function () {
 								var num = 0;
 								for (var i = 0; i < names.length; i++) {
 									var info2 = lib.card[names[i]];
-									if (get.select(info2.selectTarget)[0] == -1 && !info2.modTarget) {continue;}
+									if (get.select(info2.selectTarget)[0] == -1 && !info2.modTarget) {
+										continue;
+									}
 									var eff = get.effect(target, { name: names[i] }, player, target);
 									if (eff > 0) {
 										num++;
@@ -5462,7 +5500,9 @@ game.import("character", function () {
 				content() {
 					var cards = [];
 					for (var i = 0; i < trigger.cards.length; i++) {
-						if (get.info(trigger.cards[i]).unique) {continue;}
+						if (get.info(trigger.cards[i]).unique) {
+							continue;
+						}
 						cards.push(game.createCard(trigger.cards[i]));
 					}
 					player.gain(cards, "draw");
@@ -5501,7 +5541,9 @@ game.import("character", function () {
 				content() {
 					var cards = [];
 					for (var i = 0; i < trigger.cards.length; i++) {
-						if (get.info(trigger.cards[i]).unique) {continue;}
+						if (get.info(trigger.cards[i]).unique) {
+							continue;
+						}
 						cards.push(game.createCard(trigger.cards[i]));
 					}
 					player.gain(cards, "draw");
@@ -6212,7 +6254,9 @@ game.import("character", function () {
 							num = 0;
 						var players = game.filterPlayer();
 						for (var i = 0; i < players.length; i++) {
-							if (players[i] == player) {continue;}
+							if (players[i] == player) {
+								continue;
+							}
 							var att = get.attitude(player, players[i]);
 							var dh = player.countCards("h") - players[i].countCards("h");
 							if (att * dh > num) {
@@ -6258,7 +6302,9 @@ game.import("character", function () {
 							num = 0;
 						var players = game.filterPlayer();
 						for (var i = 0; i < players.length; i++) {
-							if (players[i] == player) {continue;}
+							if (players[i] == player) {
+								continue;
+							}
 							var att = get.attitude(player, players[i]);
 							var dh = player.countCards("h") - players[i].countCards("h");
 							if (att * dh > num) {
@@ -7038,7 +7084,9 @@ game.import("character", function () {
 					var target = event.targets[0];
 					for (var i = 0; i < lib.inpile.length; i++) {
 						var info = lib.card[lib.inpile[i]];
-						if (info.multitarget) {continue;}
+						if (info.multitarget) {
+							continue;
+						}
 						if (lib.filter.targetEnabled2({ name: lib.inpile[i] }, event.player, target)) {
 							return true;
 						}
@@ -7053,7 +7101,9 @@ game.import("character", function () {
 						list2 = [];
 					for (var i = 0; i < lib.inpile.length; i++) {
 						var info = lib.card[lib.inpile[i]];
-						if (info.multitarget) {continue;}
+						if (info.multitarget) {
+							continue;
+						}
 						if (lib.filter.targetEnabled2({ name: lib.inpile[i] }, trigger.player, trigger.targets[0])) {
 							var cardinfo = [trigger.card.suit || "", trigger.card.number || "", lib.inpile[i]];
 							list1.push(cardinfo);
@@ -8630,7 +8680,9 @@ game.import("character", function () {
 						for (var i = 0; i < lib.cardPack.mode_derivation.length; i++) {
 							var name = lib.cardPack.mode_derivation[i];
 							var info = lib.card[name];
-							if (info.gainable == false) {continue;}
+							if (info.gainable == false) {
+								continue;
+							}
 							if (lib.characterPack.hearth[info.derivation]) {
 								list.push(name);
 							}
@@ -8937,7 +8989,9 @@ game.import("character", function () {
 					for (var i = 0; i < lib.cardPack.mode_derivation.length; i++) {
 						var name = lib.cardPack.mode_derivation[i];
 						var info = lib.card[name];
-						if (info.gainable == false || info.destroy) {continue;}
+						if (info.gainable == false || info.destroy) {
+							continue;
+						}
 						if (lib.characterPack.hearth[info.derivation]) {
 							list.push(name);
 						}

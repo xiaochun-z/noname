@@ -1522,7 +1522,9 @@ game.import("character", function () {
 					return game.hasPlayer(function (current) {
 						if (current != player) {
 							for (var i = 0; i < hs.length; i++) {
-								if (get.info(hs[i]).multitarget) {continue;}
+								if (get.info(hs[i]).multitarget) {
+									continue;
+								}
 								if (lib.filter.targetEnabled2(hs[i], player, current)) {
 									return true;
 								}
@@ -1538,7 +1540,9 @@ game.import("character", function () {
 							return false;
 						}
 						for (var i = 0; i < hs.length; i++) {
-							if (get.info(hs[i]).multitarget) {continue;}
+							if (get.info(hs[i]).multitarget) {
+								continue;
+							}
 							if (lib.filter.targetEnabled2(hs[i], player, target)) {
 								return true;
 							}
@@ -1549,7 +1553,9 @@ game.import("character", function () {
 							eff = 0,
 							damaged = false;
 						for (var i = 0; i < hs.length; i++) {
-							if (get.info(hs[i]).multitarget) {continue;}
+							if (get.info(hs[i]).multitarget) {
+								continue;
+							}
 							var hef;
 							if (get.tag(hs[i], "damage") && damaged) {
 								hef = -1;
@@ -1571,10 +1577,9 @@ game.import("character", function () {
 							!player.needsToDiscard(0, (i, player) => {
 								return !use.includes(i) && !player.canIgnoreHandcard(i);
 							})
-						)
-							{
-								return eff;
-							}
+						) {
+							return eff;
+						}
 						return 0;
 					};
 					"step 1";
@@ -2197,9 +2202,12 @@ game.import("character", function () {
 							return current != player && current != trigger.target && current.countCards("he");
 						})
 					) {
-						trigger.target.chooseTarget(function (card, player, target) {
-							return target != player && target != _status.event.parent.player && target.countCards("he") > 0;
-						}, "选择一名角色并令" + get.translation(player) + "弃置其一张牌").ai = function (target) {
+						trigger.target.chooseTarget(
+							function (card, player, target) {
+								return target != player && target != _status.event.parent.player && target.countCards("he") > 0;
+							},
+							"选择一名角色并令" + get.translation(player) + "弃置其一张牌"
+						).ai = function (target) {
 							return -get.attitude(_status.event.player, target);
 						};
 					} else {
@@ -2638,7 +2646,9 @@ game.import("character", function () {
 					var num = 0;
 					var num2 = 0;
 					for (var i = 0; i < player.storage.leiyu.length; i++) {
-						if (!player.storage.leiyu[i].isIn()) {continue;}
+						if (!player.storage.leiyu[i].isIn()) {
+							continue;
+						}
 						var eff = get.effect(player.storage.leiyu[i], { name: "jingleishan", nature: "thunder" }, player, player);
 						num += eff;
 						if (eff > 0) {

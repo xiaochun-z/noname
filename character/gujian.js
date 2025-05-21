@@ -352,7 +352,9 @@ game.import("character", function () {
 				direct: true,
 				filter(event, player) {
 					for (var i = 0; i < player.storage.qingshu.length; i++) {
-						if (ui.land && ui.land.name == player.storage.qingshu[i]) {continue;}
+						if (ui.land && ui.land.name == player.storage.qingshu[i]) {
+							continue;
+						}
 						return true;
 					}
 					return false;
@@ -387,9 +389,12 @@ game.import("character", function () {
 							value = lib.skill[skill].ai.mapValue;
 						}
 						player
-							.chooseTarget(function (card, player, target) {
-								return !target.hasSkill(skill + "_skill");
-							}, "选择一个目标获得技能" + get.translation(skill))
+							.chooseTarget(
+								function (card, player, target) {
+									return !target.hasSkill(skill + "_skill");
+								},
+								"选择一个目标获得技能" + get.translation(skill)
+							)
 							.set("ai", function (target) {
 								var result = get.sgnAttitude(player, target) * value;
 								var num = target.storage.qingshu_gained || 0;
@@ -482,7 +487,9 @@ game.import("character", function () {
 					}
 					for (var i = 0; i < lib.inpile.length; i++) {
 						var info = lib.card[lib.inpile[i]];
-						if (info.multitarget) {continue;}
+						if (info.multitarget) {
+							continue;
+						}
 						if (lib.filter.targetEnabled2({ name: lib.inpile[i] }, event.player, player)) {
 							return true;
 						}
@@ -503,7 +510,9 @@ game.import("character", function () {
 						list2 = [];
 					for (var i = 0; i < lib.inpile.length; i++) {
 						var info = lib.card[lib.inpile[i]];
-						if (info.multitarget) {continue;}
+						if (info.multitarget) {
+							continue;
+						}
 						if (lib.filter.targetEnabled2({ name: lib.inpile[i] }, trigger.player, trigger.targets[0])) {
 							var cardinfo = [trigger.card.suit || "", trigger.card.number || "", lib.inpile[i]];
 							list1.push(cardinfo);
@@ -1226,10 +1235,18 @@ game.import("character", function () {
 					var check = function (list) {
 						for (var i = 0; i < list.length; i++) {
 							var info = lib.skill[list[i]];
-							if (!info) {continue;}
-							if (info.shaRelated) {return true;}
-							if (info.shaRelated === false) {return false;}
-							if (get.skillInfoTranslation(list[i], player).includes("【杀】")) {return true;}
+							if (!info) {
+								continue;
+							}
+							if (info.shaRelated) {
+								return true;
+							}
+							if (info.shaRelated === false) {
+								return false;
+							}
+							if (get.skillInfoTranslation(list[i], player).includes("【杀】")) {
+								return true;
+							}
 						}
 						return false;
 					};
@@ -1246,7 +1263,9 @@ game.import("character", function () {
 						num++;
 					}
 					for (var i = 0; i < trigger.num; i++) {
-						if (num >= 3) {break;}
+						if (num >= 3) {
+							break;
+						}
 						if (list.length) {
 							var skill = list.randomGet();
 							player.addAdditionalSkill("lingnu", skill, true);
