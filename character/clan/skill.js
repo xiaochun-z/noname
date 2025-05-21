@@ -2744,13 +2744,22 @@ const skills = {
 					const num2 = player.getRoundHistory("gain", evt => evt.getParent().name == "draw" && evt.getParent(2).name == "clanyuzhi", 1).reduce((sum, evt) => sum + evt.cards.length, 0);
 					const num3 = player.getRoundHistory("useCard").length;
 					if ((num1 > 0 && num2 > 0 && num1 > num2) || num1 > num3) {
-						let result2;
-						if (num2 > 0 && num1 > num2) game.log(player, "的野心已开始膨胀", "#y(" + num1 + "张>" + num2 + "张)");
-						if (num1 > num3) game.log(player, "的行动未达到野心", "#y(" + num3 + "张<" + num1 + "张)");
-						if (player.hasSkill("clanbaozu", null, false, false)) result2 = await player.chooseBool("迂志：是否失去〖保族〗？", "若选择“否”，则你受到1点雷属性伤害").set("choice", player.awakenedSkills.includes("clanbaozu")).forResult();
-						else result2 = { bool: false };
-						if (result2?.bool) await player.removeSkills("clanbaozu");
-						else await player.damage(1, "thunder");
+						let result;
+						if (num2 > 0 && num1 > num2) {
+							game.log(player, "的野心已开始膨胀", "#y(" + num1 + "张>" + num2 + "张)");
+						}
+						if (num1 > num3) {
+							game.log(player, "的行动未达到野心", "#y(" + num3 + "张<" + num1 + "张)");
+						}
+						if (player.hasSkill("clanbaozu", null, false, false)) {
+							result = await player.chooseBool("迂志：是否失去〖保族〗？", "若选择“否”，则你受到1点雷属性伤害").set("choice", player.awakenedSkills.includes("clanbaozu")).forResult();
+						} else {
+							result = { bool: false };
+						}
+						}
+							await player.removeSkills("clanbaozu");
+						} else {
+						}
 					}
 					break;
 			}
