@@ -2756,8 +2756,11 @@ const skills = {
 						} else {
 							result = { bool: false };
 						}
-					} else {
-						await player.removeSkills("clanbaozu");
+						if (result?.bool) {
+							await player.removeSkills("clanbaozu");
+						} else {
+							await player.damage(1, "thunder");
+						}
 					}
 			}
 		},
@@ -4030,15 +4033,12 @@ const skills = {
 					"step 6";
 					var current = targets.shift();
 					current
-						.chooseToUse(
-							function (card, player, event) {
-								if (get.name(card) != "sha") {
-									return false;
-								}
-								return lib.filter.filterCard.apply(this, arguments);
-							},
-							"联诛：是否对" + get.translation(event.targetx) + "使用一张杀？"
-						)
+						.chooseToUse(function (card, player, event) {
+							if (get.name(card) != "sha") {
+								return false;
+							}
+							return lib.filter.filterCard.apply(this, arguments);
+						}, "联诛：是否对" + get.translation(event.targetx) + "使用一张杀？")
 						.set("targetRequired", true)
 						.set("complexSelect", true)
 						.set("filterTarget", function (card, player, target) {
