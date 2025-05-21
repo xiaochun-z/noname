@@ -331,8 +331,12 @@ game.import("card", function () {
 								var dutag = player.hasSkillTag("nodu");
 								for (var i = 0; i < hs.length; i++) {
 									var value = get.value(hs[i], player);
-									if (hs[i].name == "du" && dutag) {continue;}
-									if (value < 0) {return true;}
+									if (hs[i].name == "du" && dutag) {
+										continue;
+									}
+									if (value < 0) {
+										return true;
+									}
 									if (!_status.event.hasTarget) {
 										if (hs[i].number >= 8 && value <= 7) {
 											return true;

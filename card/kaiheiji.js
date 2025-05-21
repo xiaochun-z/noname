@@ -135,8 +135,11 @@ game.import("card", function () {
 					const cards = [];
 					while (cards.length < 2) {
 						const card = get.cardPile(card => get.tag(card, "damage") > 0.5 && !cards.includes(card));
-						if (card) {cards.add(card);}
-						else {break;}
+						if (card) {
+							cards.add(card);
+						} else {
+							break;
+						}
 					}
 					if (cards.length) {
 						target.gain(cards, "gain2");
@@ -276,8 +279,11 @@ game.import("card", function () {
 						const cards = [];
 						while (cards.length < result.cards.length) {
 							const card = get.cardPile(card => get.suit(card) == "heart" && !cards.includes(card));
-							if (card) {cards.add(card);}
-							else {break;}
+							if (card) {
+								cards.add(card);
+							} else {
+								break;
+							}
 						}
 						if (cards.length) {
 							await target.gain(cards, "gain2", "log");

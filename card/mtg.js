@@ -117,7 +117,9 @@ game.import("card", function () {
 					for (var i = 0; i < lib.cardPack.mode_derivation.length; i++) {
 						var name = lib.cardPack.mode_derivation[i];
 						var info = lib.card[name];
-						if (info.gainable == false || info.destroy) {continue;}
+						if (info.gainable == false || info.destroy) {
+							continue;
+						}
 						if (info.derivationpack) {
 							var trans = lib.translate[info.derivationpack + "_card_config"] + "（卡牌包）";
 							if (!event.map[trans]) {
@@ -210,7 +212,9 @@ game.import("card", function () {
 					var list = get.inpile("trick");
 					while (list.length) {
 						var name = list.randomRemove();
-						if (lib.card[name].multitarget) {continue;}
+						if (lib.card[name].multitarget) {
+							continue;
+						}
 						var targets = game.filterPlayer();
 						while (targets.length) {
 							var target = targets.randomRemove();
@@ -653,7 +657,9 @@ game.import("card", function () {
 						for (var i = 0; i < lib.cardPack.mode_derivation.length; i++) {
 							var name = lib.cardPack.mode_derivation[i];
 							var info = lib.card[name];
-							if (info.gainable == false || info.destroy) {continue;}
+							if (info.gainable == false || info.destroy) {
+								continue;
+							}
 							list.push(name);
 						}
 						if (list.length) {

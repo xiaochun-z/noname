@@ -341,10 +341,9 @@ game.import("card", function () {
 									return get.value(card, target) <= 0;
 								}) ||
 								target.hasSkillTag("noe")
-							)
-								{
-									return 1;
-								}
+							) {
+								return 1;
+							}
 							return 0;
 						},
 					},
@@ -446,10 +445,9 @@ game.import("card", function () {
 							player.countCards("h", function (card) {
 								return get.color(card) == "black" && ["wuxie", "caochuan"].includes(card);
 							})
-						)
-							{
-								return 5;
-							}
+						) {
+							return 5;
+						}
 						return 2;
 					},
 					basic: {
@@ -620,18 +618,17 @@ game.import("card", function () {
 						player.countCards("he", function (cardx) {
 							return card.cards && !card.cards.includes(cardx);
 						})
-					)
-						{
-							player
-								.chooseToDiscard(
-									true,
-									function (card) {
-										return !_status.event.card?.cards.includes(card);
-									},
-									"he"
-								)
-								.set("card", card);
-						}
+					) {
+						player
+							.chooseToDiscard(
+								true,
+								function (card) {
+									return !_status.event.card?.cards.includes(card);
+								},
+								"he"
+							)
+							.set("card", card);
+					}
 				},
 				onLose() {
 					if (player.sex != "male") {
@@ -985,10 +982,9 @@ game.import("card", function () {
 							target: player,
 							card: event.card,
 						})
-					)
-						{
-							return false;
-						}
+					) {
+						return false;
+					}
 					return true;
 				},
 				content() {

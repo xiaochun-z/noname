@@ -38,10 +38,9 @@ game.import("card", function () {
 						target.hasCard(function (card) {
 							return _status.connectMode || get.name(card, target) == "du";
 						}, "h")
-					)
-						{
-							target.chooseToDiscard("h", { name: "du" }, "是否弃置一张【毒】？（不失去体力）").set("ai", () => 1);
-						}
+					) {
+						target.chooseToDiscard("h", { name: "du" }, "是否弃置一张【毒】？（不失去体力）").set("ai", () => 1);
+					}
 				},
 				ai: {
 					order: 2,
@@ -156,16 +155,15 @@ game.import("card", function () {
 					},
 					result: {
 						target(player, target) {
-							if (get.attitude(player, target) <= 0)
-								{
-									return (
-										(target.countCards("he", function (card) {
-											return get.value(card, target) > 0 && card != target.getEquip("jinhe");
-										}) > 0
-											? -0.3
-											: 0.3) * Math.sqrt(player.countCards("h"))
-									);
-								}
+							if (get.attitude(player, target) <= 0) {
+								return (
+									(target.countCards("he", function (card) {
+										return get.value(card, target) > 0 && card != target.getEquip("jinhe");
+									}) > 0
+										? -0.3
+										: 0.3) * Math.sqrt(player.countCards("h"))
+								);
+							}
 							return (
 								(target.countCards("ej", function (card) {
 									if (get.position(card) == "e") {
@@ -439,10 +437,9 @@ game.import("card", function () {
 							target: player,
 							card: event.card,
 						})
-					)
-						{
-							return false;
-						}
+					) {
+						return false;
+					}
 					return event.card.name == "sha" && player.hasSex("male");
 				},
 				content() {
@@ -484,10 +481,9 @@ game.import("card", function () {
 								target: player,
 								card: event.card,
 							})
-						)
-							{
-								return false;
-							}
+						) {
+							return false;
+						}
 						return event.card && get.type2(event.card) == "trick";
 					}
 					return event.type == "du";
@@ -602,10 +598,9 @@ game.import("card", function () {
 						!evt.hs.filter(function (i) {
 							return get.name(i, player) == "du";
 						}).length
-					)
-						{
-							return false;
-						}
+					) {
+						return false;
+					}
 					for (var i of lib.skill.g_du.whiteListFilter) {
 						if (i(event, player)) {
 							return false;
@@ -678,12 +673,11 @@ game.import("card", function () {
 							return get.name(card, player) == "du" && hs.includes(card);
 						});
 					}
-					if (_status.connectMode)
-						{
-							game.broadcastAll(function () {
-								_status.noclearcountdown = true;
-							});
-						}
+					if (_status.connectMode) {
+						game.broadcastAll(function () {
+							_status.noclearcountdown = true;
+						});
+					}
 					event.given_map = {};
 					"step 1";
 					player.chooseCardTarget({

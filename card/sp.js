@@ -320,10 +320,9 @@ game.import("card", function () {
 								!hs.some(i => {
 									return get.value(i) < 5.5;
 								})
-							)
-								{
-									return 0;
-								}
+							) {
+								return 0;
+							}
 							let targets = get.copy(ui.selected.targets);
 							if (_status.event.preTarget) {
 								targets.add(_status.event.preTarget);

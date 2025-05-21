@@ -336,10 +336,14 @@ game.import("card", function () {
 							} else {
 								var num = info.selectTarget;
 								if (Array.isArray(num)) {
-									if (targets.length < num[0]) {continue;}
+									if (targets.length < num[0]) {
+										continue;
+									}
 									num = num[0] + Math.floor(Math.random() * (num[1] - num[0] + 1));
 								} else {
-									if (targets.length < num) {continue;}
+									if (targets.length < num) {
+										continue;
+									}
 								}
 								target.useCard(card, targets.randomGets(num), "noai");
 							}
@@ -3557,10 +3561,9 @@ game.import("card", function () {
 							target: player,
 							card: event.card,
 						})
-					)
-						{
-							return false;
-						}
+					) {
+						return false;
+					}
 					return get.type(event.card, "trick") == "trick";
 				},
 				content() {
@@ -3576,10 +3579,9 @@ game.import("card", function () {
 									target: player,
 									card: card,
 								})
-							)
-								{
-									return;
-								}
+							) {
+								return;
+							}
 							if (get.type(card) == "trick" && get.tag(card, "damage")) {
 								return "zeroplayertarget";
 							}
@@ -4318,7 +4320,9 @@ game.import("card", function () {
 						str += '<div class="shadowed" style="position:absolute;left0;top:0;padding:5px;border-radius:4px;background:' + color + '">' + lib.translate[lingjians[i]] + "</div>";
 						for (var j = 0; j < types.length; j++) {
 							str += '<div class="shadowed" style="position:relative;left:85px;width:calc(100% - 95px);height:100%;padding:5px;border-radius: 4px;margin-bottom:10px">' + (type != "jiqi" ? lib.translate[types[j]] + "：" : "") + lib.translate[lingjians[i] + "_" + types[j] + "_info"] + "</div>";
-							if (type == "jiqi") {break;}
+							if (type == "jiqi") {
+								break;
+							}
 						}
 						str += "</div>";
 					}

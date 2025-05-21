@@ -47,10 +47,9 @@ game.import("card", function () {
 								return val > 3 + Math.min(5, target.hp);
 							}, "e") &&
 							target.countCards("h") * _status.event.getRand("guohe_wuxie") > 1.57
-						)
-							{
-								return 0;
-							}
+						) {
+							return 0;
+						}
 					},
 					yingbian(card, player, targets, viewer) {
 						if (get.attitude(viewer, player) <= 0) {
@@ -61,44 +60,40 @@ game.import("card", function () {
 							if (
 								targets.some(function (current) {
 									var att = get.attitude(player, current);
-									if (att <= 0)
-										{
-											return (
-												current.countCards("he", function (card) {
-													return get.value(card, current) > 0;
-												}) > 1
-											);
-										}
+									if (att <= 0) {
+										return (
+											current.countCards("he", function (card) {
+												return get.value(card, current) > 0;
+											}) > 1
+										);
+									}
 									return (
 										current.countCards("ej", function (card) {
 											return get.position(card) == "j" || get.value(card, current) <= 0;
 										}) > 1
 									);
 								})
-							)
-								{
-									base += 6;
-								}
+							) {
+								base += 6;
+							}
 						}
 						if (get.cardtag(card, "yingbian_add")) {
 							if (
 								game.hasPlayer(function (current) {
 									return !targets.includes(current) && lib.filter.targetEnabled2(card, player, current) && get.effect(current, card, player, player) > 0;
 								})
-							)
-								{
-									base += 5;
-								}
+							) {
+								base += 5;
+							}
 						}
 						if (get.cardtag(card, "yingbian_hit")) {
 							if (
 								game.hasPlayer(function (current) {
 									return get.attitude(current, player) < 0 && current.hasWuxie();
 								})
-							)
-								{
-									base += 3 * targets.length;
-								}
+							) {
+								base += 3 * targets.length;
+							}
 						}
 						return base;
 					},
@@ -127,14 +122,13 @@ game.import("card", function () {
 					result: {
 						target(player, target) {
 							var discard = get.distance(player, target) > 1;
-							if (get.attitude(player, target) <= 0)
-								{
-									return target.countCards("he", function (card) {
-										return get.value(card, target) > 0 && (discard || card != target.getEquip("jinhe"));
-									}) > 0
-										? -1.5
-										: 1.5;
-								}
+							if (get.attitude(player, target) <= 0) {
+								return target.countCards("he", function (card) {
+									return get.value(card, target) > 0 && (discard || card != target.getEquip("jinhe"));
+								}) > 0
+									? -1.5
+									: 1.5;
+							}
 							var js = target.getCards("j");
 							if (
 								js.length &&
@@ -145,10 +139,9 @@ game.import("card", function () {
 									}
 									return get.effect(target, cardj, target, player) < 0;
 								})
-							)
-								{
-									return 3;
-								}
+							) {
+								return 3;
+							}
 							return -1.5;
 						},
 						player(player, target) {
@@ -174,10 +167,9 @@ game.import("card", function () {
 										}
 										return get.effect(target, cardj, target, player) < 0;
 									})
-								)
-									{
-										return 1;
-									}
+								) {
+									return 1;
+								}
 								return 0;
 							}
 							return 1;
@@ -257,10 +249,9 @@ game.import("card", function () {
 							game.hasPlayer(function (current) {
 								return !targets.includes(current) && lib.filter.targetEnabled2(card, player, current) && get.effect(current, card, player, player) > 0;
 							})
-						)
-							{
-								return 6;
-							}
+						) {
+							return 6;
+						}
 						return 0;
 					},
 					result: {
@@ -500,10 +491,9 @@ game.import("card", function () {
 							target: player,
 							card: event.card,
 						})
-					)
-						{
-							return false;
-						}
+					) {
+						return false;
+					}
 					return true;
 				},
 				content() {
@@ -809,10 +799,9 @@ game.import("card", function () {
 									target: target,
 									card: card,
 								})
-							)
-								{
-									return;
-								}
+							) {
+								return;
+							}
 							let targets = [],
 								evt = _status.event.getParent("useCard");
 							targets.addArray(ui.selected.targets);

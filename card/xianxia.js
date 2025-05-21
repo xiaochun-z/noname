@@ -357,20 +357,9 @@ game.import("card", function () {
 					if (player.countCards("h", "du") && target.countCards("h", "du")) {
 						let chooseButton;
 						if (player == target) {
-							chooseButton = [
-								"以毒攻毒：弃置其中一张【毒】",
-								"<div class='text center'>你的手牌</div>",
-								player.getCards("h"),
-							];
-						}
-						else {
-							chooseButton = [
-								"以毒攻毒：弃置其中一张【毒】",
-								"<div class='text center'>你的手牌</div>",
-								player.getCards("h"),
-								`<div class="text center">${get.translation(target.name)}的手牌</div>`,
-								target.getCards("h"),
-							];
+							chooseButton = ["以毒攻毒：弃置其中一张【毒】", "<div class='text center'>你的手牌</div>", player.getCards("h")];
+						} else {
+							chooseButton = ["以毒攻毒：弃置其中一张【毒】", "<div class='text center'>你的手牌</div>", player.getCards("h"), `<div class="text center">${get.translation(target.name)}的手牌</div>`, target.getCards("h")];
 						}
 						const result = await player
 							.chooseButton(chooseButton, true)
@@ -396,42 +385,41 @@ game.import("card", function () {
 						const owner = get.owner(result.links[0]);
 						await owner.discard(result.links, "notBySelf", player);
 						await game.asyncDraw([player, target], 2);
-					}
-					else {
+					} else {
 						await player.damage("nosource");
 						await target.damage("nosource");
 					}
 				},
-			    ai: {
-        			basic: {
-        			    order: 9.2,
-        			    value: [3,1],
-        			    useful: 0.6,
-        			},
-        			wuxie(target, card, player, viewer, status) {
-        			    if (get.attitude(viewer, player._trueMe || player) > 0) {
+				ai: {
+					basic: {
+						order: 9.2,
+						value: [3, 1],
+						useful: 0.6,
+					},
+					wuxie(target, card, player, viewer, status) {
+						if (get.attitude(viewer, player._trueMe || player) > 0) {
 							return 0;
 						}
 						if (status * get.attitude(viewer, target) * get.effect(target, card, player, target) >= 0) {
 							return 0;
 						}
-        			},
-    			    result: {
-    			        target(player, target) {
-    			            const bool = current => current.getKnownCards(player).some(card => get.name(card, current) == "du");
+					},
+					result: {
+						target(player, target) {
+							const bool = current => current.getKnownCards(player).some(card => get.name(card, current) == "du");
 							if (bool(player) && bool(target)) {
-								let eff1 = current => current.hasSkillTag("usedu") ? 5 : current.hasSkillTag("nodu") ? 0 : get.effect(current, { name: "losehp" }, current, player),
+								let eff1 = current => (current.hasSkillTag("usedu") ? 5 : current.hasSkillTag("nodu") ? 0 : get.effect(current, { name: "losehp" }, current, player)),
 									eff = Math.max(eff1(player), eff1(target));
 								return 4 + eff;
 							}
 							return get.damageEffect(target, target) + get.damageEffect(player, player);
 						},
-    			    },
+					},
 					tag: {
 						damage: 1,
 						draw: 2,
 					},
-    			},
+				},
 			},
 		},
 		skill: {

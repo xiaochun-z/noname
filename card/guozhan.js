@@ -272,8 +272,12 @@ game.import("card", function () {
 								const next = current.gain(links, "gain2");
 								next.giver = target;
 								await next;
-							} else {break;}
-						} else {break;}
+							} else {
+								break;
+							}
+						} else {
+							break;
+						}
 					}
 				},
 				ai: {
@@ -429,10 +433,9 @@ game.import("card", function () {
 							game.hasPlayer(function (current) {
 								return current.hasSkill("gzzongyu") && get.attitude(player, current) <= 0;
 							})
-						)
-							{
-								return 1;
-							}
+						) {
+							return 1;
+						}
 						return 7.2;
 					},
 					basic: {
@@ -644,47 +647,46 @@ game.import("card", function () {
 						}
 						event.finish();
 						return;
-					} else
-						{
-							target
-								.chooseControl("discard_card", "take_damage", function (event, player) {
-									let eff = get.damageEffect(player, event.player, player, "thunder");
-									if (eff > 0) {
-										return "take_damage";
-									}
-									if (player.hasSkillTag("noe")) {
-										return "discard_card";
-									}
-									if (!eff) {
-										return "take_damage";
-									}
-									if (player.isDamaged() && player.hasCard(card => get.name(card) == "baiyin" && get.recoverEffect(player, player, _status.event.player) > 0, "e")) {
-										return "discard_card";
-									}
-									if (player.hasCard(card => get.value(card, player) <= 0, "e") && !player.hasCard(card => get.value(card, player) > Math.max(7, 12 - player.hp), "e")) {
-										return "discard_card";
-									}
-									if (
-										lib.skill.huxinjing.filter(
-											{
-												player: player,
-												card: event.card,
-												source: event.player,
-												num: 1,
-											},
-											player
-										)
-									) {
-										return "take_damage";
-									}
-									if ((player.hp > 2 && player.countCards("e") > 2) || (player.hp > 1 && player.countCards("e") > 3)) {
-										return "take_damage";
-									}
+					} else {
+						target
+							.chooseControl("discard_card", "take_damage", function (event, player) {
+								let eff = get.damageEffect(player, event.player, player, "thunder");
+								if (eff > 0) {
+									return "take_damage";
+								}
+								if (player.hasSkillTag("noe")) {
 									return "discard_card";
-								})
-								.set("prompt", "水淹七军")
-								.set("prompt2", "请选择一项：⒈弃置装备区里的所有牌；⒉受到" + get.translation(player) + "造成的1点雷电伤害。");
-						}
+								}
+								if (!eff) {
+									return "take_damage";
+								}
+								if (player.isDamaged() && player.hasCard(card => get.name(card) == "baiyin" && get.recoverEffect(player, player, _status.event.player) > 0, "e")) {
+									return "discard_card";
+								}
+								if (player.hasCard(card => get.value(card, player) <= 0, "e") && !player.hasCard(card => get.value(card, player) > Math.max(7, 12 - player.hp), "e")) {
+									return "discard_card";
+								}
+								if (
+									lib.skill.huxinjing.filter(
+										{
+											player: player,
+											card: event.card,
+											source: event.player,
+											num: 1,
+										},
+										player
+									)
+								) {
+									return "take_damage";
+								}
+								if ((player.hp > 2 && player.countCards("e") > 2) || (player.hp > 1 && player.countCards("e") > 3)) {
+									return "take_damage";
+								}
+								return "discard_card";
+							})
+							.set("prompt", "水淹七军")
+							.set("prompt2", "请选择一项：⒈弃置装备区里的所有牌；⒉受到" + get.translation(player) + "造成的1点雷电伤害。");
+					}
 					"step 1";
 					if (result.control == "discard_card") {
 						target.discard(
@@ -749,20 +751,18 @@ game.import("card", function () {
 										}) > 0
 									);
 								}).length
-							)
-								{
-									base += 6;
-								}
+							) {
+								base += 6;
+							}
 						}
 						if (get.cardtag(card, "yingbian_add")) {
 							if (
 								game.hasPlayer(function (current) {
 									return !targets.includes(current) && lib.filter.targetEnabled2(card, player, current) && get.effect(current, card, player, player) > 0;
 								})
-							)
-								{
-									base += 6;
-								}
+							) {
+								base += 6;
+							}
 						}
 						return 0;
 					},
@@ -1097,18 +1097,16 @@ game.import("card", function () {
 							player.hasCard(function (card) {
 								return ["gz_haolingtianxia", "gz_guguoanbang", "gz_kefuzhongyuan", "wuzhong", "yuanjiao", "lianjunshengyan", "lulitongxin", "yiyi"].includes(get.name(card));
 							}, "hs")
-						)
-							{
-								return 3.5;
-							}
+						) {
+							return 3.5;
+						}
 						if (
 							player.hasCard(function (card) {
 								return get.name(card) == "taoyuan";
 							}, "hs")
-						)
-							{
-								return get.order({ name: "taoyuan" }, player) - 1;
-							}
+						) {
+							return get.order({ name: "taoyuan" }, player) - 1;
+						}
 						return 9.5;
 					},
 					value: 4,
@@ -1605,10 +1603,9 @@ game.import("card", function () {
 						game.countPlayer(function (current) {
 							return current.hasSkill("zhaoshu_skill") && current.isFriendOf(_status.event.player);
 						}) == 1
-					)
-						{
-							return -1;
-						}
+					) {
+						return -1;
+					}
 					return 1;
 				},
 				prompt() {
@@ -1779,10 +1776,9 @@ game.import("card", function () {
 									!target.hasCard(i => {
 										return get.name(i) === "tao" && lib.filter.cardEnabled(i, target, "forceEnable");
 									})
-								)
-									{
-										draw = 0;
-									}
+								) {
+									draw = 0;
+								}
 								return [1, (lose + draw) / get.attitude(target, target)];
 							}
 						},
@@ -2222,10 +2218,9 @@ game.import("card", function () {
 							target: player,
 							card: event.card,
 						})
-					)
-						{
-							return false;
-						}
+					) {
+						return false;
+					}
 					return true;
 				},
 				content() {

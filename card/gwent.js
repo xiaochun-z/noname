@@ -792,7 +792,9 @@ game.import("card", function () {
 						if (list[i].isMin()) {
 							continue;
 						}
-						if (list[i].getStockSkills().length) {return true;}
+						if (list[i].getStockSkills().length) {
+							return true;
+						}
 					}
 				},
 				notarget: true,

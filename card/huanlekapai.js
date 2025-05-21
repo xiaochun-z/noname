@@ -52,15 +52,14 @@ game.import("card", function () {
 						target.damage();
 						event.finish();
 					} else {
-						target.chooseToDiscard("he", { type: "equip" }, "弃置一张装备牌或受到1点伤害").ai =
-							function (card) {
-								var player = _status.event.player;
-								var source = _status.event.getParent().player;
-								if (get.damageEffect(player, source, player) > 0) {
-									return -1;
-								}
-								return 7 - get.value(card);
-							};
+						target.chooseToDiscard("he", { type: "equip" }, "弃置一张装备牌或受到1点伤害").ai = function (card) {
+							var player = _status.event.player;
+							var source = _status.event.getParent().player;
+							if (get.damageEffect(player, source, player) > 0) {
+								return -1;
+							}
+							return 7 - get.value(card);
+						};
 					}
 					"step 1";
 					if (!result.bool) {
@@ -135,16 +134,9 @@ game.import("card", function () {
 					var card = player.getEquip(5);
 					if (card) {
 						var name = card.name;
-						if (
-							name &&
-							name.indexOf("monkey") != -1 &&
-							event.name == "tao" &&
-							event.player != player &&
-							event.cards.filterInD().length > 0
-						)
-							{
-								return true;
-							}
+						if (name && name.indexOf("monkey") != -1 && event.name == "tao" && event.player != player && event.cards.filterInD().length > 0) {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -194,12 +186,7 @@ game.import("card", function () {
 					if (event._notrigger.includes(event.player)) {
 						return false;
 					}
-					return (
-						event.card &&
-						event.card.name == "sha" &&
-						event.notLink() &&
-						event.player.countCards("he") > 0
-					);
+					return event.card && event.card.name == "sha" && event.notLink() && event.player.countCards("he") > 0;
 				},
 				content() {
 					trigger.player.chooseToDiscard(true, "he");
@@ -282,8 +269,7 @@ game.import("card", function () {
 		},
 		translate: {
 			monkey: "猴子",
-			monkey_info:
-				"猴子偷桃：当场上有其他角色使用【桃】时，你可以弃掉【猴子】，阻止【桃】的结算并将其收为手牌。",
+			monkey_info: "猴子偷桃：当场上有其他角色使用【桃】时，你可以弃掉【猴子】，阻止【桃】的结算并将其收为手牌。",
 			mianju: "漩涡面具",
 			mianju_info: "<font color=#f00>锁定技</font> 你的武将牌不能被翻面。",
 			shoulijian: "手里剑",
