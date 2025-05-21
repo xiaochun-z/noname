@@ -3562,33 +3562,60 @@ export default () => {
 							};
 							node.listenTransition(onEnd);
 						};
-						setTimeout(function () {
-							nodes[0].delete();
-						}, 400 + Math.random() * 300);
-						setTimeout(function () {
-							nodes[1].delete();
-						}, 400 + Math.random() * 300);
-						setTimeout(function () {
-							nodes[2].delete();
-						}, 400 + Math.random() * 300);
-						setTimeout(function () {
-							nodes[3].delete();
-						}, 400 + Math.random() * 300);
-						setTimeout(function () {
-							nodes[4].delete();
-						}, 400 + Math.random() * 300);
-						setTimeout(function () {
-							nodes[5].delete();
-						}, 400 + Math.random() * 300);
-						setTimeout(function () {
-							nodes[6].delete();
-						}, 400 + Math.random() * 300);
-						setTimeout(function () {
-							nodes[7].delete();
-						}, 400 + Math.random() * 300);
-						setTimeout(function () {
-							nodes[8].delete();
-						}, 400 + Math.random() * 300);
+						setTimeout(
+							function () {
+								nodes[0].delete();
+							},
+							400 + Math.random() * 300
+						);
+						setTimeout(
+							function () {
+								nodes[1].delete();
+							},
+							400 + Math.random() * 300
+						);
+						setTimeout(
+							function () {
+								nodes[2].delete();
+							},
+							400 + Math.random() * 300
+						);
+						setTimeout(
+							function () {
+								nodes[3].delete();
+							},
+							400 + Math.random() * 300
+						);
+						setTimeout(
+							function () {
+								nodes[4].delete();
+							},
+							400 + Math.random() * 300
+						);
+						setTimeout(
+							function () {
+								nodes[5].delete();
+							},
+							400 + Math.random() * 300
+						);
+						setTimeout(
+							function () {
+								nodes[6].delete();
+							},
+							400 + Math.random() * 300
+						);
+						setTimeout(
+							function () {
+								nodes[7].delete();
+							},
+							400 + Math.random() * 300
+						);
+						setTimeout(
+							function () {
+								nodes[8].delete();
+							},
+							400 + Math.random() * 300
+						);
 						setTimeout(function () {
 							var prize = new Array(6);
 							var map = [1, 2, 3, 4, 5];

@@ -339,7 +339,9 @@ export default () => {
 			};
 			var sceneNode;
 			for (var i in lib.brawl) {
-				if (get.config(i) === false) {continue;}
+				if (get.config(i) === false) {
+					continue;
+				}
 				if (i == "scene") {
 					sceneNode = createNode(i);
 				} else {
@@ -1788,8 +1790,12 @@ export default () => {
 					var map = {};
 					var map3 = [];
 					for (var i in lib.character) {
-						if (lib.filter.characterDisabled(i)) {continue;}
-						if (lib.character[i][1] == "key") {continue;}
+						if (lib.filter.characterDisabled(i)) {
+							continue;
+						}
+						if (lib.character[i][1] == "key") {
+							continue;
+						}
 						var list = get.characterSurname(i);
 						for (var j of list) {
 							var surname = j[0];
@@ -2160,7 +2166,9 @@ export default () => {
 						var map3 = [];
 						var banned = ["zuoci", "re_zuoci", "tw_xiahouba"];
 						for (var i in lib.character) {
-							if (lib.filter.characterDisabled2(i) || lib.filter.characterDisabled(i) || banned.includes(i)) {continue;}
+							if (lib.filter.characterDisabled2(i) || lib.filter.characterDisabled(i) || banned.includes(i)) {
+								continue;
+							}
 							var group = lib.character[i][1];
 							if (group && map[group]) {
 								map[group].push(i);
@@ -2780,7 +2788,9 @@ export default () => {
 													break;
 												}
 											}
-											if (bool) {break;}
+											if (bool) {
+												break;
+											}
 										}
 									}
 								}
@@ -2865,418 +2875,417 @@ export default () => {
 				},
 				intro: ["无尽而漫长的单挑试炼", lib.config.qianlidanji_level ? "你的最高纪录是连续通过" + lib.config.qianlidanji_level + "关，是否能够突破这一记录呢？" : "你能否过五关斩六将，击败古城战神蔡阳呢？"],
 				init: function () {
-					if (!_status.qianlidanji)
-						{
-							_status.qianlidanji = {
-								completeNumber: 0,
-								used: ["pujing", "huban", "caiyang"],
-								addFellow: function (name) {
-									game.fan.dataset.position = 2;
-									ui.arena.setNumber(3);
-									game.fellow = game.addFellow(1, name);
-									game.fellow.gain(get.cards(4));
-									game.fellow.identity = "zhong";
-									game.fellow.setIdentity();
-									game.fellow.identityShown = true;
-									game.fellow.node.identity.classList.remove("guessing");
-									_status.event.getParent("phaseLoop").player = game.fellow;
-								},
-								completeReward: [
-									[
-										"回复1点体力并摸一张牌",
-										function () {
-											game.zhu.recover();
-											game.zhu.draw();
-										},
-									],
-									[
-										"摸三张牌",
-										function () {
-											game.zhu.draw(3);
-										},
-									],
-									[
-										"将一张防具牌置入装备区并摸一张牌",
-										function () {
-											var card = get.cardPile(function (card) {
-												return get.subtype(card) == "equip2" && !get.cardtag(card, "gifts");
-											});
-											if (card) {
-												game.zhu.equip(card);
-											}
-											game.zhu.draw();
-										},
-									],
-									[
-										"将一张武器牌置入装备区并摸一张牌",
-										function () {
-											var card = get.cardPile(function (card) {
-												return get.subtype(card) == "equip1" && !get.cardtag(card, "gifts");
-											});
-											if (card) {
-												game.zhu.equip(card);
-											}
-											game.zhu.draw();
-										},
-									],
-									[
-										"回复2点体力并弃置一张牌",
-										function () {
-											game.zhu.recover(2);
-											game.zhu.chooseToDiscard("he", true);
-										},
-									],
-									[
-										"摸五张牌，然后弃置三张牌",
-										function () {
-											game.zhu.draw(5);
-											game.zhu.chooseToDiscard(3, "he", true);
-										},
-									],
-									[
-										"摸五张牌，然后对手摸两张牌",
-										function () {
-											game.zhu.draw(5);
-											game.fan.draw(2);
-										},
-									],
-									[
-										"将一张武器牌和一张防具牌置入装备区",
-										function () {
-											var card = get.cardPile(function (card) {
-												return get.subtype(card) == "equip1" && !get.cardtag(card, "gifts");
-											});
-											if (card) {
-												game.zhu.equip(card);
-											}
-											var card2 = get.cardPile(function (card) {
-												return get.subtype(card) == "equip2" && !get.cardtag(card, "gifts");
-											});
-											if (card2) {
-												game.zhu.equip(card2);
-											}
-										},
-									],
-									[
-										"将一张武器牌和一张防御坐骑牌置入装备区",
-										function () {
-											var card = get.cardPile(function (card) {
-												return get.subtype(card) == "equip1" && !get.cardtag(card, "gifts");
-											});
-											if (card) {
-												game.zhu.equip(card);
-											}
-											var card2 = get.cardPile(function (card) {
-												return get.subtype(card) == "equip3" && !get.cardtag(card, "gifts");
-											});
-											if (card2) {
-												game.zhu.equip(card2);
-											}
-										},
-									],
-									[
-										"弃置所有手牌并于下一关获得【涅槃】(标)",
-										function () {
-											var hs = game.zhu.getCards("h");
-											if (hs.length) {
-												game.zhu.discard(hs);
-											}
-											game.zhu.addSkill("oldniepan");
-											game.zhu.restoreSkill("oldniepan");
-											game.zhu._oldniepan = true;
-										},
-									],
-									[
-										"获得两张锦囊牌",
-										function () {
-											var list = [];
-											while (list.length < 2) {
-												var card = get.cardPile(function (card) {
-													return !list.includes(card) && get.type(card, "trick") == "trick";
-												});
-												if (!card) {
-													break;
-												}
-												list.push(card);
-											}
-											if (list.length) {
-												game.zhu.gain(list, "gain2", "log");
-											}
-										},
-									],
-									[
-										"将体力回复至体力上限，然后弃置一张牌",
-										function () {
-											var num = game.zhu.maxHp - game.zhu.hp;
-											if (num) {
-												game.zhu.recover(num);
-											}
-											game.zhu.chooseToDiscard("he", true);
-										},
-									],
-									[
-										"弃置两张牌，在下一关的第一个回合后进行一个额外的回合",
-										function () {
-											game.zhu.chooseToDiscard(2, true, "he");
-											game.zhu.addSkill("qianlidanji_phase");
-										},
-									],
-									[
-										"摸一张牌，然后将对手翻面",
-										function () {
-											game.zhu.draw();
-											game.fan.turnOver(true);
-										},
-									],
-									[
-										"摸一张牌，然后令对手受到1点伤害",
-										function () {
-											game.zhu.draw();
-											game.fan.damage(game.zhu);
-										},
-									],
-									[
-										"获得五张基本牌",
-										function () {
-											var list = [];
-											while (list.length < 5) {
-												var card = get.cardPile(function (card) {
-													return !list.includes(card) && get.type(card) == "basic";
-												});
-												if (!card) {
-													break;
-												}
-												list.push(card);
-											}
-											if (list.length) {
-												game.zhu.gain(list, "gain2", "log");
-											}
-										},
-									],
-									[
-										"失去1点体力，然后摸五张牌",
-										function () {
-											game.zhu.loseHp();
-											game.zhu.draw(5);
-										},
-									],
-									[
-										"失去体力至1点，然后摸七张牌",
-										function () {
-											var num = game.zhu.hp - 1;
-											if (num) {
-												game.zhu.loseHp(num);
-											}
-											game.zhu.draw(7);
-										},
-									],
-									[
-										"弃置一张牌，然后令对手受到2点伤害",
-										function () {
-											game.zhu.chooseToDiscard("he", true);
-											game.fan.damage(game.zhu, 2);
-										},
-									],
-									[
-										"在下一关中召唤普净一同战斗",
-										function () {
-											_status.qianlidanji.addFellow("pujing");
-										},
-									],
-									[
-										"在下一关中召唤胡班一同战斗",
-										function () {
-											_status.qianlidanji.addFellow("huban");
-										},
-									],
-									[
-										"将一张宝物牌置入装备区并摸一张牌",
-										function () {
-											var card = get.cardPile(function (card) {
-												return get.subtype(card) == "equip5" && !get.cardtag(card, "gifts");
-											});
-											if (card) {
-												game.zhu.equip(card);
-											}
-											game.zhu.draw();
-										},
-									],
-									[
-										"摸五张牌，然后将自己翻面",
-										function () {
-											game.zhu.draw(5);
-											game.zhu.turnOver(true);
-										},
-									],
-									[
-										"获得一张【酒】和一张【杀】",
-										function () {
-											var list = [];
-											var card = get.cardPile(function (card) {
-												return card.name == "sha";
-											});
-											if (card) {
-												list.push(card);
-											}
-											var card = get.cardPile(function (card) {
-												return card.name == "jiu";
-											});
-											if (card) {
-												list.push(card);
-											}
-											if (list.length) {
-												game.zhu.gain(list, "gain2", "log");
-											}
-										},
-									],
+					if (!_status.qianlidanji) {
+						_status.qianlidanji = {
+							completeNumber: 0,
+							used: ["pujing", "huban", "caiyang"],
+							addFellow: function (name) {
+								game.fan.dataset.position = 2;
+								ui.arena.setNumber(3);
+								game.fellow = game.addFellow(1, name);
+								game.fellow.gain(get.cards(4));
+								game.fellow.identity = "zhong";
+								game.fellow.setIdentity();
+								game.fellow.identityShown = true;
+								game.fellow.node.identity.classList.remove("guessing");
+								_status.event.getParent("phaseLoop").player = game.fellow;
+							},
+							completeReward: [
+								[
+									"回复1点体力并摸一张牌",
+									function () {
+										game.zhu.recover();
+										game.zhu.draw();
+									},
 								],
-								replace_character: function () {
-									"step 0";
-									if (game.zhu._oldniepan) {
-										game.zhu.removeSkill("oldniepan");
-										delete game.zhu._oldniepan;
-									}
-									_status.qianlidanji.completeNumber++;
-									if (!lib.config.qianlidanji_level || lib.config.qianlidanji_level < _status.qianlidanji.completeNumber) {
-										lib.config.qianlidanji_level = _status.qianlidanji.completeNumber;
-										game.saveConfig("qianlidanji_level", lib.config.qianlidanji_level);
-									}
-									if (game.fellow && game.fellow.isAlive()) {
-										if (ui.land && ui.land.player == game.fellow) {
-											game.addVideo("destroyLand");
-											ui.land.destroy();
+								[
+									"摸三张牌",
+									function () {
+										game.zhu.draw(3);
+									},
+								],
+								[
+									"将一张防具牌置入装备区并摸一张牌",
+									function () {
+										var card = get.cardPile(function (card) {
+											return get.subtype(card) == "equip2" && !get.cardtag(card, "gifts");
+										});
+										if (card) {
+											game.zhu.equip(card);
 										}
-										game.zhu.next = game.fan;
-										game.fan.next = game.zhu;
-										game.zhu.nextSeat = game.fan;
-										game.fan.nextSeat = game.zhu;
-										game.players.remove(game.fellow);
-										_status.dying.remove(game.fellow);
-										game.fellow.out();
-										for (var mark in game.fellow.marks) {
-											game.fellow.unmarkSkill(mark);
+										game.zhu.draw();
+									},
+								],
+								[
+									"将一张武器牌置入装备区并摸一张牌",
+									function () {
+										var card = get.cardPile(function (card) {
+											return get.subtype(card) == "equip1" && !get.cardtag(card, "gifts");
+										});
+										if (card) {
+											game.zhu.equip(card);
 										}
-										while (game.fellow.node.marks.childNodes.length > 1) {
-											game.fellow.node.marks.lastChild.remove();
+										game.zhu.draw();
+									},
+								],
+								[
+									"回复2点体力并弃置一张牌",
+									function () {
+										game.zhu.recover(2);
+										game.zhu.chooseToDiscard("he", true);
+									},
+								],
+								[
+									"摸五张牌，然后弃置三张牌",
+									function () {
+										game.zhu.draw(5);
+										game.zhu.chooseToDiscard(3, "he", true);
+									},
+								],
+								[
+									"摸五张牌，然后对手摸两张牌",
+									function () {
+										game.zhu.draw(5);
+										game.fan.draw(2);
+									},
+								],
+								[
+									"将一张武器牌和一张防具牌置入装备区",
+									function () {
+										var card = get.cardPile(function (card) {
+											return get.subtype(card) == "equip1" && !get.cardtag(card, "gifts");
+										});
+										if (card) {
+											game.zhu.equip(card);
 										}
-										for (var i in game.fellow.tempSkills) {
-											game.fellow.removeSkill(i);
+										var card2 = get.cardPile(function (card) {
+											return get.subtype(card) == "equip2" && !get.cardtag(card, "gifts");
+										});
+										if (card2) {
+											game.zhu.equip(card2);
 										}
-										var skills = game.fellow.getSkills();
-										for (var i = 0; i < skills.length; i++) {
-											if (lib.skill[skills[i]].temp) {
-												game.fellow.removeSkill(skills[i]);
-											}
+									},
+								],
+								[
+									"将一张武器牌和一张防御坐骑牌置入装备区",
+									function () {
+										var card = get.cardPile(function (card) {
+											return get.subtype(card) == "equip1" && !get.cardtag(card, "gifts");
+										});
+										if (card) {
+											game.zhu.equip(card);
 										}
-										var cards = game.fellow.getCards("hej");
-										while (cards.length) {
-											ui.discardPile.appendChild(cards.shift());
+										var card2 = get.cardPile(function (card) {
+											return get.subtype(card) == "equip3" && !get.cardtag(card, "gifts");
+										});
+										if (card2) {
+											game.zhu.equip(card2);
 										}
-									}
-									"step 1";
-									if (game.fellow) {
-										game.dead.remove(game.fellow);
-										game.fellow.remove();
-										game.fan.dataset.position = 1;
-										ui.arena.setNumber(2);
-										game.zhu.next = game.fan;
-										game.fan.next = game.zhu;
-										game.zhu.nextSeat = game.fan;
-										game.fan.nextSeat = game.zhu;
-									}
-									if (_status.qianlidanji.completeNumber != 5) {
-										var list = _status.qianlidanji.completeReward.randomGets(3);
-										var list2 = [];
-										for (var i = 0; i < list.length; i++) {
-											list2.push(list[i][1]);
-											list[i] = list[i][0];
+									},
+								],
+								[
+									"弃置所有手牌并于下一关获得【涅槃】(标)",
+									function () {
+										var hs = game.zhu.getCards("h");
+										if (hs.length) {
+											game.zhu.discard(hs);
 										}
-										if (_status.qianlidanji.completeNumber >= 6) {
-											list.push("我不想再打了，直接在这里结束吧！");
-											list2.push(function () {
-												game.over(true);
+										game.zhu.addSkill("oldniepan");
+										game.zhu.restoreSkill("oldniepan");
+										game.zhu._oldniepan = true;
+									},
+								],
+								[
+									"获得两张锦囊牌",
+									function () {
+										var list = [];
+										while (list.length < 2) {
+											var card = get.cardPile(function (card) {
+												return !list.includes(card) && get.type(card, "trick") == "trick";
 											});
+											if (!card) {
+												break;
+											}
+											list.push(card);
 										}
-										event.list = list2;
-										game.zhu
-											.chooseControl()
-											.set("choiceList", list)
-											.set("prompt", "请选择一项奖励（当前已通过" + _status.qianlidanji.completeNumber + "关）");
-									}
-									"step 2";
-									if (_status.qianlidanji.completeNumber != 5) {
-										if (result.index == 3) {
-											game.over(true);
-											return;
+										if (list.length) {
+											game.zhu.gain(list, "gain2", "log");
 										}
-										event.reward = event.list[result.index];
+									},
+								],
+								[
+									"将体力回复至体力上限，然后弃置一张牌",
+									function () {
+										var num = game.zhu.maxHp - game.zhu.hp;
+										if (num) {
+											game.zhu.recover(num);
+										}
+										game.zhu.chooseToDiscard("he", true);
+									},
+								],
+								[
+									"弃置两张牌，在下一关的第一个回合后进行一个额外的回合",
+									function () {
+										game.zhu.chooseToDiscard(2, true, "he");
+										game.zhu.addSkill("qianlidanji_phase");
+									},
+								],
+								[
+									"摸一张牌，然后将对手翻面",
+									function () {
+										game.zhu.draw();
+										game.fan.turnOver(true);
+									},
+								],
+								[
+									"摸一张牌，然后令对手受到1点伤害",
+									function () {
+										game.zhu.draw();
+										game.fan.damage(game.zhu);
+									},
+								],
+								[
+									"获得五张基本牌",
+									function () {
+										var list = [];
+										while (list.length < 5) {
+											var card = get.cardPile(function (card) {
+												return !list.includes(card) && get.type(card) == "basic";
+											});
+											if (!card) {
+												break;
+											}
+											list.push(card);
+										}
+										if (list.length) {
+											game.zhu.gain(list, "gain2", "log");
+										}
+									},
+								],
+								[
+									"失去1点体力，然后摸五张牌",
+									function () {
+										game.zhu.loseHp();
+										game.zhu.draw(5);
+									},
+								],
+								[
+									"失去体力至1点，然后摸七张牌",
+									function () {
+										var num = game.zhu.hp - 1;
+										if (num) {
+											game.zhu.loseHp(num);
+										}
+										game.zhu.draw(7);
+									},
+								],
+								[
+									"弃置一张牌，然后令对手受到2点伤害",
+									function () {
+										game.zhu.chooseToDiscard("he", true);
+										game.fan.damage(game.zhu, 2);
+									},
+								],
+								[
+									"在下一关中召唤普净一同战斗",
+									function () {
+										_status.qianlidanji.addFellow("pujing");
+									},
+								],
+								[
+									"在下一关中召唤胡班一同战斗",
+									function () {
+										_status.qianlidanji.addFellow("huban");
+									},
+								],
+								[
+									"将一张宝物牌置入装备区并摸一张牌",
+									function () {
+										var card = get.cardPile(function (card) {
+											return get.subtype(card) == "equip5" && !get.cardtag(card, "gifts");
+										});
+										if (card) {
+											game.zhu.equip(card);
+										}
+										game.zhu.draw();
+									},
+								],
+								[
+									"摸五张牌，然后将自己翻面",
+									function () {
+										game.zhu.draw(5);
+										game.zhu.turnOver(true);
+									},
+								],
+								[
+									"获得一张【酒】和一张【杀】",
+									function () {
+										var list = [];
+										var card = get.cardPile(function (card) {
+											return card.name == "sha";
+										});
+										if (card) {
+											list.push(card);
+										}
+										var card = get.cardPile(function (card) {
+											return card.name == "jiu";
+										});
+										if (card) {
+											list.push(card);
+										}
+										if (list.length) {
+											game.zhu.gain(list, "gain2", "log");
+										}
+									},
+								],
+							],
+							replace_character: function () {
+								"step 0";
+								if (game.zhu._oldniepan) {
+									game.zhu.removeSkill("oldniepan");
+									delete game.zhu._oldniepan;
+								}
+								_status.qianlidanji.completeNumber++;
+								if (!lib.config.qianlidanji_level || lib.config.qianlidanji_level < _status.qianlidanji.completeNumber) {
+									lib.config.qianlidanji_level = _status.qianlidanji.completeNumber;
+									game.saveConfig("qianlidanji_level", lib.config.qianlidanji_level);
+								}
+								if (game.fellow && game.fellow.isAlive()) {
+									if (ui.land && ui.land.player == game.fellow) {
+										game.addVideo("destroyLand");
+										ui.land.destroy();
 									}
-									_status.characterlist.removeArray(_status.qianlidanji.used);
-									if (_status.qianlidanji.completeNumber == 5) {
-										event._result = { links: ["caiyang"] };
-									} else {
-										game.zhu.chooseButton(["选择下一关出战的对手", [_status.characterlist.randomGets(3), "character"]], true);
+									game.zhu.next = game.fan;
+									game.fan.next = game.zhu;
+									game.zhu.nextSeat = game.fan;
+									game.fan.nextSeat = game.zhu;
+									game.players.remove(game.fellow);
+									_status.dying.remove(game.fellow);
+									game.fellow.out();
+									for (var mark in game.fellow.marks) {
+										game.fellow.unmarkSkill(mark);
 									}
-									"step 3";
-									_status.event.getParent("phaseLoop").player = game.zhu;
-									var source = game.fan;
-									var name = result.links[0];
-									source.revive(null, false);
-									_status.characterlist.remove(name);
-									_status.qianlidanji.used.push(name);
-									source.uninit();
-									source.init(name);
-									game.addVideo("reinit", source, [name]);
-									source.lose(source.getCards("hej"))._triggered = null;
-									var gain = 4;
-									var add = 0;
-									switch (_status.qianlidanji.completeNumber) {
-										case 5:
-											break;
-										case 1:
-											gain = 5;
-											break;
-										case 2:
-											gain = 5;
-											add = 1;
-											break;
-										case 3:
-											gain = 6;
-											add = 1;
-											break;
-										default:
-											gain = 6;
-											add = 2;
-											break;
+									while (game.fellow.node.marks.childNodes.length > 1) {
+										game.fellow.node.marks.lastChild.remove();
 									}
-									source.hp += add;
-									source.maxHp += add;
-									source.update();
-									source.gain(get.cards(gain))._triggered = null;
-									game.triggerEnter(source);
-									if (event.reward) {
-										event.reward();
+									for (var i in game.fellow.tempSkills) {
+										game.fellow.removeSkill(i);
 									}
-									"step 4";
-									var cards = Array.from(ui.ordering.childNodes);
+									var skills = game.fellow.getSkills();
+									for (var i = 0; i < skills.length; i++) {
+										if (lib.skill[skills[i]].temp) {
+											game.fellow.removeSkill(skills[i]);
+										}
+									}
+									var cards = game.fellow.getCards("hej");
 									while (cards.length) {
-										cards.shift().discard();
+										ui.discardPile.appendChild(cards.shift());
 									}
-									var evt = _status.event.getParent("phase");
-									if (evt) {
-										game.resetSkills();
-										let evtx = _status.event;
-										while (evtx != evt) {
-											evtx.finish();
-											evtx.untrigger(true);
-											evtx = evtx.getParent();
-										}
+								}
+								"step 1";
+								if (game.fellow) {
+									game.dead.remove(game.fellow);
+									game.fellow.remove();
+									game.fan.dataset.position = 1;
+									ui.arena.setNumber(2);
+									game.zhu.next = game.fan;
+									game.fan.next = game.zhu;
+									game.zhu.nextSeat = game.fan;
+									game.fan.nextSeat = game.zhu;
+								}
+								if (_status.qianlidanji.completeNumber != 5) {
+									var list = _status.qianlidanji.completeReward.randomGets(3);
+									var list2 = [];
+									for (var i = 0; i < list.length; i++) {
+										list2.push(list[i][1]);
+										list[i] = list[i][0];
+									}
+									if (_status.qianlidanji.completeNumber >= 6) {
+										list.push("我不想再打了，直接在这里结束吧！");
+										list2.push(function () {
+											game.over(true);
+										});
+									}
+									event.list = list2;
+									game.zhu
+										.chooseControl()
+										.set("choiceList", list)
+										.set("prompt", "请选择一项奖励（当前已通过" + _status.qianlidanji.completeNumber + "关）");
+								}
+								"step 2";
+								if (_status.qianlidanji.completeNumber != 5) {
+									if (result.index == 3) {
+										game.over(true);
+										return;
+									}
+									event.reward = event.list[result.index];
+								}
+								_status.characterlist.removeArray(_status.qianlidanji.used);
+								if (_status.qianlidanji.completeNumber == 5) {
+									event._result = { links: ["caiyang"] };
+								} else {
+									game.zhu.chooseButton(["选择下一关出战的对手", [_status.characterlist.randomGets(3), "character"]], true);
+								}
+								"step 3";
+								_status.event.getParent("phaseLoop").player = game.zhu;
+								var source = game.fan;
+								var name = result.links[0];
+								source.revive(null, false);
+								_status.characterlist.remove(name);
+								_status.qianlidanji.used.push(name);
+								source.uninit();
+								source.init(name);
+								game.addVideo("reinit", source, [name]);
+								source.lose(source.getCards("hej"))._triggered = null;
+								var gain = 4;
+								var add = 0;
+								switch (_status.qianlidanji.completeNumber) {
+									case 5:
+										break;
+									case 1:
+										gain = 5;
+										break;
+									case 2:
+										gain = 5;
+										add = 1;
+										break;
+									case 3:
+										gain = 6;
+										add = 1;
+										break;
+									default:
+										gain = 6;
+										add = 2;
+										break;
+								}
+								source.hp += add;
+								source.maxHp += add;
+								source.update();
+								source.gain(get.cards(gain))._triggered = null;
+								game.triggerEnter(source);
+								if (event.reward) {
+									event.reward();
+								}
+								"step 4";
+								var cards = Array.from(ui.ordering.childNodes);
+								while (cards.length) {
+									cards.shift().discard();
+								}
+								var evt = _status.event.getParent("phase");
+								if (evt) {
+									game.resetSkills();
+									let evtx = _status.event;
+									while (evtx != evt) {
 										evtx.finish();
 										evtx.untrigger(true);
+										evtx = evtx.getParent();
 									}
-								},
-							};
-						}
+									evtx.finish();
+									evtx.untrigger(true);
+								}
+							},
+						};
+					}
 					_status.qianlidanji.player_number = get.config("player_number");
 					game.saveConfig("player_number", "2", "identity");
 				},
@@ -3304,7 +3313,9 @@ export default () => {
 
 								event.list = [];
 								for (var i in lib.character) {
-									if (lib.filter.characterDisabled(i)) {continue;}
+									if (lib.filter.characterDisabled(i)) {
+										continue;
+									}
 									event.list.push(i);
 								}
 								event.list.randomSort();
@@ -3962,90 +3973,89 @@ export default () => {
 								},
 							},
 						];
-						if (_status.keyVerified)
-							{
-								list = [
-									{
-										name: "My Song",
-										place: [false, true, true, false],
-										character: ["caozhen", "key_hisako", "key_iwasawa", "sp_key_kanade"],
-										lib: {
-											character: {
-												caozhen: {
-													sex: "male",
-													group: "wei",
-													hp: 4,
-													skills: ["xinsidi", "tuxi"],
-												},
-												key_hisako: {
-													sex: "female",
-													group: "key",
-													hp: 2,
-													maxHp: 3,
-													skills: ["hisako_yinbao", "shenzhi", "shiorimiyuki_banyin", "hisako_zhuanyun"],
-												},
-												key_iwasawa: {
-													sex: "female",
-													group: "key",
-													hp: "-999/3",
-													skills: ["iwasawa_yinhang", "iwasawa_mysong", "hisako_zhuanyun"],
-												},
-												sp_key_kanade: {
-													sex: "female",
-													group: "key",
-													hp: 3,
-													skills: ["xinwuyan", "xinbenxi"],
-												},
+						if (_status.keyVerified) {
+							list = [
+								{
+									name: "My Song",
+									place: [false, true, true, false],
+									character: ["caozhen", "key_hisako", "key_iwasawa", "sp_key_kanade"],
+									lib: {
+										character: {
+											caozhen: {
+												sex: "male",
+												group: "wei",
+												hp: 4,
+												skills: ["xinsidi", "tuxi"],
 											},
-											translate: {
-												caozhen: "突袭教师",
-												key_hisako: "绝望恶魔",
-												key_iwasawa: "引吭孤鸦",
-												sp_key_kanade: "学生会长",
+											key_hisako: {
+												sex: "female",
+												group: "key",
+												hp: 2,
+												maxHp: 3,
+												skills: ["hisako_yinbao", "shenzhi", "shiorimiyuki_banyin", "hisako_zhuanyun"],
+											},
+											key_iwasawa: {
+												sex: "female",
+												group: "key",
+												hp: "-999/3",
+												skills: ["iwasawa_yinhang", "iwasawa_mysong", "hisako_zhuanyun"],
+											},
+											sp_key_kanade: {
+												sex: "female",
+												group: "key",
+												hp: 3,
+												skills: ["xinwuyan", "xinbenxi"],
 											},
 										},
-									},
-									{
-										name: "Day Game",
-										place: [false, true, true, false],
-										character: ["key_yuzuru", "sp_key_kanade", "key_ayato", "key_hinata"],
-										lib: {
-											character: {
-												key_yuzuru: {
-													sex: "male",
-													group: "key",
-													hp: 4,
-													skills: ["hinata_qiulve", "kurou"],
-												},
-												sp_key_kanade: {
-													sex: "female",
-													group: "key",
-													hp: 3,
-													skills: ["hinata_qiulve", "benxi"],
-												},
-												key_ayato: {
-													sex: "male",
-													group: "key",
-													hp: 3,
-													skills: ["hinata_qiulve", "retieji"],
-												},
-												key_hinata: {
-													sex: "female",
-													group: "key",
-													hp: 4,
-													skills: ["hinata_qiulve", "hinata_ehou"],
-												},
-											},
-											translate: {
-												key_yuzuru: "新秀球王",
-												sp_key_kanade: "学生会长",
-												key_ayato: "副会长",
-												key_hinata: "球队领袖",
-											},
+										translate: {
+											caozhen: "突袭教师",
+											key_hisako: "绝望恶魔",
+											key_iwasawa: "引吭孤鸦",
+											sp_key_kanade: "学生会长",
 										},
 									},
-								];
-							}
+								},
+								{
+									name: "Day Game",
+									place: [false, true, true, false],
+									character: ["key_yuzuru", "sp_key_kanade", "key_ayato", "key_hinata"],
+									lib: {
+										character: {
+											key_yuzuru: {
+												sex: "male",
+												group: "key",
+												hp: 4,
+												skills: ["hinata_qiulve", "kurou"],
+											},
+											sp_key_kanade: {
+												sex: "female",
+												group: "key",
+												hp: 3,
+												skills: ["hinata_qiulve", "benxi"],
+											},
+											key_ayato: {
+												sex: "male",
+												group: "key",
+												hp: 3,
+												skills: ["hinata_qiulve", "retieji"],
+											},
+											key_hinata: {
+												sex: "female",
+												group: "key",
+												hp: 4,
+												skills: ["hinata_qiulve", "hinata_ehou"],
+											},
+										},
+										translate: {
+											key_yuzuru: "新秀球王",
+											sp_key_kanade: "学生会长",
+											key_ayato: "副会长",
+											key_hinata: "球队领袖",
+										},
+									},
+								},
+							];
+						}
 						game.liangjunduilei = list;
 						game.chooseCharacterTwo = function () {
 							var next = game.createEvent("chooseCharacter");
@@ -4180,8 +4190,12 @@ export default () => {
 							var inpile = [];
 							for (var i = 0; i < list.length; i++) {
 								if (lib.card[list[i][2]]) {
-									if (lib.config.bannedcards.includes(list[i][2])) {continue;}
-									if (game.bannedcards && game.bannedcards.includes(list[i][2])) {continue;}
+									if (lib.config.bannedcards.includes(list[i][2])) {
+										continue;
+									}
+									if (game.bannedcards && game.bannedcards.includes(list[i][2])) {
+										continue;
+									}
 									inpile.add(list[i][2]);
 								}
 							}
@@ -4699,7 +4713,9 @@ export default () => {
 						line5.style.display = "none";
 						var pileaddlist = [];
 						for (var i = 0; i < lib.config.cards.length; i++) {
-							if (!lib.cardPack[lib.config.cards[i]]) {continue;}
+							if (!lib.cardPack[lib.config.cards[i]]) {
+								continue;
+							}
 							for (var j = 0; j < lib.cardPack[lib.config.cards[i]].length; j++) {
 								var cname = lib.cardPack[lib.config.cards[i]][j];
 								pileaddlist.push([cname, get.translation(cname)]);
@@ -4713,7 +4729,9 @@ export default () => {
 							}
 						}
 						for (var i in lib.cardPack) {
-							if (lib.config.all.cards.includes(i)) {continue;}
+							if (lib.config.all.cards.includes(i)) {
+								continue;
+							}
 							for (var j = 0; j < lib.cardPack[i].length; j++) {
 								var cname = lib.cardPack[i][j];
 								pileaddlist.push([cname, get.translation(cname)]);

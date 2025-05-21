@@ -457,7 +457,9 @@ export default () => {
 					event.list = [];
 					event.map = {};
 					for (i in lib.character) {
-						if (lib.filter.characterDisabled(i)) {continue;}
+						if (lib.filter.characterDisabled(i)) {
+							continue;
+						}
 						event.list.push(i);
 					}
 					event.list.randomSort();
@@ -583,7 +585,9 @@ export default () => {
 						}
 					}
 					for (i in lib.character) {
-						if (list4.includes(i) || lib.filter.characterDisabled(i)) {continue;}
+						if (list4.includes(i) || lib.filter.characterDisabled(i)) {
+							continue;
+						}
 						event.list.push(i);
 						if (game.recommendDizhu.includes(i)) {
 							event.list2.push(i);
@@ -697,7 +701,9 @@ export default () => {
 						}
 					}
 					for (i in lib.character) {
-						if (list4.includes(i) || lib.filter.characterDisabled(i)) {continue;}
+						if (list4.includes(i) || lib.filter.characterDisabled(i)) {
+							continue;
+						}
 						event.list.push(i);
 					}
 					event.list.randomSort();
@@ -1013,8 +1019,12 @@ export default () => {
 						}
 					}
 					for (i in lib.character) {
-						if (chosen.includes(i) || list4.includes(i)) {continue;}
-						if (lib.filter.characterDisabled(i)) {continue;}
+						if (chosen.includes(i) || list4.includes(i)) {
+							continue;
+						}
+						if (lib.filter.characterDisabled(i)) {
+							continue;
+						}
 						event.list.push(i);
 						list4.push(i);
 					}
@@ -1250,7 +1260,9 @@ export default () => {
 						}
 					}
 					for (i in libCharacter) {
-						if (list4.includes(i) || lib.filter.characterDisabled(i, libCharacter)) {continue;}
+						if (list4.includes(i) || lib.filter.characterDisabled(i, libCharacter)) {
+							continue;
+						}
 						event.list.push(i);
 					}
 					_status.characterlist = event.list.slice(0);
@@ -1381,7 +1393,9 @@ export default () => {
 						}
 					}
 					for (i in libCharacter) {
-						if (list4.includes(i) || lib.filter.characterDisabled(i, libCharacter)) {continue;}
+						if (list4.includes(i) || lib.filter.characterDisabled(i, libCharacter)) {
+							continue;
+						}
 						event.list.push(i);
 						if (game.recommendDizhu.includes(i)) {
 							event.list2.push(i);
@@ -1515,7 +1529,9 @@ export default () => {
 					event.list = [];
 					event.map = {};
 					for (i in libCharacter) {
-						if (lib.filter.characterDisabled(i, libCharacter)) {continue;}
+						if (lib.filter.characterDisabled(i, libCharacter)) {
+							continue;
+						}
 						event.list.push(i);
 					}
 					event.list.randomSort();
@@ -1919,7 +1935,9 @@ export default () => {
 						}
 					}, list4);
 					for (i in libCharacter) {
-						if (list4.includes(i) || lib.filter.characterDisabled(i, libCharacter)) {continue;}
+						if (list4.includes(i) || lib.filter.characterDisabled(i, libCharacter)) {
+							continue;
+						}
 						event.list.push(i);
 						list4.push(i);
 					}
@@ -2427,10 +2445,9 @@ export default () => {
 									player,
 									event
 								)
-							)
-								{
-									return true;
-								}
+							) {
+								return true;
+							}
 						}
 						if (name == "jintuiziru") {
 							if (
@@ -2452,10 +2469,9 @@ export default () => {
 									player,
 									event
 								)
-							)
-								{
-									return true;
-								}
+							) {
+								return true;
+							}
 						}
 					}
 					return false;
@@ -2490,10 +2506,9 @@ export default () => {
 									player,
 									evt
 								)
-							)
-								{
-									return true;
-								}
+							) {
+								return true;
+							}
 						}
 						return false;
 					},
@@ -2792,10 +2807,9 @@ export default () => {
 									player: evt.targets[0],
 									card: evt.card,
 								})
-							)
-								{
-									return 0;
-								}
+							) {
+								return 0;
+							}
 							return 1;
 						},
 					],
@@ -2809,18 +2823,16 @@ export default () => {
 								game.zhu.countCards("he", function (card) {
 									return get.value(card, game.zhu) >= 6;
 								})
-							)
-								{
-									return 7 - get.value(card);
-								}
+							) {
+								return 7 - get.value(card);
+							}
 							if (
 								game.zhu.countCards("he", function (card) {
 									return get.value(card, game.zhu) > 0;
 								})
-							)
-								{
-									return 5 - get.value(card);
-								}
+							) {
+								return 5 - get.value(card);
+							}
 							return 0;
 						},
 					],
@@ -3498,10 +3510,9 @@ export default () => {
 								!target.countCards("h", function (card) {
 									return get.value(card, player) >= 5.5;
 								})
-							)
-								{
-									return 1;
-								}
+							) {
+								return 1;
+							}
 							return 0;
 						},
 					},

@@ -685,9 +685,12 @@ export default () => {
 				content: function () {
 					"step 0";
 					if (target.hasSha()) {
-						target.chooseToUse(function (card, player, event) {
-							return get.name(card) == "sha" && lib.filter.filterCard.apply(this, arguments);
-						}, "使用一张杀，或交给" + get.translation(player) + "两张牌");
+						target.chooseToUse(
+							function (card, player, event) {
+								return get.name(card) == "sha" && lib.filter.filterCard.apply(this, arguments);
+							},
+							"使用一张杀，或交给" + get.translation(player) + "两张牌"
+						);
 					} else {
 						event.directfalse = true;
 					}
@@ -1617,7 +1620,9 @@ export default () => {
 		},
 		init() {
 			for (var i in lib.characterPack.mode_boss) {
-				if (!lib.characterPack.mode_boss[i].names) {lib.characterPack.mode_boss[i].names = "null|null";}
+				if (!lib.characterPack.mode_boss[i].names) {
+					lib.characterPack.mode_boss[i].names = "null|null";
+				}
 				if (lib.characterPack.mode_boss[i].isHiddenBoss) {
 					continue;
 				}
@@ -2677,7 +2682,9 @@ export default () => {
 						return false;
 					};
 					for (const name of characters) {
-						if (func(name)) {num--;}
+						if (func(name)) {
+							num--;
+						}
 						if (!num) {
 							break;
 						}
