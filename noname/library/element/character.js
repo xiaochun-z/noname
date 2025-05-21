@@ -399,7 +399,7 @@ export class Character {
 			trashes.push(`border:${character.groupBorder}`);
 		}
 		if (character.dualSideCharacter) {
-			trashes.push(`duaslside:${character.dualSideCharacter}`);
+			trashes.push(`dualside:${character.dualSideCharacter}`);
 		}
 		if (character.doubleGroup.length > 0) {
 			trashes.push(`doublegroup:${character.doubleGroup.join(":")}`);

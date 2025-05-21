@@ -1,4 +1,4 @@
-import { userAgentLowerCase } from "../util/index.js";
+import { userAgentLowerCase, GeneratorFunction, AsyncFunction, AsyncGeneratorFunction } from "../util/index.js";
 import { game } from "../game/index.js";
 import { lib } from "../library/index.js";
 import { _status } from "../status/index.js";
@@ -6,6 +6,29 @@ import { ui } from "../ui/index.js";
 import { get } from "./index.js";
 
 export class Is {
+	/**
+	 * 检查对象的某个属性是否是content*(){}/async content(){}/content(){}中的特定形式
+	 * @param {{[key: string]: any}} obj 目标对象
+	 * @param {string} key 属性名
+	 * @returns {boolean} 如果属性值是上述形式的函数定义，则返回true
+	 */
+	functionMethod(obj, key) {
+		const value = obj[key];
+		if (!(typeof value === "function")) return false;
+		key = key.replaceAll("$", "\\$");
+		let reg;
+		if (value instanceof GeneratorFunction) {
+			// content*(){}
+			reg = new RegExp(`\\*\\s*${key}[\\s\\S]*?\\(`);
+		} else if (value instanceof AsyncFunction) {
+			// async content(){}
+			reg = new RegExp(`async\\s*${key}[\\s\\S]*?\\(`);
+		} else {
+			// content(){}
+			reg = new RegExp(`${key}[\\s\\S]*?\\(`);
+		}
+		return reg.exec(value)?.index === 0;
+	}
 	/**
 	 * @param { string } str
 	 * @returns

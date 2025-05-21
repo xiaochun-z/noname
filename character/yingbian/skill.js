@@ -641,77 +641,62 @@ const skills = {
 			player: "loseAfter",
 			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 		},
-		filter(event, player) {
-			var evt = event.getl(player);
-			if (!evt || !evt.hs || !evt.hs.length) return false;
+		getIndex(event, player) {
+			if (!event.getl?.(player)?.hs?.length) return false;
+			let num = 0;
 			if (event.name == "lose") {
-				for (var i in event.gaintag_map) {
-					if (event.gaintag_map[i].includes("huaiyuanx")) return true;
-				}
-				return false;
-			}
-			return player.hasHistory("lose", function (evt) {
-				if (event != evt.getParent()) return false;
-				for (var i in evt.gaintag_map) {
-					if (evt.gaintag_map[i].includes("huaiyuanx")) return true;
-				}
-				return false;
-			});
-		},
-		forced: true,
-		locked: false,
-		content() {
-			"step 0";
-			var num = 0;
-			if (trigger.name == "lose") {
-				for (var i in trigger.gaintag_map) {
-					if (trigger.gaintag_map[i].includes("huaiyuanx")) num++;
-				}
-			} else
-				player.getHistory("lose", function (evt) {
-					if (trigger != evt.getParent()) return false;
-					for (var i in evt.gaintag_map) {
-						if (evt.gaintag_map[i].includes("huaiyuanx")) num++;
-					}
-					return false;
-				});
-			event.count = num;
-			"step 1";
-			event.count--;
-			player.chooseTarget(true, "请选择【怀远】的目标", "令一名角色执行一项：⒈其的手牌上限+1。⒉其的攻击范围+1。⒊其摸一张牌。").set("ai", function (target) {
-				var player = _status.event.player,
-					att = get.attitude(player, target);
-				if (att <= 0) return 0;
-				if (target.hasValueTarget({ name: "sha" }, false) && !target.hasValueTarget({ name: "sha" })) att *= 2.2;
-				if (target.needsToDiscard()) att *= 1.3;
-				return att * Math.sqrt(Math.max(1, 4 - target.countCards("h")));
-			});
-			"step 2";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.line(target, "green");
-				var str = get.translation(target);
-				player
-					.chooseControl()
-					.set("choiceList", ["令" + str + "的手牌上限+1", "令" + str + "的攻击范围+1", "令" + str + "摸一张牌"])
-					.set("ai", function () {
-						var player = _status.event.player,
-							target = _status.event.getParent().target;
-						if (target.hasValueTarget({ name: "sha" }, false) && !target.hasValueTarget({ name: "sha" })) return 1;
-						if (target.needsToDiscard()) return 0;
-						return 2;
+				Object.values(event.gaintag_map)
+					.flat()
+					.forEach(tags => {
+						if (tags.includes("huaiyuanx")) num++;
 					});
-			} else event.finish();
-			"step 3";
-			if (result.index == 2) target.draw();
-			else {
+			} else
+				player.checkHistory("lose", evt => {
+					if (event != evt.getParent()) return;
+					Object.values(evt.gaintag_map)
+						.flat()
+						.forEach(tags => {
+							if (tags.includes("huaiyuanx")) num++;
+						});
+				});
+			return num;
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(true, "请选择【怀远】的目标", "令一名角色执行一项：⒈其的手牌上限+1。⒉其的攻击范围+1。⒊其摸一张牌。")
+				.set("ai", target => {
+					const player = get.player();
+					let att = get.attitude(player, target);
+					if (att <= 0) return 0;
+					if (target.hasValueTarget({ name: "sha" }, false) && !target.hasValueTarget({ name: "sha" })) att *= 2.2;
+					if (target.needsToDiscard()) att *= 1.3;
+					return att * Math.sqrt(Math.max(1, 4 - target.countCards("h")));
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			player.line(target, "green");
+			const str = get.translation(target);
+			const { result } = await player
+				.chooseControl()
+				.set("choiceList", [`令${str}的手牌上限+1`, `令${str}的攻击范围+1`, `令${str}摸一张牌`])
+				.set("ai", () => {
+					const { player, target } = get.event();
+					if (target.hasValueTarget({ name: "sha" }, false) && !target.hasValueTarget({ name: "sha" })) return 1;
+					if (target.needsToDiscard()) return 0;
+					return 2;
+				})
+				.set("target", target);
+			if (result?.index == 2) await target.draw();
+			else if ([0, 1].includes(result?.index)) {
 				target.addSkill("huaiyuan_effect" + result.index);
 				target.addMark("huaiyuan_effect" + result.index, 1, false);
 				game.log(target, "的", "#g" + ["手牌上限", "攻击范围"][result.index], "+1");
-				game.delayx();
+				await game.delayx();
 			}
-			if (event.count > 0) event.goto(1);
 		},
 		group: ["huaiyuan_init", "huaiyuan_die"],
 		subSkill: {
@@ -726,24 +711,23 @@ const skills = {
 				filter(event, player) {
 					return (event.name != "phase" || game.phaseNumber == 0) && player.countCards("h") > 0;
 				},
-				content() {
-					var hs = player.getCards("h");
+				async content(event, trigger, player) {
+					const hs = player.getCards("h");
 					if (hs.length) player.addGaintag(hs, "huaiyuanx");
 				},
 			},
 			die: {
 				audio: "huaiyuan",
 				trigger: { player: "die" },
-				direct: true,
 				forceDie: true,
 				skillAnimation: true,
 				animationColor: "water",
 				filter(event, player) {
+					if (!game.hasPlayer(current => player != current)) return false;
 					return player.hasMark("huaiyuan_effect0") || player.hasMark("huaiyuan_effect1");
 				},
-				content() {
-					"step 0";
-					var str = "令一名其他角色",
+				async cost(event, trigger, player) {
+					let str = "令一名其他角色",
 						num1 = player.countMark("huaiyuan_effect0"),
 						num2 = player.countMark("huaiyuan_effect1");
 					if (num1 > 0) {
@@ -755,28 +739,32 @@ const skills = {
 						str += "攻击范围+";
 						str += num2;
 					}
-					player
-						.chooseTarget(lib.filter.notMe, get.prompt("huaiyuan"), str)
+					event.result = await player
+						.chooseTarget(lib.filter.notMe, get.prompt(event.skill), str)
 						.set("forceDie", true)
-						.set("ai", function (target) {
-							return get.attitude(_status.event.player, target) + 114514;
-						});
-					"step 1";
-					if (result.bool) {
-						var target = result.targets[0];
-						player.logSkill("huaiyuan_die", target);
-						var num1 = player.countMark("huaiyuan_effect0"),
-							num2 = player.countMark("huaiyuan_effect1");
-						if (num1 > 0) {
-							target.addSkill("huaiyuan_effect0");
-							target.addMark("huaiyuan_effect0", num1, false);
-						}
-						if (num2 > 0) {
-							target.addSkill("huaiyuan_effect1");
-							target.addMark("huaiyuan_effect1", num2, false);
-						}
-						game.delayx();
+						.set("ai", target => {
+							const player = get.player();
+							return get.attitude(player, target) + 114514;
+						})
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					const {
+						targets: [target],
+					} = event;
+					const effect = "huaiyuan_effect0",
+						effect1 = "huaiyuan_effect1";
+					const num1 = player.countMark(effect),
+						num2 = player.countMark(effect1);
+					if (num1 > 0) {
+						target.addSkill(effect);
+						target.addMark(effect, num1, false);
 					}
+					if (num2 > 0) {
+						target.addSkill(effect1);
+						target.addMark(effect1, num2, false);
+					}
+					await game.delayx();
 				},
 			},
 			effect0: {
@@ -852,7 +840,7 @@ const skills = {
 			}, "h");
 		},
 		content() {
-			player.awakenSkill("dezhang");
+			player.awakenSkill(event.name);
 			player.loseMaxHp();
 			player.addSkills("weishu");
 		},
@@ -909,30 +897,25 @@ const skills = {
 		},
 	},
 	gaoling: {
-		unique: true,
 		audio: 2,
 		trigger: { player: "showCharacterAfter" },
 		hiddenSkill: true,
 		filter(event, player) {
 			return event.toShow?.some(i => get.character(i).skills?.includes("gaoling")) && player != _status.currentPhase && game.hasPlayer(current => current.isDamaged());
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt("gaoling"), "令一名角色回复1点体力", function (card, player, target) {
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
 					return target.isDamaged();
 				})
-				.set("ai", function (target) {
-					var player = _status.event.player;
+				.set("ai", target => {
+					const player = get.player();
 					return get.recoverEffect(target, player, player);
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("gaoling", target);
-				target.recover();
-			}
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			await event.targets[0].recover();
 		},
 	},
 	qimei: {
@@ -1799,7 +1782,6 @@ const skills = {
 					"step 2";
 					target.line(player);
 					player.addTempSkills(result.control, "phaseUseEnd");
-					player.popup(result.control);
 				},
 				ai: {
 					order(item, player) {
@@ -1903,7 +1885,7 @@ const skills = {
 		animationColor: "thunder",
 		content() {
 			"step 0";
-			player.awakenSkill("xiongzhi");
+			player.awakenSkill(event.name);
 			"step 1";
 			var card = get.cards()[0];
 			event.card = card;
@@ -2895,29 +2877,30 @@ const skills = {
 			return _status.currentPhase;
 		},
 		filter(event, player) {
-			var target = _status.currentPhase;
-			return player != target && target && target.isAlive() && event.toShow?.some(i => get.character(i).skills?.includes("taoyin"));
+			const target = _status.currentPhase;
+			return player != target && target?.isAlive() && event.toShow?.some(i => get.character(i).skills?.includes("taoyin"));
 		},
 		check(event, player) {
 			return get.attitude(player, _status.currentPhase) < 0;
 		},
-		content() {
-			_status.currentPhase.addTempSkill("taoyin2");
-			_status.currentPhase.addMark("taoyin2", 2, false);
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			target.addTempSkill(event.name + "_effect");
+			target.addMark(event.name + "_effect", 2, false);
 		},
-		ai: {
-			expose: 0.2,
-		},
-	},
-	taoyin2: {
-		onremove: true,
-		charlotte: true,
-		intro: {
-			content: "手牌上限-#",
-		},
-		mod: {
-			maxHandcard(player, num) {
-				return num - player.countMark("taoyin2");
+		ai: { expose: 0.2 },
+		subSkill: {
+			effect: {
+				onremove: true,
+				charlotte: true,
+				intro: { content: "本回合手牌上限-#" },
+				mod: {
+					maxHandcard(player, num) {
+						return num - player.countMark("taoyin_effect");
+					},
+				},
 			},
 		},
 	},
@@ -2974,7 +2957,6 @@ const skills = {
 		},
 	},
 	ruilve: {
-		unique: true,
 		audio: 2,
 		global: "ruilve2",
 		zhuSkill: true,
@@ -3658,7 +3640,7 @@ const skills = {
 			return player.countMark("sanchen") > 2;
 		},
 		content() {
-			player.awakenSkill("zhaotao");
+			player.awakenSkill(event.name);
 			player.loseMaxHp();
 			player.addSkills("pozhu");
 		},

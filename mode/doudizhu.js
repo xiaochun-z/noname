@@ -2102,7 +2102,7 @@ export default () => {
 				animationColor: "gray",
 				content: function () {
 					"step 0";
-					player.awakenSkill("zhuSkill_fancheng");
+					player.awakenSkill(event.name);
 					player
 						.chooseControl("杀", "其他")
 						.set("prompt", "选择要强化的伤害")

@@ -1,4 +1,11 @@
 const characters = {
+	dc_xiahouxuan: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["dcboxuan", "dcyizheng", "dcguilin"],
+		names: "夏侯|玄",
+	},
 	houcheng: {
 		sex: "male",
 		group: "qun",
@@ -378,7 +385,7 @@ const characters = {
 	dc_huangquan: {
 		sex: "male",
 		group: "shu",
-		hp: 3,
+		hp: 4,
 		skills: ["dcquanjian", "dctujue"],
 	},
 	yinfuren: {

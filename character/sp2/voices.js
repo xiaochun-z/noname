@@ -1,4 +1,9 @@
 export default {
+	"#starduhai1": "朝堂好似大染缸，进来了，休想清白出去！",
+	"#starduhai2": "后生，你也配打咱家主意？",
+	"#starlingse1": "陛下尚唤咱家一声阿耶，你怎得张不开嘴？",
+	"#starlingse2": "这宫里的水深的很，你呀，把握不住！",
+	"#star_zhangrang:die": "先皇呀，小陛下他拿咱不当人！",
 	"#stardangchen1": "举帆据徐塘，寒夜荡敌尘！",
 	"#stardangchen2": "无恃敌之不至，恃吾有以胜之！",
 	"#starjianyu1": "綝友党甚盛，当翦羽而后诛之。",

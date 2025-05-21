@@ -1,9 +1,16 @@
 const characters = {
+	clan_yangbiao: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["clanjiannan", "clanyichi", "clanquhuo"],
+		clans: ["弘农杨氏"],
+	},
 	clan_wuyi: {
 		sex: "male",
 		group: "shu",
 		hp: 4,
-		skills: ["clangaojin", "clanpoxi", "clanmuyin"],
+		skills: ["clangaojin", "clanmuyin"],
 		clans: ["陈留吴氏"],
 	},
 	clan_wuxian: {
@@ -183,6 +190,20 @@ const characters = {
 		group: "wei",
 		hp: 3,
 		skills: ["clanjiewu", "clangaoshi", "clanquhuo"],
+		clans: ["弘农杨氏"],
+	},
+	clan_xunshuang: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["clanyangji", "clandandao", "clanqingli", "clandaojie"],
+		clans: ["颍川荀氏"],
+	},
+	clan_yangzhong: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["clanjuetu", "clankudu", "clanquhuo"],
 		clans: ["弘农杨氏"],
 	},
 };

@@ -763,7 +763,7 @@ const skills = {
 			);
 		},
 		async content(event, trigger, player) {
-			player.awakenSkill("jsrgjiebing");
+			player.awakenSkill(event.name);
 			await player.gainMaxHp(2);
 			await player.recover(2);
 			await player.addSkills("jsrgbaowei");
@@ -927,7 +927,7 @@ const skills = {
 			let locals = targets.slice(),
 				card;
 			locals.removeArray(humans);
-			const send = (current, eventId) => {
+			const send = (current, eventId, videoId, player) => {
 				lib.skill.mbsaojian.chooseCard(current, eventId, videoId, player);
 				game.resume();
 			};
@@ -1197,7 +1197,7 @@ const skills = {
 			return player.countCards("h") === 0;
 		},
 		async content(event, trigger, player) {
-			player.awakenSkill("jsrgwudao");
+			player.awakenSkill(event.name);
 			await player.gainMaxHp();
 			await player.recover();
 			await player.addSkills("jsrgjinglei");
@@ -1206,11 +1206,11 @@ const skills = {
 	jsrgjinglei: {
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
-			return game.hasPlayer(current => !current.isMinHandcard());
+			return game.hasPlayer(current => !current.isMinHandcard() && current != player);
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt("jsrgjinglei"), "选择一名其他角色，令任意名手牌数之和小于其的角色各对其造成1点雷属性伤害", (card, player, target) => !target.isMinHandcard())
+				.chooseTarget(get.prompt("jsrgjinglei"), "选择一名其他角色，令任意名手牌数之和小于其的角色各对其造成1点雷属性伤害", (card, player, target) => !target.isMinHandcard() && target != player)
 				.set("ai", target => {
 					//AI写的比较简单：不打队友，根据手牌数平方根酌情打牌多的
 					const player = get.player();
@@ -1459,7 +1459,7 @@ const skills = {
 				trigger: { player: "damageBegin1" },
 				forced: true,
 				async content(event, trigger, player) {
-					trigger.num++;
+					trigger.num += player.countMark(event.name);
 				},
 				intro: {
 					content: "本回合受到的伤害+#",
@@ -2721,10 +2721,8 @@ const skills = {
 				if (typeof stat[name] == "number") stat[name]--;
 			}
 			await player.gainPlayerCard(trigger.target, "he", true);
-			const {
-				result: { bool },
-			} = await trigger.target.chooseBool(`是否令${get.translation(player)}至你的距离于本回合内+2？`).set("ai", () => true);
-			if (bool) {
+			const { result } = await trigger.target.chooseBool(`是否令${get.translation(player)}至你的距离于本回合内+2？`).set("ai", () => true);
+			if (result?.bool) {
 				player.addTempSkill("jsrgeqian_distance");
 				if (!player.storage.jsrgeqian_distance) player.storage.jsrgeqian_distance = {};
 				const id = trigger.target.playerid;
@@ -2742,16 +2740,15 @@ const skills = {
 				},
 				direct: true,
 				async content(event, trigger, player) {
-					while (player.countCards("h") > 0) {
-						const {
-							result: { bool, cards },
-						} = await player.chooseCard(get.prompt("jsrgeqian"), "你可以蓄谋任意次").set("ai", card => {
+					while (player.countCards("h") && !player.isDisabledJudge()) {
+						const { result } = await player.chooseCard(get.prompt("jsrgeqian"), "你可以蓄谋任意次").set("ai", card => {
 							const player = get.player();
 							if (player.hasValueTarget(card)) return player.getUseValue(card);
 							return 0;
 						});
-						if (!bool) break;
-						await player.addJudge({ name: "xumou_jsrg" }, cards);
+						if (result?.bool && result?.cards?.length) {
+							await player.addJudge({ name: "xumou_jsrg" }, result.cards);
+						} else break;
 					}
 				},
 			},
@@ -2797,7 +2794,7 @@ const skills = {
 		},
 		selectTarget: -1,
 		async content(event, trigger, player) {
-			player.awakenSkill("jsrgfusha");
+			player.awakenSkill(event.name);
 			event.target.damage(Math.min(game.countPlayer2(), player.getAttackRange()));
 		},
 		ai: {
@@ -5680,7 +5677,7 @@ const skills = {
 	jsrgjiemeng: {
 		audio: 2,
 		zhuSkill: true,
-		forced: true,
+		locked: true,
 		init: () => {
 			game.addGlobalSkill("jsrgjiemeng_effect");
 		},
@@ -6088,7 +6085,7 @@ const skills = {
 			return event.num >= player.getHp();
 		},
 		content() {
-			player.awakenSkill("jsrgzhasi");
+			player.awakenSkill(event.name);
 			trigger.cancel();
 			player.changeSkills(["rezhiheng"], ["jsrgzhiheng"]);
 			player.addSkill("jsrgzhasi_undist");
@@ -8138,7 +8135,7 @@ const skills = {
 					const targets = player.getStorage("jsrgshenchong_die");
 					player.line(targets);
 					targets.sortBySeat().forEach(current => {
-						current.clearSkills(true);
+						current.clearSkills();
 						current.chooseToDiscard(current.countCards("h"), "h", true);
 					});
 				},
@@ -8319,18 +8316,18 @@ const skills = {
 			const num = hs.length;
 			if (!num) return;
 			await player.discard(hs);
-			const bool =
+			const result =
 				target.countCards("he") < num
-					? true
+					? { bool: true }
 					: await target
-							.chooseToDiscard(`${get.translation(player)}对你发动了【诛宦】`, `弃置${get.cnNumber(num)}张牌并失去1点体力；或点击“取消”令其回复1点体力且其摸${get.cnNumber(num)}张牌`, "he")
+							.chooseToDiscard(`${get.translation(player)}对你发动了【诛宦】`, `弃置${get.cnNumber(num)}张牌并受到1点伤害；或点击“取消”令其回复1点体力且其摸${get.cnNumber(num)}张牌`, "he")
 							.set("ai", card => {
 								if (get.event().goon) return 0;
 								return 5.5 - get.value(card);
 							})
 							.set("goon", target.hp <= 2 || get.attitude(target, player) >= 0 || player.isHealthy())
-							.forResultBool();
-			if (bool) await target.loseHp();
+							.forResult();
+			if (result?.bool) await target.damage();
 			else {
 				await player.draw(num);
 				await player.recover();
@@ -9395,7 +9392,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			const { target } = trigger;
 			event.result = await player
-				.choosePlayerCard(target, "h", true, [1, Infinity], `分敌：展示${get.translation(target)}的任意张手牌`)
+				.choosePlayerCard(target, "h", [1, Infinity], `分敌：展示${get.translation(target)}的任意张手牌`)
 				.set("ai", button => {
 					if (_status.event.all) return 1;
 					if (ui.selected.buttons.length) return 0;
@@ -10044,7 +10041,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("jsrghuilie");
+			player.awakenSkill(event.name);
 			player.loseMaxHp();
 			"step 1";
 			player.addSkills(["jsrgpingrong", "feiying"]);
@@ -11131,7 +11128,7 @@ const skills = {
 			return player.isDamaged() && player.hasAllHistory("useSkill", evt => evt.skill == "jsrgxiezheng");
 		},
 		async content(event, trigger, player) {
-			player.awakenSkill("jsrgzhaoxiong");
+			player.awakenSkill(event.name);
 			player.changeSkin({ characterName: "jsrg_simazhao" }, "jin_jsrg_simazhao");
 			await player.changeGroup("jin");
 			await player.changeSkills(["jsrgweisi", "jsrgdangyi"], ["jsrgqiantun"]);

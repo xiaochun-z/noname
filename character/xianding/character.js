@@ -1,4 +1,42 @@
 const characters = {
+	dc_wuzhi: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["dcweiti", "dcyuanrong"],
+	},
+	dc_zhushuo: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["dczsshuhe", "dcjilie"],
+	},
+	v_caopi: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["dcdianlun", "dcjiwei", "dcsugang"],
+	},
+	dc_zhongyu: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["dczhidui", "dcjiesi"],
+	},
+	dc_xiahouhui: {
+		sex: "female",
+		group: "wei",
+		hp: 3,
+		skills: ["dcdujun", "dcjikun"],
+		names: "夏侯|徽",
+	},
+	dc_sb_liuxie: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["dcsbzhanban", "dcsbchensheng", "dcsbtiancheng"],
+		isZhugong: true,
+	},
 	dc_sb_caohong: {
 		sex: "male",
 		group: "wei",
@@ -15,7 +53,7 @@ const characters = {
 		sex: "male",
 		group: "wei",
 		hp: 3,
-		skills: ["dcsbbizuo", "dcsbshimou", "dcsbxianshi"],
+		skills: ["dcsbbizuo", "dcsbshimou"],//, "dcsbxianshi"
 	},
 	v_dongzhuo: {
 		sex: "male",

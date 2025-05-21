@@ -1004,6 +1004,7 @@ game.import("card", function () {
 				global: "g_shihuifen",
 				content() {
 					"step 0";
+					if (!_status.currentPhase?.isIn()) return;
 					var next = _status.currentPhase.chooseToRespond({ name: "shan" });
 					next.set("respondTo", [player, card]);
 					next.set("prompt2", "否则本回合无法对其他角色使用卡牌");

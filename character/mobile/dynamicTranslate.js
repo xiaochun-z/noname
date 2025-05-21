@@ -73,5 +73,12 @@ const dynamicTranslates = {
 		if (player.storage.mbfunan_rewrite) return `其他角色使用或打出牌响应你使用的牌时，你可以获得其使用或打出的牌，且你使用以此法获得的牌结算结束后，若没有其他角色响应此牌，你摸一张牌。`;
 		return `其他角色使用或打出牌响应你使用的牌时，你可以获得其使用或打出的牌。`;
 	},
+	mbxuehen(player) {
+		const storage = player.storage.mbxuehen;
+		let str = "当你每回合首次造成或受到伤害后，你可展示至多X张手牌（X为你已损失体力值），这些牌只能当不计入次数且无次数限制的【杀】使用或打出，直到你使用这些牌造成伤害";
+		if (storage) str += "，且你使用以此法转化的【杀】结算结束后摸一张牌";
+		str += "。";
+		return str;
+	},
 };
 export default dynamicTranslates;

@@ -1,4 +1,18 @@
 const characters = {
+	taipingsangong: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["oltiangong", "oldigong", "olrengong"],
+		names: "张|角-张|宝-张|梁",
+	},
+	yuanshaoyuanshu: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["dclieti", "dcshigong", "dcluankui"],
+		names: "袁|绍-袁|术",
+	},
 	tianji: {
 		sex: "male",
 		group: "qun",

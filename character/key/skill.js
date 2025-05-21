@@ -263,7 +263,7 @@ const skills = {
 			return player.hp <= event.num;
 		},
 		content() {
-			player.awakenSkill("kyou_duanfa");
+			player.awakenSkill(event.name);
 			if (player.countCards("h") > 0) player.chooseToDiscard("h", true, player.countCards("h"));
 			player.recover();
 			trigger.cancel();
@@ -1088,7 +1088,7 @@ const skills = {
 		animationColor: "gray",
 		content() {
 			"step 0";
-			player.awakenSkill("kud_buhui");
+			player.awakenSkill(event.name);
 			var cards = player.getCards("e");
 			if (cards.length) player.discard(cards);
 			player.removeSkill("kud_qiaoshou_equip");
@@ -1565,6 +1565,7 @@ const skills = {
 		discard: false,
 		lose: false,
 		delay: false,
+		locked: true,
 		promptfunc: () => "出牌阶段，你可以赠予一张“米券”，然后执行一项本回合内未被选择过的效果：⒈对其造成1点伤害；⒉摸两张牌；⒊弃置其的两张牌；⒋亮出牌堆顶的一张牌，然后你可以使用之。",
 		check: card => {
 			const player = _status.event.player;
@@ -2071,7 +2072,6 @@ const skills = {
 	kiyu_rexianyu: {
 		trigger: { player: "phaseUseEnd" },
 		charlotte: true,
-		unique: true,
 		filter(event, player) {
 			return (
 				!player.hasSkill("kiyu_rexianyu_round", null, null, false) &&
@@ -3707,7 +3707,7 @@ const skills = {
 						.forResult();
 				},
 				async content(event, trigger, player) {
-					player.awakenSkill("erika_yousheng_mamori");
+					player.awakenSkill(event.name);
 					player.markAuto("erika_yousheng", event.targets);
 					await player.loseMaxHp(2);
 					await player.changeHujia(3);
@@ -3784,6 +3784,7 @@ const skills = {
 				.set("ai", serafu => get.attitude(_status.event.player, serafu))
 				.forResult();
 		},
+		groupSkill: "key",
 		content() {
 			targets.sortBySeat();
 			game.asyncDraw(targets);
@@ -3844,6 +3845,7 @@ const skills = {
 				}
 			}
 		},
+		groupSkill: "shu",
 		async content(event, trigger, player) {
 			const result = event.cost_data;
 			if (result.type === "addSkill") {
@@ -4004,6 +4006,7 @@ const skills = {
 			player: "enterGame",
 		},
 		forced: true,
+		locked: false,
 		dutySkill: true,
 		derivation: "mia_fengfa",
 		filter(event, player) {
@@ -4073,6 +4076,7 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					game.log(player, "使命失败");
+					player.awakenSkill("mia_qianmeng");
 					var target = event.targets[0];
 					var num = player.storage.mia_qianmeng.number,
 						suit = player.storage.mia_qianmeng.suit,
@@ -4478,7 +4482,6 @@ const skills = {
 		},
 	},
 	yukito_yaxiang: {
-		unique: true,
 		forceunique: true,
 		enable: "chooseToUse",
 		limited: true,
@@ -4493,7 +4496,7 @@ const skills = {
 		animationColor: "key",
 		content() {
 			"step 0";
-			player.awakenSkill("yukito_yaxiang");
+			player.awakenSkill(event.name);
 			player.reinitCharacter("key_yukito", "key_crow", false);
 			"step 1";
 			if (target.hp < 3) target.recover(3 - target.hp);
@@ -4531,6 +4534,7 @@ const skills = {
 	},
 	misuzu_zhongyuan: {
 		trigger: { player: "judge" },
+		limited: true,
 		skillAnimation: true,
 		animationColor: "key",
 		logTarget: "player",
@@ -4661,7 +4665,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			var map = event.cost_data;
-			player.awakenSkill("misuzu_zhongyuan");
+			player.awakenSkill(event.name);
 			game.log(player, "将判定结果修改为了", "#g" + get.translation(map.suit + 2) + get.strNumber(map.number));
 			trigger.fixedResult = {
 				suit: map.suit,
@@ -5274,7 +5278,7 @@ const skills = {
 			);
 		},
 		content() {
-			player.awakenSkill("hiroto_tuolao");
+			player.awakenSkill(event.name);
 			player.draw(3);
 			player.changeSkills(["hiroto_zonglve"], ["hiroto_huyu"]);
 		},
@@ -6350,7 +6354,7 @@ const skills = {
 			return event.num < 0 && player.hp < 4;
 		},
 		content() {
-			player.awakenSkill("godan_xiaoyuan");
+			player.awakenSkill(event.name);
 			player.loseMaxHp(3);
 			player.draw(3);
 			player.removeSkills("godan_feiqu");
@@ -7109,6 +7113,7 @@ const skills = {
 		},
 	},
 	kyoko_zhengyi: {
+		locked: true,
 		group: ["kyoko_jingce", "kyoko_shelie", "kyoko_zhiheng"],
 		count(player) {
 			var list = [];
@@ -7306,7 +7311,6 @@ const skills = {
 	mio_tishen: {
 		trigger: { player: "phaseZhunbeiBegin" },
 		limited: true,
-		unique: true,
 		forceunique: true,
 		charlotte: true,
 		skillAnimation: true,
@@ -7386,7 +7390,6 @@ const skills = {
 		trigger: { player: "phaseZhunbeiBegin" },
 		limited: true,
 		charlotte: true,
-		unique: true,
 		forceunique: true,
 		skillAnimation: true,
 		animationColor: "water",
@@ -7549,12 +7552,11 @@ const skills = {
 		derivation: ["yuzuru_kunfen", "yuzuru_quji", "yuzuru_wangsheng", "yuzuru_kunfen_rewrite", "yuzuru_quji_rewrite"],
 		trigger: { global: "dieAfter" },
 		forced: true,
-		unique: true,
 		juexingji: true,
 		skillAnimation: true,
 		animationColor: "orange",
 		content() {
-			player.awakenSkill("yuzuru_deyi");
+			player.awakenSkill(event.name);
 			player.changeSkills(["yuzuru_kunfen", "yuzuru_quji", "yuzuru_wangsheng"], ["yuzuru_wuxin"]);
 			player.loseMaxHp();
 			player.recover();
@@ -7643,13 +7645,12 @@ const skills = {
 		trigger: { player: "dieBegin" },
 		forced: true,
 		juexingji: true,
-		unique: true,
 		skillAnimation: true,
 		animationColor: "soil",
 		content() {
 			"step 0";
 			trigger.cancel();
-			player.awakenSkill("yuzuru_wangsheng");
+			player.awakenSkill(event.name);
 			player.storage._yuzuru_sss = true;
 			if (player.countCards("he") > 0) {
 				player.chooseCardTarget({
@@ -7750,7 +7751,6 @@ const skills = {
 		forced: true,
 		skillAnimation: true,
 		animationColor: "key",
-		unique: true,
 		filter(event, player) {
 			var list = player.getExpansions("ao_diegui");
 			var list2 = [];
@@ -7760,14 +7760,12 @@ const skills = {
 			return list2.length > 2;
 		},
 		content() {
-			player.awakenSkill("ao_shixin");
+			player.awakenSkill(event.name);
 			player.changeSkills(["ao_diegui"], ["ao_kuihun"]);
 			player.gainMaxHp();
 			player.recover();
 		},
-		ai: {
-			combo: "ao_kuihun",
-		},
+		ai: { combo: "ao_kuihun" },
 	},
 	ao_diegui: {
 		enable: "phaseUse",
@@ -8163,7 +8161,10 @@ const skills = {
 		filter(event, player) {
 			return game.hasPlayer(target => lib.skill.noda_xunxin.filterTarget(null, player, target));
 		},
-		viewAs: { name: "juedou" },
+		viewAs: { 
+			name: "juedou",
+			isCard: true,
+		},
 		filterTarget(card, player, target) {
 			if (target.hp < player.hp) return false;
 			return player.canUse({ name: "juedou" }, target);
@@ -8404,7 +8405,6 @@ const skills = {
 		forced: true,
 		derivation: "riki_chongzhen",
 		juexingji: true,
-		unique: true,
 		skillAnimation: true,
 		animationColor: "key",
 		filter(event, player) {
@@ -8415,15 +8415,13 @@ const skills = {
 			return num >= 3;
 		},
 		content() {
-			player.awakenSkill("riki_mengzhong");
+			player.awakenSkill(event.name);
 			player.removeSkills("riki_spwenji");
 			player.gainMaxHp();
 			player.recover();
 			player.addSkills("riki_chongzhen");
 		},
-		ai: {
-			combo: "riki_spwenji",
-		},
+		ai: { combo: "riki_spwenji" },
 	},
 	riki_chongzhen: {
 		trigger: {
@@ -8647,7 +8645,6 @@ const skills = {
 		},
 	},
 	akane_yifu: {
-		unique: true,
 		global: "akane_yifu2",
 		zhuSkill: true,
 	},
@@ -9235,9 +9232,8 @@ const skills = {
 	saya_powei: {
 		audio: 2,
 		trigger: { player: "phaseAfter" },
-		locked: true,
 		limited: true,
-		unique: true,
+		locked: false,
 		skillAnimation: true,
 		animationColor: "metal",
 		filter(event, player) {
@@ -9266,7 +9262,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			player.awakenSkill("saya_powei");
+			player.awakenSkill(event.name);
 			await game.delay(3);
 			var next = game.createEvent("saya_powei_loop", false, trigger);
 			next.playertrue = player;
@@ -9635,7 +9631,6 @@ const skills = {
 	yui_takaramono: {
 		trigger: { player: "phaseZhunbeiBegin" },
 		forced: true,
-		unique: true,
 		juexingji: true,
 		skillAnimation: true,
 		animationColor: "key",
@@ -9651,7 +9646,7 @@ const skills = {
 			return draw >= 3;
 		},
 		content() {
-			player.awakenSkill("yui_takaramono");
+			player.awakenSkill(event.name);
 			player.addSkills("yui_yinhang");
 			player.storage._ichiban_no_takaramono = true;
 			player.gainMaxHp();
@@ -10359,7 +10354,6 @@ const skills = {
 		},
 	},
 	umi_qihuan: {
-		unique: true,
 		forceunique: true,
 		enable: "chooseToUse",
 		filter(summer, umi) {
@@ -10371,7 +10365,7 @@ const skills = {
 		animationColor: "key",
 		content() {
 			"step 0";
-			player.awakenSkill("umi_qihuan");
+			player.awakenSkill(event.name);
 			player.reinitCharacter("key_umi", "key_umi2", false);
 			player.recover(game.countGroup() || 1);
 			if (!game.dead.length) event.finish();
@@ -10437,9 +10431,7 @@ const skills = {
 			skillTagFilter(player, tag, target) {
 				return player == target;
 			},
-			result: {
-				player: 1,
-			},
+			result: { player: 1 },
 		},
 	},
 	//神尾晴子
@@ -10582,7 +10574,6 @@ const skills = {
 			}
 		},
 		zhuSkill: true,
-		unique: true,
 		skillAnimation: true,
 		animationColor: "thunder",
 		filter(event, player) {
@@ -10601,7 +10592,7 @@ const skills = {
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
-			player.awakenSkill("yuri_wangxi");
+			player.awakenSkill(event.name);
 			var identity = "zhong";
 			if (_status.mode == "purple") {
 				if (["rNei", "bNei"].includes(player.identity)) identity = player.identity;
@@ -10627,9 +10618,7 @@ const skills = {
 			await trigger.player.changeGroup(player.group);
 			await trigger.player.draw();
 		},
-		ai: {
-			combo: "yuri_xingdong",
-		},
+		ai: { combo: "yuri_xingdong" },
 	},
 	//枣恭介
 	nk_shekong: {

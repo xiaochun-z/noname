@@ -186,7 +186,6 @@ const skills = {
 	hujia: {
 		audio: 2,
 		audioname: ["re_caocao"],
-		unique: true,
 		zhuSkill: true,
 		trigger: { player: ["chooseToRespondBefore", "chooseToUseBefore"] },
 		filter(event, player) {
@@ -360,32 +359,34 @@ const skills = {
 		audio: 2,
 		trigger: { player: "damageEnd" },
 		filter(event, player) {
-			return event.source != undefined;
+			return event.source?.isIn();
 		},
 		check(event, player) {
 			return get.attitude(player, event.source) <= 0;
 		},
 		logTarget: "source",
 		async content(event, trigger, player) {
+			const { source } = trigger;
 			const judgeEvent = player.judge(card => {
 				if (get.suit(card) == "heart") return -2;
 				return 2;
 			});
 			judgeEvent.judge2 = result => result.bool;
-			const {
-				result: { judge },
-			} = await judgeEvent;
-			if (judge < 2) return;
-			const {
-				result: { bool },
-			} = await trigger.source.chooseToDiscard(2).set("ai", card => {
-				if (card.name == "tao") return -10;
-				if (card.name == "jiu" && _status.event.player.hp == 1) return -10;
-				return get.unuseful(card) + 2.5 * (5 - get.owner(card).hp);
-			});
-			if (bool == false) {
-				trigger.source.damage();
-			}
+			let result;
+			result = await judgeEvent.forResult();
+			if (!result?.bool) return;
+			result =
+				source.countCards("h") < 2
+					? { bool: false }
+					: await source
+							.chooseToDiscard(2, `弃置两张手牌，否则${get.translation(player)}对你造成1点伤害`)
+							.set("ai", card => {
+								if (card.name == "tao") return -10;
+								if (card.name == "jiu" && get.player().hp == 1) return -10;
+								return get.unuseful(card) + 2.5 * (5 - get.owner(card).hp);
+							})
+							.forResult();
+			if (!result?.bool) await source.damage();
 		},
 		ai: {
 			maixie_defend: true,
@@ -633,8 +634,8 @@ const skills = {
 		frequent: true,
 		preHidden: true,
 		async content(event, trigger, player) {
+			event.cards ??= [];
 			while (true) {
-				if (event.cards == undefined) event.cards = [];
 				const judgeEvent = player.judge(card => {
 					if (get.color(card) == "black") return 1.5;
 					return -1.5;
@@ -648,34 +649,15 @@ const skills = {
 					judgeEvent.set("callback", async event => {
 						if (event.judgeResult.color == "black") event.getParent().orderingCards.remove(event.card);
 					});
-				const {
-					result: { judge, card },
-				} = await judgeEvent;
-				let bool;
-				if (judge > 0) {
-					event.cards.push(card);
-					bool = await player.chooseBool("是否再次发动【洛神】？").set("frequentSkill", "luoshen").forResultBool();
-				} else {
-					for (let i = 0; i < event.cards.length; i++) {
-						if (get.position(event.cards[i], true) != "o") {
-							event.cards.splice(i, 1);
-							i--;
-						}
-					}
-					if (event.cards.length) {
-						// 异步函数最后一个Promise事件可以省略await
-						player.gain(event.cards, "gain2");
-					}
-					return;
-				}
-				if (!bool) {
-					if (event.cards.length) {
-						// 但还是建议加上
-						await player.gain(event.cards, "gain2");
-					}
-					return;
-				}
+				let result;
+				result = await judgeEvent.forResult();
+				if (result?.bool && result?.card) {
+					event.cards.push(result.card);
+					result = await player.chooseBool("是否再次发动【洛神】？").set("frequentSkill", "luoshen").forResult();
+					if (!result?.bool) break;
+				} else break;
 			}
+			if (event.cards.someInD()) await player.gain(event.cards.filterInD(), "gain2");
 		},
 	},
 	qingguo: {
@@ -825,7 +807,6 @@ const skills = {
 	jijiang: {
 		audio: "jijiang1",
 		audioname: ["liushan", "re_liubei", "re_liushan", "ol_liushan"],
-		unique: true,
 		group: ["jijiang1"],
 		zhuSkill: true,
 		filter(event, player) {
@@ -961,7 +942,7 @@ const skills = {
 		discard: false,
 		lose: false,
 		async content(event, trigger, player) {
-			player.awakenSkill("zhongyi");
+			player.awakenSkill(event.name);
 			player.addTempSkill("zhongyi2", "roundStart");
 			player.addToExpansion(player, "give", event.cards).gaintag.add("zhongyi2");
 		},
@@ -1269,7 +1250,6 @@ const skills = {
 	},
 	jiuyuan: {
 		audio: 2,
-		unique: true,
 		trigger: { target: "taoBegin" },
 		zhuSkill: true,
 		forced: true,
@@ -1746,13 +1726,14 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
 		forced: true,
+		juexingji: true,
 		skillAnimation: true,
 		animationColor: "gray",
 		filter(event, player) {
 			return player.isDamaged() && game.dead.filter(target => target.isFriendOf(player)).length > 0;
 		},
 		async content(event, trigger, player) {
-			player.awakenSkill("zhanshen");
+			player.awakenSkill(event.name);
 			const cards = player.getEquips(1);
 			if (cards.length) player.discard(cards);
 			player.loseMaxHp();

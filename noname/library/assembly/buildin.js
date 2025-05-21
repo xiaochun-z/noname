@@ -212,6 +212,10 @@ export const checkDamage1 = {
 		// @ts-ignore
 		if (get.distance(event.source, player) <= 1) event.checkKuanggu = true;
 	},
+	jyliezhou(event, player) {
+		// @ts-ignore
+		if (event.player.isLinked()) event.checkJyliezhou = true;
+	},
 };
 
 /**

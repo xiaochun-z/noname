@@ -327,7 +327,7 @@ game.import("character", function () {
 				group: "qun",
 				hp: 3,
 				skills: ["zhanxing", "kbolan"],
-				names: "肯迪|null",
+				names: "null|肯迪",
 			},
 			swd_lilian: {
 				sex: "female",
@@ -1466,6 +1466,7 @@ game.import("character", function () {
 			},
 			shenyan: {
 				trigger: { source: "damageBegin" },
+				limited: true,
 				skillAnimation: true,
 				animationColor: "fire",
 				filter(event, player) {
@@ -1500,7 +1501,7 @@ game.import("character", function () {
 					trigger.num++;
 					player.addSkill("shenyan2");
 					player.storage.shenyan = true;
-					player.awakenSkill("shenyan");
+					player.awakenSkill(event.name);
 					player.storage.shenyan2 = [];
 					var players = game.filterPlayer();
 					for (var i = 0; i < players.length; i++) {
@@ -1555,7 +1556,10 @@ game.import("character", function () {
 				subSkill: {
 					sha: {
 						enable: "chooseToUse",
-						viewAs: { name: "sha" },
+						viewAs: {
+							name: "sha",
+							isCard: true,
+						},
 						viewAsFilter(player) {
 							if (player.isLinked()) return false;
 						},
@@ -1677,7 +1681,7 @@ game.import("character", function () {
 				},
 				filter(event, player) {
 					if (player == _status.currentPhase) return false;
-					if (!_status.currentPhase.countCards("he")) return false;
+					if (!_status.currentPhase?.countCards("he")) return false;
 					return event.cards && event.cards.length == 1;
 				},
 				content() {
@@ -1733,6 +1737,7 @@ game.import("character", function () {
 			hxunzhi: {
 				unique: true,
 				enable: "phaseUse",
+				limited: true,
 				derivation: ["wusheng", "paoxiao"],
 				filter(event, player) {
 					return !player.storage.hxunzhi;
@@ -1748,7 +1753,7 @@ game.import("character", function () {
 				animationColor: "fire",
 				content() {
 					"step 0";
-					player.awakenSkill("hxunzhi");
+					player.awakenSkill(event.name);
 					player.storage.hxunzhi = true;
 					var targets = game.filterPlayer(function (current) {
 						return player.canUse("wanjian", current);
@@ -1986,6 +1991,7 @@ game.import("character", function () {
 				enable: "phaseUse",
 				unique: true,
 				mark: true,
+				limited: true,
 				skillAnimation: true,
 				animationColor: "metal",
 				init(player) {
@@ -1998,7 +2004,7 @@ game.import("character", function () {
 				filterTarget: true,
 				selectTarget: [1, Infinity],
 				contentBefore() {
-					player.awakenSkill("jinlin");
+					player.awakenSkill(event.skill);
 					player.storage.jinlin = true;
 				},
 				content() {
@@ -2182,6 +2188,7 @@ game.import("character", function () {
 				},
 			},
 			bingfeng: {
+				limited: true,
 				skillAnimation: "epic",
 				animationColor: "water",
 				unique: true,
@@ -2201,7 +2208,7 @@ game.import("character", function () {
 				selectTarget: [1, 3],
 				content() {
 					"step 0";
-					player.awakenSkill("bingfeng");
+					player.awakenSkill(event.name);
 					player.removeSkill("xuanzhou");
 					player.loseMaxHp();
 					player.storage.bingfeng = true;
@@ -3118,6 +3125,7 @@ game.import("character", function () {
 				},
 			},
 			shouyin: {
+				limited: true,
 				skillAnimation: "epic",
 				animationColor: "water",
 				unique: true,
@@ -3134,7 +3142,7 @@ game.import("character", function () {
 				},
 				content() {
 					"step 0";
-					player.awakenSkill("shouyin");
+					player.awakenSkill(event.name);
 					player.storage.shouyin = true;
 					player.turnOver();
 					"step 1";
@@ -4300,6 +4308,7 @@ game.import("character", function () {
 				},
 			},
 			miedao: {
+				locked: true,
 				group: ["miedao1", "miedao2"],
 				ai: {
 					threaten: 1.4,
@@ -6451,6 +6460,7 @@ game.import("character", function () {
 				},
 				mark: true,
 				unique: true,
+				limited: true,
 				skillAnimation: true,
 				animationColor: "fire",
 				line: "fire",
@@ -6460,7 +6470,7 @@ game.import("character", function () {
 				content() {
 					"step 0";
 					player.storage.xuehuang = true;
-					player.awakenSkill("xuehuang");
+					player.awakenSkill(event.name);
 					player.showHandcards();
 					var cards = player.getCards("h");
 					player.discard(cards);
@@ -7118,6 +7128,7 @@ game.import("character", function () {
 				enable: "phaseUse",
 				mark: true,
 				unique: true,
+				limited: true,
 				forceunique: true,
 				skillAnimation: true,
 				filter(event, player) {
@@ -7130,7 +7141,7 @@ game.import("character", function () {
 				},
 				content() {
 					player.storage.duijue = true;
-					player.awakenSkill("duijue");
+					player.awakenSkill(event.name);
 					var evt = _status.event;
 					for (var i = 0; i < 10; i++) {
 						if (evt && evt.getParent) {
@@ -7958,6 +7969,7 @@ game.import("character", function () {
 				filter(event, player) {
 					return !player.getEquip(5);
 				},
+				locked: true,
 				ai: {
 					order: 11,
 					result: {

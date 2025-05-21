@@ -268,12 +268,14 @@ export default () => {
 					group: "wei",
 					hp: 3,
 					skills: ["fankui", "guicai"],
+					names: "司马|懿",
 				},
 				xiahoudun: {
 					sex: "male",
 					group: "wei",
 					hp: 4,
 					skills: ["ganglie"],
+					names: "夏侯|惇",
 				},
 				zhangliao: {
 					sex: "male",
@@ -323,6 +325,7 @@ export default () => {
 					group: "shu",
 					hp: 3,
 					skills: ["guanxing", "kongcheng"],
+					names: "诸葛|亮",
 				},
 				zhaoyun: {
 					sex: "male",
@@ -408,6 +411,7 @@ export default () => {
 					group: "qun",
 					hp: 3,
 					skills: ["pianyi", "biyue"],
+					names: "null|null",
 				},
 
 				xiahouyuan: {
@@ -415,6 +419,7 @@ export default () => {
 					group: "wei",
 					hp: 4,
 					skills: ["shensu", "suzi"],
+					names: "夏侯|渊",
 				},
 				old_caoren: {
 					sex: "male",
@@ -484,6 +489,7 @@ export default () => {
 					group: "shu",
 					hp: 4,
 					skills: ["manyi", "lieren"],
+					names: "null|null",
 				},
 				xuhuang: {
 					sex: "male",
@@ -535,6 +541,7 @@ export default () => {
 					group: "jin",
 					hp: 3,
 					skills: ["smyyingshi", "xiongzhi", "quanbian"],
+					names: "司马|师",
 				},
 				jin_wangyuanji: {
 					sex: "female",
@@ -547,24 +554,29 @@ export default () => {
 					group: "jin",
 					hp: 3,
 					skills: ["choufa", "zhaoran"],
+					names: "司马|昭",
 				},
 				jin_xiahouhui: {
 					sex: "female",
 					group: "jin",
 					hp: 3,
 					skills: ["jyishi", "shiduo"],
+					names: "夏侯|徽",
 				},
 				jin_simashi: {
 					sex: "male",
 					group: "jin",
-					hp: "3/4",
+					hp: 3,
+					maxHp: 4,
 					skills: ["yimie", "tairan"],
+					names: "司马|师",
 				},
 				zhanghuyuechen: {
 					sex: "male",
 					group: "jin",
 					hp: 4,
 					skills: ["xijue"],
+					names: "张|虎-乐|綝",
 				},
 				duyu: {
 					sex: "male",
@@ -1801,7 +1813,7 @@ export default () => {
 				},
 				content: function () {
 					"step 0";
-					player.awakenSkill("xiechan");
+					player.awakenSkill(event.name);
 					player.chooseToCompare(target);
 					"step 1";
 					if (result.bool) player.useCard({ name: "juedou" }, target, "noai");

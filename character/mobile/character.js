@@ -1,4 +1,54 @@
 const characters = {
+	mb_mengda: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["mbjili", "mbshishu"],
+	},
+	mb_caoxing: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["mbjinzu", "mbanxian"],
+	},
+	mb_zhangyan: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["mbfeijing", "mbxiaoge"],
+	},
+	guoyuan: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["mbqingdao", "mbxiugeng", "mbchenshe"],
+	},
+	mb_huangzu: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["mbchizhang", "mbduanyang"],
+	},
+	mb_tianfeng: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["mbganggeng", "mbsijian"],
+	},
+	mb_luyusheng: {
+		sex: "female",
+		group: "wu",
+		hp: 3,
+		skills: ["mbrunwei", "mbshuanghuai"],
+	},
+	mb_guanyinping: {
+		sex: "female",
+		group: "shu",
+		hp: 3,
+		maxHp: 4,
+		skills: ["mbxuehen", "mbhuxiao", "mbwuji"],
+		dieAudios: ["guanyinping"],
+	},
 	pot_chendao: {
 		sex: "male",
 		group: "shu",
@@ -70,7 +120,7 @@ const characters = {
 		sex: "male",
 		group: "qun",
 		hp: 3,
-		skills: ["potdaozhuan", "potfuji"],
+		skills: ["potfuji", "potdaozhuan"],
 	},
 	pot_lougui: {
 		sex: "male",
@@ -124,6 +174,7 @@ const characters = {
 		group: "wu",
 		hp: 4,
 		skills: ["pothanzhan", "potzhanlie", "potzhenfeng"],
+		names: "太史|慈",
 	},
 	mb_ganfuren: {
 		sex: "female",
@@ -966,7 +1017,7 @@ const characters = {
 	zhangbu: {
 		sex: "male",
 		group: "wu",
-		hp: 4,
+		hp: 3,
 		skills: ["mbchengxiong", "mbwangzhuang"],
 	},
 	mb_wangjing: {

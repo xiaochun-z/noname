@@ -1082,11 +1082,7 @@ const skills = {
 		},
 		chooseButton: {
 			dialog(event, player) {
-				return ui.create.dialog(
-					"并肩",
-					[["sha", "shan"], "vcard"],
-					"hidden"
-				);
+				return ui.create.dialog("并肩", [["sha", "shan"], "vcard"], "hidden");
 			},
 			filter(button, player) {
 				if (ui.selected.buttons.length) {
@@ -1107,8 +1103,8 @@ const skills = {
 						suit: "none",
 						number: null,
 						isCard: true,
-						log: false,
 					},
+					log: false,
 				};
 				var num = 2 - player.countCards("h");
 				if (num > 0) {
@@ -1355,7 +1351,7 @@ const skills = {
 				filter(event, player) {
 					if (event.skill != "dddtongyu" || event.remained.filterInD().length == 0) return false;
 					var list = event.getParent().dddtongyu_targets;
-					return list.some(target => target.isIn());
+					return list?.some(target => target.isIn());
 				},
 				content() {
 					"step 0";
@@ -2338,7 +2334,7 @@ const skills = {
 		content() {
 			"step 0";
 			event.count = 1;
-			player.awakenSkill("dddquche");
+			player.awakenSkill(event.name);
 			player.addTempSkill("dddquche_effect");
 			player.addMark("dddquche_effect", 1, false);
 			player.give(cards, target);
@@ -4691,6 +4687,7 @@ const skills = {
 	dddfuyi: {
 		audio: 2,
 		zhuSkill: true,
+		locked: true,
 		trigger: {
 			global: "dieAfter",
 		},
@@ -5319,22 +5316,24 @@ const skills = {
 							.set("processAI", function (list) {
 								var cards = list[0][1],
 									player = _status.event.player;
-								var target = _status.currentPhase.next;
+								var target = _status.currentPhase?.next;
 								var att = get.sgn(get.attitude(player, target));
 								var top = [];
-								var judges = target.getCards("j");
 								var stopped = false;
-								if (player != target || !target.hasWuxie()) {
-									for (var i = 0; i < judges.length; i++) {
-										var judge = get.judge(judges[i]);
-										cards.sort(function (a, b) {
-											return (judge(b) - judge(a)) * att;
-										});
-										if (judge(cards[0]) * att < 0) {
-											stopped = true;
-											break;
-										} else {
-											top.unshift(cards.shift());
+								if (target) {
+									var judges = target.getCards("j");
+									if (player != target || !target.hasWuxie()) {
+										for (var i = 0; i < judges.length; i++) {
+											var judge = get.judge(judges[i]);
+											cards.sort(function (a, b) {
+												return (judge(b) - judge(a)) * att;
+											});
+											if (judge(cards[0]) * att < 0) {
+												stopped = true;
+												break;
+											} else {
+												top.unshift(cards.shift());
+											}
 										}
 									}
 								}
@@ -5390,7 +5389,7 @@ const skills = {
 			return get.effect(event.targets[0], event.card, player, player) < get.effect(player, event.card, player, player);
 		},
 		content() {
-			player.awakenSkill("dddjiexing");
+			player.awakenSkill(event.name);
 			player.addSkill("dddjiexing_reset");
 			if (trigger.name == "recover") {
 				trigger.cancel();

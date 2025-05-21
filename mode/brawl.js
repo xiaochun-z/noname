@@ -3480,7 +3480,8 @@ export default () => {
 										xin_yuanshao: {
 											sex: "male",
 											group: "qun",
-											hp: "3/6",
+											hp: 3,
+											maxHp: 6,
 											skills: ["reluanji", "kuanggu", "benghuai", "weizhong"],
 										},
 										guotufengji: {
@@ -3556,6 +3557,7 @@ export default () => {
 											group: "shu",
 											hp: 3,
 											skills: ["tianbian", "jyzongshi", "xinfu_guolun"],
+											names: "诸葛|亮",
 										},
 										re_zhangzhang: {
 											sex: "male",
@@ -3766,7 +3768,8 @@ export default () => {
 											key_hisako: {
 												sex: "female",
 												group: "key",
-												hp: "2/3",
+												hp: 2,
+												maxHp: 3,
 												skills: ["hisako_yinbao", "shenzhi", "shiorimiyuki_banyin", "hisako_zhuanyun"],
 											},
 											key_iwasawa: {

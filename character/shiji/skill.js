@@ -4,8 +4,6 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 const skills = {
 	//刘巴
 	duanbi: {
-		unique: true,
-		mark: true,
 		limited: true,
 		audio: 2,
 		enable: "phaseUse",
@@ -27,7 +25,7 @@ const skills = {
 		animationColor: "orange",
 		content() {
 			"step 0";
-			player.awakenSkill("duanbi");
+			player.awakenSkill(event.name);
 			event.num = 0;
 			event.cards = [];
 			event.targets.sortBySeat();
@@ -192,7 +190,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("zjjuxiang");
+			player.awakenSkill(event.name);
 			trigger.player.damage();
 			"step 1";
 			if (trigger.player.maxHp > 0) player.draw(trigger.player.maxHp);
@@ -262,7 +260,7 @@ const skills = {
 		audio: "zjjuxiang",
 		inherit: "zjjuxiang",
 		content() {
-			player.awakenSkill("xinjuxiang");
+			player.awakenSkill(event.name);
 			trigger.player.damage();
 		},
 	},
@@ -939,7 +937,7 @@ const skills = {
 		filterTarget: lib.filter.notMe,
 		content() {
 			"step 0";
-			player.awakenSkill("spjincui");
+			player.awakenSkill(event.name);
 			game.broadcastAll(
 				function (target1, target2) {
 					game.swapSeat(target1, target2);
@@ -2972,7 +2970,7 @@ const skills = {
 		animationColor: "water",
 		content() {
 			"step 0";
-			player.awakenSkill("mibei");
+			player.awakenSkill(event.name);
 			game.log(player, "成功完成使命");
 			var list = ["basic", "equip", "trick"],
 				cards = [];
@@ -3316,16 +3314,12 @@ const skills = {
 		forced: true,
 		logTarget: "source",
 		filter(event, player) {
-			return event.source && player != event.source && event.source.countCards("he") > 0;
+			return event.source && player != event.source && event.source.countDiscardableCards(source, "he");
 		},
-		content() {
-			"step 0";
-			event.count = trigger.num;
-			"step 1";
-			event.count--;
-			trigger.source.chooseToDiscard("he", true);
-			"step 2";
-			if (event.count > 0 && result.bool && lib.skill.spmingshi.filter(trigger, player) && player.hasSkill("spmingshi")) event.goto(1);
+		getIndex: event => event.num,
+		async content(event, trigger, player) {
+			const { source } = trigger;
+			if (source.countDiscardableCards(source, "he")) await source.chooseToDiscard("he", true);
 		},
 		ai: {
 			threaten: 0.8,
@@ -3616,7 +3610,7 @@ const skills = {
 		content() {
 			"step 0";
 			event.num = 1;
-			player.awakenSkill("rongbei");
+			player.awakenSkill(event.name);
 			"step 1";
 			while (!target.hasEmptySlot(event.num)) {
 				event.num++;
@@ -6260,7 +6254,7 @@ const skills = {
 			return player.countMark("spwuku") > 2;
 		},
 		content() {
-			player.awakenSkill("spsanchen");
+			player.awakenSkill(event.name);
 			player.gainMaxHp();
 			player.recover();
 			player.addSkills("spmiewu");
@@ -6772,7 +6766,7 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "metal",
 		content() {
-			player.awakenSkill("duoji");
+			player.awakenSkill(event.name);
 			var cards = target.getGainableCards(player, "e");
 			player.gain(cards, target, "give", "bySelf");
 		},

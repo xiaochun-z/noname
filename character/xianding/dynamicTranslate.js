@@ -1,10 +1,16 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
+	dcdianlun(player) {
+		let str = lib.translate["dcdianlun_info"];
+		if (player.hasSkill("dcdianlun_double")) str = str.replace("等量", "两倍");
+		return str;
+	},
 	dcsbshimou(player) {
-		let str1 = `阳：手牌数全场最低的角色`, str2 = `阴：手牌数全场最高的角色`;
-		if (!player.storage.dcsbshimou) str1=`<span class=thundertext>${str1}</span>`;
-		else str2=`<span class=thundertext>${str2}</span>`;
+		let str1 = `阳：手牌数全场最低的角色`,
+			str2 = `阴：手牌数全场最高的角色`;
+		if (!player.storage.dcsbshimou) str1 = `<span class=thundertext>${str1}</span>`;
+		else str2 = `<span class=thundertext>${str2}</span>`;
 		return `转换技，游戏开始可自选阴阳状态，出牌阶段限一次，你可令一名{${str1}；${str2}}将手牌调整至体力上限（至多摸五张）并视为使用一张仅指定单目标的普通锦囊牌（此牌牌名与目标由你指定）。若以此法摸牌，此牌可额外增加一个目标；若以此法弃牌，此牌额外结算一次。`;
 	},
 	dcsbkongwu(player) {

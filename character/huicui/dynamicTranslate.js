@@ -1,6 +1,10 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
+	dcboxuan(player) {
+		if (player.storage.dcboxuan) return lib.translate["dcboxuan_rewrite_info"];
+		return lib.translate["dcboxuan_info"];
+	},
 	cuijian(player) {
 		return "出牌阶段限一次，你可以选择一名有手牌的其他角色。若其手牌中有【闪】，则其将所有【闪】和防具牌交给你" + (player.hasMark("zhtongyuan_basic") ? "" : "，然后你交给其等量的牌") + "。" + (player.hasMark("zhtongyuan_trick") ? "若其手牌中没有【闪】，则你摸两张牌。" : "");
 	},
@@ -56,15 +60,18 @@ const dynamicTranslates = {
 		if (!player.storage.dcpingzhi) return str + "<span class = 'bluetext'>阳：你弃置此牌，然后其视为对你使用一张【火攻】，若此【火攻】未造成伤害则此技能视为未发动过</span>；阴：然后其使用此牌，若此牌造成伤害则此技能视为未发动过。";
 		return str + "阳：你弃置此牌，然后其视为对你使用一张【火攻】，若此【火攻】未造成伤害则此技能视为未发动过；<span class = 'bluetext'>阴：然后其使用此牌，若此牌造成伤害则此技能视为未发动过。</span>";
 	},
-	dcmurui: (player) => {
+	dcmurui: player => {
 		let filters = [
 			{ key: "roundStart", text: "1、每轮开始时;" },
 			{ key: "phaseAfter", text: "2、有角色死亡的回合结束后;" },
-			{ key: "phaseBegin", text: "3、你的回合开始时。" }
+			{ key: "phaseBegin", text: "3、你的回合开始时。" },
 		];
 
 		let storage = player.getStorage("dcmurui_filter");
-		let str = filters.filter(f => !storage.includes(f.key)).map(f => f.text).join('');
+		let str = filters
+			.filter(f => !storage.includes(f.key))
+			.map(f => f.text)
+			.join("");
 
 		return `你可于以下时机点使用一张牌:${str || "无时机。"}若此牌造成了伤害，则你摸两张牌并删除对应选项。`;
 	},

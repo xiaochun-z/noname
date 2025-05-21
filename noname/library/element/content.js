@@ -618,13 +618,14 @@ export const Content = {
 	},
 	//选择顶装备要顶的牌
 	replaceEquip: async function (event, trigger, player) {
-		const vcards = event.vcards ?? [event.card];
+		let vcards = [];
+		vcards.push(event.card[event.card.cardSymbol] ? event.card[event.card.cardSymbol] : get.autoViewAs(event.card, void 0, false));
 		const specializedVCards = [],
 			normalVCards = [];
 		const replacedCards = [];
 		vcards.forEach(card => {
 			const info = get.info(card, false);
-			(info.customSwap ? specializedVCards : normalVCards).push(card);
+			(info?.customSwap ? specializedVCards : normalVCards).push(card);
 		});
 		specializedVCards.forEach(card => {
 			const info = get.info(card, false);
@@ -685,10 +686,7 @@ export const Content = {
 		}
 		event.result = {
 			vcards: replacedCards,
-			cards: replacedCards.reduce((cards, vcard) => {
-				if (vcard.cards) cards.addArray(vcard.cards);
-				return cards;
-			}, []),
+			cards: player.getCards("e", i => replacedCards.includes(i[i.cardSymbol])),
 		};
 	},
 	replaceEquip_old: function () {
@@ -764,25 +762,20 @@ export const Content = {
 	//装备牌
 	equip: async function (event, trigger, player) {
 		event.visible = true;
-		if (event.vcards && !event.cards) {
-			event.cards = event.vcards.reduce((cards, vcard) => {
-				if (vcard.cards) cards.addArray(vcard.cards);
-				return cards;
-			}, []);
+		//先确定这次的cards是什么成分也防止有人在equipBegin之类的时机往里面塞垃圾
+		if (event.cards.length > 1 && event.cards.some(cardx => cardx.isViewAsCard)) {
+			//实体牌数大于1且里面有虚拟假牌，终止此事件
+			event.untrigger();
+			return;
 		}
 		//进行第一轮先行判断，让所有装备牌的原主失去装备牌
-		if (event.cards) {
+		let loseCards = [];
+		//判断card是不是假牌，如果是改为失去假牌
+		if (event.card.isViewAsCard) loseCards.add(event.card);
+		else loseCards.addArray(event.cards);
+		if (loseCards.length) {
 			const map = {};
-			//第一轮初判断的event.cards会在后面的步骤被覆盖，所以此处安心修改
-			if (event.card) {
-				const cardx = get.cardPile(cardx => {
-					if (cardx[cardx.cardSymbol] !== event.card) return false;
-					const owner = get.owner(cardx, "judge");
-					return owner && (owner != player || get.position(cardx) != "e");
-				}, "field");
-				if (cardx) event.cards.add(cardx);
-			}
-			for (const i of event.cards) {
+			for (const i of loseCards) {
 				var owner = get.owner(i, "judge");
 				if (owner && (owner != player || get.position(i) != "e")) {
 					var id = owner.playerid;
@@ -810,11 +803,14 @@ export const Content = {
 		const handleEquip = async card => {
 			let cards = [];
 			// @ts-ignore
-			if (get.itemtype(card) === "card") {
+			if (get.itemtype(card) === "card" && !card.isViewAsCard) {
 				cards = [card];
-				card = get.autoViewAs(card, void 0, false);
+				card = card.cardSymbol ? card[card.cardSymbol] : get.autoViewAs(card, void 0, false);
+				event.vcards.push(card);
 			} else {
-				cards = card.cards ?? [];
+				if (get.itemtype(card) === "card" && card.isViewAsCard) event.vcards.push(card[card.cardSymbol]);
+				else event.vcards.push(card);
+				cards = event.cards ?? [];
 			}
 			let cardInfo = get.info(card, false);
 			if (player.isMin() || !player.canEquip(card)) {
@@ -848,14 +844,14 @@ export const Content = {
 						var next = game.createEvent("equip_" + card.name);
 						next.setContent(cardInfo.onEquip[i]);
 						next.player = player;
-						next.card = card;
+						next.card = event.vcards[0];
 						await next;
 					}
 				} else {
 					var next = game.createEvent("equip_" + card.name);
 					next.setContent(cardInfo.onEquip);
 					next.player = player;
-					next.card = card;
+					next.card = event.vcards[0];
 					await next;
 				}
 				if (cardInfo.equipDelay != false) await game.delayx();
@@ -865,44 +861,15 @@ export const Content = {
 				await game.delayx();
 			}
 		};
-		//生成虚拟牌列表
-		if (!event.vcards) {
-			if (event.card) {
-				// @ts-ignore
-				if (get.itemtype(event.card) === "card") event.card = get.autoViewAs(event.card, void 0, false);
-				event.vcards = [event.card];
-			} else event.vcards = event.cards.map(card => get.autoViewAs(card, void 0, false));
-		}
-		//过滤被销毁的装备牌
-		event.vcards = event.vcards.filter(card => {
-			let cards;
-			// @ts-ignore
-			if (get.itemtype(card) === "card") {
-				cards = [card];
-				card = get.autoViewAs(card);
-			} else {
-				cards = card.cards ?? [];
+		//检查实体牌会不会被销毁
+		for (let cardx of event.cards) {
+			if (cardx.willBeDestroyed("equip", player, event)) {
+				cardx.selfDestroy(event);
+				return;
+			} else if ("hejx".includes(get.position(cardx, true))) {
+				return;
 			}
-			let canMoveOn = true;
-			cards.forEach(card => {
-				if (card.willBeDestroyed("equip", player, event)) {
-					card.selfDestroy(event);
-					canMoveOn = false;
-					return;
-				} else if (canMoveOn) {
-					// @ts-ignore
-					if ("hejx".includes(get.position(card, true))) {
-						canMoveOn = false;
-						return;
-					}
-				}
-			});
-			return canMoveOn;
-		});
-		event.cards = event.vcards.reduce((cards, vcard) => {
-			if (vcard.cards) cards.addArray(vcard.cards);
-			return cards;
-		}, []);
+		}
 		//同时播放所有装备牌的装备动画
 		if (event.cards.length) {
 			if (event.draw) {
@@ -933,7 +900,7 @@ export const Content = {
 		const replaceEquipEvent = game.createEvent("replaceEquip");
 		replaceEquipEvent.player = player;
 		// @ts-ignore
-		replaceEquipEvent.vcards = event.vcards;
+		replaceEquipEvent.card = event.card;
 		replaceEquipEvent.setContent("replaceEquip");
 		const result = await replaceEquipEvent.forResult();
 		// @ts-ignore
@@ -942,12 +909,7 @@ export const Content = {
 			event.swapped = true;
 			const loseEvent = player.lose(result.cards, "visible").set("type", "equip").set("getlx", false);
 			loseEvent.swapEquip = true;
-			if (
-				event.vcards.some(card => {
-					const info = get.info(card, false);
-					return info && info.loseThrow;
-				})
-			) {
+			if (get.info(event.card, true)?.loseThrow) {
 				player.$throw(result.cards, 1000);
 			}
 			await loseEvent;
@@ -958,14 +920,15 @@ export const Content = {
 				}
 			}
 		}
-		result?.vcards?.forEach(card => {
-			player.removeVirtualEquip(card);
-		});
+		//就算是vcard也应该用lose处理
+		/*result?.vcards?.forEach(card => {
+player.removeVirtualEquip(card);
+});*/
 		//然后处理每一张装备牌的装备
-		for (const card of event.vcards) {
-			event.card = card;
-			await handleEquip(card);
-		}
+		event.vcards = [];
+		await handleEquip(event.card);
+		//如果event.card是实体牌，改为虚拟牌
+		if (get.itemtype(event.card) == "card") event.card = event.card[event.card.cardSymbol];
 		if (event.updatePile) game.updateRoundNumber();
 	},
 	equip_old: function () {
@@ -1626,7 +1589,7 @@ export const Content = {
 				const filterMove = event.filterMove;
 				const filterOk = event.filterOk;
 
-				_status.imchoosing = true;
+				//_status.imchoosing = true;
 				event.settleed = false;
 
 				event.dialog = ui.create.dialog(event.prompt || "请选择要操作的牌", "hidden", "forcebutton");
@@ -2715,18 +2678,20 @@ export const Content = {
 		"step 0";
 		game.log(player, "和", target, "交换了装备区中的牌");
 		event.cards = [player.getCards("e"), target.getCards("e")];
-		event.vcards = [player.getVCards("e"), target.getVCards("e")];
+		//		event.vcards = [player.getVCards("e"), target.getVCards("e")];
 		game.loseAsync({
 			player: player,
 			target: target,
 			cards1: event.cards[0],
 			cards2: event.cards[1],
-			vcards1: event.vcards[0],
-			vcards2: event.vcards[1],
 		}).setContent("swapHandcardsx");
 		"step 1";
-		player.equip(event.vcards[1]);
-		target.equip(event.vcards[0]);
+		for (var i = 0; i < event.cards[1].length; i++) {
+			if (get.position(event.cards[1][i], true) == "o") player.equip(event.cards[1][i]);
+		}
+		for (var i = 0; i < event.cards[0].length; i++) {
+			if (get.position(event.cards[0][i], true) == "o") target.equip(event.cards[0][i]);
+		}
 	},
 	disableJudge: function () {
 		"step 0";
@@ -2780,7 +2745,6 @@ export const Content = {
 				game.send("server", "config", lib.configOL);
 			}
 		}
-		game.log();
 		game.log(player, "的回合开始");
 		player._noVibrate = true;
 		if (get.config("identity_mode") != "zhong" && get.config("identity_mode") != "purple" && !_status.connectMode) {
@@ -3073,8 +3037,33 @@ export const Content = {
 			if (typeof num == "function") {
 				numx = num(player);
 			}
-			if (player.getTopCards) player.directgain(player.getTopCards(numx));
-			else player.directgain(get.cards(numx));
+
+			/*otherPile主要是针对那些用专属牌堆，不从一般牌堆摸牌的角色（如陈寿），该属性目前只有两个键值对，且都为函数
+			 *getCards函数与获得牌相关，只传入要获得的牌数num作为参数
+			 *discard与手气卡换牌后弃置牌相关，只传入要弃置的牌card作为参数
+			 */
+			const cards = [],
+				otherGetCards = event.otherPile?.[player.playerid]?.getCards;
+			//先看有没有专属牌堆，再看其他的
+			if (otherGetCards) cards.addArray(otherGetCards(numx));
+			else if (player.getTopCards) cards.addArray(player.getTopCards(numx));
+			else cards.addArray(get.cards(numx));
+			//别问，问就是初始手牌要有标记 by 星の语
+			//event.gaintag支持函数、字符串、数组。数组就是添加一连串的标记；函数的返回格式为[[cards1,gaintag1],[cards2,gaintag2]...]
+			if (event.gaintag?.[player.playerid]) {
+				const gaintag = event.gaintag[player.playerid];
+				const list = typeof gaintag == "function" ? gaintag(numx, cards) : [[cards, gaintag]];
+				game.broadcastAll(
+					(player, list) => {
+						for (let i = list.length - 1; i >= 0; i--) {
+							player.directgain(list[i][0], null, list[i][1]);
+						}
+					},
+					player,
+					list
+				);
+			} else player.directgain(cards);
+
 			if (player.singleHp === true && get.mode() != "guozhan" && (lib.config.mode != "doudizhu" || _status.mode != "online")) {
 				player.doubleDraw();
 			}
@@ -3117,12 +3106,35 @@ export const Content = {
 			if (game.changeCoin) {
 				game.changeCoin(-3);
 			}
-			var hs = game.me.getCards("h");
+			/*otherPile主要是针对那些用专属牌堆，不从一般牌堆摸牌的角色（如陈寿），该属性目前只有两个键值对，且都为函数
+			 *getCards函数与获得牌相关，只传入要获得的牌数num作为参数
+			 *discard与手气卡换牌后弃置牌相关，只传入要弃置的牌card作为参数
+			 */
+			const hs = game.me.getCards("h"),
+				cards = [],
+				otherGetCards = event.otherPile?.[game.me.playerid]?.getCards,
+				otherDiscacrd = event.otherPile?.[game.me.playerid]?.discard;
+			//先弃牌
 			game.addVideo("lose", game.me, [get.cardsInfo(hs), [], [], []]);
-			for (var i = 0; i < hs.length; i++) {
-				hs[i].discard(false);
+			for (let i = 0; i < hs.length; i++) {
+				hs[i].removeGaintag(true);
+				if (otherDiscacrd) otherDiscacrd(hs[i]);
+				else hs[i].discard(false);
 			}
-			game.me.directgain(get.cards(hs.length));
+			//再摸牌，先看有没有专属牌堆
+			if (otherGetCards) cards.addArray(otherGetCards(hs.length));
+			else cards.addArray(get.cards(hs.length));
+			//添加标记相关
+			//别问，问就是初始手牌要有标记 by 星の语
+			//event.gaintag支持函数、字符串、数组。数组就是添加一连串的标记；函数的返回格式为[[cards1,gaintag1],[cards2,gaintag2]...]
+			if (event.gaintag?.[game.me.playerid]) {
+				const gaintag = event.gaintag[game.me.playerid];
+				const list = typeof gaintag == "function" ? gaintag(hs.length, cards) : [[cards, gaintag]];
+				for (let i = list.length - 1; i >= 0; i--) {
+					game.me.directgain(list[i][0], null, list[i][1]);
+				}
+			} else game.me.directgain(cards);
+
 			event.goto(2);
 		} else {
 			if (event.dialog) event.dialog.close();
@@ -3148,12 +3160,20 @@ export const Content = {
 		"step 2";
 		event.trigger("phaseOver");
 		"step 3";
-		if (!game.players.includes(event.player.next)) {
-			event.player = game.findNext(event.player.next);
-		} else {
-			event.player = event.player.next;
-		}
-		event.goto(1);
+		let findNext = current => {
+			let players = game.players
+				.slice(0)
+				.concat(game.dead)
+				.sort((a, b) => parseInt(a.dataset.position) - parseInt(b.dataset.position));
+			let position = parseInt(current.dataset.position);
+			for (let i = 0; i < players.length; i++) {
+				if (parseInt(players[i].dataset.position) > position) return players[i];
+			}
+			return players[0];
+		};
+		event.player = findNext(event.player);
+		if (game.players.includes(event.player)) event.goto(1);
+		else event.goto(2);
 	},
 	loadPackage: function () {
 		"step 0";
@@ -3690,13 +3710,34 @@ export const Content = {
 		}
 		"step 1";
 		if (result && result.bool) {
-			var hs = game.me.getCards("h");
-			for (var i = 0; i < hs.length; i++) {
-				hs[i].discard(false);
+			/*otherPile主要是针对那些用专属牌堆，不从一般牌堆摸牌的角色（如陈寿），该属性目前只有两个键值对，且都为函数
+			 *getCards函数与获得牌相关，只传入要获得的牌数num作为参数
+			 *discard与手气卡换牌后弃置牌相关，只传入要弃置的牌card作为参数
+			 */
+			const hs = game.me.getCards("h"),
+				cards = [],
+				otherGetCards = event.otherPile?.[game.me.playerid]?.getCards,
+				otherDiscacrd = event.otherPile?.[game.me.playerid]?.discard;
+			//先弃牌
+			game.addVideo("lose", game.me, [get.cardsInfo(hs), [], [], []]);
+			for (let i = 0; i < hs.length; i++) {
+				hs[i].removeGaintag(true);
+				if (otherDiscacrd) otherDiscacrd(hs[i]);
+				else hs[i].discard(false);
 			}
-			var cards = get.cards(hs.length);
+			//再摸牌，先看有没有专属牌堆
+			if (otherGetCards) cards.addArray(otherGetCards(hs.length));
+			else cards.addArray(get.cards(hs.length));
+			//添加标记相关
+			//event.gaintag支持函数、字符串、数组。数组就是添加一连串的标记；函数的返回格式为[[cards1,gaintag1],[cards2,gaintag2]...]
+			if (event.gaintag?.[game.me.playerid]) {
+				const gaintag = event.gaintag[game.me.playerid];
+				const list = typeof gaintag == "function" ? gaintag(hs.length, cards) : [[cards, gaintag]];
+				for (let i = list.length - 1; i >= 0; i--) {
+					game.me.directgain(list[i][0], null, list[i][1]);
+				}
+			} else game.me.directgain(cards);
 			game.me._start_cards = cards;
-			game.me.directgain(cards);
 		}
 	},
 	replaceHandcardsOL: function () {
@@ -3707,19 +3748,46 @@ export const Content = {
 		};
 		var sendback = function (result, player) {
 			if (result && result.bool) {
-				var hs = player.getCards("h");
+				/*otherPile主要是针对那些用专属牌堆，不从一般牌堆摸牌的角色（如陈寿），该属性目前只有两个键值对，且都为函数
+				 *getCards函数与获得牌相关，只传入要获得的牌数num作为参数
+				 *discard与手气卡换牌后弃置牌相关，只传入要弃置的牌card作为参数
+				 */
+				const hs = player.getCards("h"),
+					cards = [],
+					otherGetCards = event.otherPile?.[player.playerid]?.getCards,
+					otherDiscacrd = event.otherPile?.[player.playerid]?.discard;
+				//先弃牌
 				game.broadcastAll(
-					function (player, hs) {
+					function (player, hs, otherDiscacrd) {
 						game.addVideo("lose", player, [get.cardsInfo(hs), [], [], []]);
 						for (var i = 0; i < hs.length; i++) {
-							hs[i].discard(false);
+							hs[i].removeGaintag(true);
+							if (otherDiscacrd) otherDiscacrd(hs[i]);
+							else hs[i].discard(false);
 						}
 					},
 					player,
-					hs
+					hs,
+					otherDiscacrd
 				);
-				var cards = get.cards(hs.length);
-				player.directgain(cards);
+				//再摸牌，先看有没有专属牌堆
+				if (otherGetCards) cards.addArray(otherGetCards(hs.length));
+				else cards.addArray(get.cards(hs.length));
+				//添加标记相关
+				//event.gaintag支持函数、字符串、数组。数组就是添加一连串的标记；函数的返回格式为[[cards1,gaintag1],[cards2,gaintag2]...]
+				if (event.gaintag?.[player.playerid]) {
+					const gaintag = event.gaintag[player.playerid];
+					const list = typeof gaintag == "function" ? gaintag(hs.length, cards) : [[cards, gaintag]];
+					game.broadcastAll(
+						(player, list) => {
+							for (let i = list.length - 1; i >= 0; i--) {
+								player.directgain(list[i][0], null, list[i][1]);
+							}
+						},
+						player,
+						list
+					);
+				} else player.directgain(cards);
 				player._start_cards = cards;
 			}
 		};
@@ -3868,7 +3936,6 @@ export const Content = {
 				game.send("server", "config", lib.configOL);
 			}
 		}
-		game.log();
 		game.log(player, "的回合开始");
 		player._noVibrate = true;
 		if (get.config("identity_mode") != "zhong" && get.config("identity_mode") != "purple" && !_status.connectMode) {
@@ -4001,18 +4068,18 @@ export const Content = {
 	phaseJudge: function () {
 		"step 0";
 		game.log(player, "进入了判定阶段");
-		event.cards = player.getVCards("j");
+		event.cards = player.getCards("j");
 		if (!event.cards.length) event.finish();
 		"step 1";
 		if (cards.length) {
 			event.card = cards.pop();
 			var cardName = event.card.name,
 				cardInfo = lib.card[cardName];
-			var currentCards = player.getCards("j");
-			if (cardInfo.noEffect || event.card.cards?.some(card => !currentCards.includes(card))) {
+			var VJudge = event.card[event.card.cardSymbol];
+			if (cardInfo.noEffect) {
 				event.redo();
 			} else {
-				if (event.card.cards?.length) player.lose(event.card.cards, "visible", ui.ordering);
+				if (event.card) player.lose(event.card, "visible", ui.ordering);
 				player.$phaseJudge(event.card);
 				event.cancelled = false;
 				event.trigger("phaseJudge");
@@ -4417,7 +4484,7 @@ export const Content = {
 		} else if (event._sendskill) {
 			event.result._sendskill = event._sendskill;
 		}
-		if ((!event.result || !event.result.bool || event.result._noHidingTimer) && (event.result.skill || event.logSkill)) {
+		if ((!event.result?.bool || event.result?._noHidingTimer) && (event.result?.skill || event.logSkill)) {
 			var info = get.info(event.result.skill || (Array.isArray(event.logSkill) ? event.logSkill[0] : event.logSkill));
 			if (info.direct && !info.clearTime) {
 				_status.noclearcountdown = "direct";
@@ -4618,7 +4685,7 @@ export const Content = {
 			if (event.onresult) {
 				event.onresult(event.result);
 			}
-			if ((!event.result || !event.result.bool || event.result._noHidingTimer) && (event.result.skill || event.logSkill)) {
+			if ((!event.result?.bool || event.result?._noHidingTimer) && (event.result?.skill || event.logSkill)) {
 				var info = get.info(event.result.skill || (Array.isArray(event.logSkill) ? event.logSkill[0] : event.logSkill));
 				if (info.direct && !info.clearTime) {
 					_status.noclearcountdown = "direct";
@@ -4780,140 +4847,164 @@ export const Content = {
 			if (event.visibleMove) event.done.visible = true;
 		}
 	},
-	chooseToDiscard: function () {
-		"step 0";
-		if (event.autochoose()) {
-			event.result = {
-				bool: true,
-				autochoose: true,
-				cards: player.getCards(event.position),
-				rawcards: player.getCards(event.position),
-			};
-			for (var i = 0; i < event.result.cards.length; i++) {
-				if (!lib.filter.cardDiscardable(event.result.cards[i], player, event)) {
-					event.result.cards.splice(i--, 1);
-				}
-			}
-		} else {
-			// &&!lib.filter.wuxieSwap(trigger)
-			if (game.modeSwapPlayer && !_status.auto && player.isUnderControl()) {
-				game.modeSwapPlayer(player);
-			}
-			event.rangecards = player.getCards(event.position);
-			for (var i = 0; i < event.rangecards.length; i++) {
-				if (lib.filter.cardDiscardable(event.rangecards[i], player, event)) {
-					event.rangecards.splice(i--, 1);
-				} else {
-					event.rangecards[i].uncheck("chooseToDiscard");
-				}
-			}
-			var range = get.select(event.selectCard);
-			if (event.isMine()) {
-				game.check();
-				if (event.hsskill && !event.forced && _status.prehidden_skills.includes(event.hsskill)) {
-					ui.click.cancel();
-					return;
-				}
-				game.pause();
-				if (range[1] > 1 && typeof event.selectCard != "function") {
-					event.promptdiscard = ui.create.control("AI代选", function () {
-						ai.basic.chooseCard(event.ai);
-						if (_status.event.custom && _status.event.custom.add.card) {
-							_status.event.custom.add.card();
-						}
-						for (var i = 0; i < ui.selected.cards.length; i++) {
-							ui.selected.cards[i].updateTransform(true);
-						}
-					});
-				}
-				if (Array.isArray(event.dialog)) {
-					event.dialog = ui.create.dialog.apply(this, event.dialog);
-					event.dialog.open();
-					event.dialog.classList.add("noselect");
-				} else if (event.prompt != false) {
-					var str;
-					if (typeof event.prompt == "string") str = event.prompt;
-					else {
-						str = "请弃置";
-						if (range[0] == range[1]) str += get.cnNumber(range[0]);
-						else if (range[1] == Infinity) str += "至少" + get.cnNumber(range[0]);
-						else str += get.cnNumber(range[0]) + "至" + get.cnNumber(range[1]);
-						str += "张";
-						if (event.position == "h" || event.position == undefined) str += "手";
-						if (event.position == "e") str += "装备";
-						str += "牌";
+	chooseToDiscard: [
+		async (event, trigger, player) => {
+			event.filterCard = (event => {
+				const filterCard = event.filterCard;
+				return function (card, player) {
+					if (!lib.filter.cardDiscardable(card, player, this)) return false;
+					return filterCard.call(this, card, player);
+				};
+			})(event);
+			if (!player.getCards(event.position).filter(card => event.filterCard(card, player)).length) {
+				event.result = {
+					bool: false,
+					cards: [],
+				};
+			} else if (event.autochoose()) {
+				event.result = {
+					bool: true,
+					autochoose: true,
+					cards: player.getCards(event.position),
+					rawcards: player.getCards(event.position),
+				};
+				for (var i = 0; i < event.result.cards.length; i++) {
+					if (!lib.filter.cardDiscardable(event.result.cards[i], player, event)) {
+						event.result.cards.splice(i--, 1);
 					}
-					event.dialog = ui.create.dialog(str);
-					if (event.prompt2) {
-						event.dialog.addText(event.prompt2, event.prompt2.length <= 20);
+				}
+			} else {
+				if (game.modeSwapPlayer && !_status.auto && player.isUnderControl()) {
+					game.modeSwapPlayer(player);
+				}
+				event.rangecards = player.getCards(event.position);
+				for (var i = 0; i < event.rangecards.length; i++) {
+					if (lib.filter.cardDiscardable(event.rangecards[i], player, event)) {
+						event.rangecards.splice(i--, 1);
+					} else {
+						event.rangecards[i].uncheck("chooseToDiscard");
 					}
-					if (Array.isArray(event.selectCard)) {
-						event.promptbar = event.dialog.add("0/" + get.numStr(event.selectCard[1], "card"));
-						event.custom.add.card = function () {
-							_status.event.promptbar.innerHTML = ui.selected.cards.length + "/" + get.numStr(_status.event.selectCard[1], "card");
+				}
+				const directFilter = event.forced && typeof event.filterOk != "function" && typeof event.selectCard != "function" && !event.complexCard;
+				const cards = directFilter ? player.getCards(event.position).filter(card => !card.classList.contains("uncheck") && lib.filter.cardAiIncluded(card) && event.filterCard(card, player)) : [];
+				const range = get.select(event.selectCard);
+				if (directFilter && (range[0] >= cards.length || range[1] <= -1)) {
+					if (player.isOut())
+						event.result = {
+							cards: [],
 						};
+					else
+						event.result = {
+							bool: true,
+							cards: cards,
+						};
+				} else if (event.isMine()) {
+					game.check();
+					if (event.hsskill && !event.forced && _status.prehidden_skills.includes(event.hsskill)) {
+						ui.click.cancel();
+						return;
 					}
-				} else if (get.itemtype(event.dialog) == "dialog") {
-					event.dialog.style.display = "";
-					event.dialog.open();
+					game.pause();
+					if (range[1] > 1 && typeof event.selectCard != "function") {
+						event.promptdiscard = ui.create.control("AI代选", function () {
+							ai.basic.chooseCard(event.ai);
+							if (_status.event.custom && _status.event.custom.add.card) {
+								_status.event.custom.add.card();
+							}
+							for (var i = 0; i < ui.selected.cards.length; i++) {
+								ui.selected.cards[i].updateTransform(true);
+							}
+						});
+					}
+					if (Array.isArray(event.dialog)) {
+						event.dialog = ui.create.dialog.apply(this, event.dialog);
+						event.dialog.open();
+						event.dialog.classList.add("noselect");
+					} else if (event.prompt != false) {
+						let str;
+						if (typeof event.prompt == "string") str = event.prompt;
+						else {
+							str = "请弃置";
+							if (range[0] == range[1]) str += get.cnNumber(range[0]);
+							else if (range[1] == Infinity) str += "至少" + get.cnNumber(range[0]);
+							else str += get.cnNumber(range[0]) + "至" + get.cnNumber(range[1]);
+							str += "张";
+							if (event.position == "h" || event.position == undefined) str += "手";
+							if (event.position == "e") str += "装备";
+							str += "牌";
+						}
+						event.dialog = ui.create.dialog(str);
+						if (event.prompt2) {
+							event.dialog.addText(event.prompt2, event.prompt2.length <= 20);
+						}
+						if (Array.isArray(event.selectCard)) {
+							event.promptbar = event.dialog.add("0/" + get.numStr(event.selectCard[1], "card"));
+							event.custom.add.card = function () {
+								_status.event.promptbar.innerHTML = ui.selected.cards.length + "/" + get.numStr(_status.event.selectCard[1], "card");
+							};
+						}
+					} else if (get.itemtype(event.dialog) == "dialog") {
+						event.dialog.style.display = "";
+						event.dialog.open();
+					}
+				} else if (event.isOnline()) {
+					event.result = await event.sendAsync();
+				} else {
+					event.result = "ai";
 				}
-			} else if (event.isOnline()) {
-				event.send();
-			} else {
-				event.result = "ai";
 			}
-		}
-		"step 1";
-		if (event.result == "ai") {
-			game.check();
-			if ((ai.basic.chooseCard(event.ai) || forced) && (!event.filterOk || event.filterOk())) {
-				ui.click.ok();
-			} else if (event.skill) {
-				var skill = event.skill;
-				ui.click.cancel();
-				event._aiexclude.add(skill);
-				event.redo();
-				game.resume();
-			} else {
-				ui.click.cancel();
+		},
+		async (event, trigger, player) => {
+			if (event.result == "ai") {
+				game.check();
+				if ((ai.basic.chooseCard(event.ai) || event.forced) && (!event.filterOk || event.filterOk())) {
+					ui.click.ok();
+				} else if (event.skill) {
+					const skill = event.skill;
+					ui.click.cancel();
+					event._aiexclude.add(skill);
+					event.redo();
+					game.resume();
+				} else {
+					ui.click.cancel();
+				}
 			}
-		}
-		if (event.rangecards) {
-			for (var i = 0; i < event.rangecards.length; i++) {
-				event.rangecards[i].recheck("chooseToDiscard");
+			if (event.rangecards) {
+				for (var i = 0; i < event.rangecards.length; i++) {
+					event.rangecards[i].recheck("chooseToDiscard");
+				}
 			}
-		}
-		"step 2";
-		event.resume();
-		if (event.promptdiscard) {
-			event.promptdiscard.close();
-		}
-		"step 3";
-		if (event.result.bool && event.result.cards && event.result.cards.length && !game.online && event.autodelay && !event.isMine()) {
-			if (typeof event.autodelay == "number") {
-				game.delayx(event.autodelay);
-			} else {
-				game.delayx();
+		},
+		async (event, trigger, player) => {
+			event.resume();
+			if (typeof event.promptdiscard?.close == "function") event.promptdiscard.close();
+		},
+		async (event, trigger, player) => {
+			if (event.result.bool && event.result.cards?.length && !game.online && event.autodelay && !event.isMine()) {
+				if (typeof event.autodelay == "number") {
+					await game.delayx(event.autodelay);
+				} else {
+					await game.delayx();
+				}
 			}
-		}
-		"step 4";
-		if (event.logSkill && event.result.bool && !game.online) {
-			if (typeof event.logSkill == "string") {
-				player.logSkill(event.logSkill);
-			} else if (Array.isArray(event.logSkill)) {
-				player.logSkill.apply(player, event.logSkill);
+		},
+		async (event, trigger, player) => {
+			if (typeof event.dialog?.close == "function") event.dialog.close();
+			if (event.logSkill && event.result.bool && !game.online) {
+				if (typeof event.logSkill == "string") {
+					player.logSkill(event.logSkill);
+				} else if (Array.isArray(event.logSkill)) {
+					player.logSkill.apply(player, event.logSkill);
+				}
 			}
-		}
-		if (!game.online && !event.chooseonly) {
-			if (typeof event.delay == "boolean") {
-				event.done = player.discard(event.result.cards).set("delay", event.delay);
-			} else {
+			if (!game.online && !event.chooseonly) {
 				event.done = player.discard(event.result.cards);
+				if (typeof event.delay == "boolean") event.done.delay = event.delay;
+				event.done.discarder = player;
+				await event.done;
 			}
-			event.done.discarder = player;
-		}
-		if (event.dialog && event.dialog.close) event.dialog.close();
-	},
+		},
+	],
 	gaincardMultiple: function () {
 		"step 0";
 		event.type = "gain";
@@ -6134,6 +6225,115 @@ export const Content = {
 		}
 		if (event.dialog) event.dialog.close();
 	},
+	//先选择按钮再选择目标的函数，可以简化一些交互流程，目前可以隐藏弹窗
+	//该事件目前采用async contents的写法
+	chooseButtonTarget: [
+		async (event, _trigger, player) => {
+			//根据player.chooseButtonTarget获取到的dialog信息创建对话框，也支持createDialog
+			if (typeof event.dialog == "number") {
+				event.dialog = get.idDialog(event.dialog);
+			}
+			if (event.createDialog && !event.dialog) {
+				if (Array.isArray(event.createDialog)) {
+					event.createDialog.add("hidden");
+					event.dialog = ui.create.dialog.apply(this, event.createDialog);
+				}
+				event.closeDialog = true;
+			}
+			if (event.dialog == undefined) event.dialog = ui.dialog;
+			if (event.isMine()) {
+				if (event.hsskill && !event.forced && _status.prehidden_skills.includes(event.hsskill)) {
+					ui.click.cancel();
+					return;
+				}
+				if (event.isMine() || event.dialogdisplay) {
+					event.dialog.style.display = "";
+					event.dialog.open();
+					if (event.canHidden) {
+						//增加隐藏窗口的按钮
+						const func = () => {
+							const event = get.event();
+							const controls = [
+								link => {
+									ui.selected.buttons.length = 0;
+									game.check();
+									return;
+								},
+							];
+							event.controls = [
+								ui.create.control(
+									controls.concat([
+										"隐藏窗口",
+										"stayleft",
+										link => {
+											const control = event.controls[0];
+											if (event.dialog.style.display == "none") {
+												control.childNodes[0].innerHTML = "隐藏窗口";
+												event.dialog.style.display = "";
+											} else {
+												control.childNodes[0].innerHTML = "显示窗口";
+												event.dialog.style.display = "none";
+											}
+										},
+									])
+								),
+							];
+						};
+						if (event.isMine()) func(event);
+						else if (event.isOnline()) event.player.send(func, event);
+						if (event.custom == undefined)
+							event.custom = {
+								add: {},
+								replace: {},
+							};
+						if (event.custom.add.confirm == undefined) {
+							//如果有人canHidden是true然后还动了这部分请把一部分代码复制过去适配一下，不然隐藏的按钮不会关闭
+							event.custom.add.confirm = function (bool) {
+								if (bool != true) return;
+								const event = get.event();
+								if (event.controls) event.controls.forEach(i => i.close());
+								if (ui.confirm) ui.confirm.close();
+								game.uncheck();
+							};
+						}
+					}
+				}
+				game.check();
+				game.pause();
+			} else if (event.isOnline()) {
+				event.result = await event.sendAsync();
+			} else {
+				//考虑中途托管的情况
+				event.result = "ai";
+			}
+		},
+		async (event, _trigger, player, result) => {
+			//处理ai的选择结果
+			if (event.result == "ai") {
+				game.check();
+				if (ai.basic.chooseButton(event.ai1) || event.forced) {
+					if ((ai.basic.chooseTarget(event.ai2) || event.forced) && (!event.filterOk || event.filterOk())) {
+						ui.click.ok();
+						_status.event._aiexclude.length = 0;
+					} else {
+						ui.click.cancel();
+					}
+				} else {
+					ui.click.cancel();
+				}
+			}
+		},
+		async (event, _trigger, player, result) => {
+			//处理选择的结果
+			event.resume();
+			if (event.result.bool && event.animate !== false) {
+				for (var i = 0; i < event.result.targets.length; i++) {
+					event.result.targets[i].addTempClass("target");
+				}
+			}
+			if (event.dialog) event.dialog.close();
+		},
+	],
 	chooseControl: function () {
 		"step 0";
 		if (event.controls.length == 0) {
@@ -6361,48 +6561,50 @@ export const Content = {
 		if (event.dialog) event.dialog.close();
 		event.resume();
 	},
-	chooseDrawRecover: function () {
-		"step 0";
-		if (player.isHealthy() && event.forced) {
-			player.draw(event.num1);
-			event.finish();
-			return;
-		}
-		var controls = ["draw_card"];
-		if (player.isDamaged()) {
-			event.num2 = Math.min(event.num2, player.maxHp - player.hp);
+	async chooseDrawRecover(event, trigger, player) {
+		const { target, forced } = event;
+		const controls = ["draw_card"];
+		if (target.isDamaged()) {
+			event.num2 = Math.min(event.num2, target.getDamagedHp());
 			controls.push("recover_hp");
 		}
-		if (!event.forced) {
-			controls.push("cancel2");
+		if (!forced) controls.push("cancel2");
+		let result;
+		if (controls.length == 1) result = { control: controls[0] };
+		else {
+			const prompt =
+				event.prompt ||
+				(() => {
+					let str = ``;
+					if (!forced) str += `是否`;
+					if (player !== target) str += `令${get.translation(target)}`;
+					str += `摸${get.cnNumber(event.num1)}张牌`;
+					if (target.isDamaged()) str += `或回复${event.num2}点体力`;
+					if (!forced) str += `？`;
+					return str;
+				})();
+			const next = player.chooseControl(controls);
+			next.set("prompt", prompt);
+			if (event.hsskill) next.setHiddenSkill(event.hsskill);
+			next.set(
+				"ai",
+				event.ai ||
+					function () {
+						const player = get.player();
+						const { target, num1, num2 } = get.event().getParent();
+						const att = get.attitude(player, target);
+						const choices = get.event().controls.slice();
+						const eff1 = get.recoverEffect(target, player, player);
+						const eff2 = get.effect(target, { name: "draw" }, player, player) * 2;
+						if (choices.includes("recover_hp") && eff1 > 0 && (target.hp == 1 || target.needsToDiscard() || target.hasSkillTag("maixie_hp") || num2 > num1 || (num2 == num1 && target.needsToDiscard(1)))) return "recover_hp";
+						if (eff2 > 0) return "draw_card";
+						if (choices.includes("cancel2") && att <= 0) return "cancel2";
+						return choices.randomGet();
+					}
+			);
+			result = await next.forResult();
 		}
-		var prompt = event.prompt;
-		if (!prompt) {
-			if (player.isHealthy()) {
-				prompt = "是否摸" + get.cnNumber(event.num1) + "张牌？";
-			} else {
-				prompt = "摸" + get.cnNumber(event.num1) + "张牌或回复" + get.cnNumber(event.num2) + "点体力";
-			}
-		}
-		var next = player.chooseControl(controls);
-		next.set("prompt", prompt);
-		if (event.hsskill) next.setHiddenSkill(event.hsskill);
-		if (event.ai) {
-			next.set("ai", event.ai);
-		} else {
-			var choice;
-			if (player.isDamaged() && get.recoverEffect(player) > 0 && (player.hp == 1 || player.needsToDiscard() || player.hasSkillTag("maixie_hp") || event.num2 > event.num1 || (event.num2 == event.num1 && player.needsToDiscard(1)))) {
-				choice = "recover_hp";
-			} else {
-				choice = "draw_card";
-			}
-			next.set("ai", function () {
-				return _status.event.choice;
-			});
-			next.set("choice", choice);
-		}
-		"step 1";
-		if (result.control != "cancel2") {
+		if (result?.control != "cancel2") {
 			if (event.logSkill) {
 				if (typeof event.logSkill == "string") {
 					player.logSkill(event.logSkill);
@@ -6410,10 +6612,10 @@ export const Content = {
 					player.logSkill.apply(player, event.logSkill);
 				}
 			}
-			if (result.control == "draw_card") {
-				player.draw(event.num1);
-			} else {
-				player.recover(event.num2);
+			if (result?.control == "draw_card") {
+				await target.draw(event.num1);
+			} else if (result?.control == "recover_hp") {
+				await target.recover(event.num2);
 			}
 		}
 		event.result = result;
@@ -6421,20 +6623,23 @@ export const Content = {
 	choosePlayerCard: function () {
 		"step 0";
 		if (!event.dialog) event.dialog = ui.create.dialog("hidden");
-		else if (!event.isMine()) {
-			event.dialog.style.display = "none";
+		else if (!event.isMine()) event.dialog.style.display = "none";
+		const select = get.select(event.selectButton);
+		if (event.prompt == undefined) {
+			let str = "请选择" + get.translation(target) + "的";
+			if (select[0] == select[1]) str += get.cnNumber(select[0]);
+			else if (select[1] == Infinity) str += "至少" + get.cnNumber(select[0]);
+			else str += get.cnNumber(select[0]) + "至" + get.cnNumber(select[1]);
+			str += "张";
+			if (event.position == "h" || event.position == undefined) str += "手";
+			if (event.position == "e") str += "装备";
+			str += "牌";
+			event.prompt = str;
 		}
-		if (event.prompt) {
-			event.dialog.add(event.prompt);
-		} else {
-			event.dialog.add("选择" + get.translation(target) + "的一张牌");
-		}
-		if (event.prompt2) {
-			event.dialog.addText(event.prompt2);
-		}
+		event.dialog.add(event.prompt);
+		if (event.prompt2) event.dialog.addText(event.prompt2);
 		let expand_length = 0;
 		const cs = target.getCards(event.position);
-		const select = get.select(event.selectButton);
 		const directFilter = event.forced && typeof event.filterOk != "function" && typeof event.selectButton != "function" && event.filterButton == lib.filter.all;
 		let directh = !lib.config.unauto_choose && !event.isOnline() && select[0] == select[1] && (!event.complexSelect || select[1] === 1);
 
@@ -7078,22 +7283,33 @@ export const Content = {
 			if (ui.selected.targets.length) {
 				if (!get.event("aimTargets").includes(target)) return false;
 				var from = ui.selected.targets[0];
-				var js = from.getVCards("j", filterCard);
+				var js = from.getCards("j", filterCard);
 				for (var i = 0; i < js.length; i++) {
 					if (_status.event.nojudge) break;
 					if (target.canAddJudge(js[i])) return true;
 				}
 				if (target.isMin()) return false;
-				var es = from.getVCards("e", filterCard);
+				var es = from.getCards("e", filterCard);
 				for (var i = 0; i < es.length; i++) {
 					if (target.canEquip(es[i], _status.event.canReplace)) return true;
 				}
 				return false;
 			} else {
 				if (!get.event("sourceTargets").includes(target)) return false;
-				var range = "ej";
-				if (_status.event.nojudge) range = "e";
-				return target.countVCards(range, filterCard) > 0;
+				return game.hasPlayer(current => {
+					if (!get.event("aimTargets").includes(current) || target == current) return false;
+					var js = target.getCards("j", filterCard);
+					for (var i = 0; i < js.length; i++) {
+						if (_status.event.nojudge) break;
+						if (current.canAddJudge(js[i])) return true;
+					}
+					if (current.isMin()) return false;
+					var es = target.getCards("e", filterCard);
+					for (var i = 0; i < es.length; i++) {
+						if (current.canEquip(es[i], _status.event.canReplace)) return true;
+					}
+					return false;
+				});
 			}
 		});
 		next.set("nojudge", event.nojudge || false);
@@ -7135,7 +7351,7 @@ export const Content = {
 					if (
 						game.hasPlayer(function (current) {
 							if (current != target && get.attitude(player, current) > 0) {
-								var es = target.getVCards("e", filterCard);
+								var es = target.getCards("e", filterCard);
 								for (var i = 0; i < es.length; i++) {
 									if (get.value(es[i], target) > 0 && current.canEquip(es[i], _status.event.canReplace) && get.effect(current, es[i], player, player) > (_status.event.canReplace ? get.effect(target, es[i], player, player) : 0)) return true;
 								}
@@ -7149,7 +7365,7 @@ export const Content = {
 			}
 			const current = ui.selected.targets[0],
 				pos = get.event("nojudge") ? "e" : "ej",
-				cards = current.getVCards(pos, filterCard),
+				cards = current.getCards(pos, filterCard),
 				att2 = get.sgn(get.attitude(player, current));
 			let maxEff = 0;
 			for (let card of cards) {
@@ -7196,12 +7412,12 @@ export const Content = {
 		"step 3";
 		if (targets.length == 2) {
 			const dialogArgs = ["请选择要移动的牌"];
-			const es = targets[0].getVCards("e", card => {
+			const es = targets[0].getCards("e", card => {
 					return event.filter(card) && targets[1].canEquip(card, event.canReplace);
 				}),
 				js = event.nojudge
 					? []
-					: targets[0].getVCards("j", card => {
+					: targets[0].getCards("j", card => {
 							return event.filter(card) && targets[1].canAddJudge(card);
 					  });
 			if (es.length) {
@@ -7256,7 +7472,7 @@ export const Content = {
 		if (result.bool && result.links.length) {
 			var link = result.links[0],
 				position = "j";
-			if (event.targets[0].getVCards("e").includes(link)) {
+			if (event.targets[0].getCards("e").includes(link)) {
 				if (!link.cards?.length) event.targets[0].removeVirtualEquip(link);
 				event.targets[1].equip(link);
 			} else {
@@ -7279,7 +7495,15 @@ export const Content = {
 		}
 		if (!get.info(card, false).noForceDie) event.forceDie = true;
 		if (cards.length) {
+			let { cards } = event;
 			var owner = get.owner(cards[0]) || player;
+			owner.getCards("ej").forEach(card => {
+				const cardsx = card?.[card.cardSymbol]?.cards?.filter(cardx => cards.includes(cardx));
+				if (!cardsx.length) return;
+				cards.removeArray(cardsx);
+				cards.add(card);
+			});
+			event.cards = cards;
 			var next = owner.lose(cards, "visible", ui.ordering).set("type", "use");
 			var directDiscard = [];
 			for (var i = 0; i < cards.length; i++) {
@@ -7968,6 +8192,7 @@ export const Content = {
 			next.targets = targets;
 			next.cards = cards;
 			next.player = player;
+			next.skill = event.skill;
 			if (event.forceDie) next.forceDie = true;
 			if (event.includeOut) next.includeOut = true;
 		}
@@ -8041,6 +8266,7 @@ export const Content = {
 			next.targets = targets;
 			next.cards = cards;
 			next.player = player;
+			next.skill = event.skill;
 			if (event.forceDie) next.forceDie = true;
 			if (event.includeOut) next.includeOut = true;
 		}
@@ -8075,20 +8301,24 @@ export const Content = {
 			}
 			num -= event.drawDeck;
 		}
+		let logList;
 		if (event.log != false) {
+			logList = [player];
 			if (num > 0) {
-				if (event.bottom) game.log(player, "从牌堆底摸了" + get.cnNumber(num) + "张牌");
-				else game.log(player, "摸了" + get.cnNumber(num) + "张牌");
+				if (event.bottom) logList.add("从牌堆底摸了" + get.cnNumber(num) + "张牌");
+				else logList.add("摸了" + get.cnNumber(num) + "张牌");
 			}
 			if (event.drawDeck) {
-				game.log(player, "从牌库中获得了" + get.cnNumber(event.drawDeck) + "张牌");
+				logList.add("从牌库中获得了" + get.cnNumber(event.drawDeck) + "张牌");
 			}
 		}
-		let cards;
+		let cards = [];
 		if (num > 0) {
-			if (event.bottom) cards = get.bottomCards(num);
-			else if (player.getTopCards) cards = player.getTopCards(num);
-			else cards = get.cards(num);
+			//otherGetCards属性是从专属牌堆摸牌，没有再看其他的
+			if (event.otherGetCards) cards.addArray(event.otherGetCards(num));
+			else if (event.bottom) cards.addArray(get.bottomCards(num));
+			else if (player.getTopCards) cards.addArray(player.getTopCards(num));
+			else cards.addArray(get.cards(num));
 		} else {
 			cards = [];
 		}
@@ -8098,9 +8328,8 @@ export const Content = {
 		let next;
 		if (event.animate != false) {
 			if (event.visible) {
-				next = player.gain(cards, "gain2");
-				if (event.bottom) game.log(player, "从牌堆底摸了" + get.cnNumber(num) + "张牌（", cards, "）");
-				else game.log(player, "摸了" + get.cnNumber(num) + "张牌（", cards, "）");
+				next = player.gain(cards, "gain2").set("log", false);
+				logList.addArray(["（", cards, "）"]);
 			} else {
 				next = player.gain(cards, "draw");
 			}
@@ -8110,6 +8339,7 @@ export const Content = {
 				player.$draw(cards.length);
 			}
 		}
+		if (logList?.length) game.log(...logList);
 		next.gaintag.addArray(event.gaintag);
 		event.result = cards;
 	},
@@ -8187,7 +8417,15 @@ export const Content = {
 		}
 		player.actionHistory[player.actionHistory.length - 1].respond.push(event);
 		if (cards.length) {
+			let { cards } = event;
 			var owner = get.owner(cards[0]) || player;
+			owner.getCards("ej").forEach(card => {
+				const cardsx = card?.[card.cardSymbol]?.cards?.filter(cardx => cards.includes(cardx));
+				if (!cardsx.length) return;
+				cards.removeArray(cardsx);
+				cards.add(card);
+			});
+			event.cards = cards;
 			var next = owner.lose(cards, "visible", ui.ordering).set("type", "use");
 			var directDiscard = [];
 			for (var i = 0; i < cards.length; i++) {
@@ -8303,14 +8541,6 @@ export const Content = {
 			next.delay = false;
 		}
 		"step 3";
-		event.vcards1?.forEach(card => {
-			if (card.cards?.every(cardx => get.position(cardx) != "e")) player.removeVirtualEquip(card);
-			else event.getParent().vcards[0].remove(card);
-		});
-		event.vcards2?.forEach(card => {
-			if (card.cards?.every(cardx => get.position(cardx) != "e")) target.removeVirtualEquip(card);
-			else event.getParent().vcards[1].remove(card);
-		});
 		if (!event.delayed) game.delay();
 	},
 	gainMultiple: function () {
@@ -8335,211 +8565,220 @@ export const Content = {
 		"step 3";
 		if (!event.delayed) game.delay();
 	},
-	gain: function () {
-		"step 0";
-		if (event.animate == "give" || event.animate == "gain2" || event.animate == "draw2") event.visible = true;
-		if (get.itemtype(cards) == "cards") {
-			var map = {};
-			for (var i of cards) {
-				var owner = get.owner(i, "judge");
-				if (owner && (owner != player || get.position(i) != "h")) {
-					var id = owner.playerid;
-					if (!map[id]) map[id] = [[], [], []];
-					map[id][0].push(i);
-					var position = get.position(i);
-					if (position == "h") map[id][1].push(i);
-					else map[id][2].push(i);
-				} else if (!event.updatePile && get.position(i) == "c") event.updatePile = true;
-				if (event.visible) i.addKnower("everyone");
-			}
-			event.losing_map = map;
-			for (var i in map) {
-				var owner = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
-				var next = owner.lose(map[i][0], ui.special).set("type", "gain").set("forceDie", true).set("getlx", false);
-				if (event.visible == true) {
-					next.visible = true;
+	gain: [
+		async (event, trigger, player) => {
+			let { cards } = event;
+			if (event.animate == "give" || event.animate == "gain2" || event.animate == "draw2") event.visible = true;
+			if (get.itemtype(cards) == "cards") {
+				var map = {};
+				for (var i of cards) {
+					var owner = get.owner(i, "judge");
+					if (owner && (owner != player || get.position(i) != "h")) {
+						var id = owner.playerid;
+						if (!map[id]) map[id] = [[], [], []];
+						map[id][0].push(i);
+						var position = get.position(i);
+						if (position == "h") map[id][1].push(i);
+						else map[id][2].push(i);
+					} else if (!event.updatePile && get.position(i) == "c") event.updatePile = true;
+					if (event.visible) i.addKnower("everyone");
 				}
-				event.relatedLose = next;
+				event.losing_map = map;
+				for (var i in map) {
+					var owner = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
+					var next = owner.lose(map[i][0], ui.special).set("type", "gain").set("forceDie", true).set("getlx", false);
+					if (event.visible == true) {
+						next.visible = true;
+					}
+					event.relatedLose = next;
+				}
+			} else {
+				const name = event.getParent(event.getlx === false ? 2 : 1).name;
+				console.warn(`请检查技能：${name}中关于gain的写法`);
+				event.finish();
 			}
-		} else {
-			const name = event.getParent(event.getlx === false ? 2 : 1).name;
-			console.warn(`请检查技能：${name}中关于gain的写法`);
-			event.finish();
-		}
-		"step 1";
-		event.cards = cards = cards.map(i => (i.cards ? i.cards : [i])).flat();
-		for (var i = 0; i < cards.length; i++) {
-			if (cards[i].willBeDestroyed("handcard", player, event)) {
-				cards[i].selfDestroy(event);
-				cards.splice(i--, 1);
-			} else if (event.losing_map) {
-				for (var id in event.losing_map) {
-					if (event.losing_map[id][0].includes(cards[i])) {
-						var source = (_status.connectMode ? lib.playerOL : game.playerMap)[id];
-						var hs = source.getCards("hejsx");
-						if (hs.includes(cards[i])) {
-							cards.splice(i--, 1);
-						} else {
-							cards[i].addKnower(source);
+		},
+		async (event, trigger, player) => {
+			let { cards } = event;
+			event.cards = cards = cards.map(i => (i.cards ? i.cards : [i])).flat();
+			for (var i = 0; i < cards.length; i++) {
+				if (cards[i].willBeDestroyed("handcard", player, event)) {
+					cards[i].selfDestroy(event);
+					cards.splice(i--, 1);
+				} else if (event.losing_map) {
+					for (var id in event.losing_map) {
+						if (event.losing_map[id][0].includes(cards[i])) {
+							var source = (_status.connectMode ? lib.playerOL : game.playerMap)[id];
+							var hs = source.getCards("hejsx");
+							if (hs.includes(cards[i])) {
+								cards.splice(i--, 1);
+							} else {
+								cards[i].addKnower(source);
+							}
 						}
 					}
 				}
 			}
-		}
-		if (cards.length == 0) {
-			event.finish();
-			return;
-		}
-		player.getHistory("gain").push(event);
-		//if(event.source&&event.delay!==false) game.delayx();
-		"step 2";
-		if (player.getStat().gain == undefined) {
-			player.getStat().gain = cards.length;
-		} else {
-			player.getStat().gain += cards.length;
-		}
-		"step 3";
-		var sort;
-		var frag1 = document.createDocumentFragment();
-		var frag2 = document.createDocumentFragment();
-		var hs = player.getCards("hs");
-		for (var i = 0; i < cards.length; i++) {
-			if (hs.includes(cards[i])) {
-				cards.splice(i--, 1);
+			if (cards.length == 0) {
+				event.finish();
+				return;
 			}
-		}
-		for (var num = 0; num < cards.length; num++) {
-			sort = lib.config.sort_card(cards[num]);
-			if (lib.config.reverse_sort) sort = -sort;
-			if (["o", "d"].includes(get.position(cards[num], true))) {
-				cards[num].addKnower("everyone");
-			}
-			cards[num].fix();
-			cards[num].style.transform = "";
-			cards[num].addGaintag(event.gaintag);
-			if (event.knowers) {
-				cards[num].addKnower(event.knowers); //添加事件设定的知情者。
-			}
-			if (_status.discarded) {
-				_status.discarded.remove(cards[num]);
-			}
-			// cards[num].vanishtag.length=0;
-			for (var num2 = 0; num2 < cards[num].vanishtag.length; num2++) {
-				if (cards[num].vanishtag[num2][0] != "_") {
-					cards[num].vanishtag.splice(num2--, 1);
-				}
-			}
-			if (player == game.me) {
-				cards[num].classList.add("drawinghidden");
-			}
-			if (get.is.singleHandcard() || sort > 1) frag1.appendChild(cards[num]);
-			else frag2.appendChild(cards[num]);
-		}
-		var addv = function () {
-			if (player == game.me) {
-				game.addVideo("gain12", player, [get.cardsInfo(frag1.childNodes), get.cardsInfo(frag2.childNodes), event.gaintag]);
-			}
-		};
-		var broadcast = function () {
-			game.broadcast(
-				function (player, cards, num, gaintag) {
-					player.directgain(cards, null, gaintag);
-					_status.cardPileNum = num;
-				},
-				player,
-				cards,
-				ui.cardPile.childNodes.length,
-				event.gaintag
-			);
-		};
-		if (event.animate == "draw") {
-			player.$draw(cards.length);
-			game.pause();
-			setTimeout(function () {
-				addv();
-				player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
-				player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
-				player.update();
-				if (player == game.me) ui.updatehl();
-				broadcast();
-				game.resume();
-			}, get.delayx(500, 500));
-		} else if (event.animate == "gain") {
-			player.$gain(cards, event.log);
-			game.pause();
-			setTimeout(function () {
-				addv();
-				player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
-				player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
-				player.update();
-				if (player == game.me) ui.updatehl();
-				broadcast();
-				game.resume();
-			}, get.delayx(700, 700));
-		} else if (event.animate == "gain2" || event.animate == "draw2") {
-			var gain2t = 300;
-			if (player.$gain2(cards, event.log) && player == game.me) {
-				gain2t = 500;
-			}
-			game.pause();
-			setTimeout(function () {
-				addv();
-				player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
-				player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
-				player.update();
-				if (player == game.me) ui.updatehl();
-				broadcast();
-				game.resume();
-			}, get.delayx(gain2t, gain2t));
-		} else if (event.animate == "give" || event.animate == "giveAuto") {
-			var evtmap = event.losing_map;
-			if (event.animate == "give") {
-				for (var i in evtmap) {
-					var source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
-					source.$give(evtmap[i][0], player, event.log);
-				}
+			player.getHistory("gain").push(event);
+			//if(event.source&&event.delay!==false) game.delayx();
+		},
+		async (event, trigger, player) => {
+			let { cards } = event;
+			if (player.getStat().gain == undefined) {
+				player.getStat().gain = cards.length;
 			} else {
-				for (var i in evtmap) {
-					var source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
-					if (evtmap[i][1].length) source.$giveAuto(evtmap[i][1], player, event.log);
-					if (evtmap[i][2].length) source.$give(evtmap[i][2], player, event.log);
+				player.getStat().gain += cards.length;
+			}
+		},
+		async (event, trigger, player) => {
+			let { cards } = event;
+			var sort;
+			var frag1 = document.createDocumentFragment();
+			var frag2 = document.createDocumentFragment();
+			var hs = player.getCards("hs");
+			for (var i = 0; i < cards.length; i++) {
+				if (hs.includes(cards[i])) {
+					cards.splice(i--, 1);
 				}
 			}
-			game.pause();
-			setTimeout(function () {
+			for (var num = 0; num < cards.length; num++) {
+				sort = lib.config.sort_card(cards[num]);
+				if (lib.config.reverse_sort) sort = -sort;
+				if (["o", "d"].includes(get.position(cards[num], true))) {
+					cards[num].addKnower("everyone");
+				}
+				cards[num].fix();
+				cards[num].style.transform = "";
+				event.gaintag.forEach(tag => cards[num].addGaintag(tag));
+				if (event.knowers) {
+					cards[num].addKnower(event.knowers); //添加事件设定的知情者。
+				}
+				if (_status.discarded) {
+					_status.discarded.remove(cards[num]);
+				}
+				// cards[num].vanishtag.length=0;
+				for (var num2 = 0; num2 < cards[num].vanishtag.length; num2++) {
+					if (cards[num].vanishtag[num2][0] != "_") {
+						cards[num].vanishtag.splice(num2--, 1);
+					}
+				}
+				if (player == game.me) {
+					cards[num].classList.add("drawinghidden");
+				}
+				if (get.is.singleHandcard() || sort > 1) frag1.appendChild(cards[num]);
+				else frag2.appendChild(cards[num]);
+			}
+			var addv = function () {
+				if (player == game.me) {
+					game.addVideo("gain12", player, [get.cardsInfo(frag1.childNodes), get.cardsInfo(frag2.childNodes), event.gaintag]);
+				}
+			};
+			var broadcast = function () {
+				game.broadcast(
+					function (player, cards, num, gaintag) {
+						player.directgain(cards, null, gaintag);
+						_status.cardPileNum = num;
+					},
+					player,
+					cards,
+					ui.cardPile.childNodes.length,
+					event.gaintag
+				);
+			};
+			if (event.animate == "draw") {
+				player.$draw(cards.length);
+				game.pause();
+				setTimeout(function () {
+					addv();
+					player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
+					player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
+					player.update();
+					if (player == game.me) ui.updatehl();
+					broadcast();
+					game.resume();
+				}, get.delayx(500, 500));
+			} else if (event.animate == "gain") {
+				player.$gain(cards, event.log);
+				game.pause();
+				setTimeout(function () {
+					addv();
+					player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
+					player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
+					player.update();
+					if (player == game.me) ui.updatehl();
+					broadcast();
+					game.resume();
+				}, get.delayx(700, 700));
+			} else if (event.animate == "gain2" || event.animate == "draw2") {
+				var gain2t = 300;
+				if (player.$gain2(cards, event.log) && player == game.me) {
+					gain2t = 500;
+				}
+				game.pause();
+				setTimeout(function () {
+					addv();
+					player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
+					player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
+					player.update();
+					if (player == game.me) ui.updatehl();
+					broadcast();
+					game.resume();
+				}, get.delayx(gain2t, gain2t));
+			} else if (event.animate == "give" || event.animate == "giveAuto") {
+				var evtmap = event.losing_map;
+				if (event.animate == "give") {
+					for (var i in evtmap) {
+						var source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
+						source.$give(evtmap[i][0], player, event.log);
+					}
+				} else {
+					for (var i in evtmap) {
+						var source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
+						if (evtmap[i][1].length) source.$giveAuto(evtmap[i][1], player, event.log);
+						if (evtmap[i][2].length) source.$give(evtmap[i][2], player, event.log);
+					}
+				}
+				game.pause();
+				setTimeout(function () {
+					addv();
+					player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
+					player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
+					player.update();
+					if (player == game.me) ui.updatehl();
+					broadcast();
+					game.resume();
+				}, get.delayx(500, 500));
+			} else if (typeof event.animate == "function") {
+				var time = event.animate(event);
+				game.pause();
+				setTimeout(function () {
+					addv();
+					player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
+					player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
+					player.update();
+					if (player == game.me) ui.updatehl();
+					broadcast();
+					game.resume();
+				}, get.delayx(time, time));
+			} else {
 				addv();
 				player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
 				player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
 				player.update();
 				if (player == game.me) ui.updatehl();
 				broadcast();
-				game.resume();
-			}, get.delayx(500, 500));
-		} else if (typeof event.animate == "function") {
-			var time = event.animate(event);
-			game.pause();
-			setTimeout(function () {
-				addv();
-				player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
-				player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
-				player.update();
-				if (player == game.me) ui.updatehl();
-				broadcast();
-				game.resume();
-			}, get.delayx(time, time));
-		} else {
-			addv();
-			player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
-			player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
-			player.update();
-			if (player == game.me) ui.updatehl();
-			broadcast();
-			event.finish();
-		}
-		"step 4";
-		game.delayx();
-		if (event.updatePile) game.updateRoundNumber();
-	},
+				event.finish();
+			}
+		},
+		async (event, trigger, player) => {
+			game.delayx();
+			if (event.updatePile) game.updateRoundNumber();
+		},
+	],
 	addToExpansion: function () {
 		"step 0";
 		if (event.animate == "give") event.visible = true;
@@ -8676,314 +8915,366 @@ export const Content = {
 		game.delayx();
 		if (event.updatePile) game.updateRoundNumber();
 	},
-	lose: function () {
-		"step 0";
-		var evt = event.getParent();
-		if ((evt.name != "discard" || event.type != "discard") && (evt.name != "loseToDiscardpile" || event.type != "loseToDiscardpile")) {
-			event.delay = false;
-			return;
-		}
-		if (evt.delay === false) event.delay = false;
-		if (evt.animate != false) {
-			evt.discardid = lib.status.videoId++;
-			game.broadcastAll(
-				function (player, cards, id, visible) {
-					const cardx = cards
-						.slice()
-						.map(i => (i.cards ? i.cards : [i]))
-						.flat();
-					player.$throw(cardx, null, "nobroadcast");
-					var cardnodes = [];
-					cardnodes._discardtime = get.time();
-					for (var i = 0; i < cardx.length; i++) {
-						if (cardx[i].clone) {
-							cardnodes.push(cardx[i].clone);
-							if (!visible) {
-								cardx[i].clone.classList.add("infohidden");
-								cardx[i].clone.classList.add("infoflip");
+	lose: [
+		async (event, trigger, player) => {
+			let { cards } = event;
+			var evt = event.getParent();
+			if ((evt.name != "discard" || event.type != "discard") && (evt.name != "loseToDiscardpile" || event.type != "loseToDiscardpile")) {
+				event.delay = false;
+				return;
+			}
+			if (evt.delay === false) event.delay = false;
+			if (evt.animate != false) {
+				evt.discardid = lib.status.videoId++;
+				game.broadcastAll(
+					function (player, cards, id, visible) {
+						const cardx = cards
+							.slice()
+							.map(i => (i.cards ? i.cards : [i]))
+							.flat();
+						player.$throw(cardx, null, "nobroadcast");
+						var cardnodes = [];
+						cardnodes._discardtime = get.time();
+						for (var i = 0; i < cardx.length; i++) {
+							if (cardx[i].clone) {
+								cardnodes.push(cardx[i].clone);
+								if (!visible) {
+									cardx[i].clone.classList.add("infohidden");
+									cardx[i].clone.classList.add("infoflip");
+								}
 							}
 						}
+						ui.todiscard[id] = cardnodes;
+					},
+					player,
+					cards,
+					evt.discardid,
+					event.visible
+				);
+				if (lib.config.sync_speed && cards[0] && cards[0].clone) {
+					if (evt.delay != false) {
+						var waitingForTransition = get.time();
+						evt.waitingForTransition = waitingForTransition;
+						cards[0].clone.listenTransition(function () {
+							if (_status.waitingForTransition == waitingForTransition && _status.paused) {
+								game.resume();
+							}
+							delete evt.waitingForTransition;
+						});
+					} else if (evt.getParent().discardTransition) {
+						delete evt.getParent().discardTransition;
+						var waitingForTransition = get.time();
+						evt.getParent().waitingForTransition = waitingForTransition;
+						cards[0].clone.listenTransition(function () {
+							if (_status.waitingForTransition == waitingForTransition && _status.paused) {
+								game.resume();
+							}
+							delete evt.getParent().waitingForTransition;
+						});
 					}
-					ui.todiscard[id] = cardnodes;
+				}
+			}
+		},
+		async (event, trigger, player) => {
+			let { cards } = event;
+			event.vcards = {
+				//这玩意拿来存储假牌
+				cards: [],
+				es: [],
+				js: [],
+			};
+			//这个拿来存储虚拟牌对应的实体牌
+			event.vcard_cards = [];
+			event.gaintag_map = {};
+			var hs = [],
+				es = [],
+				js = [],
+				ss = [],
+				xs = [];
+			var unmarks = [];
+			if (event.insert_card && event.position == ui.cardPile) event.cards.reverse();
+			var hej = player.getCards("hejsx");
+			event.stockcards = cards.slice(0);
+			for (var i = 0; i < cards.length; i++) {
+				let cardx = [cards[i]];
+				if (!hej.includes(cards[i])) {
+					cards.splice(i--, 1);
+					continue;
+				} else if (cards[i].parentNode) {
+					if (cards[i].parentNode.classList.contains("equips")) {
+						cards[i].original = "e";
+						const VEquip = cards[i][cards[i].cardSymbol];
+						if (VEquip) {
+							//判断是否是假牌
+							if (cards[i].isViewAsCard) {
+								let loseCards = VEquip.cards;
+								//解体！
+								cardx.addArray(loseCards);
+								event.vcard_cards.addArray(loseCards);
+								loseCards.forEach(cardi => {
+									cardi.original = "e";
+									delete cardi.destiny;
+									es.push(cardi);
+									event.vcard_map.set(cardi, VEquip || get.autoViewAs(cards[i], void 0, false));
+								});
+							} else {
+								es.push(cards[i]);
+								event.vcard_map.set(cards[i], VEquip || get.autoViewAs(cards[i], void 0, false));
+								event.vcard_cards.add(cards[i]);
+							}
+							event.vcards.cards.push(cards[i]);
+							event.vcards.es.push(cards[i]);
+						}
+					} else if (cards[i].parentNode.classList.contains("judges")) {
+						cards[i].original = "j";
+						const VJudge = cards[i][cards[i].cardSymbol];
+						if (VJudge) {
+							//判断是否是假牌
+							if (cards[i].isViewAsCard) {
+								let loseCards = VJudge.cards;
+								//解体！
+								cardx.addArray(loseCards);
+								event.vcard_cards.addArray(loseCards);
+								loseCards.forEach(cardi => {
+									cardi.original = "j";
+									delete cardi.destiny;
+									js.push(cardi);
+									event.vcard_map.set(cardi, VJudge || get.autoViewAs(cards[i], void 0, false));
+								});
+							} else {
+								js.push(cards[i]);
+								event.vcard_map.set(cards[i], VJudge || get.autoViewAs(cards[i], void 0, false));
+								event.vcard_cards.add(cards[i]);
+							}
+							event.vcards.cards.push(cards[i]);
+							event.vcards.js.push(cards[i]);
+						}
+					} else if (cards[i].parentNode.classList.contains("expansions")) {
+						cards[i].original = "x";
+						xs.push(cards[i]);
+						event.vcard_map.set(cards[i], get.autoViewAs(cards[i], void 0, false));
+						if (cards[i].gaintag && cards[i].gaintag.length) unmarks.addArray(cards[i].gaintag);
+					} else if (cards[i].parentNode.classList.contains("handcards")) {
+						if (cards[i].classList.contains("glows")) {
+							cards[i].original = "s";
+							ss.push(cards[i]);
+							event.vcard_map.set(cards[i], get.autoViewAs(cards[i], void 0, false));
+						} else {
+							cards[i].original = "h";
+							hs.push(cards[i]);
+							event.vcard_map.set(cards[i], get.autoViewAs(cards[i], void 0, player));
+						}
+					} else {
+						cards[i].original = null;
+					}
+				}
+				for (var j = 0; j < cardx.length; j++) {
+					if (cardx[j].gaintag && cardx[j].gaintag.length) {
+						event.gaintag_map[cardx[j].cardid] = cardx[j].gaintag.slice(0);
+						//仅移除非永久标记
+						const tags = cardx[j].gaintag.filter(tag => !tag.startsWith("eternal_"));
+						tags.forEach(tag => cardx[j].removeGaintag(tag));
+					}
+
+					cardx[j].style.transform += " scale(0.2)";
+					cardx[j].classList.remove("glow");
+					cardx[j].classList.remove("glows");
+					cardx[j].recheck();
+
+					var info = lib.card[cardx[j].name];
+					if ("_destroy" in cardx[j]) {
+						if (cardx[j]._destroy) {
+							cardx[j].delete();
+							cardx[j].destroyed = cardx[j]._destroy;
+							continue;
+						}
+					} else if ("destroyed" in cardx[j]) {
+						if (event.getlx !== false && event.position && cardx[j].willBeDestroyed(event.position.id, null, event)) {
+							cardx[j].selfDestroy(event);
+							continue;
+						}
+					} else if (info.destroy) {
+						cardx[j].delete();
+						cardx[j].destroyed = info.destroy;
+						continue;
+					}
+					if (event.position) {
+						if (_status.discarded) {
+							if (event.position == ui.discardPile) {
+								_status.discarded.add(cardx[j]);
+							} else {
+								_status.discarded.remove(cardx[j]);
+							}
+						}
+						if (event.insert_index) {
+							cardx[j].fix();
+							event.position.insertBefore(cardx[j], event.insert_index(event, cardx[j]));
+						} else if (event.insert_card) {
+							cardx[j].fix();
+							event.position.insertBefore(cardx[j], event.position.firstChild);
+						} else if (event.position == ui.cardPile) {
+							cardx[j].fix();
+							event.position.appendChild(cardx[j]);
+						} else cardx[j].goto(event.position);
+					} else {
+						cardx[j].remove();
+					}
+					//if(ss.includes(cardx[j])) cards.splice(i--,1);
+				}
+			}
+			if (player == game.me) ui.updatehl();
+			ui.updatej(player);
+			game.broadcast(
+				function (player, cards, num) {
+					for (var i = 0; i < cards.length; i++) {
+						cards[i].removeGaintag(true);
+						cards[i].classList.remove("glow");
+						cards[i].classList.remove("glows");
+						cards[i].fix();
+						cards[i].remove();
+					}
+					if (player == game.me) {
+						ui.updatehl();
+					}
+					ui.updatej(player);
+					_status.cardPileNum = num;
 				},
 				player,
-				cards,
-				evt.discardid,
-				event.visible
+				cards.slice(),
+				ui.cardPile.childNodes.length
 			);
-			if (lib.config.sync_speed && cards[0] && cards[0].clone) {
-				if (evt.delay != false) {
-					var waitingForTransition = get.time();
-					evt.waitingForTransition = waitingForTransition;
-					cards[0].clone.listenTransition(function () {
-						if (_status.waitingForTransition == waitingForTransition && _status.paused) {
-							game.resume();
-						}
-						delete evt.waitingForTransition;
-					});
-				} else if (evt.getParent().discardTransition) {
-					delete evt.getParent().discardTransition;
-					var waitingForTransition = get.time();
-					evt.getParent().waitingForTransition = waitingForTransition;
-					cards[0].clone.listenTransition(function () {
-						if (_status.waitingForTransition == waitingForTransition && _status.paused) {
-							game.resume();
-						}
-						delete evt.getParent().waitingForTransition;
-					});
+			game.addVideo("lose", player, [get.cardsInfo(hs), get.cardsInfo(es), get.cardsInfo(js), get.cardsInfo(ss)]);
+			event.cards2 = hs.concat(es);
+			cards.removeArray(event.vcards.cards);
+			cards.addArray(event.vcard_cards);
+			player.getHistory("lose").push(event);
+			game.getGlobalHistory().cardMove.push(event);
+			player.update();
+			game.addVideo("loseAfter", player);
+			event.num = 0;
+			if (event.position == ui.ordering) {
+				var evt = event.relatedEvent || event.getParent();
+				if (!evt.orderingCards) evt.orderingCards = [];
+				if (!evt.noOrdering && !evt.cardsOrdered) {
+					evt.cardsOrdered = true;
+					var next = game.createEvent("orderingDiscard", false);
+					event.next.remove(next);
+					evt.after.push(next);
+					next.relatedEvent = evt;
+					next.setContent("orderingDiscard");
+				}
+				if (!evt.noOrdering) {
+					evt.orderingCards.addArray(cards);
+				}
+			} else if (event.position == ui.cardPile) {
+				game.updateRoundNumber();
+			}
+			if (unmarks.length) {
+				for (var i of unmarks) {
+					player[(lib.skill[i] && lib.skill[i].mark) || player.hasCard(card => card.hasGaintag(i), "x") ? "markSkill" : "unmarkSkill"](i);
 				}
 			}
-		}
-		"step 1";
-		event.gaintag_map = {};
-		var hs = [],
-			es = [],
-			js = [],
-			ss = [],
-			xs = [];
-		var unmarks = [];
-		if (event.insert_card && event.position == ui.cardPile) event.cards.reverse();
-		var hej = player.getCards("hejsx");
-		event.stockcards = cards.slice(0);
-		for (var i = 0; i < cards.length; i++) {
-			let cardx = [cards[i]];
-			if (!hej.includes(cards[i])) {
-				cards.splice(i--, 1);
-				continue;
-			} else if (cards[i].parentNode) {
-				if (cards[i].parentNode.classList.contains("equips")) {
-					cards[i].original = "e";
-					let loseCards = cards[i].cards ? cards[i].cards : [cards[i]];
-					cardx.addArray(loseCards);
-					loseCards.forEach(cardi => {
-						es.push(cardi);
-						event.vcard_map.set(cardi, cards[i].card || get.autoViewAs(cards[i], void 0, false));
-					});
-				} else if (cards[i].parentNode.classList.contains("judges")) {
-					cards[i].original = "j";
-					js.push(cards[i]);
-					const VJudge = player.getVCards("j").find(card => {
-						return card.cards?.includes(cards[i]);
-					});
-					if (VJudge) {
-						event.vcard_map.set(cards[i], VJudge);
-					} else event.vcard_map.set(cards[i], get.autoViewAs(cards[i], void 0, false));
-				} else if (cards[i].parentNode.classList.contains("expansions")) {
-					cards[i].original = "x";
-					xs.push(cards[i]);
-					event.vcard_map.set(cards[i], get.autoViewAs(cards[i], void 0, false));
-					if (cards[i].gaintag && cards[i].gaintag.length) unmarks.addArray(cards[i].gaintag);
-				} else if (cards[i].parentNode.classList.contains("handcards")) {
-					if (cards[i].classList.contains("glows")) {
-						cards[i].original = "s";
-						ss.push(cards[i]);
-						event.vcard_map.set(cards[i], get.autoViewAs(cards[i], void 0, false));
-					} else {
-						cards[i].original = "h";
-						hs.push(cards[i]);
-						event.vcard_map.set(cards[i], get.autoViewAs(cards[i], void 0, player));
-					}
-				} else {
-					cards[i].original = null;
-				}
-			}
-			for (var j = 0; j < cardx.length; j++) {
-				if (cardx[j].gaintag && cardx[j].gaintag.length) {
-					event.gaintag_map[cardx[j].cardid] = cardx[j].gaintag.slice(0);
-					cardx[j].removeGaintag(true);
-				}
-
-				cardx[j].style.transform += " scale(0.2)";
-				cardx[j].classList.remove("glow");
-				cardx[j].classList.remove("glows");
-				cardx[j].recheck();
-
-				var info = lib.card[cardx[j].name];
-				if ("_destroy" in cardx[j]) {
-					if (cardx[j]._destroy) {
-						cardx[j].delete();
-						cardx[j].destroyed = cardx[j]._destroy;
-						continue;
-					}
-				} else if ("destroyed" in cardx[j]) {
-					if (event.getlx !== false && event.position && cardx[j].willBeDestroyed(event.position.id, null, event)) {
-						cardx[j].selfDestroy(event);
-						continue;
-					}
-				} else if (info.destroy) {
-					cardx[j].delete();
-					cardx[j].destroyed = info.destroy;
-					continue;
-				}
-				if (event.position) {
-					if (_status.discarded) {
-						if (event.position == ui.discardPile) {
-							_status.discarded.add(cardx[j]);
-						} else {
-							_status.discarded.remove(cardx[j]);
-						}
-					}
-					if (event.insert_index) {
-						cardx[j].fix();
-						event.position.insertBefore(cardx[j], event.insert_index(event, cardx[j]));
-					} else if (event.insert_card) {
-						cardx[j].fix();
-						event.position.insertBefore(cardx[j], event.position.firstChild);
-					} else if (event.position == ui.cardPile) {
-						cardx[j].fix();
-						event.position.appendChild(cardx[j]);
-					} else cardx[j].goto(event.position);
-				} else {
-					cardx[j].remove();
-				}
-				//if(ss.includes(cardx[j])) cards.splice(i--,1);
-			}
-		}
-		if (player == game.me) ui.updatehl();
-		ui.updatej(player);
-		game.broadcast(
-			function (player, cards, num) {
-				for (var i = 0; i < cards.length; i++) {
-					cards[i].classList.remove("glow");
-					cards[i].classList.remove("glows");
-					cards[i].fix();
-					cards[i].remove();
-				}
-				if (player == game.me) {
-					ui.updatehl();
-				}
-				ui.updatej(player);
-				_status.cardPileNum = num;
-			},
-			player,
-			cards,
-			ui.cardPile.childNodes.length
-		);
-		game.addVideo("lose", player, [get.cardsInfo(hs), get.cardsInfo(es), get.cardsInfo(js), get.cardsInfo(ss)]);
-		event.cards2 = hs.concat(es);
-		player.getHistory("lose").push(event);
-		game.getGlobalHistory().cardMove.push(event);
-		player.update();
-		game.addVideo("loseAfter", player);
-		event.num = 0;
-		if (event.position == ui.ordering) {
-			var evt = event.relatedEvent || event.getParent();
-			if (!evt.orderingCards) evt.orderingCards = [];
-			if (!evt.noOrdering && !evt.cardsOrdered) {
-				evt.cardsOrdered = true;
-				var next = game.createEvent("orderingDiscard", false);
-				event.next.remove(next);
-				evt.after.push(next);
-				next.relatedEvent = evt;
-				next.setContent("orderingDiscard");
-			}
-			if (!evt.noOrdering) {
-				evt.orderingCards.addArray(cards);
-			}
-		} else if (event.position == ui.cardPile) {
-			game.updateRoundNumber();
-		}
-		if (unmarks.length) {
-			for (var i of unmarks) {
-				player[(lib.skill[i] && lib.skill[i].mark) || player.hasCard(card => card.hasGaintag(i), "x") ? "markSkill" : "unmarkSkill"](i);
-			}
-		}
-		event.hs = hs;
-		event.es = es;
-		event.js = js;
-		event.ss = ss;
-		event.xs = xs;
-		game.clearCardKnowers(hs);
-		if (hs.length && !event.visible) {
-			player.getCards("h").forEach(hcard => {
-				hcard.clearKnowers();
-			});
-		}
-		"step 2";
-		if (num < cards.length) {
-			if (event.es.includes(cards[num]) || cards[num].cards?.some(i => event.es.includes(i))) {
-				event.loseEquip = true;
-				const VEquip = cards[num][cards[num].cardSymbol];
-				if (VEquip) {
-					player.removeVirtualEquip(VEquip);
-					//player.removeEquipTrigger(cards[num]);
-					var info = get.info(VEquip, false);
-					if (info.onLose && (!info.filterLose || info.filterLose(VEquip, player))) {
-						event.goto(3);
-						event.currentVEquip = VEquip;
-						return;
-					}
-				}
-			} else if (event.js.includes(cards[num])) {
-				const VJudge = player.getVCards("j").find(card => {
-					return card.cards?.includes(cards[num]);
+			event.hs = hs;
+			event.es = es;
+			event.js = js;
+			event.ss = ss;
+			event.xs = xs;
+			game.clearCardKnowers(hs);
+			if (hs.length && !event.visible) {
+				player.getCards("h").forEach(hcard => {
+					hcard.clearKnowers();
 				});
-				if (VJudge) {
-					player.removeVirtualJudge(VJudge);
+			}
+		},
+		async (event, trigger, player) => {
+			let { num } = event;
+			if (num < event.vcards.cards.length) {
+				if (event.vcards.es.includes(event.vcards.cards[num])) {
+					event.loseEquip = true;
+					const VEquip = event.vcards.cards[num][event.vcards.cards[num].cardSymbol];
+					if (VEquip) {
+						player.removeVirtualEquip(VEquip);
+						//player.removeEquipTrigger(cards[num]);
+						var info = get.info(VEquip, false);
+						if (info.onLose && (!info.filterLose || info.filterLose(VEquip, player))) {
+							event.goto(3);
+							event.currentVEquip = VEquip;
+							return;
+						}
+					}
+				} else if (event.vcards.js.includes(event.vcards.cards[num])) {
+					const VJudge = event.vcards.cards[num][event.vcards.cards[num].cardSymbol];
+					if (VJudge) {
+						player.removeVirtualJudge(VJudge);
+					}
 				}
+				event.num++;
+				event.redo();
+			} else {
+				if (event.loseEquip) {
+					player.addEquipTrigger();
+				}
+				event.goto(4);
 			}
-			event.num++;
-			event.redo();
-		} else {
-			if (event.loseEquip) {
-				player.addEquipTrigger();
+		},
+		async (event, trigger, player) => {
+			const VEquip = event.currentVEquip;
+			var info = get.info(VEquip, false);
+			if (info.loseDelay != false && (player.isAlive() || info.forceDie)) {
+				player.popup(VEquip.name);
+				game.delayx();
 			}
-			event.goto(4);
-		}
-		"step 3";
-		const VEquip = event.currentVEquip;
-		var info = get.info(VEquip, false);
-		if (info.loseDelay != false && (player.isAlive() || info.forceDie)) {
-			player.popup(VEquip.name);
-			game.delayx();
-		}
-		if (Array.isArray(info.onLose)) {
-			for (var i = 0; i < info.onLose.length; i++) {
+			if (Array.isArray(info.onLose)) {
+				for (var i = 0; i < info.onLose.length; i++) {
+					var next = game.createEvent("lose_" + VEquip.name);
+					next.setContent(info.onLose[i]);
+					if (info.forceDie) next.forceDie = true;
+					next.player = player;
+					next.card = VEquip;
+					next.cards = VEquip.cards;
+				}
+			} else {
 				var next = game.createEvent("lose_" + VEquip.name);
-				next.setContent(info.onLose[i]);
-				if (info.forceDie) next.forceDie = true;
+				next.setContent(info.onLose);
 				next.player = player;
+				if (info.forceDie) next.forceDie = true;
 				next.card = VEquip;
 				next.cards = VEquip.cards;
 			}
-		} else {
-			var next = game.createEvent("lose_" + VEquip.name);
-			next.setContent(info.onLose);
-			next.player = player;
-			if (info.forceDie) next.forceDie = true;
-			next.card = VEquip;
-			next.cards = VEquip.cards;
-		}
-		event.num++;
-		event.goto(2);
-		"step 4";
-		event.cards = cards.map(i => (i.cards ? i.cards : [i])).flat();
-		if (event.toRenku) {
-			_status.renku.addArray(
-				cards.filter(function (card) {
-					return !card.willBeDestroyed("renku", null, event);
-				})
-			);
-			if (_status.renku.length > 6) {
-				var cards = _status.renku.splice(0, _status.renku.length - 6);
-				game.log(cards, "从仁库进入了弃牌堆");
-				game.cardsDiscard(cards).set("outRange", true).fromRenku = true;
+			event.num++;
+			event.goto(2);
+		},
+		async (event, trigger, player) => {
+			let { cards } = event;
+			event.cards = cards.map(i => (i.cards ? i.cards : [i])).flat();
+			if (event.toRenku) {
+				_status.renku.addArray(
+					cards.filter(function (card) {
+						return !card.willBeDestroyed("renku", null, event);
+					})
+				);
+				if (_status.renku.length > 6) {
+					var cards2 = _status.renku.splice(0, _status.renku.length - 6);
+					game.log(cards2, "从仁库进入了弃牌堆");
+					game.cardsDiscard(cards2).set("outRange", true).fromRenku = true;
+				}
+				game.updateRenku();
 			}
-			game.updateRenku();
-		}
-		"step 5";
-		var evt = event.getParent();
-		if (evt.name != "discard" && event.type != "discard" && evt.name != "loseToDiscardpile" && event.type != "loseToDiscardpile") return;
-		if (event.animate === false || event.delay === false) return;
-		if (evt.delay != false) {
-			if (evt.waitingForTransition) {
-				_status.waitingForTransition = evt.waitingForTransition;
-				game.pause();
-			} else {
-				game.delayx();
+		},
+		async (event, trigger, player) => {
+			var evt = event.getParent();
+			if (evt.name != "discard" && event.type != "discard" && evt.name != "loseToDiscardpile" && event.type != "loseToDiscardpile") return;
+			if (event.animate === false || event.delay === false) return;
+			if (evt.delay != false) {
+				if (evt.waitingForTransition) {
+					_status.waitingForTransition = evt.waitingForTransition;
+					game.pause();
+				} else {
+					game.delayx();
+				}
 			}
-		}
-	},
+		},
+	],
 	damage: function () {
 		"step 0";
 		event.forceDie = true;
@@ -9495,6 +9786,7 @@ export const Content = {
 		}
 	},
 	//暂时还是只能一次加一张牌，需要后续跟进处理
+	//一次加一张够用了
 	addJudge: async function (event, trigger, player) {
 		let card, cardName;
 		if (typeof event.card == "string") {
@@ -9504,9 +9796,14 @@ export const Content = {
 		} else {
 			cardName = event.card.name;
 			if (get.itemtype(event.card) === "card") {
-				event.cards = [event.card];
-				card = get.autoViewAs(event.card, void 0, false);
-				event.card = card;
+				if (event.card.cardSymbol) {
+					event.cards = event.card[event.card.cardSymbol].cards;
+					if (!event.card.isViewAsCard) event.card = event.card[event.card.cardSymbol];
+				} else {
+					card = get.autoViewAs(event.card, void 0, false);
+					event.card = card;
+					event.cards = event.card.cards ?? [];
+				}
 			} else if (!event.card.cards?.length && event.cards?.length) {
 				card = get.autoViewAs({ name: cardName, isCard: true }, event.cards);
 				event.card = card;
@@ -9520,9 +9817,12 @@ export const Content = {
 			visible = cardInfo && !cardInfo.blankCard;
 		event.visible = visible;
 		//失去牌的一长串
-		if (event.cards?.length) {
+		let loseCards = [];
+		if (event.card.isViewAsCard) loseCards.add(event.card);
+		else loseCards.addArray(event.cards);
+		if (loseCards.length) {
 			const map = {};
-			for (const i of event.cards) {
+			for (const i of loseCards) {
 				var owner = get.owner(i, "judge");
 				if (owner /* && (owner != player || get.position(i) != "e")*/) {
 					var id = owner.playerid;
@@ -9545,21 +9845,14 @@ export const Content = {
 				await next;
 				event.relatedLose = next;
 			}
-			let canMoveOn = true;
-			event.cards.forEach(card => {
+			for (let card of loseCards) {
 				if (card.willBeDestroyed("judge", player, event)) {
 					card.selfDestroy(event);
-					canMoveOn = false;
 					return;
-				} else if (canMoveOn) {
-					// @ts-ignore
-					if ("hejx".includes(get.position(card, true))) {
-						canMoveOn = false;
-						return;
-					}
+				} else if ("hejx".includes(get.position(card, true))) {
+					return;
 				}
-			});
-			if (!canMoveOn) return;
+			}
 		}
 		if (!cardInfo.effect && !cardInfo.noEffect) {
 			if (event.cards.length) await game.cardsDiscard(event.cards);
@@ -9579,10 +9872,10 @@ export const Content = {
 			},
 			player,
 			event.card,
-			event.cards
+			loseCards
 		);
 		player.addVirtualJudge(event.card, event.cards);
-		const isViewAsCard = cards?.length !== 1 || cards[0].name !== card.name;
+		const isViewAsCard = cards?.length !== 1 || cards[0].name !== card.name || !card.isCard;
 		if (isViewAsCard && cards?.length) {
 			if (cardInfo.blankCard) {
 				game.log(player, '被扣置了<span class="yellowtext">' + get.translation(cardName) + "</span>");
@@ -9592,6 +9885,7 @@ export const Content = {
 		} else {
 			game.log(player, "被贴上了", card);
 		}
+		if (get.itemtype(event.card) == "card") event.card = event.card[event.card.cardSymbol];
 	},
 	addJudge_old: function () {
 		"step 0";

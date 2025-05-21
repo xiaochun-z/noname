@@ -1414,6 +1414,7 @@ game.import("character", function () {
 				},
 				mark: true,
 				unique: true,
+				limited: true,
 				skillAnimation: true,
 				animationColor: "water",
 				line: "thunder",
@@ -1432,7 +1433,7 @@ game.import("character", function () {
 					game.delayx();
 					"step 1";
 					player.storage.baoxue = true;
-					player.awakenSkill("baoxue");
+					player.awakenSkill(event.name);
 					player.showHandcards();
 					player.discard(player.getCards("he", { color: "black" }));
 				},
@@ -2263,6 +2264,7 @@ game.import("character", function () {
 				trigger: { player: "phaseBegin" },
 				unique: true,
 				mark: true,
+				limited: true,
 				skillAnimation: true,
 				init(player) {
 					player.storage.zhanlong = false;
@@ -2282,7 +2284,7 @@ game.import("character", function () {
 					player.discard(player.getCards("he"));
 					"step 1";
 					player.addTempSkill("zhanlong2");
-					player.awakenSkill("zhanlong");
+					player.awakenSkill(event.name);
 					player.storage.zhanlong = true;
 					var cards = [];
 					for (var i = 0; i < 3; i++) {
@@ -2548,6 +2550,7 @@ game.import("character", function () {
 				enable: "phaseUse",
 				unique: true,
 				mark: true,
+				limited: true,
 				skillAnimation: true,
 				animationColor: "metal",
 				init(player) {
@@ -2564,7 +2567,7 @@ game.import("character", function () {
 				contentBefore() {
 					player.turnOver();
 					player.addSkill("sheng2");
-					player.awakenSkill("sheng");
+					player.awakenSkill(event.skill);
 					player.storage.sheng = true;
 				},
 				content() {
@@ -2686,6 +2689,7 @@ game.import("character", function () {
 				enable: "phaseUse",
 				unique: true,
 				mark: true,
+				limited: true,
 				skillAnimation: true,
 				animationColor: "fire",
 				init(player) {
@@ -2712,7 +2716,7 @@ game.import("character", function () {
 				content() {
 					"step 0";
 					targets.sort(lib.sort.seat);
-					player.awakenSkill("huoyu");
+					player.awakenSkill(event.name);
 					player.storage.huoyu = true;
 					player.useCard({ name: "chiyuxi" }, targets).animate = false;
 					"step 1";

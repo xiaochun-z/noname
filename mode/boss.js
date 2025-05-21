@@ -40,6 +40,9 @@ export default () => {
 			}
 			lib.translate.restart = "返回";
 			lib.init.css(lib.assetURL + "layout/mode", "boss");
+			if (!_status.banlist) {
+				_status.banlist = {};
+			}
 			game.delay(0.1);
 			"step 1";
 			var bosslist = ui.create.div("#bosslist.hidden");
@@ -105,7 +108,7 @@ export default () => {
 					if (info[2] == Infinity) {
 						player.node.hp.innerHTML = "∞";
 					}
-					player.setIdentity(player.name);
+					player.setIdentity(get.rawName(player.name));
 					player.node.identity.dataset.color = info[5];
 					// bosslistlinks[cfg]=player;
 					player.classList.add("bossplayer");
@@ -827,7 +830,8 @@ export default () => {
 				boss_qiongqi: {
 					sex: "male",
 					group: "qun",
-					hp: "20/25",
+					hp: 20,
+					maxHp: 25,
 					skills: ["boss_xiongshou", "boss_zhue", "boss_futai", "boss_yandu", "boss_yandu_switch"],
 					groupInGuozhan: "qun",
 					isBoss: true,
@@ -878,7 +882,8 @@ export default () => {
 				boss_zhuyan: {
 					sex: "male",
 					group: "qun",
-					hp: "25/30",
+					hp: 25,
+					maxHp: 30,
 					skills: ["boss_yaoshou", "boss_bingxian", "boss_juyuan", "boss_xushi", "boss_xushi_switch"],
 					groupInGuozhan: "qun",
 					isBoss: true,
@@ -1460,7 +1465,7 @@ export default () => {
 				boss_zhugeliang: {
 					sex: "male",
 					group: "shen",
-					hp: "Infinity/Infinity",
+					hp: Infinity,
 					skills: ["xiangxing", "yueyin", "fengqi", "gaiming"],
 					names: "诸葛|亮",
 					groupInGuozhan: "shu",
@@ -1573,7 +1578,8 @@ export default () => {
 				boss_sunce: {
 					sex: "male",
 					group: "shen",
-					hp: "1/8",
+					hp: 1,
+					maxHp: 8,
 					skills: ["boss_jiang", "boss_hunzi", "boss_hunyou", "boss_taoni"],
 					names: "孙|策",
 					groupInGuozhan: "qun",
@@ -1822,6 +1828,25 @@ export default () => {
 					next._triggered = null;
 					next.custom.replace.target = event.customreplacetarget;
 					next.selectButton = [3, 3];
+					next.filterButton = function (button) {
+						let { current } = get.event().getParent("game");
+						if (current) {
+							let { name } = current;
+							let banrule = _status.banlist[name];
+							if (!banrule) {
+								return true;
+							}
+							let { link } = button;
+							if (Array.isArray(banrule)) {
+								if (banrule.includes(link)) {
+									return false;
+								}
+							} else if (typeof banrule === "function") {
+								return banrule();
+							}
+						}
+						return true;
+					};
 					// next.custom.add.button=function(){
 					//		if(ui.cheat2&&ui.cheat2.backup) return;
 					//		_status.event.dialog.content.childNodes[1].innerHTML=
@@ -2617,23 +2642,25 @@ export default () => {
 			},
 			niaobaidaowenha_skill: {
 				trigger: { player: "loseMaxHpAfter" },
-				direct: true,
-				content: function () {
-					"step 0";
-					event.count = trigger.num;
-					"step 1";
-					event.count--;
-					player.chooseTarget(get.prompt2("niaobaidaowenha_skill"), lib.filter.notMe).set("ai", function (target) {
-						return get.attitude(_status.event.player, target) / (target.maxHp || 1);
-					});
-					"step 2";
-					if (result.bool) {
-						var target = result.targets[0];
-						player.logSkill("niaobaidaowenha_skill", target);
-						target.gainMaxHp();
-						target.recover();
-						if (event.count) event.goto(1);
-					}
+				filter(event, player) {
+					return game.hasPlayer(current => current != player) && event.num > 0;
+				},
+				getIndex: event => event.num,
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseTarget(get.prompt2(event.skill), lib.filter.notMe)
+						.set("ai", target => {
+							const player = get.player();
+							return get.attitude(player, target) / (target.maxHp || 1);
+						})
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					const {
+						targets: [target],
+					} = event;
+					await target.gainMaxHp();
+					await target.recover();
 				},
 			},
 			goujiangdesidai_skill: {
@@ -4579,24 +4606,21 @@ export default () => {
 			boss_yanyu: {
 				forced: true,
 				trigger: { global: "phaseBegin" },
-				filter: function (event, player) {
+				filter(event, player) {
 					return player != event.player;
 				},
-				content: function () {
-					"step 0";
-					event.count = 3;
-					player.line(trigger.player, "fire");
-					"step 1";
-					event.count--;
-					trigger.player.judge(function (card) {
+				getIndex: 3,
+				logTarget: "player",
+				async content(event, trigger, player) {
+					const { player: target } = trigger;
+					player.line(target, "fire");
+					const netx = target.judge(card => {
 						if (get.color(card) == "red") return -5;
 						return 5;
 					});
-					"step 2";
-					if (!result.bool) {
-						trigger.player.damage("fire");
-						if (event.count) event.goto(1);
-					}
+					netx.judge2 = result => result.bool;
+					const { result } = await netx;
+					if (!result?.bool) target.damage("fire");
 				},
 			},
 			boss_fengdong: {
@@ -7200,7 +7224,7 @@ export default () => {
 						if (player.storage.xiangxing) {
 							player.addSkill("xiangxing" + player.storage.xiangxing);
 						} else {
-							player.awakenSkill("xiangxing");
+							player.awakenSkill(event.name);
 						}
 						player.popup("xiangxing");
 						game.log(player, "失去了一枚星");
@@ -8945,7 +8969,7 @@ export default () => {
 				frequent: true,
 				unique: true,
 				filter: function (event, player) {
-					return _status.currentPhase != player;
+					return _status.currentPhase?.isIn() && _status.currentPhase != player;
 				},
 				content: function () {
 					"step 0";
@@ -9525,12 +9549,11 @@ export default () => {
 				audio: "hunzi",
 				juexingji: true,
 				derivation: ["reyingzi", "yinghun"],
-				unique: true,
 				trigger: {
 					player: "phaseZhunbeiBegin",
 				},
 				filter: function (event, player) {
-					return player.hp <= 2 && !player.storage.boss_hunzi;
+					return player.hp <= 2;
 				},
 				forced: true,
 				content: function () {
@@ -9542,7 +9565,7 @@ export default () => {
 					player.addSkill("yinghun");
 					game.log(player, "获得了技能", "#g【英姿】和【英魂】");
 					game.log(player, "", "#y【魂佑】");
-					player.awakenSkill("boss_hunzi");
+					player.awakenSkill(event.name);
 					player.storage.boss_hunzi = true;
 				},
 				ai: {

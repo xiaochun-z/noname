@@ -40,7 +40,10 @@ const skills = {
 	},
 	stdguijie: {
 		enable: ["chooseToRespond", "chooseToUse"],
-		viewAs: { name: "shan" },
+		viewAs: {
+			name: "shan",
+			isCard: true,
+		},
 		filter(event, player) {
 			return player.countCards("hes", { color: "red" }) > 1;
 		},
@@ -2961,7 +2964,6 @@ const skills = {
 	},
 	//马腾
 	stdxiongyi: {
-		unique: true,
 		limited: true,
 		audio: "xiongyi",
 		enable: "phaseUse",
@@ -2972,7 +2974,7 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "thunder",
 		async content(event, trigger, player) {
-			player.awakenSkill("stdxiongyi");
+			player.awakenSkill(event.name);
 			const targets = event.targets.sortBySeat();
 			let keep = true;
 			while (true) {
@@ -3335,7 +3337,7 @@ const skills = {
 		audio: "renzheng",
 		trigger: { global: ["damageCancelled", "damageZero"] },
 		filter(event, player, name) {
-			if (!_status.currentPhase || !_status.currentPhase.isIn()) return false;
+			if (!_status.currentPhase?.isIn()) return false;
 			if (name == "damageCancelled") return true;
 			return event.change_history.some(i => i < 0);
 		},

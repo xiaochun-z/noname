@@ -43,6 +43,13 @@ game.import("character", function () {
 			ps2080_zhouyu: "S2080",
 			ps_caozhi: "S2081",
 			ps_shen_machao: "SX015",
+			yj_tianchuan: "E1002T",
+			yj_zhouji: "E14001T",
+			yj_ehuan: "E9003T",
+			yj_zhonghui: "E7005T",
+			yj_jiling: "E3005",
+			yj_yongkai: "E7006T",
+			yj_chezhou: "E7006T",
 		},
 		characterSubstitute: {
 			jd_sb_sp_zhugeliang: [["sb_zhugeliang", []]],

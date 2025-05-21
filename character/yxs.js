@@ -661,18 +661,11 @@ game.import("character", function () {
 				},
 			},
 			yixin: {
+				limited: true,
 				skillAnimation: true,
-				unique: true,
-				mark: true,
-				init(player) {
-					player.storage.yixin = false;
-				},
 				enable: "phaseUse",
 				filter(event, player) {
-					return !player.storage.yixin && player.countCards("he") > 2;
-				},
-				intro: {
-					content: "limited",
+					return player.countCards("he") > 2;
 				},
 				filterTarget(card, player, target) {
 					return target.isDamaged();
@@ -684,8 +677,7 @@ game.import("character", function () {
 					return 7 - get.value(card);
 				},
 				content() {
-					player.awakenSkill("yixin");
-					player.storage.yixin = true;
+					player.awakenSkill(event.name);
 					var num = Math.min(4, target.maxHp - target.hp);
 					target.recover(num);
 					if (num < 4) {
@@ -1519,6 +1511,7 @@ game.import("character", function () {
 				},
 			},
 			heqin: {
+				limited: true,
 				skillAnimation: true,
 				enable: "phaseUse",
 				filter(event, player) {
@@ -1528,7 +1521,7 @@ game.import("character", function () {
 					return target.sex == "male" && target != player;
 				},
 				content() {
-					player.awakenSkill("heqin");
+					player.awakenSkill(event.name);
 					player.addSkill("heqin2");
 					target.addSkill("heqin2");
 
@@ -2231,24 +2224,13 @@ game.import("character", function () {
 				},
 			},
 			seyou: {
+				limited: true,
 				skillAnimation: true,
-				unique: true,
-				mark: true,
-				init(player) {
-					player.storage.seyou = false;
-				},
 				enable: "phaseUse",
-				filter(event, player) {
-					return !player.storage.seyou;
-				},
-				intro: {
-					content: "limited",
-				},
 				filterTarget: true,
 				content() {
 					"step 0";
-					player.awakenSkill("seyou");
-					player.storage.seyou = true;
+					player.awakenSkill(event.name);
 					event.targets = game.filterPlayer();
 					event.targets.remove(player);
 					event.targets.remove(target);

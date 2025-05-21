@@ -56,9 +56,16 @@ export class Get extends GetCompatible {
 			name2 = _status.event.getParent(3).name;
 			evt2 = _status.event.getParent(3);
 		}
-		let banned = ["phaseJudge", "equip", "phaseUse"];
-		if (banned.includes(name1)) name1 = false;
-		if (banned.includes(name2)) name2 = false;
+		const banned = ["phaseJudge", "equip", "phaseUse"],
+			bannedEvent = ["phase"];
+		if (banned.includes(name1) || bannedEvent.includes(evt1.name)) {
+			name1 = false;
+			evt1 = false;
+		}
+		if (banned.includes(name2) || bannedEvent.includes(evt2.name)) {
+			name2 = false;
+			evt2 = false;
+		}
 		if (name1 && !info[name1]) {
 			if (name1.indexOf("equip_") == 0) name1 = name1.slice(6);
 			else if (name1.indexOf("pre_") == 0) {
@@ -92,9 +99,6 @@ export class Get extends GetCompatible {
 		}
 		if (name1 == "useSkill") name1 = get.sourceSkillFor(evt1.skill);
 		if (name2 == "useSkill") name2 = get.sourceSkillFor(evt2.skill);
-		if (get.event().name == "judge" && get.event().getParent().name == "phaseJugde") {
-			(name1 = name), (name2 = _status.event.getParent().name), (th_skill = false), (evt1 = get.event()), (evt2 = get.event().getParent());
-		}
 		if (_status.event.skill) {
 			let skill = _status.event.skill;
 			if (info[get.sourceSkillFor(skill)]) {
@@ -1067,29 +1071,11 @@ export class Get extends GetCompatible {
 		for (let i = 0; i < level; i++) indent += "    ";
 		try {
 			if (get.objtype(obj) === "object" /*  || obj instanceof lib.element.GameEvent */) {
-				const isMethod = (/** @type {string} */ key) => {
-					const value = obj[key];
-					if (!(typeof value === "function")) return false;
-					key = key.replaceAll("$", "\\$");
-					let reg;
-					if (value instanceof GeneratorFunction) {
-						// content*(){}
-						reg = new RegExp(`\\*\\s*${key}[\\s\\S]*?\\(`);
-					} else if (value instanceof AsyncFunction) {
-						// async content(){}
-						reg = new RegExp(`async\\s*${key}[\\s\\S]*?\\(`);
-					} else {
-						// content(){}
-						reg = new RegExp(`${key}[\\s\\S]*?\\(`);
-					}
-					return reg.exec(value)?.index === 0;
-				};
-
 				let str = "{\n";
 				for (const key in obj) {
 					let keyString = (/[^a-zA-Z]/.test(key) ? `"${key}"` : key) + ": ";
 					const valueString = get.stringify(obj[key], level + 1);
-					if (isMethod(key)) keyString = "";
+					if (get.is.functionMethod(obj, key)) keyString = "";
 					str += indent + "    " + keyString + valueString + ",\n";
 				}
 				str += indent + "}";
@@ -1370,9 +1356,9 @@ export class Get extends GetCompatible {
 				}
 		}
 		if (server) {
-			return get.translation(config.mode) + "模式";
+			return get.translation(get.plainText(config.mode)) + "模式";
 		} else {
-			return get.cnNumber(parseInt(config.number)) + "人" + get.translation(config.mode);
+			return get.cnNumber(parseInt(config.number)) + "人" + get.translation(get.plainText(config.mode));
 		}
 	}
 	charactersOL(func) {
@@ -1707,9 +1693,9 @@ export class Get extends GetCompatible {
 	vcardInfo(card) {
 		return Object.entries(card).reduce((stringifying, entry) => {
 			const key = entry[0];
-			// @ts-ignore
-			if (key === "cards") stringifying[key] = get.cardsInfo(entry[1]);
-			else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);
+			/*if (key === "cards") stringifying[key] = get.cardsInfo(entry[1]);
+else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
+			if (entry[1] !== void 0) stringifying[key] = JSON.stringify(get.stringifiedResult(entry[1]));
 			return stringifying;
 		}, {});
 	}
@@ -2601,6 +2587,22 @@ export class Get extends GetCompatible {
 		return natures.split(lib.natureSeparator);
 	}
 	/**
+	 * 返回如何响应此牌的一个数组，其中包含字符串或者函数，具体用法可见player.canRespond
+	 * @param {string | Card | VCard | object } card（也支持一些标签，如trick，damage和all）
+	 * @param {false | Player} [player]
+	 * @returns {string[]}
+	 */
+	canRespond(card, player) {
+		let name;
+		if (typeof card == "object") name = get.name(card, player);
+		else name = card;
+		if (typeof name != "string") return [];
+		const filter = lib.respondMap[name];
+		if (Array.isArray(filter)) return filter;
+		if (typeof filter == "function") return [filter];
+		return [];
+	}
+	/**
 	 * 返回牌堆顶的牌
 	 * @param { number } [num = 1] 默认为1
 	 * @param { boolean } [putBack] 是否放回牌堆顶
@@ -2726,7 +2728,7 @@ export class Get extends GetCompatible {
 	}
 	/**
 	 * @overload
-	 * @param { string } item
+	 * @param { string | Symbol } item
 	 * @returns { Skill }
 	 */
 	/**
@@ -2736,15 +2738,13 @@ export class Get extends GetCompatible {
 	 * @returns { any }
 	 */
 	info(item, player) {
-		if (typeof item == "string") {
-			const info = (() => {
-				const info = lib.skill[item];
-				if (!info) {
-					console.warn(`孩子，你的技能${item}是不是忘写了什么？！`);
-					return {};
-				}
-				return info;
-			})();
+		if (typeof item == "string" || typeof item == "symbol") {
+			const info = Reflect.get(lib.skill, item);
+			if (!info) {
+				const str = typeof item == "string" ? item : `[${item.toString()}]`;
+				console.warn(`孩子，你的技能${str}是不是忘写了什么？！`);
+				return {};
+			}
 			return info;
 		}
 		if (typeof item == "object") {
@@ -2765,9 +2765,11 @@ export class Get extends GetCompatible {
 	}
 	card(original) {
 		if (_status.event.skill) {
-			var card = get.info(_status.event.skill).viewAs;
+			const info = get.info(_status.event.skill);
+			let card = info.viewAs;
 			if (typeof card == "function") card = card(ui.selected.cards, _status.event.player);
 			if (card) {
+				if (!ui.selected.cards.length) return get.autoViewAs(card, card.cards);
 				return get.autoViewAs(card, ui.selected.cards);
 			}
 		}
@@ -3369,6 +3371,18 @@ export class Get extends GetCompatible {
 	owner(card, method) {
 		return game.players.concat(game.dead).find(current => {
 			if (current.judging[0] == card && method != "judge") return true;
+			if (card.timeout && card.destiny) {
+				const destiny = card.destiny;
+				if (destiny == current.node.handcards1 || destiny == current.node.handcards2) {
+					return !card.classList.contains("removing");
+				} else if (destiny == current.node.equips) {
+					return !card.classListContains("removing", "feichu", "emptyequip");
+				} else if (destiny == current.node.judges) {
+					return !card.classListContains("removing", "feichu");
+				} else if (destiny == current.node.expansions) {
+					return !card.classListContains("removing");
+				}
+			}
 			let parent = card.parentNode;
 			if (parent == current.node.handcards1 || parent == current.node.handcards2) {
 				return !card.classList.contains("removing");
@@ -3777,6 +3791,10 @@ export class Get extends GetCompatible {
 				uiintro.addText(get.colorspan(lib.characterTitle[node.name]));
 			}
 
+			if (lib.characterAppend[node.name]) {
+				uiintro.addText(get.colorspan(lib.characterAppend[node.name]));
+			}
+
 			if (get.characterInitFilter(node.name)) {
 				const initFilters = get.characterInitFilter(node.name).filter(tag => {
 					if (!lib.characterInitFilter[node.name]) return true;
@@ -3992,21 +4010,34 @@ export class Get extends GetCompatible {
 				}
 			}
 			if (!simple || get.is.phoneLayout()) {
-				var es = node.getCards("e");
+				var es = node.getVCards("e");
 				for (var i = 0; i < es.length; i++) {
-					const special = [es[i]].concat(es[i].cards || []).find(j => j.name == es[i].name && lib.card[j.name]?.cardPrompt);
+					let name = es[i].name;
+					if (es[i]?.cards?.length == 1 && es[i].cards[0].name != name) {
+						name = es[i].cards[0].name;
+					}
+					let carde = game.createCard(name, es[i].suit, es[i].number, es[i].nature);
+					if (name != es[i].name) ui.create.cardTempName(es[i], carde);
+					let html = carde.outerHTML;
+					const special = [carde].concat(es[i].cards || []).find(j => j.name == es[i].name && lib.card[j.name]?.cardPrompt);
 					var str = special ? lib.card[special.name].cardPrompt(special, node) : lib.translate[es[i].name + "_info"];
-					uiintro.add('<div><div class="skill">' + es[i].outerHTML + "</div><div>" + str + "</div></div>");
+					uiintro.add('<div><div class="skill">' + html + "</div><div>" + str + "</div></div>");
 					uiintro.content.lastChild.querySelector(".skill>.card").style.transform = "";
 
 					if (lib.translate[es[i].name + "_append"]) {
 						uiintro.add('<div class="text">' + lib.translate[es[i].name + "_append"] + "</div>");
 					}
 				}
-				var js = node.getCards("j");
+				var js = node.getVCards("j");
 				for (var i = 0; i < js.length; i++) {
+					let name = js[i].name;
+					if (js[i]?.cards?.length == 1 && js[i].cards[0].name != name) {
+						name = js[i].cards[0].name;
+					}
+					let cardj = game.createCard(name, js[i].suit, js[i].number, js[i].nature);
+					if (name != js[i].name) ui.create.cardTempName(js[i], cardj);
+					let html = cardj.outerHTML;
 					if (js[i].viewAs && js[i].viewAs != js[i].name) {
-						let html = js[i].outerHTML;
 						let cardInfo = lib.card[js[i].viewAs],
 							showCardIntro = true;
 						if (cardInfo.blankCard) {
@@ -4018,7 +4049,7 @@ export class Get extends GetCompatible {
 						}
 						uiintro.add('<div><div class="skill">' + html + "</div><div>" + lib.translate[js[i].viewAs] + "：" + lib.translate[js[i].viewAs + "_info"] + "</div></div>");
 					} else {
-						uiintro.add('<div><div class="skill">' + js[i].outerHTML + "</div><div>" + lib.translate[js[i].name + "_info"] + "</div></div>");
+						uiintro.add('<div><div class="skill">' + html + "</div><div>" + lib.translate[js[i].name + "_info"] + "</div></div>");
 					}
 					uiintro.content.lastChild.querySelector(".skill>.card").style.transform = "";
 				}
@@ -4499,6 +4530,10 @@ export class Get extends GetCompatible {
 
 			if (lib.characterTitle[node.link]) {
 				uiintro.addText(get.colorspan(lib.characterTitle[node.link]));
+			}
+
+			if (lib.characterAppend[node.link]) {
+				uiintro.addText(get.colorspan(lib.characterAppend[node.link]));
 			}
 
 			if (get.characterInitFilter(node.link)) {

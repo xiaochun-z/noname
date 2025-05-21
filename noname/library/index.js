@@ -26,8 +26,10 @@ import { defaultHooks } from "./hooks/index.js";
 import { freezeButExtensible } from "../util/index.js";
 import security from "../util/security.js";
 import { ErrorManager } from "../util/error.js";
+import { Concurrent } from "./concurrent/index.js";
 
 import { defaultSplashs } from "../init/onload/index.js";
+import dedent from "../../game/dedent.js"
 
 export class Library {
 	configprefix = "noname_0.9_";
@@ -118,6 +120,7 @@ export class Library {
 	);
 	characterReplace = {};
 	characterSubstitute = {};
+	characterAppend = {};
 	characterInitFilter = {};
 	characterGuozhanFilter = ["mode_guozhan"];
 	dynamicTranslate = {};
@@ -169,17 +172,18 @@ export class Library {
 	ondb2 = [];
 	chatHistory = [];
 	emotionList = {
-		xiaowu_emotion: 14,
-		xiaokuo_emotion: 8,
+		huangdou_emotion: 50,
 		shibing_emotion: 15,
+		wanglang_emotion: 20,
 		guojia_emotion: 20,
 		zhenji_emotion: 20,
+		xiaowu_emotion: 14,
+		xiaokuo_emotion: 8,
 		xiaosha_emotion: 20,
 		xiaotao_emotion: 20,
 		xiaojiu_emotion: 20,
 		biexiao_emotion: 18,
 		chaijun_emotion: 43,
-		huangdou_emotion: 50,
 		maoshu_emotion: 18,
 	};
 	animate = {
@@ -304,6 +308,11 @@ export class Library {
 	 * lib.announce.unsubscribe("skinChange", method);
 	 */
 	announce = new Announce(new EventTarget(), new WeakMap());
+
+	/**
+	 * 提供一组用于并发异步操作的静态工具方法
+	 */
+	concurrent = Concurrent;
 
 	objectURL = new Map();
 	hookmap = {};
@@ -670,6 +679,29 @@ export class Library {
 		["霹雳投石车", "霹雳车"],
 		["金箍棒", "如意金箍棒"],
 	]);
+	/**
+	 * the cards which can respond card
+	 *
+	 * 卡牌的可被响应牌（主要是用于player.canRespond函数）
+	 * 例如可响应杀的主要就是闪，或者本体的草船借箭，以此类推；
+	 * 类似劝酒这种复杂条件的，可以放函数，但仅检测实体牌
+	 */
+	respondMap = {
+		sha: ["shan"],
+		wanjian: ["shan"],
+		qizhengxiangsheng: ["sha", "shan"],
+		juedou: ["sha"],
+		nanman: ["sha"],
+		jiedao: ["jiedao"],
+		//所有锦囊都可以用无懈可击响应
+		trick: ["wuxie"],
+		//所有伤害牌都可以用草船借箭响应
+		damage: ["caochuan"],
+		//所有基本牌或普通锦囊牌都可以响应
+		all: [],
+		//也可以放函数
+		khquanjiu: ["jiu", (card, player) => get.number(card, player) == 9],
+	};
 	characterDialogGroup = {
 		收藏: function (name, capt) {
 			return lib.config.favouriteCharacter.includes(name) ? capt : null;
@@ -1128,6 +1160,21 @@ export class Library {
 							delete window.lib;
 							delete window._status;
 						}
+					},
+					unfrequent: true,
+				},
+				extension_auto_import: {
+					name: "自动导入扩展",
+					intro: dedent`
+						开启后无名杀会自动导入扩展目录下的扩展（以此法导入的扩展默认关闭）
+						<br />
+						※ 如果你的运行环境不支持文件操作，则该选项无效
+						<br />
+						※ 鉴于不同平台下文件操作的性能区别，开启后可能会降低加载速度
+					`,
+					init: false,
+					async onclick(bool) {
+						await game.promises.saveConfig("extension_auto_import", bool);
 					},
 					unfrequent: true,
 				},
@@ -2525,7 +2572,7 @@ export class Library {
 						Mohua: "水墨",
 						Xiangong: "先攻",
 						Zhuzhang: "竹杖",
-						Shuimo: "幻彩",
+						// Shuimo: "幻彩",
 						Anhei: "黑暗",
 						Mozhua: "魔爪",
 						Shenjian: "神剑",
@@ -9712,6 +9759,7 @@ export class Library {
 		_disableJudge: "判定区",
 
 		xiaowu_emotion: "小无表情",
+		wanglang_emotion: "王朗表情",
 		guojia_emotion: "郭嘉表情",
 		zhenji_emotion: "甄姬表情",
 		shibing_emotion: "士兵表情",
@@ -10847,7 +10895,7 @@ export class Library {
 				);
 			},
 			onChooseToUse: event => {
-				const player = _status.event.player,
+				const { player } = event,
 					fury = player.storage.stratagem_fury;
 				if (!fury) return;
 				if (!event.stratagemSettings && !game.online)
@@ -10999,6 +11047,7 @@ export class Library {
 				},
 				directHit_ai: true,
 				skillTagFilter: (player, tag, arg) => {
+					if (!arg?.card) return false;
 					const card = get.autoViewAs(arg.card);
 					if (card.name != "sha" || !card.storage.stratagem_buffed) return false;
 					const target = arg.target;
@@ -11044,7 +11093,8 @@ export class Library {
 			markimage: "image/card/charge.png",
 			intro: {
 				content(storage, player) {
-					const max = player.getMaxCharge();
+					let max = player.getMaxCharge();
+					if (max == Infinity) max = "∞";
 					return `当前蓄力点数：${storage}/${max}`;
 				},
 			},
@@ -11678,7 +11728,6 @@ export class Library {
 					},
 					viewAs: {
 						name: "sha",
-						isCard: true,
 					},
 					viewAsFilter: function (player) {
 						if (!player.countCards("hs", "tao")) return false;
@@ -11706,7 +11755,6 @@ export class Library {
 					},
 					viewAs: {
 						name: "shan",
-						isCard: true,
 					},
 					prompt: "将一张桃当闪打出",
 					check: function () {
@@ -13226,14 +13274,98 @@ export class Library {
 
 						player.directgain(info.handcards);
 						lib.playerOL[i] = player;
-						if (info.vcardsMap) {
+						/*if (info.vcardsMap) {
 							for (var i = 0; i < info.vcardsMap.equips.length; i++) {
 								player.addVirtualEquip(info.vcardsMap.equips[i], info.vcardsMap.equips[i].cards);
 							}
 							for (var i = 0; i < info.vcardsMap.judges.length; i++) {
 								player.addVirtualJudge(info.vcardsMap.judges[i], info.vcardsMap.judges[i].cards);
 							}
+						}*/
+						for (var i = 0; i < info.equips.length; i++) {
+							let card = info.equips[i],
+								id = card.cardid,
+								map = info.equips_map[id];
+							card.fix();
+							card.style.transform = "";
+							card.classList.remove("drawinghidden");
+							delete card._transform;
+							if (map.isViewAsCard) {
+								card.isViewAsCard = true;
+								if (map._destroyed_Virtua) card._destroyed_Virtua = map._destroyed_Virtua;
+								if (map.destroyed) card.destroyed = map.destroyed;
+								card.cards = map?.vcard?.cards || [];
+								card.viewAs = map?.vcard?.name || card.name;
+								card.classList.add("fakeequip");
+							} else {
+								card.classList.remove("fakeequip");
+								delete card.viewAs;
+							}
+							if (map.name2) card.node.name2.innerHTML = map.name2;
+							if (map.vcard) {
+								const cardSymbol = Symbol("card");
+								card.cardSymbol = cardSymbol;
+								card[cardSymbol] = map.vcard;
+								if (map.vcard.subtypes) card.subtypes = map.vcard.subtypes;
+								if (map.vcard.cards?.length) {
+									for (let j of map.vcard.cards) {
+										j.goto(ui.special);
+										j.destiny = player.node.equips;
+									}
+								}
+								player.addVirtualEquip(map.vcard, map.vcard.cards);
+							}
+							let equipped = false,
+								equipNum = get.equipNum(card);
+							if (player.node.equips.childNodes.length) {
+								for (let i = 0; i < player.node.equips.childNodes.length; i++) {
+									if (get.equipNum(player.node.equips.childNodes[i]) >= equipNum) {
+										equipped = true;
+										player.node.equips.insertBefore(card, player.node.equips.childNodes[i]);
+										break;
+									}
+								}
+							}
+							if (equipped === false) {
+								player.node.equips.appendChild(card);
+							}
 						}
+						for (var i = 0; i < info.judges.length; i++) {
+							let card = info.judges[i],
+								id = card.cardid,
+								map = info.judges_map[id];
+							card.fix();
+							card.style.transform = "";
+							card.classList.remove("drawinghidden");
+							delete card._transform;
+							if (map.isViewAsCard) {
+								card.isViewAsCard = true;
+								if (map._destroyed_Virtua) card._destroyed_Virtua = map._destroyed_Virtua;
+								if (map.destroyed) card.destroyed = map.destroyed;
+								card.cards = map?.vcard?.cards || [];
+								card.viewAs = map?.vcard?.name || card.name;
+								card.classList.add("fakejudge");
+							} else {
+								card.classList.remove("fakejudge");
+								delete card.viewAs;
+							}
+							if (map.name2) card.node.name2.innerHTML = map.name2;
+							if (map.vcard) {
+								const cardSymbol = Symbol("card");
+								card.cardSymbol = cardSymbol;
+								card[cardSymbol] = map.vcard;
+								if (map.vcard.subtypes) card.subtypes = map.vcard.subtypes;
+								if (map.vcard.cards?.length) {
+									for (let j of map.vcard.cards) {
+										j.goto(ui.special);
+										j.destiny = player.node.judges;
+									}
+								}
+								player.addVirtualJudge(map.vcard, map.vcard.cards);
+							}
+							player.node.judges.insertBefore(card, player.node.judges.firstChild);
+						}
+
 						for (var i = 0; i < info.handcards.length; i++) {
 							info.handcards[i].addGaintag(info.gaintag[i]);
 						}
@@ -13893,6 +14025,23 @@ export class Library {
 			},
 		],
 		[
+			"长安",
+			{	
+				showName: "镐",
+				color: "#40e0d0",
+				nature: "shenmm",
+			},
+		],
+		[
+			"长安神",
+			{
+				/**
+				 * @returns {string}
+				 */
+				getSpan: () => `${get.prefixSpan("长安")}${get.prefixSpan("神")}`,
+			},
+		],
+		[
 			"TW神",
 			{
 				/**
@@ -14173,6 +14322,13 @@ export class Library {
 			},
 		],
 		[
+			"烈",
+			{
+				color: "#8B0000",
+				nature: "firemm",
+			},
+		],
+		[
 			"燕幽",
 			{
 				showName: "幽",
@@ -14216,6 +14372,21 @@ export class Library {
 				showName: "3D",
 				color: "#edb5b5",
 				nature: "watermm",
+			},
+		],
+		[
+			"荆扬",
+			{
+				showName: "扬",
+				color: "#ffcc99",
+				nature: "thundermm",
+			},
+		],
+		[
+			"魔",
+			{
+				color: "#2e002e",
+				nature: "fire",
 			},
 		],
 	]);

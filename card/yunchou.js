@@ -103,13 +103,14 @@ game.import("card", function () {
 						event.finish();
 						return;
 					}
-					var nextSeat = _status.currentPhase.next;
+					var nextSeat = _status.currentPhase?.next;
 					var att = get.attitude(player, nextSeat);
 					if (player.isUnderControl(true) && !_status.auto) {
 						event.dialog.setCaption("将任意张牌以任意顺序置于牌堆顶（先选择的在上）");
 					}
 					var next = player.chooseButton([1, event.dialog.buttons.length], event.dialog);
 					next.ai = function (button) {
+						const { nextSeat } = get.event();
 						if (att > 0) {
 							return get.value(button.link, nextSeat) - 5;
 						} else {
@@ -118,6 +119,7 @@ game.import("card", function () {
 					};
 					next.set("closeDialog", false);
 					next.set("dialogdisplay", true);
+					next.set("nextSeat", nextSeat);
 					"step 1";
 					if (result && result.bool && result.links && result.links.length) {
 						for (var i = 0; i < result.buttons.length; i++) {
@@ -905,15 +907,21 @@ game.import("card", function () {
 					return player.hasUsableCard("chenhuodajie");
 				},
 				content() {
-					player.chooseToUse(
-						get.prompt("chenhuodajie", trigger.player).replace(/发动/, "使用"),
-						function (card, player) {
-							if (card.name != "chenhuodajie") return false;
-							return lib.filter.cardEnabled(card, player, "forceEnable");
-						},
-						trigger.player,
-						-1
-					).targetRequired = true;
+					player
+						.chooseToUse(
+							get.prompt("chenhuodajie", trigger.player).replace(/发动/, "使用"),
+							function (card, player) {
+								if (get.name(card) != "chenhuodajie") return false;
+								return lib.filter.cardEnabled(card, player, "forceEnable");
+							},
+							-1
+						)
+						.set("sourcex", trigger.player)
+						.set("filterTarget", function (card, player, target) {
+							if (target != _status.event.sourcex) return false;
+							return lib.filter.targetEnabled.apply(this, arguments);
+						})
+						.set("targetRequired", true);
 				},
 			},
 		},

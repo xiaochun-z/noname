@@ -1,8 +1,38 @@
 const characters = {
-	ol_miheng: {
+	ol_caizhenji: {
+		sex: "female",
+		group: "wei",
+		hp: 3,
+		skills: ["olkedi", "olcunze"],
+	},
+	ol_zhangmancheng: {
+		sex: "male",
+		group: "qun",
+		hp: 5,
+		skills: ["olkuangxin", "olleishi"],
+	},
+	ol_guanhai: {
 		sex: "male",
 		group: "qun",
 		hp: 4,
+		skills: ["olxiewei", "olyouque"],
+	},
+	ol_yangfu: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["olpingzhong", "olsuyi"],
+	},
+	ol_lifeng: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["oljiyun", "olshuliang"],
+	},
+	ol_miheng: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
 		skills: ["olkuangjuan", "olfeibian"],
 	},
 	ol_peiyuanshao: {
@@ -832,7 +862,6 @@ const characters = {
 		group: "qun",
 		hp: 3,
 		skills: ["ollongdan", "chongzhen"],
-		dieAudios: ["zhaoyun"],
 	},
 	liuxie: {
 		sex: "male",

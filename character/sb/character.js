@@ -178,7 +178,7 @@ const characters = {
 		group: "wei",
 		hp: 4,
 		maxHp: 4,
-		hujia: 1,
+		hujia: 2,
 		skills: ["sbjushou", "sbjiewei"],
 	},
 	sb_xiahoushi: {

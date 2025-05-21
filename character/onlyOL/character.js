@@ -1,4 +1,24 @@
 const characters = {
+	dm_simayi: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["olguifu", "olmoubian"], //,"olzhouxi"
+		name: "司马|懿",
+	},
+	ol_madai: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["mashu", "olqianxi"],
+	},
+	ol_sb_yl_luzhi: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		maxHp: 4,
+		skills: ["olsibing", "olliance"],
+	},
 	ol_guanzhang: {
 		sex: "male",
 		group: "shu",
