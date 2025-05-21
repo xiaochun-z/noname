@@ -16,4 +16,4 @@ jobs:
         run: yarn add -D eslint @eslint/js globals typescript-eslint eslint-plugin-vue
 
       - name: Run ESLint
-        run: eslint card/ character/ extension/ game/game.js game/entry.js mode/ noname/ noname.js noname-compatible.js service-worker.js
+        run: npx eslint card/ character/ extension/ game/game.js game/entry.js mode/ noname/ noname.js noname-compatible.js service-worker.js
