@@ -7946,7 +7946,7 @@ export class Game extends GameCompatible {
 			for (let i = 0; i < event.config.size; i++) {
 				ui.window.appendChild(event.nodes[i]);
 			}
-			("step 1");
+			"step 1";
 			let rand1 = event.config.first;
 			if (rand1 == "rand") {
 				rand1 = Math.random() < 0.5;
@@ -7983,7 +7983,7 @@ export class Game extends GameCompatible {
 			}
 			game.delay();
 			lib.init.onfree();
-			("step 2");
+			"step 2";
 			if (event.checkredo()) {
 				return;
 			}
@@ -8003,7 +8003,7 @@ export class Game extends GameCompatible {
 				event.aiMove();
 				game.delay();
 			}
-			("step 3");
+			"step 3";
 			if (typeof event.fast == "number" && get.time() - event.fast <= 1000) {
 				event.fast = true;
 			} else {
@@ -8040,7 +8040,7 @@ export class Game extends GameCompatible {
 					game.delay();
 				}
 			}
-			("step 4");
+			"step 4";
 			if (event.checkredo()) {
 				return;
 			}
@@ -8069,7 +8069,7 @@ export class Game extends GameCompatible {
 				}
 			}
 			game.delay();
-			("step 5");
+			"step 5";
 			event.prompt("选择" + get.cnNumber(event.config.num) + "名出场武将");
 			event.enemylist = [];
 			for (let i = 0; i < event.avatars.length; i++) {
@@ -8099,7 +8099,7 @@ export class Game extends GameCompatible {
 				event.nodes[i].hide();
 			}
 			game.pause();
-			("step 6");
+			"step 6";
 			event.promptbar.delete();
 			if (ui.cardPileButton) {
 				ui.cardPileButton.style.display = "";
