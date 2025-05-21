@@ -1014,6 +1014,7 @@ const skills = {
 							}
 						})
 						.forResult();
+					if (!result?.bool || !result?.links.length) return;
 					const cardname = result.links[0][2];
 					result = await player.chooseCard("h", `选择一张手牌，将之视为${get.translation(cardname)}然后装备之`).forResult();
 					event.result = {
