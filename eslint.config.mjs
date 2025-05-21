@@ -26,6 +26,8 @@ export default ts.config(
 			"@typescript-eslint/no-unused-vars": 0,
 			"@typescript-eslint/no-unused-expressions": 0,
 			"@typescript-eslint/no-this-alias": 0,
+			"@typescript-eslint/no-explicit-any": 0,
+			"vue/multi-word-component-names": 0,
 			"no-class-assign": 0,
 			"no-console": 0,
 			"no-constant-condition": [
