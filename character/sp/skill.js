@@ -34394,11 +34394,13 @@ const skills = {
 		derivation: "xinfu_zhanji",
 		trigger: { global: "dieAfter" },
 		logTarget: "player",
-		async content(e, t, player) {
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			if (player.isDamaged()) {
-				player.recover();
-			} else player.gainMaxHp();
+				await player.recover();
+			} else {
+				await player.gainMaxHp();
+			}
 			player.addSkills("xinfu_zhanji");
 		},
 	},
