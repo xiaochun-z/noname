@@ -887,34 +887,38 @@ const skills = {
 	},
 	//库特莉亚芙卡
 	kud_qiaoshou: {
+		getList(event) {
+			const bool = event.name == "phaseJieshu";
+			const subtypes = bool ? ["equip2", "equip3"] : ["equip1", "equip4"];
+			const list = bool ? ["rewrite_bagua", "rewrite_renwang", "rewrite_tengjia", "rewrite_baiyin"] : ["pyzhuren_heart", "pyzhuren_diamond", "pyzhuren_club", "pyzhuren_spade", "pyzhuren_shandian", "rewrite_zhuge"];
+			return list
+				.addArray(lib.inpile)
+				.map(name => [get.subtype(name), "", name])
+				.filter(([subtype]) => subtypes.includes(subtype));
+		},
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return !player.hasVCard(card => card.storage?.kud_qiaoshou, "e");
+			if (!get.info("kud_qiaoshou").getList(event).length) return false;
+			return player.countCards("h") && !player.hasVCard(card => card.storage?.kud_qiaoshou, "e");
 		},
 		chooseButton: {
-			dialog() {
-				var list = [];
-				var list2 = ["pyzhuren_heart", "pyzhuren_diamond", "pyzhuren_club", "pyzhuren_spade", "pyzhuren_shandian", "rewrite_zhuge"];
-				list2.addArray(lib.inpile);
-				for (var i of list2) {
-					var sub = get.subtype(i);
-					if (["equip1", "equip4"].includes(sub)) list.push([sub, "", i]);
-				}
+			dialog(event, player) {
+				const list = get.info("kud_qiaoshou").getList(event);
 				return ui.create.dialog("巧手：选择一种装备牌", [list, "vcard"], "hidden");
 			},
 			check(button) {
-				var player = _status.event.player;
-				var name = button.link[2];
+				const player = get.player();
+				const name = button.link[2];
 				if (get.subtype(name) == "equip4" || player.getEquip(name)) return 0;
-				var sha = player.countCards("h", "sha");
+				const sha = player.countCards("h", "sha");
 				switch (name) {
 					case "rewrite_zhuge":
 						return sha - player.getCardUsable("sha");
 					case "guding":
 						if (
 							sha > 0 &&
-							game.hasPlayer(function (current) {
+							game.hasPlayer(current => {
 								return get.attitude(player, current) < 0 && !current.countCards("h") && player.canUse("sha", current) && get.effect(current, { name: "sha" }, player) > 0;
 							})
 						)
@@ -939,9 +943,31 @@ const skills = {
 				}
 			},
 			backup(links) {
-				var next = get.copy(lib.skill.kud_qiaoshou_backupx);
-				next.cardname = links[0][2];
-				return next;
+				return {
+					cardname: links[0][2],
+					filterCard: true,
+					discard: false,
+					lose: false,
+					delay: false,
+					check(event, player) {
+						return 6 - get.value(card);
+					},
+					async content(event, trigger, player) {
+						const name = lib.skill.kud_qiaoshou_backup.cardname,
+							card = {
+								name,
+								subtypes: [],
+								storage: { kud_qiaoshou: true },
+							};
+						game.log(player, "声明了", "#y" + get.translation(name));
+						player.$throw(event.cards);
+						await game.delay(0, 300);
+						await player.equip(get.autoViewAs(card, event.cards));
+						player.addTempSkill("kud_qiaoshou_equip", { player: ["phaseUseEnd", "phaseZhunbeiBegin"] });
+						await player.draw();
+					},
+					ai: { result: { player: 1 } },
+				};
 			},
 			prompt(links) {
 				return "将一张手牌置于武将牌上，然后视为装备" + get.translation(links[0][2]);
@@ -951,131 +977,87 @@ const skills = {
 		ai: {
 			notemp: true,
 			order: 5,
-			result: {
-				player: 1,
+			result: { player: 1 },
+		},
+		subSkill: {
+			end: {
+				trigger: { player: "phaseJieshuBegin" },
+				filter(event, player) {
+					if (!get.info("kud_qiaoshou").getList(event).length) return false;
+					return player.countCards("h") && !player.hasVCard(card => card.storage?.kud_qiaoshou, "e");
+				},
+				async cost(event, trigger, player) {
+					const list = get.info("kud_qiaoshou").getList(trigger);
+					if (!list.length) return;
+					let result;
+					result = await player
+						.chooseButton([get.prompt("kud_qiaoshou"), [list, "vcard"]])
+						.set("ai", button => {
+							const player = get.player();
+							const name = button.link[2];
+							if (get.subtype(name) == "equip3" || player.getEquip(name)) return false;
+							switch (name) {
+								case "yexingyi":
+									if (player.hp > 2 || player.getEquip("bagua") || player.getEquip("tengjia")) return 1.5 + Math.random();
+									return 0.5 + Math.random();
+								case "rewrite_bagua":
+								case "rewrite_renwang":
+									if (player.getEquip("bagua") || player.getEquip("tengjia") || player.getEquip("renwang")) return Math.random();
+									return 1.2 + Math.random();
+								case "rewrite_tengjia":
+									if (player.getEquip("baiyin")) return 1.3 + Math.random();
+									return Math.random();
+								case "rewrite_baiyin":
+									return 0.4 + Math.random();
+								default:
+									return 0;
+							}
+						})
+						.forResult();
+					const cardname = result.links[0][2];
+					result = await player.chooseCard("h", `选择一张手牌，将之视为${get.translation(cardname)}然后装备之`).forResult();
+					event.result = {
+						bool: result?.bool,
+						cards: result?.cards,
+						cost_data: { cardname: cardname },
+					};
+				},
+				async content(event, trigger, player) {
+					const name = event.cost_data.cardname,
+						card = {
+							name,
+							subtypes: [],
+							storage: { kud_qiaoshou: true },
+						};
+					game.log(player, "声明了", "#y" + get.translation(name));
+					player.$throw(event.cards);
+					await game.delay(0, 300);
+					await player.equip(get.autoViewAs(card, event.cards));
+					player.addTempSkill("kud_qiaoshou_equip", { player: ["phaseUseEnd", "phaseZhunbeiBegin"] });
+					await player.draw();
+				},
 			},
-		},
-	},
-	kud_qiaoshou_backupx: {
-		filterCard: true,
-		discard: false,
-		lose: false,
-		delay: false,
-		check(event, player) {
-			return 6 - get.value(card);
-		},
-		async content(event, trigger, player) {
-			const name = lib.skill.kud_qiaoshou_backup.cardname,
-				card = {
-					name,
-					subtypes: [],
-					storage: { kud_qiaoshou: true },
-				};
-			game.log(player, "声明了", "#y" + get.translation(name));
-			player.$throw(event.cards);
-			await game.delay(0, 300);
-			await player.equip(get.autoViewAs(card, event.cards));
-			player.addTempSkill("kud_qiaoshou_equip", {
-				player: ["phaseUseEnd", "phaseZhunbeiBegin"],
-			});
-			await player.draw();
-		},
-		ai: {
-			result: {
-				player: 1,
-			},
-		},
-	},
-	kud_qiaoshou_equip: {
-		charlotte: true,
-		onremove(player, skill) {
-			const cards = player
-				.getVCards("e", card => card.storage?.kud_qiaoshou)
-				.reduce((cards, vcard) => {
-					if (vcard?.cards.length) cards.addArray(vcard.cards);
-					return cards;
-				}, []);
-			if (cards.length) player.loseToDiscardpile(cards);
-		},
-		intro: {
-			markcount: "expansion",
-			mark(dialog, storage, player) {
-				dialog.add(player.getExpansions("kud_qiaoshou_equip"));
-				dialog.addText("当前装备：" + get.translation(player.storage.kud_qiaoshou_equip2));
-				var str2 = lib.translate[player.storage.kud_qiaoshou_equip2 + "_info"];
-				if (str2) {
-					if (str2.length >= 12) dialog.addText(str2, false);
-					else dialog.addText(str2);
-				}
-			},
-		},
-	},
-	kud_qiaoshou_end: {
-		trigger: { player: "phaseJieshuBegin" },
-		filter(event, player) {
-			return player.countCards("h") > 0 && !player.getExpansions("kud_qiaoshou_equip").length;
-		},
-		cost() {
-			"step 0";
-			var list = [];
-			var list2 = ["rewrite_bagua", "rewrite_renwang", "rewrite_tengjia", "rewrite_baiyin"];
-			list2.addArray(lib.inpile);
-			for (var i of list2) {
-				var sub = get.subtype(i);
-				if (["equip2", "equip3"].includes(sub)) list.push([sub, "", i]);
-			}
-			player.chooseButton([get.prompt("kud_qiaoshou"), [list, "vcard"]]).set("ai", function (button) {
-				var player = _status.event.player;
-				var name = button.link[2];
-				if (get.subtype(name) == "equip3" || player.getEquip(name)) return false;
-				switch (name) {
-					case "yexingyi":
-						if (player.hp > 2 || player.getEquip("bagua") || player.getEquip("tengjia")) return 1.5 + Math.random();
-						return 0.5 + Math.random();
-					case "rewrite_bagua":
-					case "rewrite_renwang":
-						if (player.getEquip("bagua") || player.getEquip("tengjia") || player.getEquip("renwang")) return Math.random();
-						return 1.2 + Math.random();
-					case "rewrite_tengjia":
-						if (player.getEquip("baiyin")) return 1.3 + Math.random();
-						return Math.random();
-					case "rewrite_baiyin":
-						return 0.4 + Math.random();
-					default:
-						return 0;
-				}
-			});
-			"step 1";
-			if (result.bool) {
-				event.cardname = result.links[0][2];
-				player.chooseCard("h", true, "将一张手牌置于武将牌上，然后视为装备" + get.translation(event.cardname));
-			} else event.finish();
-			"step 2";
-			if (result.bool) {
-				event.result = {
-					bool: true,
-					cards: result.cards,
-					cost_data: {
-						cardname: event.cardname,
+			backup: {},
+			equip: {
+				charlotte: true,
+				onremove(player, skill) {
+					const cards = player.getCards("e", card => card[card.cardSymbol]?.storage?.kud_qiaoshou);
+					if (cards.length) player.loseToDiscardpile(cards);
+				},
+				mark: true,
+				intro: {
+					markcount: "expansion",
+					mark(dialog, storage, player) {
+						const cards = player.getCards("e", card => card[card.cardSymbol]?.storage?.kud_qiaoshou);
+						if (!cards.length) {
+							return "无“巧”";
+						} else {
+							dialog.addText("当前装备");
+							dialog.add(cards);
+						}
 					},
-				};
-			}
-		},
-		async content(event, trigger, player) {
-			const name = event.cost_data.cardname,
-				card = {
-					name,
-					subtypes: [],
-					storage: { kud_qiaoshou: true },
-				};
-			game.log(player, "声明了", "#y" + get.translation(name));
-			player.$throw(event.cards);
-			await game.delay(0, 300);
-			await player.equip(get.autoViewAs(card, event.cards));
-			player.addTempSkill("kud_qiaoshou_equip", {
-				player: ["phaseUseEnd", "phaseZhunbeiBegin"],
-			});
-			await player.draw();
+				},
+			},
 		},
 	},
 	kud_buhui: {
@@ -1086,24 +1068,20 @@ const skills = {
 		skillAnimation: true,
 		limited: true,
 		animationColor: "gray",
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			var cards = player.getCards("e");
-			if (cards.length) player.discard(cards);
-			player.removeSkill("kud_qiaoshou_equip");
-			player.draw(cards.length);
+			const cards = player.getCards("e");
+			if (cards.length) {
+				await player.discard(cards);
+				await player.draw(cards.length);
+			}
 			player.addSkills("kud_chongzhen");
-			"step 1";
-			var num = 2 - player.hp;
-			if (num) player.recover(num);
+			await player.recoverTo(2);
 		},
 		derivation: "riki_chongzhen",
 		ai: {
 			order: 0.5,
-			result: {
-				player: 1,
-			},
+			result: { player: 1 },
 			save: true,
 			skillTagFilter(player, tag, target) {
 				return player == target;
@@ -8161,7 +8139,7 @@ const skills = {
 		filter(event, player) {
 			return game.hasPlayer(target => lib.skill.noda_xunxin.filterTarget(null, player, target));
 		},
-		viewAs: { 
+		viewAs: {
 			name: "juedou",
 			isCard: true,
 		},
