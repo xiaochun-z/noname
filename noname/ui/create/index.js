@@ -3361,6 +3361,52 @@ export class Create {
 			}
 			return node;
 		},
+		/**
+		 * @returns { import("../../library/index.js").Button }
+		 */
+		skill: (item, type, position, noclick, node) => {
+			//搜索拥有这个技能的角色
+			let characterName;
+			if (Array.isArray(item)) {
+				characterName = Object.keys(lib.character).find(namex => get.character(namex, 3).includes(item[0])) || item[1];
+				item = item[0];
+			} else {
+				characterName = Object.keys(lib.character).find(namex => get.character(namex, 3).includes(item)) || "shibing";
+			}
+			const info = get.character(characterName);
+			//创建这张vcard并重新赋值link
+			node = ui.create.buttonPresets.vcard(item, "vcard", position, noclick);
+			node.owner = characterName;
+			node.link = item;
+			//更改vcard的名字不然看不清
+			node.node.name.innerHTML = `<div class="name" data-nature=${get.groupnature(info[1], "raw")}m style="position: relative;color:#ffffff;fontweight:bold">${get.translation(item)}</div>`;
+			//更改vcard背景
+			node.node.background.innerHTML = "";
+			node.setBackground(characterName, "character");
+			//添加右键查看技能信息
+			node._customintro = function (uiintro, evt) {
+				const skill = node.link;
+				uiintro.add(get.translation(skill));
+				if (lib.translate[skill + "_info"]) {
+					uiintro.add(`<div class="text">${get.skillInfoTranslation(skill)}</div>`);
+					if (lib.translate[skill + "_append"]) {
+						uiintro._place_text = uiintro.add('<div class="text">' + lib.translate[skill + "_append"] + "</div>");
+					}
+				}
+				if (lib.skill[skill]?.derivation) {
+					let skills = lib.skill[skill].derivation;
+					if (!Array.isArray(skills)) {
+						skills = [skills];
+					}
+					skills = skills.filter(skill => lib.translate[`${skill}_info`] && lib.skill[skill]);
+					if (skills.length) {
+						uiintro.add(`—— 衍生技能 ——`);
+					}
+					uiintro.add([skills.map(i => [i, node.owner]), ui.create.buttonPresets.skill]);
+				}
+			};
+			return node;
+		},
 	};
 	button(item, type, position, noClick, button) {
 		return new lib.element.Button(item, type, position, noClick, button);
