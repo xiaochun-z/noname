@@ -113,14 +113,13 @@ export class PlayerGuozhan extends Player {
 			next.setContent("mayChangeVice");
 			// @ts-expect-error 类型就是这么写的
 			next.player = this;
-			// @ts-expect-error 类型就是这么写的
 			next.skill = skill;
-			// @ts-expect-error 类型就是这么写的
 			if (repeat || (!_status.connectMode && get.config("changeViceType") == "online")) {
+				// @ts-expect-error 类型就是这么写的
 				next.repeat = true;
 			}
-			// @ts-expect-error 类型就是这么写的
 			if (hidden == "hidden") {
+				// @ts-expect-error 类型就是这么写的
 				next.hidden = true;
 			}
 			return next;
@@ -435,8 +434,8 @@ export class PlayerGuozhan extends Player {
 		// @ts-expect-error 类型就是这么写的
 		next.setContent("changeVice");
 		next.num = !_status.connectMode && get.config("changeViceType") == "online" ? 1 : 3;
-		// @ts-expect-error 类型就是这么写的
 		if (hidden) {
+			// @ts-expect-error 类型就是这么写的
 			next.hidden = true;
 		}
 		return next;
@@ -692,12 +691,10 @@ export class PlayerGuozhan extends Player {
 		}
 		if (!player) {
 			var next = this.getNext();
-			// @ts-expect-error 类型就是这么写的
 			if (next && next.sieged()) {
 				return true;
 			}
 			var previous = this.getPrevious();
-			// @ts-expect-error 类型就是这么写的
 			if (previous && previous.sieged()) {
 				return true;
 			}
@@ -776,9 +773,7 @@ export class PlayerGuozhan extends Player {
 				shown;
 			var info = get.info(card);
 			if (info.ai && info.ai.expose) {
-				// @ts-expect-error 类型就是这么写的
 				if (_status.event.name == "_wuxie") {
-					// @ts-expect-error 类型就是这么写的
 					if (_status.event.source && _status.event.source.ai.shown) {
 						// @ts-expect-error 类型就是这么写的
 						this.ai.shown += 0.2;
@@ -809,15 +804,15 @@ export class PlayerGuozhan extends Player {
 				} else {
 					c = 1;
 				}
-				// @ts-expect-error 类型就是这么写的
-				if (targets.length == 1 && targets[0] == this) {
-				} else if (targets.length == 1) {
-					// @ts-expect-error 类型就是这么写的
-					this.ai.shown += 0.2 * c;
-				}
-				// @ts-expect-error 类型就是这么写的
-				else {
-					this.ai.shown += 0.1 * c;
+				if (targets.length != 1 || targets[0] != this) {
+					if (targets.length == 1) {
+						// @ts-expect-error 类型就是这么写的
+						this.ai.shown += 0.2 * c;
+					}
+					else {
+						// @ts-expect-error 类型就是这么写的
+						this.ai.shown += 0.1 * c;
+					}
 				}
 			}
 		}
