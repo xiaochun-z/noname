@@ -2803,7 +2803,7 @@ const skills = {
 				},
 				filter(event, player) {
 					let count = 0;
-					let roundCount = 1 + (event.name != "damage");
+					let roundCount = 1;
 					const curLen = player.actionHistory.length;
 					for (let i = curLen - 1; i >= 0; i--) {
 						if (
@@ -2834,7 +2834,7 @@ const skills = {
 				locked: false,
 				async content(event, trigger, player) {
 					let count = 0;
-					let roundCount = 1 + (trigger.name != "damage");
+					let roundCount = 1;
 					const curLen = player.actionHistory.length;
 					for (let i = curLen - 1; i >= 0; i--) {
 						if (
