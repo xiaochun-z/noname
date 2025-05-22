@@ -12211,7 +12211,7 @@ export default () => {
 				audio: true,
 				unique: true,
 				forceunique: true,
-				derivation: ["wuziliangjiangdao", "new_retuxi", "qiaobian", "fakexiaoguo", "gzjieyue", "new_duanliang"],
+				derivation: ["wuziliangjiangdao", "new_retuxi", "qiaobian", "fakexiaoguo", "gz_jieyue", "new_duanliang"],
 				lordSkill: true,
 				global: ["wuziliangjiangdao", "g_jianan"],
 				init(player) {
@@ -12241,12 +12241,12 @@ export default () => {
 						event.finish();
 						return;
 					}
-					var skills = ["new_retuxi", "qiaobian", "fakexiaoguo", "gzjieyue", "new_duanliang"];
+					var skills = ["new_retuxi", "qiaobian", "fakexiaoguo", "gz_jieyue", "new_duanliang"];
 					game.countPlayer(function (current) {
 						if (current.hasSkill("new_retuxi")) skills.remove("new_retuxi");
 						if (current.hasSkill("qiaobian")) skills.remove("qiaobian");
 						if (current.hasSkill("fakexiaoguo")) skills.remove("fakexiaoguo");
-						if (current.hasSkill("gzjieyue")) skills.remove("gzjieyue");
+						if (current.hasSkill("gz_jieyue")) skills.remove("gz_jieyue");
 						if (current.hasSkill("new_duanliang")) skills.remove("new_duanliang");
 					});
 					if (!skills.length) event.finish();
@@ -12275,7 +12275,7 @@ export default () => {
 							)
 								rank = 4;
 							if (
-								skills.includes("gzjieyue") &&
+								skills.includes("gz_jieyue") &&
 								player.countCards("h", function (card) {
 									return get.value(card) < 7;
 								}) > 1
@@ -12313,12 +12313,12 @@ export default () => {
 							var skills = event.skills;
 							if (skills.includes("qiaobian") && player.countCards("h") > 3) return "qiaobian";
 							if (
-								skills.includes("gzjieyue") &&
+								skills.includes("gz_jieyue") &&
 								player.countCards("h", function (card) {
 									return get.value(card) < 7;
 								})
 							)
-								return "gzjieyue";
+								return "gz_jieyue";
 							if (skills.includes("new_retuxi")) return "new_retuxi";
 							return skills.randomGet();
 						})
@@ -12334,7 +12334,7 @@ export default () => {
 						new_retuxi: "jianan_tuxi",
 						qiaobian: "jianan_qiaobian",
 						fakexiaoguo: "jianan_xiaoguo",
-						gzjieyue: "jianan_jieyue",
+						gz_jieyue: "jianan_jieyue",
 						new_duanliang: "jianan_duanliang",
 					};
 					var mapSkills = map[link];
@@ -12493,247 +12493,8 @@ export default () => {
 				},
 			},
 
-			gzzhengbi: {
-				audio: "zhengbi",
-				trigger: { player: "phaseUseBegin" },
-				filter(event, player) {
-					//if(event.player!=player) return false;
-					return (
-						game.hasPlayer(function (current) {
-							return current != player && current.identity == "unknown";
-						}) || player.countCards("h", { type: "basic" })
-					);
-				},
-				check(event, player) {
-					if (
-						player.countCards("h", function (card) {
-							return get.value(card) < 7;
-						})
-					) {
-						if (player.isUnseen()) return Math.random() > 0.7;
-						return true;
-					}
-				},
-				preHidden: true,
-				content() {
-					"step 0";
-					var choices = [];
-					if (
-						game.hasPlayer(function (current) {
-							return current.isUnseen();
-						})
-					)
-						choices.push("选择一名未确定势力的角色");
-					if (
-						game.hasPlayer(function (current) {
-							return current != player && !current.isUnseen();
-						}) &&
-						player.countCards("h", { type: "basic" })
-					)
-						choices.push("将一张基本牌交给一名已确定势力的角色");
-					if (choices.length == 1) {
-						event._result = { index: choices[0] == "选择一名未确定势力的角色" ? 0 : 1 };
-					} else
-						player
-							.chooseControl()
-							.set("ai", function () {
-								if (choices.length > 1) {
-									var player = _status.event.player;
-									if (
-										!game.hasPlayer(function (current) {
-											return (
-												(!current.isUnseen() && current.getEquip("yuxi")) ||
-												(current.hasSkill("gzyongsi") &&
-													!game.hasPlayer(function (current) {
-														return current.getEquips("yuxi").length > 0;
-													}))
-											);
-										}) &&
-										game.hasPlayer(function (current) {
-											return current != player && current.isUnseen();
-										})
-									) {
-										var identity;
-										for (var i = 0; i < game.players; i++) {
-											if (game.players[i].isMajor()) {
-												identity = game.players[i].identity;
-												break;
-											}
-										}
-									}
-									if (!player.isUnseen() && player.identity != identity && get.population(player.identity) + 1 >= get.population(identity)) return 0;
-									return 1;
-								}
-								return 0;
-							})
-							.set("prompt", "征辟：请选择一项")
-							.set("choiceList", choices);
-					("step 1");
-					if (result.index == 0)
-						player.chooseTarget(
-							"请选择一名未确定势力的角色",
-							function (card, player, target) {
-								return target != player && target.identity == "unknown";
-							},
-							true
-						);
-					else
-						player
-							.chooseCardTarget({
-								prompt: "请将一张基本牌交给一名已确定势力的其他角色",
-								position: "h",
-								filterCard(card) {
-									return get.type(card) == "basic";
-								},
-								filterTarget(card, player, target) {
-									return target != player && target.identity != "unknown";
-								},
-								ai1(card) {
-									return 5 - get.value(card);
-								},
-								ai2(target) {
-									var player = _status.event.player;
-									var att = get.attitude(player, target);
-									if (att > 0) return 0;
-									return -(att - 1) / target.countCards("h");
-								},
-							})
-							.set("forced", true);
-					("step 2");
-					event.target = result.targets[0];
-					player.line(result.targets, "green");
-					if (result.cards.length) {
-						event.cards = result.cards;
-						player.give(result.cards, result.targets[0]);
-					} else {
-						player.storage.gzzhengbi_eff1 = result.targets[0];
-						player.addTempSkill("gzzhengbi_eff1", "phaseUseAfter");
-						event.finish();
-					}
-					("step 3");
-					var choices = [];
-					if (target.countCards("he", { type: ["trick", "delay", "equip"] })) choices.push("一张非基本牌");
-					if (target.countCards("h", { type: "basic" }) > 1) choices.push("两张基本牌");
-					if (choices.length)
-						target
-							.chooseControl(choices)
-							.set("ai", function (event, player) {
-								if (choices.length > 1) {
-									if (
-										player.countCards("he", { type: ["trick", "delay", "equip"] }, function (card) {
-											return get.value(card) < 7;
-										})
-									)
-										return 0;
-									return 1;
-								}
-								return 0;
-							})
-							.set("prompt", "征辟：交给" + get.translation(player) + "…</div>");
-					else {
-						if (target.countCards("h")) {
-							var cards = target.getCards("h");
-							target.give(cards, player);
-							event.finish();
-						} else event.finish();
-					}
-					("step 4");
-					var check = result.control == "一张非基本牌";
-					target.chooseCard("he", check ? 1 : 2, { type: check ? ["trick", "delay", "equip"] : "basic" }, true);
-					("step 5");
-					if (result.cards) {
-						target.give(result.cards, player);
-					}
-				},
-				subSkill: {
-					eff1: {
-						audio: "zhengbi",
-						sub: true,
-						onremove: true,
-						trigger: { player: "phaseUseEnd" },
-						forced: true,
-						charlotte: true,
-						filter(event, player) {
-							var target = player.storage.gzzhengbi_eff1;
-							return target && !target.isUnseen() && target.countGainableCards(player, "he") > 0;
-						},
-						logTarget(event, player) {
-							return player.storage.gzzhengbi_eff1;
-						},
-						content() {
-							var num = 0;
-							var target = player.storage.gzzhengbi_eff1;
-							if (target.countGainableCards(player, "h")) num++;
-							if (target.countGainableCards(player, "e")) num++;
-							if (num) {
-								player.gainPlayerCard(target, num, "he", true).set("filterButton", function (button) {
-									for (var i = 0; i < ui.selected.buttons.length; i++) {
-										if (get.position(button.link) == get.position(ui.selected.buttons[i].link)) return false;
-									}
-									return true;
-								});
-							}
-						},
-					},
-				},
-			},
-			gzfengying: {
-				audio: "fengying",
-				limited: true,
-				enable: "phaseUse",
-				position: "h",
-				filterCard: true,
-				selectCard: -1,
-				filter(event, player) {
-					return !player.storage.gzfengying && player.countCards("h") > 0;
-				},
-				filterTarget(card, player, target) {
-					return target == player;
-				},
-				selectTarget: -1,
-				discard: false,
-				lose: false,
-				content() {
-					"step 0";
-					player.awakenSkill("gzfengying");
-					player.storage.gzfengying = true;
-					player.useCard({ name: "xietianzi" }, cards, target);
-					("step 1");
-					var list = game.filterPlayer(function (current) {
-						return current.isFriendOf(player) && current.countCards("h") < current.maxHp;
-					});
-					list.sort(lib.sort.seat);
-					player.line(list, "thunder");
-					game.asyncDraw(list, function (current) {
-						return current.maxHp - current.countCards("h");
-					});
-				},
-				skillAnimation: "epic",
-				animationColor: "gray",
-				ai: {
-					order: 0.1,
-					result: {
-						player(player) {
-							var value = 0;
-							var cards = player.getCards("h");
-							if (cards.length >= 4) return 0;
-							for (var i = 0; i < cards.length; i++) {
-								value += Math.max(0, get.value(cards[i], player, "raw"));
-							}
-							var targets = game.filterPlayer(function (current) {
-								return current.isFriendOf(player) && current != player;
-							});
-							var eff = 0;
-							for (var i = 0; i < targets.length; i++) {
-								var num = targets[i].countCards("h") < targets[i].maxHp;
-								if (num <= 0) continue;
-								eff += num;
-							}
-							return 5 * eff - value;
-						},
-					},
-				},
-			},
+			
+			
 
 			junling4_eff: {
 				mod: {
@@ -12770,84 +12531,7 @@ export default () => {
 				},
 			},
 
-			gzjieyue: {
-				trigger: { player: "phaseZhunbeiBegin" },
-				filter(event, player) {
-					return (
-						player.countCards("h") &&
-						game.hasPlayer(function (current) {
-							return current != player && current.identity != "wei";
-						})
-					);
-				},
-				direct: true,
-				preHidden: true,
-				content() {
-					"step 0";
-					player
-						.chooseCardTarget({
-							prompt: get.prompt2("gzjieyue"),
-							position: "h",
-							filterCard: true,
-							filterTarget(card, player, target) {
-								return target.identity != "wei" && target != player;
-							},
-							ai1(card, player, target) {
-								if (get.attitude(player, target) > 0) return 11 - get.value(card);
-								return 7 - get.value(card);
-							},
-							ai2(target) {
-								var att = get.attitude(get.event().player, target);
-								if (att < 0) return -att;
-								return 1;
-							},
-						})
-						.setHiddenSkill("gzjieyue");
-					("step 1");
-					if (result.bool) {
-						event.target = result.targets[0];
-						player.logSkill("gzjieyue", result.targets);
-						player.give(result.cards[0], result.targets[0]);
-						player.chooseJunlingFor(result.targets[0]);
-					} else event.finish();
-					("step 2");
-					event.junling = result.junling;
-					event.targets = result.targets;
-					var choiceList = [];
-					choiceList.push("执行该军令，然后" + get.translation(player) + "摸一张牌");
-					choiceList.push("令" + get.translation(player) + "摸牌阶段额外摸三张牌");
-					target
-						.chooseJunlingControl(player, result.junling, result.targets)
-						.set("prompt", "节钺")
-						.set("choiceList", choiceList)
-						.set("ai", function () {
-							if (get.attitude(target, player) > 0) return get.junlingEffect(player, result.junling, target, result.targets, target) > 1 ? 0 : 1;
-							return get.junlingEffect(player, result.junling, target, result.targets, target) >= -1 ? 0 : 1;
-						});
-					("step 3");
-					if (result.index == 0) {
-						target.carryOutJunling(player, event.junling, targets);
-						player.draw();
-					} else player.addTempSkill("gzjieyue_eff");
-				},
-				ai: { threaten: 2 },
-				subSkill: {
-					eff: {
-						sub: true,
-						trigger: { player: "phaseDrawBegin2" },
-						filter(event, player) {
-							return !event.numFixed;
-						},
-						forced: true,
-						popup: false,
-						content() {
-							trigger.num += 3;
-						},
-					},
-				},
-				audio: ["jieyue", 2],
-				audioname2: { gz_jun_caocao: "jianan_jieyue" },
-			},
+			
 
 			jianglue: {
 				limited: true,
@@ -16047,14 +15731,11 @@ export default () => {
 			gzjilei_info: "当你受到有来源的伤害后，你可以声明一种牌的类别。若如此做，你令伤害来源不能使用、打出或弃置此类别的手牌直到回合结束。",
 			gzdanlao_info: "当你成为锦囊牌的目标后，若此牌的目标数大于1，则你可以摸一张牌，令此牌对你无效。",
 
-			gz_cuimao: "崔琰毛玠",
-			gzzhengbi: "征辟",
-			gzzhengbi_info: "出牌阶段开始时，你可以选择一项：选择一名未确定势力的角色，此出牌阶段结束时，若其有明置的武将牌，则你获得其每个区域内的各一张牌；或将一张基本牌交给一名有明置武将牌的角色，然后其交给你一张非基本牌或两张基本牌。",
-			gzfengying: "奉迎",
-			gzfengying_info: "限定技，你可以将所有手牌当【挟天子以令诸侯】使用（无视大势力限制），然后所有与你势力相同的角色将手牌补至体力上限。",
-			gz_yujin: "于禁",
-			gzjieyue: "节钺",
-			gzjieyue_info: "准备阶段，你可以将一张手牌交给一名非魏势力角色，然后选择一个“军令”并令其选择一项：执行该军令，然后你摸一张牌；或令你于此回合摸牌阶段额外摸三张牌。",
+			
+			
+			
+			
+			
 			gz_wangping: "王平",
 			jianglue: "将略",
 			jianglue_info: "限定技，出牌阶段，你可以选择一个“军令”，然后与你势力相同的其他角色可以执行该军令（未确定势力角色可以在此时明置一张单势力武将牌）。你与所有执行该军令的角色增加1点体力上限，然后回复1点体力，然后你摸X张牌（X为以此法回复了体力的角色数）。",
@@ -16749,8 +16430,7 @@ export default () => {
 			"#gzduannian2": "一别两宽，不负相思。",
 			"#gzlianyou1": "莲花佑兴，业火可兴。",
 			"#gzlianyou2": "昔日莲花开，今日红火燃。",
-			"#jianglue1": "奇谋为短，将略为要。",
-			"#jianglue2": "为将者，需有谋略。",
+			
 			"#fz_wusheng": "武节不减，圣德加身。",
 			"#fz_new_paoxiao": "刚勇奋战，绝不退缩！",
 			"#fz_new_longdan": "盘龙卧旋，攻防无解。",

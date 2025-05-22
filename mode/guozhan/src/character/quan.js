@@ -7,7 +7,7 @@ export default {
 		hp: 3,
 		maxHp: 3,
 		hujia: 0,
-		skills: ["gzzhengbi", "gzfengying"],
+		skills: ["gz_zhengbi", "gz_fengying"],
 		hasSkinInGuozhan: true,
 	}),
 	gz_yujin: new Character({
@@ -16,7 +16,7 @@ export default {
 		hp: 4,
 		maxHp: 4,
 		hujia: 0,
-		skills: ["gzjieyue"],
+		skills: ["gz_jieyue"],
 		img: "image/character/yujin.jpg",
 		dieAudios: ["yujin"],
 	}),
