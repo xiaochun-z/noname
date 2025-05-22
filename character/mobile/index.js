@@ -45,6 +45,8 @@ game.import("character", function () {
 				["pot_taishici_shadow3", ["die:pot_taishici"]],
 				["pot_taishici_shadow4", ["die:pot_taishici"]],
 			],
+			mb_simazhao: [["jin_jsrg_simazhao", []]],
+			pot_yuji: [["pot_yuji_shadow", []]],
 		},
 		card: { ...cards },
 		skill: { ...skills },

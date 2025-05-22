@@ -1,15 +1,15 @@
 /** @type { string } */
-// @ts-ignore
+// @ts-expect-error ignore
 export const nonameInitialized = localStorage.getItem("noname_inited");
 export const assetURL = "";
 /** @type {typeof Function} */
-// @ts-ignore
+// @ts-expect-error ignore
 export const GeneratorFunction = function* () {}.constructor;
 /** @type {typeof Function} */
-// @ts-ignore
+// @ts-expect-error ignore
 export const AsyncFunction = async function () {}.constructor;
 /** @type {typeof Function} */
-// @ts-ignore
+// @ts-expect-error ignore
 export const AsyncGeneratorFunction = async function* () {}.constructor;
 export const userAgent = navigator.userAgent;
 export const userAgentLowerCase = userAgent.toLowerCase();
@@ -54,9 +54,11 @@ export function freezeButExtensible(record) {
 	const descriptors = Object.getOwnPropertyDescriptors(record);
 	if (descriptors) {
 		for (const [key, descriptor] of Object.entries(descriptors)) {
-			if ("value" in descriptor) descriptor.writable = false;
+			if ("value" in descriptor) {
+				descriptor.writable = false;
+			}
 			descriptor.configurable = false;
-			// @ts-ignore
+			// @ts-expect-error ignore
 			Reflect.defineProperty(record, key, descriptor);
 		}
 	}
@@ -86,7 +88,9 @@ export function jumpToCatchBlock() {
  * @param {function} func
  */
 export function isClass(func) {
-	if (typeof func !== "function") return false;
+	if (typeof func !== "function") {
+		return false;
+	}
 	const fnStr = Function.prototype.toString.call(func);
 	return /^class\s/.test(fnStr);
 }

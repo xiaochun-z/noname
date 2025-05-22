@@ -46,7 +46,9 @@ game.import("card", function () {
 				type: "trick",
 				enable: true,
 				filterTarget(card, player, target) {
-					if (target == player) return false;
+					if (target == player) {
+						return false;
+					}
 					if (target.getEquips(5).length) {
 						return target.countCards("e") > 1;
 					} else {
@@ -75,9 +77,7 @@ game.import("card", function () {
 						}
 						event.e1 = e1;
 						event.e2 = e2;
-						target
-							.chooseControl(choice)
-							.set("choiceList", ["弃置" + get.translation(e1), "弃置" + get.translation(e2)]);
+						target.chooseControl(choice).set("choiceList", ["弃置" + get.translation(e1), "弃置" + get.translation(e2)]);
 					} else {
 						if (e1.length) {
 							target.discard(e1);
@@ -149,41 +149,40 @@ game.import("card", function () {
 				selectTarget: [-1, -1],
 				toself: true,
 				judge(card) {
-					if (get.suit(card) == "spade") return -6;
+					if (get.suit(card) == "spade") {
+						return -6;
+					}
 					return 6;
 				},
 				judge2(result) {
-					if (result.bool == false) return true;
+					if (result.bool == false) {
+						return true;
+					}
 					return false;
 				},
 				cardPrompt(card) {
-					var str =
-						"出牌阶段，对你使用。你将【浮雷】置入判定区。若判定结果为♠，则目标角色受到X点雷电伤害（X为此牌判定结果为♠的次数）。判定完成后，将此牌移动到下家的判定区里。";
-					if (card.storage && card.storage.fulei)
-						str +=
-							'<br><span style="font-family:yuanli">此牌已判定命中过：' +
-							card.storage.fulei +
-							"次</span>";
+					let str = "出牌阶段，对你使用。你将【浮雷】置入判定区。若判定结果为♠，则目标角色受到X点雷电伤害（X为此牌判定结果为♠的次数）。判定完成后，将此牌移动到下家的判定区里。";
+					if (card.storage?.fulei) {
+						str += '<br><span style="font-family:yuanli">此牌已判定命中过：' + card.storage.fulei + "次</span>";
+					}
 					return str;
 				},
-				effect() {
-					"step 0";
+				async effect(event, trigger, player, result) {
+					const { card } = event;
 					if (result.bool == false) {
-						var card = cards[0];
 						if (card) {
-							if (!card.storage.fulei) {
+							if (typeof card.storage.fulei != "number") {
 								card.storage.fulei = 1;
 							} else {
 								card.storage.fulei++;
 							}
-							player.damage(card.storage.fulei, "thunder", "nosource");
+							await player.damage(card.storage.fulei, "thunder", "nosource");
 						}
 					}
-					"step 1";
-					player.addJudgeNext(card);
+					await player.addJudgeNext(card);
 				},
-				cancel() {
-					player.addJudgeNext(card);
+				async cancel(event, trigger, player) {
+					await player.addJudgeNext(event.card);
 				},
 				ai: {
 					basic: {
@@ -214,11 +213,7 @@ game.import("card", function () {
 					equipValue(card, player) {
 						if (
 							game.hasPlayer(function (current) {
-								return (
-									player.canUse("sha", current) &&
-									current.isHealthy() &&
-									get.attitude(player, current) < 0
-								);
+								return player.canUse("sha", current) && current.isHealthy() && get.attitude(player, current) < 0;
 							})
 						) {
 							return 5;
@@ -301,12 +296,7 @@ game.import("card", function () {
 						if (he.length <= 2) {
 							event.directresult = he;
 						} else {
-							event.target1.chooseCard(
-								"he",
-								"将两张牌交给" + get.translation(event.target2),
-								2,
-								true
-							);
+							event.target1.chooseCard("he", "将两张牌交给" + get.translation(event.target2), 2, true);
 						}
 					}
 					"step 3";
@@ -327,19 +317,28 @@ game.import("card", function () {
 							let hs = player.getCards("h");
 							if (
 								hs.length <= 1 ||
-								!hs.some((i) => {
+								!hs.some(i => {
 									return get.value(i) < 5.5;
 								})
-							)
+							) {
 								return 0;
+							}
 							let targets = get.copy(ui.selected.targets);
-							if (_status.event.preTarget) targets.add(_status.event.preTarget);
+							if (_status.event.preTarget) {
+								targets.add(_status.event.preTarget);
+							}
 							if (targets.length) {
-								if (target.hasSkillTag("nogain")) return 0.01;
+								if (target.hasSkillTag("nogain")) {
+									return 0.01;
+								}
 								return 2;
 							}
-							if (!target.countCards("he")) return 0;
-							if (player.hasFriend()) return -1;
+							if (!target.countCards("he")) {
+								return 0;
+							}
+							if (player.hasFriend()) {
+								return -1;
+							}
 							return 0;
 						},
 					},
@@ -361,7 +360,9 @@ game.import("card", function () {
 								return get.type(card) != "basic";
 							})
 							.set("ai", function (card) {
-								if (_status.event.goon) return 8 - get.value(card);
+								if (_status.event.goon) {
+									return 8 - get.value(card);
+								}
 								return 11 - get.value(card);
 							})
 							.set(
@@ -390,7 +391,9 @@ game.import("card", function () {
 					},
 					result: {
 						target(player, target) {
-							if (target.hasJudge("lebu")) return 0;
+							if (target.hasJudge("lebu")) {
+								return 0;
+							}
 							return Math.max(1, 2 - target.countCards("h") / 10);
 						},
 					},
@@ -405,11 +408,15 @@ game.import("card", function () {
 					return lib.filter.judge(card, player, target) && player != target;
 				},
 				judge(card) {
-					if (get.suit(card) == "club") return 1;
+					if (get.suit(card) == "club") {
+						return 1;
+					}
 					return -3;
 				},
 				judge2(result) {
-					if (result.bool == false) return true;
+					if (result.bool == false) {
+						return true;
+					}
 					return false;
 				},
 				effect() {
@@ -441,7 +448,9 @@ game.import("card", function () {
 							});
 						},
 						target(player, target) {
-							if (target.hasJudge("bingliang")) return 0;
+							if (target.hasJudge("bingliang")) {
+								return 0;
+							}
 							return -1.5 / Math.sqrt(target.countCards("h") + 1);
 						},
 					},
@@ -455,7 +464,9 @@ game.import("card", function () {
 				filterCard: true,
 				viewAs: { name: "shan" },
 				viewAsFilter(player) {
-					if (!player.countCards("hs")) return false;
+					if (!player.countCards("hs")) {
+						return false;
+					}
 				},
 				position: "hs",
 				prompt: "将一张手牌当闪使用或打出",
@@ -465,12 +476,15 @@ game.import("card", function () {
 				ai: {
 					respondShan: true,
 					skillTagFilter(player) {
-						if (!player.countCards("hs")) return false;
+						if (!player.countCards("hs")) {
+							return false;
+						}
 					},
 					effect: {
 						target(card, player, target, current) {
-							if (get.tag(card, "respondShan") && current < 0 && target.countCards("hs"))
+							if (get.tag(card, "respondShan") && current < 0 && target.countCards("hs")) {
 								return 0.59;
+							}
 						},
 					},
 					order: 4,
@@ -497,13 +511,13 @@ game.import("card", function () {
 				trigger: { player: "useCardToPlayered" },
 				logTarget: "target",
 				filter(event, player) {
-					return (
-						event.card.name == "sha" && (event.player.countCards("h") || player.countCards("h"))
-					);
+					return event.card.name == "sha" && (event.player.countCards("h") || player.countCards("h"));
 				},
 				check(event, player) {
 					var target = event.target;
-					if (get.attitude(player, target) >= 0) return false;
+					if (get.attitude(player, target) >= 0) {
+						return false;
+					}
 					if (
 						player.hasCard(function (card) {
 							return get.value(card) >= 8;
@@ -538,12 +552,7 @@ game.import("card", function () {
 				ai: {
 					effect: {
 						player(card, player, target, current, isLink) {
-							if (
-								card.name == "sha" &&
-								!isLink &&
-								target.isHealthy() &&
-								get.attitude(player, target) > 0
-							) {
+							if (card.name == "sha" && !isLink && target.isHealthy() && get.attitude(player, target) > 0) {
 								return [1, -2];
 							}
 						},
@@ -560,8 +569,12 @@ game.import("card", function () {
 				forced: true,
 				popup: false,
 				filter(event, player) {
-					if (event.player == player) return false;
-					if (event.getParent().directHit.includes(player)) return false;
+					if (event.player == player) {
+						return false;
+					}
+					if (event.getParent().directHit.includes(player)) {
+						return false;
+					}
 					var num = player.countCards("h", "jinchan");
 					return num && num == player.countCards("h");
 				},
@@ -575,7 +588,9 @@ game.import("card", function () {
 						.set("bool", -get.effect(player, trigger.card, trigger.player, player))
 						.set("respondTo", [trigger.player, trigger.card])
 						.set("filterCard", function (card, player) {
-							if (get.name(card) != "jinchan") return false;
+							if (get.name(card) != "jinchan") {
+								return false;
+							}
 							return lib.filter.cardEnabled(card, player, "forceEnable");
 						});
 					trigger.jinchan = true;
@@ -591,11 +606,17 @@ game.import("card", function () {
 				forced: true,
 				cardSkill: true,
 				filter(event, player) {
-					if (event.type != "discard") return false;
+					if (event.type != "discard") {
+						return false;
+					}
 					var evt = event.getl(player);
-					if (!evt || !evt.cards2 || !evt.cards2.length) return false;
+					if (!evt || !evt.cards2 || !evt.cards2.length) {
+						return false;
+					}
 					for (var i of evt.cards2) {
-						if (i.name == "jinchan") return true;
+						if (i.name == "jinchan") {
+							return true;
+						}
 					}
 					return false;
 				},
@@ -603,7 +624,9 @@ game.import("card", function () {
 					var num = 0,
 						cards = trigger.getl(player).cards2;
 					for (var i = 0; i < cards.length; i++) {
-						if (cards[i].name == "jinchan") num++;
+						if (cards[i].name == "jinchan") {
+							num++;
+						}
 					}
 					if (num) {
 						player.draw(num);
@@ -615,15 +638,29 @@ game.import("card", function () {
 				trigger: { player: ["useCard", "respondAfter"] },
 				direct: true,
 				filter(event, player) {
-					if (_status.currentPhase == player) return false;
-					if (!event.cards) return false;
-					if (event.cards.length != 1) return false;
-					if (lib.filter.autoRespondSha.call({ player: player })) return false;
+					if (_status.currentPhase == player) {
+						return false;
+					}
+					if (!event.cards) {
+						return false;
+					}
+					if (event.cards.length != 1) {
+						return false;
+					}
+					if (lib.filter.autoRespondSha.call({ player: player })) {
+						return false;
+					}
 					return get.color(event.cards[0]) == "black";
 				},
 				content() {
 					"step 0";
-					var next = player.chooseToUse(get.prompt("yinyueqiang"), { name: "sha" });
+					const next = player.chooseToUse(get.prompt("yinyueqiang"));
+					next.set("filterCard", function (card, player, event) {
+						if (get.name(card) != "sha") {
+							return false;
+						}
+						return lib.filter.filterCard.apply(this, arguments);
+					});
 					next.aidelay = true;
 					next.logSkill = "yinyueqiang";
 					next.noButton = true;
@@ -635,7 +672,6 @@ game.import("card", function () {
 			},
 			caomu_skill: {
 				cardSkill: true,
-				unique: true,
 				trigger: { player: "phaseDrawBegin" },
 				popup: false,
 				charlotte: true,
@@ -662,38 +698,28 @@ game.import("card", function () {
 		},
 		translate: {
 			qijia: "弃甲曳兵",
-			qijia_info:
-				"出牌阶段，对一名装备区里有牌的其他角色使用。该角色选择一项：1.弃置手牌区和装备区里所有的武器和-1坐骑；2.弃置手牌区和装备区里所有的防具和+1坐骑。",
+			qijia_info: "出牌阶段，对一名装备区里有牌的其他角色使用。该角色选择一项：1.弃置手牌区和装备区里所有的武器和-1坐骑；2.弃置手牌区和装备区里所有的防具和+1坐骑。",
 			jinchan: "金蝉脱壳",
 			g_jinchan2: "金蝉脱壳",
 			g_jinchan2_info: "当你因弃置而失去【金蝉脱壳】时，你摸一张牌。",
-			jinchan_info:
-				"其他角色使用的基本牌或普通牌对你生效时，若你的所有手牌均为【金蝉脱壳】，则你可以使用此牌。你令此牌对你无效并摸两张牌。当你因弃置而失去【金蝉脱壳】时，你摸一张牌。",
+			jinchan_info: "其他角色使用的基本牌或普通牌对你生效时，若你的所有手牌均为【金蝉脱壳】，则你可以使用此牌。你令此牌对你无效并摸两张牌。当你因弃置而失去【金蝉脱壳】时，你摸一张牌。",
 			fulei: "浮雷",
-			fulei_info:
-				"出牌阶段，对你使用。你将【浮雷】置入判定区。若判定结果为♠，则目标角色受到X点雷电伤害（X为此牌判定结果为♠的次数）。判定完成后，将此牌移动到下家的判定区里。",
+			fulei_info: "出牌阶段，对你使用。你将【浮雷】置入判定区。若判定结果为♠，则目标角色受到X点雷电伤害（X为此牌判定结果为♠的次数）。判定完成后，将此牌移动到下家的判定区里。",
 			qibaodao: "七宝刀",
-			qibaodao_info:
-				"攻击范围2；锁定技，你使用【杀】无视目标防具，若目标角色未损失体力值，此【杀】伤害+1。",
+			qibaodao_info: "攻击范围2；锁定技，你使用【杀】无视目标防具，若目标角色未损失体力值，此【杀】伤害+1。",
 			qibaodao2: "七宝刀",
 			zhungangshuo: "衠钢槊",
-			zhungangshuo_info:
-				"当你使用【杀】指定一名角色为目标后，你可令该角色弃置你的一张手牌，然后你弃置其一张手牌。",
+			zhungangshuo_info: "当你使用【杀】指定一名角色为目标后，你可令该角色弃置你的一张手牌，然后你弃置其一张手牌。",
 			lanyinjia: "烂银甲",
-			lanyinjia_info:
-				"你可以将一张手牌当做【闪】使用或打出。锁定技，【烂银甲】不会无效化；当你受到【杀】造成的伤害时，弃置【烂银甲】。",
+			lanyinjia_info: "你可以将一张手牌当做【闪】使用或打出。锁定技，【烂银甲】不会无效化；当你受到【杀】造成的伤害时，弃置【烂银甲】。",
 			yinyueqiang: "银月枪",
-			yinyueqiang_info:
-				"你的回合外，每当你使用或打出了一张黑色手牌（若为使用则在它结算之前），你可以立即对你攻击范围内的任意一名角色使用一张【杀】。",
+			yinyueqiang_info: "你的回合外，每当你使用或打出了一张黑色手牌（若为使用则在它结算之前），你可以立即对你攻击范围内的任意一名角色使用一张【杀】。",
 			shengdong: "声东击西",
-			shengdong_info:
-				"出牌阶段，对一名其他角色使用。你交给目标角色一张手牌，若如此做，其将两张牌交给另一名由你选择的其他角色（不足则全给，存活角色不超过2时可重铸）。",
+			shengdong_info: "出牌阶段，对一名其他角色使用。你交给目标角色一张手牌，若如此做，其将两张牌交给另一名由你选择的其他角色（不足则全给，存活角色不超过2时可重铸）。",
 			zengbin: "增兵减灶",
-			zengbin_info:
-				"出牌阶段，对一名角色使用。目标角色摸三张牌，然后选择一项：1.弃置一张非基本牌；2.弃置两张牌。",
+			zengbin_info: "出牌阶段，对一名角色使用。目标角色摸三张牌，然后选择一项：1.弃置一张非基本牌；2.弃置两张牌。",
 			caomu: "草木皆兵",
-			caomu_info:
-				"出牌阶段，对一名其他角色使用。将【草木皆兵】放置于该角色的判定区里，若判定结果不为梅花：摸牌阶段，目标角色少摸一张牌；摸牌阶段结束时，与其距离为1的角色各摸一张牌。",
+			caomu_info: "出牌阶段，对一名其他角色使用。将【草木皆兵】放置于该角色的判定区里，若判定结果不为梅花：摸牌阶段，目标角色少摸一张牌；摸牌阶段结束时，与其距离为1的角色各摸一张牌。",
 		},
 		list: [
 			["spade", 1, "caomu"],

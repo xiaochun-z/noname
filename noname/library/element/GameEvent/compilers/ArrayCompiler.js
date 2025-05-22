@@ -6,7 +6,9 @@ export default class ArrayCompiler extends ContentCompilerBase {
 		return Array.isArray(content) && content.every(item => typeof item === "function");
 	}
 	compile(content) {
-		if (!Array.isArray(content)) throw new ReferenceError("content必须是一个数组");
+		if (!Array.isArray(content)) {
+			throw new ReferenceError("content必须是一个数组");
+		}
 		const compiler = this;
 		return async function (event) {
 			if (!Number.isInteger(event.step)) {
@@ -22,7 +24,6 @@ export default class ArrayCompiler extends ContentCompilerBase {
 				let result;
 				if (!compiler.isPrevented(event)) {
 					const original = content[event.step];
-					//@ts-ignore
 					const next = await Reflect.apply(original, this, [event, event._trigger, event.player, event._result]);
 					result = next instanceof GameEvent ? next.result : next;
 				}

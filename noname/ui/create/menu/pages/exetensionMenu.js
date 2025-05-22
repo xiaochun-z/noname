@@ -1,27 +1,13 @@
-import {
-	menuContainer,
-	popupContainer,
-	updateActive,
-	setUpdateActive,
-	updateActiveCard,
-	setUpdateActiveCard,
-	menux,
-	menuxpages,
-	menuUpdates,
-	openMenu,
-	clickToggle,
-	clickSwitcher,
-	clickContainer,
-	clickMenuItem,
-	createMenu,
-	createConfig,
-} from "../index.js";
+import { menuContainer, popupContainer, updateActive, setUpdateActive, updateActiveCard, setUpdateActiveCard, menux, menuxpages, menuUpdates, openMenu, clickToggle, clickSwitcher, clickContainer, clickMenuItem, createMenu, createConfig } from "../index.js";
 import { ui, game, get, ai, lib, _status } from "../../../../../noname.js";
 import { nonameInitialized } from "../../../../util/index.js";
 import security from "../../../../util/security.js";
+import { Character } from "../../../../library/element/character.js";
 
 export const extensionMenu = function (connectMenu) {
-	if (connectMenu) return;
+	if (connectMenu) {
+		return;
+	}
 	/**
 	 * 由于联机模式会创建第二个菜单，所以需要缓存一下可变的变量
 	 */
@@ -30,7 +16,7 @@ export const extensionMenu = function (connectMenu) {
 	// const cacheMenux = menux;
 	const cacheMenuxpages = menuxpages;
 	/** @type { HTMLDivElement } */
-	// @ts-ignore
+	// @ts-expect-error ignore
 	var start = cacheMenuxpages.shift();
 	var rightPane = start.lastChild;
 
@@ -46,8 +32,9 @@ export const extensionMenu = function (connectMenu) {
 		active.link.remove();
 		active = this;
 		this.classList.add("active");
-		if (this.link) rightPane.appendChild(this.link);
-		else {
+		if (this.link) {
+			rightPane.appendChild(this.link);
+		} else {
 			this._initLink();
 			rightPane.appendChild(this.link);
 		}
@@ -65,23 +52,35 @@ export const extensionMenu = function (connectMenu) {
 	var updateNodes = function () {
 		for (var i = 0; i < start.firstChild.childNodes.length; i++) {
 			var node = start.firstChild.childNodes[i];
-			if (node.mode == "get") continue;
-			if (node.mode == "create") continue;
+			if (node.mode == "get") {
+				continue;
+			}
+			if (node.mode == "create") {
+				continue;
+			}
 			if (node.mode && node.mode.startsWith("extension_")) {
 				if (lib.config[node.mode + "_enable"]) {
 					node.classList.remove("off");
-					if (node.link) node.link.firstChild.classList.add("on");
+					if (node.link) {
+						node.link.firstChild.classList.add("on");
+					}
 				} else {
 					node.classList.add("off");
-					if (node.link) node.link.firstChild.classList.remove("on");
+					if (node.link) {
+						node.link.firstChild.classList.remove("on");
+					}
 				}
 			} else {
 				if (lib.config.plays.includes(node.mode)) {
 					node.classList.remove("off");
-					if (node.link) node.link.firstChild.classList.add("on");
+					if (node.link) {
+						node.link.firstChild.classList.add("on");
+					}
 				} else {
 					node.classList.add("off");
-					if (node.link) node.link.firstChild.classList.remove("on");
+					if (node.link) {
+						node.link.firstChild.classList.remove("on");
+					}
 				}
 			}
 		}
@@ -116,12 +115,7 @@ export const extensionMenu = function (connectMenu) {
 		if (mode.startsWith("extension_")) {
 			node = ui.create.div(".menubutton.large", mode.slice(10), position, clickMode);
 		} else {
-			node = ui.create.div(
-				".menubutton.large",
-				lib.translate[mode + "_play_config"],
-				position,
-				clickMode
-			);
+			node = ui.create.div(".menubutton.large", lib.translate[mode + "_play_config"], position, clickMode);
 		}
 		if (node.innerHTML.length >= 5) {
 			node.classList.add("smallfont");
@@ -130,7 +124,9 @@ export const extensionMenu = function (connectMenu) {
 		// node._initLink=function(){
 		node.link = page;
 		for (var i in lib.extensionMenu[mode]) {
-			if (i == "game") continue;
+			if (i == "game") {
+				continue;
+			}
 			var cfg = get.copy(lib.extensionMenu[mode][i]);
 			var j;
 			if (mode.startsWith("extension_")) {
@@ -170,13 +166,21 @@ export const extensionMenu = function (connectMenu) {
 		});
 	}
 	for (let i of extensionsInMenu) {
-		if (lib.config.all.stockextension.includes(i) && !lib.config.all.plays.includes(i)) continue;
-		if (lib.config.hiddenPlayPack.includes(i)) continue;
+		if (lib.config.all.stockextension.includes(i) && !lib.config.all.plays.includes(i)) {
+			continue;
+		}
+		if (lib.config.hiddenPlayPack.includes(i)) {
+			continue;
+		}
 		createModeConfig(i, start.firstChild);
 	}
 	(function () {
-		if (!lib.device && !lib.db) return;
-		if (lib.config.show_extensionmaker == false) return;
+		if (!lib.device && !lib.db) {
+			return;
+		}
+		if (lib.config.show_extensionmaker == false) {
+			return;
+		}
 		var page = ui.create.div("#create-extension");
 		var node = ui.create.div(".menubutton.large", "制作扩展", start.firstChild, clickMode);
 		node.mode = "create";
@@ -364,35 +368,37 @@ export const extensionMenu = function (connectMenu) {
 					for (var i = 0; i < dash2.pile.childNodes.length; i++) {
 						dash2.content.pack.list.push(dash2.pile.childNodes[i].link);
 					}
-					str += ",package:" + get.stringify({
-						//替换die audio，加上扩展名
-						//TODO: 创建扩展这部分更是重量级
-						character: ((pack) => {
-							var character = pack.character;
-							for (var key in character) {
-								var info = character[key];
-								if (Array.isArray(info[4])) {
-									var tag = info[4].find((tag) => /^die:.+$/.test(tag));
-									if (tag) {
-										info[4].remove(tag);
-										if (typeof game.readFile == "function") {
-											info[4].push("die:ext:" + page.currentExtension + "/audio/die/" + tag.slice(tag.lastIndexOf("/") + 1));
-										} else {
-											info[4].push("die:db:extension-" + page.currentExtension + ":audio/die/" + tag.slice(tag.lastIndexOf("/") + 1));
+					str +=
+						",package:" +
+						get.stringify({
+							//替换die audio，加上扩展名
+							//TODO: 创建扩展这部分更是重量级
+							character: (pack => {
+								var character = pack.character;
+								for (var key in character) {
+									var info = character[key];
+									if (Array.isArray(info[4])) {
+										var tag = info[4].find(tag => /^die:.+$/.test(tag));
+										if (tag) {
+											info[4].remove(tag);
+											if (typeof game.readFile == "function") {
+												info[4].push("die:ext:" + page.currentExtension + "/audio/die/" + tag.slice(tag.lastIndexOf("/") + 1));
+											} else {
+												info[4].push("die:db:extension-" + page.currentExtension + ":audio/die/" + tag.slice(tag.lastIndexOf("/") + 1));
+											}
 										}
 									}
 								}
-							}
-							return pack;
-						})(dash1.content.pack),
-						card: dash2.content.pack,
-						skill: dash3.content.pack,
-						intro: introExtLine.querySelector("input").value ?? "",
-						author: authorExtLine.querySelector("input").value ?? "",
-						diskURL: diskExtLine.querySelector("input").value ?? "",
-						forumURL: forumExtLine.querySelector("input").value ?? "",
-						version: versionExtLine.querySelector("input").value ?? "",
-					});
+								return pack;
+							})(dash1.content.pack),
+							card: dash2.content.pack,
+							skill: dash3.content.pack,
+							intro: introExtLine.querySelector("input").value ?? "",
+							author: authorExtLine.querySelector("input").value ?? "",
+							diskURL: diskExtLine.querySelector("input").value ?? "",
+							forumURL: forumExtLine.querySelector("input").value ?? "",
+							version: versionExtLine.querySelector("input").value ?? "",
+						});
 					var files = { character: [], card: [], skill: [], audio: [] };
 					for (const i in dash1.content.image) {
 						files.character.push(i);
@@ -407,7 +413,7 @@ export const extensionMenu = function (connectMenu) {
 						files.skill.push(i);
 					}
 					str += ",files:" + JSON.stringify(files);
-					str += ",connect:false"//不写的话，这里会变成undefined喵，所以默认是不能联机的哦
+					str += ",connect:false"; //不写的话，这里会变成undefined喵，所以默认是不能联机的哦
 					str += "}";
 					const extension = {
 						"extension.js": `import { lib, game, ui, get, ai, _status } from "../../noname.js";\nexport const type = "extension";\nexport default function(){\n\treturn ${str} \n};`,
@@ -417,9 +423,9 @@ export const extensionMenu = function (connectMenu) {
 							author: authorExtLine.querySelector("input").value ?? "",
 							diskURL: diskExtLine.querySelector("input").value ?? "",
 							forumURL: forumExtLine.querySelector("input").value ?? "",
-							version: versionExtLine.querySelector("input").value ?? ""
+							version: versionExtLine.querySelector("input").value ?? "",
 						}),
-						"README.md": ""
+						"README.md": "",
 					};
 					for (var i in dash1.content.image) {
 						extension[i] = dash1.content.image[i];
@@ -442,13 +448,10 @@ export const extensionMenu = function (connectMenu) {
 								});
 							};
 							if (game.getFileList) {
-								game.getFileList(
-									"extension/" + page.currentExtension,
-									function (folders, files) {
-										extension._filelist = files;
-										proexport();
-									}
-								);
+								game.getFileList("extension/" + page.currentExtension, function (folders, files) {
+									extension._filelist = files;
+									proexport();
+								});
 							} else {
 								proexport();
 							}
@@ -464,12 +467,7 @@ export const extensionMenu = function (connectMenu) {
 							"LICENSE",
 							function (data) {
 								extension["LICENSE"] = data;
-								game.writeFile(
-									data,
-									"extension/" + page.currentExtension,
-									"LICENSE",
-									function () {}
-								);
+								game.writeFile(data, "extension/" + page.currentExtension, "LICENSE", function () {});
 								callback();
 							},
 							function () {
@@ -549,12 +547,7 @@ export const extensionMenu = function (connectMenu) {
 						shareExtLine.style.display = "";
 					}
 				}
-				if (
-					typeof game.readFile == "function" &&
-					window.noname_shijianInterfaces &&
-					typeof window.noname_shijianInterfaces.shareExtensionWithPassWordAsync == "function" &&
-					confirm("是否使用诗笺版自带的导出功能来导出扩展？")
-				) {
+				if (typeof game.readFile == "function" && window.noname_shijianInterfaces && typeof window.noname_shijianInterfaces.shareExtensionWithPassWordAsync == "function" && confirm("是否使用诗笺版自带的导出功能来导出扩展？")) {
 					const extName = inputExtName.value;
 					if (!extName) {
 						alert("未检测到扩展名，将使用无名杀自带的导出功能");
@@ -593,8 +586,7 @@ export const extensionMenu = function (connectMenu) {
 					exportExtLine.style.display = "none";
 				};
 			} else {
-				exportExtLine.innerHTML =
-					'重启后生效。<span class="hrefnode">立即重启</span><span class="closenode">×</span>';
+				exportExtLine.innerHTML = '重启后生效。<span class="hrefnode">立即重启</span><span class="closenode">×</span>';
 				exportExtLine.querySelectorAll("span")[0].onclick = game.reload;
 				exportExtLine.querySelectorAll("span")[1].onclick = function () {
 					exportExtLine.style.display = "none";
@@ -606,8 +598,7 @@ export const extensionMenu = function (connectMenu) {
 			shareExtLine.style.width = "calc(100% - 40px)";
 			shareExtLine.style.textAlign = "left";
 			shareExtLine.style.marginBottom = "5px";
-			shareExtLine.innerHTML =
-				'已导出扩展。<span class="hrefnode">分享扩展</span><span class="closenode">×</span>';
+			shareExtLine.innerHTML = '已导出扩展。<span class="hrefnode">分享扩展</span><span class="closenode">×</span>';
 			shareExtLine.querySelectorAll("span")[0].onclick = function () {
 				//这个链接404了
 				//game.open('https://tieba.baidu.com/p/5439380222');
@@ -688,8 +679,7 @@ export const extensionMenu = function (connectMenu) {
 					fakeme.classList.add("inited");
 					fakeme.style.backgroundImage = this.style.backgroundImage;
 					if (page.content.pack.translate[this.link] != this.link) {
-						newCharacter.querySelector(".new_name").value =
-							this.link + "|" + page.content.pack.translate[this.link];
+						newCharacter.querySelector(".new_name").value = this.link + "|" + page.content.pack.translate[this.link];
 					} else {
 						newCharacter.querySelector(".new_name").value = this.link;
 					}
@@ -699,10 +689,7 @@ export const extensionMenu = function (connectMenu) {
 					groups.value = info[1];
 					if (info[4]) {
 						for (var i = 0; i < options.childNodes.length - 1; i++) {
-							if (
-								options.childNodes[i].lastChild &&
-								info[4].includes(options.childNodes[i].lastChild.name)
-							) {
+							if (options.childNodes[i].lastChild && info[4].includes(options.childNodes[i].lastChild.name)) {
 								options.childNodes[i].lastChild.checked = true;
 							} else if (options.childNodes[i].lastChild) {
 								options.childNodes[i].lastChild.checked = false;
@@ -717,26 +704,22 @@ export const extensionMenu = function (connectMenu) {
 								dieaudionode.file = {
 									name: info[4][i].slice(info[4][i].lastIndexOf("/") + 1),
 								};
-								await new Promise((resolve) => {
+								await new Promise(resolve => {
 									if (typeof game.readFile == "function") {
 										game.readFile(
 											info[4][i].slice(4).replace("ext:", "extension/"),
-											(arraybuffer) => {
+											arraybuffer => {
 												dieaudionode.arrayBuffer = arraybuffer;
 												resolve();
 											},
 											() => {
-												console.warn(
-													`未找到${info[4][i]
-														.slice(4)
-														.replace("ext:", "extension/")}阵亡配音`
-												);
+												console.warn(`未找到${info[4][i].slice(4).replace("ext:", "extension/")}阵亡配音`);
 												resolve();
 											}
 										);
 									} else {
 										game.getDB("image", info[4][i].slice(7)).then(
-											(octetStream) => {
+											octetStream => {
 												dieaudionode.arrayBuffer = octetStream;
 												resolve();
 											},
@@ -774,11 +757,7 @@ export const extensionMenu = function (connectMenu) {
 					button.style.backgroundSize = "cover";
 					button.listen(clickButton);
 					button.classList.add("noclick");
-					button.nodename = ui.create.div(
-						button,
-						".name",
-						get.verticalStr(page.content.pack.translate[name])
-					);
+					button.nodename = ui.create.div(button, ".name", get.verticalStr(page.content.pack.translate[name]));
 					button.nodename.style.top = "8px";
 					page.insertBefore(button, page.childNodes[1]);
 				};
@@ -824,28 +803,26 @@ export const extensionMenu = function (connectMenu) {
 								var url = lib.assetURL + "extension/" + name + "/" + file;
 								createButton(i, url);
 								if (lib.device == "ios" || lib.device == "android") {
-									window.resolveLocalFileSystemURL(
-										nonameInitialized + "extension/" + name,
-										function (entry) {
-											entry.getFile(file, {}, function (fileEntry) {
-												fileEntry.file(function (fileToLoad) {
-													var fileReader = new FileReader();
-													fileReader.onload = function (e) {
-														page.content.image[file] = e.target.result;
-													};
-													fileReader.readAsArrayBuffer(fileToLoad, "UTF-8");
-												});
+									window.resolveLocalFileSystemURL(nonameInitialized + "extension/" + name, function (entry) {
+										entry.getFile(file, {}, function (fileEntry) {
+											fileEntry.file(function (fileToLoad) {
+												var fileReader = new FileReader();
+												fileReader.onload = function (e) {
+													page.content.image[file] = e.target.result;
+												};
+												fileReader.readAsArrayBuffer(fileToLoad, "UTF-8");
 											});
-										}
-									);
+										});
+									});
 								} else {
 									loadImage(file, url);
 								}
-							} else
-								game.getDB("image", `extension-${name}:${file}`).then((value) => {
+							} else {
+								game.getDB("image", `extension-${name}:${file}`).then(value => {
 									createButton(i, value);
 									loadImage(file, value);
 								});
+							}
 						}
 					} else {
 						page.content = {
@@ -860,16 +837,11 @@ export const extensionMenu = function (connectMenu) {
 						newCharacter.style.display = "";
 					}
 				};
-				ui.create.div(
-					".config.more",
-					'<div style="transform:none;margin-right:3px">←</div>返回',
-					page,
-					function () {
-						ui.create.templayer();
-						page.hide();
-						pageboard.show();
-					}
-				);
+				ui.create.div(".config.more", '<div style="transform:none;margin-right:3px">←</div>返回', page, function () {
+					ui.create.templayer();
+					page.hide();
+					pageboard.show();
+				});
 				page.content = {
 					pack: {
 						character: {},
@@ -941,21 +913,9 @@ export const extensionMenu = function (connectMenu) {
 
 				ui.create.div(".select_avatar", "选择头像", fakeme);
 
-				ui.create.div(
-					".indent",
-					'姓名：<input class="new_name" type="text">',
-					newCharacter
-				).style.paddingTop = "8px";
-				ui.create.div(
-					".indent",
-					'介绍：<input class="new_des" type="text">',
-					newCharacter
-				).style.paddingTop = "8px";
-				ui.create.div(
-					".indent",
-					'体力：<input class="new_hp" type="text" placeholder="体/限/甲">',
-					newCharacter
-				).style.paddingTop = "8px";
+				ui.create.div(".indent", '姓名：<input class="new_name" type="text">', newCharacter).style.paddingTop = "8px";
+				ui.create.div(".indent", '介绍：<input class="new_des" type="text">', newCharacter).style.paddingTop = "8px";
+				ui.create.div(".indent", '体力：<input class="new_hp" type="text" placeholder="体/限/甲">', newCharacter).style.paddingTop = "8px";
 				newCharacter.querySelector("input.new_name").onblur = updateButton;
 				var sexes = ui.create.selectlist(
 					[
@@ -968,11 +928,7 @@ export const extensionMenu = function (connectMenu) {
 					ui.create.div(".indent", "性别：", newCharacter)
 				);
 				var grouplist = lib.group.map((group, i) => [lib.group[i], get.translation(lib.group[i])]);
-				var groups = ui.create.selectlist(
-					grouplist,
-					null,
-					ui.create.div(".indent", "势力：", newCharacter)
-				);
+				var groups = ui.create.selectlist(grouplist, null, ui.create.div(".indent", "势力：", newCharacter));
 				var dieaudio = ui.create.div(".die_audio", newCharacter, { textAlign: "left" });
 				var dieaudiolabel = ui.create.node("label", "阵亡配音:", dieaudio);
 				var dieaudioUpload = dieaudio.appendChild(document.createElement("input"));
@@ -1002,7 +958,9 @@ export const extensionMenu = function (connectMenu) {
 				var dieaudiopreview = ui.create.node("button", dieaudio, () => {
 					if (dieaudiotag.error) {
 						alert("您使用的客户端不支持预览此音频！");
-					} else dieaudiotag.play();
+					} else {
+						dieaudiotag.play();
+					}
 				});
 				dieaudiopreview.innerHTML = "播放";
 				dieaudiopreview.style.display = "none";
@@ -1021,11 +979,7 @@ export const extensionMenu = function (connectMenu) {
 				});
 				dieaudiocancel.innerHTML = "取消";
 				dieaudiocancel.style.display = "none";
-				var options = ui.create.div(
-					".add_skill.options",
-					'<span>主公<input type="checkbox" name="zhu"></span><span>BOSS<input type="checkbox" name="boss"></span><span>仅点将可用<input type="checkbox" name="forbidai"></span><br><span>隐匿技<input type="checkbox" name="hiddenSkill"></span><br>',
-					newCharacter
-				);
+				var options = ui.create.div(".add_skill.options", '<span>主公<input type="checkbox" name="zhu"></span><span>BOSS<input type="checkbox" name="boss"></span><span>仅点将可用<input type="checkbox" name="forbidai"></span><br><span>隐匿技<input type="checkbox" name="hiddenSkill"></span><br>', newCharacter);
 				var addSkill = ui.create.div(".add_skill", "添加技能<br>", newCharacter);
 				var list = [];
 				for (var i in lib.character) {
@@ -1033,9 +987,19 @@ export const extensionMenu = function (connectMenu) {
 						list.push([i, lib.translate[i]]);
 					}
 				}
-				if(!list.length){
-					if(!lib.character["noname_sunce"]) lib.character["noname_sunce"] = ["male", "wu", 4, ["jiang"], ["unseen"]];
-					if(!lib.translate["noname_sunce"]) lib.translate["noname_sunce"] = "孙策";
+				if (!list.length) {
+					if (!lib.character["noname_sunce"]) {
+						lib.character["noname_sunce"] = new Character({
+							sex: "male",
+							group: "wu",
+							hp: 4,
+							skills: ["jiang"],
+							isUnseen: true,
+						});
+					}
+					if (!lib.translate["noname_sunce"]) {
+						lib.translate["noname_sunce"] = "孙策";
+					}
 					list.push(["noname_sunce", lib.translate["noname_sunce"]]);
 				}
 				list.sort(function (a, b) {
@@ -1055,9 +1019,17 @@ export const extensionMenu = function (connectMenu) {
 					return a > b ? 1 : -1;
 				});
 				var list2 = [];
-				var skills = lib.character[list[0][0]][3];
+				var skills = lib.character[list[0][0]].skills.slice();
+				for (const skill of skills) {
+					if (lib.skill[skill]?.derivation) {
+						const derivation = lib.skill[skill]?.derivation;
+						skills[Array.isArray(derivation) ? "addArray" : "add"](derivation);
+					}
+				}
 				for (var i = 0; i < skills.length; i++) {
-					list2.push([skills[i], lib.translate[skills[i]]]);
+					if (lib.skill[skills[i]] && !lib.skill[skills[i]].sub && lib.translate[skills[i]]) {
+						list2.push([skills[i], lib.translate[skills[i]]]);
+					}
 				}
 				list.unshift(["current_extension", "此扩展"]);
 
@@ -1073,12 +1045,20 @@ export const extensionMenu = function (connectMenu) {
 							skillopt.appendChild(option);
 						}
 					} else {
-						var skills = lib.character[this.value][3];
+						var skills = lib.character[this.value].skills.slice();
+						for (const skill of skills) {
+							if (lib.skill[skill]?.derivation) {
+								const derivation = lib.skill[skill]?.derivation;
+								skills[Array.isArray(derivation) ? "addArray" : "add"](derivation);
+							}
+						}
 						for (var i = 0; i < skills.length; i++) {
-							var option = document.createElement("option");
-							option.value = skills[i];
-							option.innerHTML = lib.translate[skills[i]];
-							skillopt.appendChild(option);
+							if (lib.skill[skills[i]] && !lib.skill[skills[i]].sub && lib.translate[skills[i]]) {
+								var option = document.createElement("option");
+								option.value = skills[i];
+								option.innerHTML = lib.translate[skills[i]];
+								skillopt.appendChild(option);
+							}
 						}
 					}
 				};
@@ -1095,15 +1075,14 @@ export const extensionMenu = function (connectMenu) {
 				};
 				addSkillButton.onclick = function () {
 					for (var i = 0; i < skillList.firstChild.childNodes.length; i++) {
-						if (skillList.firstChild.childNodes[i].skill == skillopt.value)
-							return alert(
-								selectname.value == "current_extension"
-									? "此扩展还未添加技能"
-									: "此武将没有技能可添加"
-							);
+						if (skillList.firstChild.childNodes[i].skill == skillopt.value) {
+							return alert(selectname.value == "current_extension" ? "此扩展还未添加技能" : "此武将没有技能可添加");
+						}
 					}
 					//无技能时
-					if (!skillopt.value || skillopt.childElementCount == 0) return;
+					if (!skillopt.value || skillopt.childElementCount == 0) {
+						return;
+					}
 					var node = document.createElement("button");
 					node.skill = skillopt.value;
 					node.onclick = deletenode;
@@ -1143,97 +1122,86 @@ export const extensionMenu = function (connectMenu) {
 				};
 				var skillList = ui.create.div(".skill_list", newCharacter);
 				ui.create.div(skillList);
-				var editnode = ui.create.div(
-					".menubutton.large.disabled",
-					"创建武将",
-					ui.create.div(skillList),
-					function () {
-						var name = page.querySelector("input.new_name").value;
-						if (!name) {
-							alert("请填写武将名\n提示：武将名格式为id+|+中文名，其中id必须惟一");
+				var editnode = ui.create.div(".menubutton.large.disabled", "创建武将", ui.create.div(skillList), function () {
+					var name = page.querySelector("input.new_name").value;
+					if (!name) {
+						alert("请填写武将名\n提示：武将名格式为id+|+中文名，其中id必须惟一");
+						return;
+					}
+					name = name.split("|");
+					var translate = name[1] || name[0];
+					name = name[0];
+					if (currentButton) {
+						if (currentButton.link != name) {
+							if (lib.character[name] || page.content.pack.character[name]) {
+								alert("武将名与现有武将重复，请更改\n提示：武将名格式为id+|+中文名，其中id必须惟一");
+								return;
+							}
+							page.content.image[name + ".jpg"] = page.content.image[currentButton.link + ".jpg"];
+							delete page.content.image[currentButton.link + ".jpg"];
+							delete page.content.pack.character[currentButton.link];
+							delete page.content.pack.translate[currentButton.link];
+							currentButton.link = name;
+						}
+					} else {
+						if (lib.character[name] || page.content.pack.character[name]) {
+							alert("武将名与现有武将重复，请更改\n提示：武将名格式为id+|+中文名，其中id必须惟一");
 							return;
 						}
-						name = name.split("|");
-						var translate = name[1] || name[0];
-						name = name[0];
-						if (currentButton) {
-							if (currentButton.link != name) {
-								if (lib.character[name] || page.content.pack.character[name]) {
-									alert(
-										"武将名与现有武将重复，请更改\n提示：武将名格式为id+|+中文名，其中id必须惟一"
-									);
-									return;
-								}
-								page.content.image[name + ".jpg"] =
-									page.content.image[currentButton.link + ".jpg"];
-								delete page.content.image[currentButton.link + ".jpg"];
-								delete page.content.pack.character[currentButton.link];
-								delete page.content.pack.translate[currentButton.link];
-								currentButton.link = name;
-							}
-						} else {
-							if (lib.character[name] || page.content.pack.character[name]) {
-								alert(
-									"武将名与现有武将重复，请更改\n提示：武将名格式为id+|+中文名，其中id必须惟一"
-								);
-								return;
-							}
-						}
-						if (fakeme.image) {
-							page.content.image[name + ".jpg"] = fakeme.image;
-						} else {
-							if (!page.content.image[name + ".jpg"]) {
-								alert("请选择武将头像");
-								return;
-							}
-						}
-						var hp = page.querySelector("input.new_hp").value;
-						//体力支持‘Infinity,∞,无限’表示无限
-						if (["Infinity", "∞", "无限"].includes(hp)) hp = Infinity;
-						else if (hp.indexOf("/") == -1) hp = parseInt(hp) || 1;
-						var skills = [];
-						for (var i = 0; i < skillList.firstChild.childNodes.length; i++) {
-							skills.add(skillList.firstChild.childNodes[i].skill);
-						}
-						var tags = [];
-						for (var i = 0; i < options.childNodes.length - 1; i++) {
-							if (options.childNodes[i].lastChild && options.childNodes[i].lastChild.checked) {
-								tags.push(options.childNodes[i].lastChild.name);
-							}
-						}
-						if (tags.includes("boss")) {
-							tags.add("bossallowed");
-						}
-						var des = page.querySelector("input.new_des").value;
-						if (des) {
-							tags.add("des:" + des);
-						}
-						//阵亡配音
-						if (dieaudio.file && dieaudio.arrayBuffer) {
-							var audioname = name + dieaudio.file.name.slice(dieaudio.file.name.indexOf("."));
-							tags.add(
-								`die:${
-									typeof game.readFile == "function" ? "ext" : "db"
-								}:audio/die/${audioname}`
-							);
-							page.content.audio[audioname] = dieaudio.arrayBuffer;
-						}
-
-						page.content.pack.translate[name] = translate;
-						page.content.pack.character[name] = [sexes.value, groups.value, hp, skills, tags];
-						if (this.innerHTML == "创建武将") {
-							createButton(name, fakeme.image64);
-						} else if (currentButton) {
-							if (fakeme.image64) {
-								currentButton.image = fakeme.image64;
-								currentButton.style.backgroundImage = "url(" + fakeme.image64 + ")";
-							}
-							currentButton.nodename.innerHTML = get.verticalStr(translate);
-						}
-						resetEditor();
-						dash1.link.classList.add("active");
 					}
-				);
+					if (fakeme.image) {
+						page.content.image[name + ".jpg"] = fakeme.image;
+					} else {
+						if (!page.content.image[name + ".jpg"]) {
+							alert("请选择武将头像");
+							return;
+						}
+					}
+					var hp = page.querySelector("input.new_hp").value;
+					//体力支持‘Infinity,∞,无限’表示无限
+					if (["Infinity", "∞", "无限"].includes(hp)) {
+						hp = Infinity;
+					} else if (hp.indexOf("/") == -1) {
+						hp = parseInt(hp) || 1;
+					}
+					var skills = [];
+					for (var i = 0; i < skillList.firstChild.childNodes.length; i++) {
+						skills.add(skillList.firstChild.childNodes[i].skill);
+					}
+					var tags = [];
+					for (var i = 0; i < options.childNodes.length - 1; i++) {
+						if (options.childNodes[i].lastChild && options.childNodes[i].lastChild.checked) {
+							tags.push(options.childNodes[i].lastChild.name);
+						}
+					}
+					if (tags.includes("boss")) {
+						tags.add("bossallowed");
+					}
+					var des = page.querySelector("input.new_des").value;
+					if (des) {
+						tags.add("des:" + des);
+					}
+					//阵亡配音
+					if (dieaudio.file && dieaudio.arrayBuffer) {
+						var audioname = name + dieaudio.file.name.slice(dieaudio.file.name.indexOf("."));
+						tags.add(`die:${typeof game.readFile == "function" ? "ext" : "db"}:audio/die/${audioname}`);
+						page.content.audio[audioname] = dieaudio.arrayBuffer;
+					}
+
+					page.content.pack.translate[name] = translate;
+					page.content.pack.character[name] = [sexes.value, groups.value, hp, skills, tags];
+					if (this.innerHTML == "创建武将") {
+						createButton(name, fakeme.image64);
+					} else if (currentButton) {
+						if (fakeme.image64) {
+							currentButton.image = fakeme.image64;
+							currentButton.style.backgroundImage = "url(" + fakeme.image64 + ")";
+						}
+						currentButton.nodename.innerHTML = get.verticalStr(translate);
+					}
+					resetEditor();
+					dash1.link.classList.add("active");
+				});
 				var delnode = ui.create.div(".menubutton.large", "取消", editnode.parentNode, function () {
 					if (this.innerHTML == "删除") {
 						this.button.remove();
@@ -1306,13 +1274,11 @@ export const extensionMenu = function (connectMenu) {
 						fakeme.classList.remove("fullskin");
 					}
 					if (page.content.pack.translate[this.link] != this.link) {
-						newCard.querySelector(".new_name").value =
-							this.link + "|" + page.content.pack.translate[this.link];
+						newCard.querySelector(".new_name").value = this.link + "|" + page.content.pack.translate[this.link];
 					} else {
 						newCard.querySelector(".new_name").value = this.link;
 					}
-					newCard.querySelector(".new_description").value =
-						page.content.pack.translate[this.link + "_info"];
+					newCard.querySelector(".new_description").value = page.content.pack.translate[this.link + "_info"];
 					var info = page.content.pack.card[this.link];
 					container.code = "card=" + get.stringify(info);
 
@@ -1343,11 +1309,7 @@ export const extensionMenu = function (connectMenu) {
 					}
 					button.listen(clickButton);
 					button.classList.add("noclick");
-					button.nodename = ui.create.div(
-						button,
-						".name",
-						get.verticalStr(page.content.pack.translate[name])
-					);
+					button.nodename = ui.create.div(button, ".name", get.verticalStr(page.content.pack.translate[name]));
 					page.insertBefore(button, page.childNodes[1]);
 				};
 				page.reset = function (name) {
@@ -1370,11 +1332,7 @@ export const extensionMenu = function (connectMenu) {
 							for (var i = 0; i < page.content.pack.list.length; i++) {
 								var card = page.content.pack.list[i];
 								var node = document.createElement("button");
-								node.innerHTML =
-									page.content.pack.translate[card[2]] +
-									" " +
-									lib.translate[card[0]] +
-									card[1];
+								node.innerHTML = page.content.pack.translate[card[2]] + " " + lib.translate[card[0]] + card[1];
 								node.name = card[2];
 								node.link = card;
 								pile.appendChild(node);
@@ -1415,28 +1373,26 @@ export const extensionMenu = function (connectMenu) {
 								var url = lib.assetURL + "extension/" + name + "/" + file;
 								createButton(i, url, fullskin);
 								if (lib.device == "ios" || lib.device == "android") {
-									window.resolveLocalFileSystemURL(
-										nonameInitialized + "extension/" + name,
-										function (entry) {
-											entry.getFile(file, {}, function (fileEntry) {
-												fileEntry.file(function (fileToLoad) {
-													var fileReader = new FileReader();
-													fileReader.onload = function (e) {
-														page.content.image[file] = e.target.result;
-													};
-													fileReader.readAsArrayBuffer(fileToLoad, "UTF-8");
-												});
+									window.resolveLocalFileSystemURL(nonameInitialized + "extension/" + name, function (entry) {
+										entry.getFile(file, {}, function (fileEntry) {
+											fileEntry.file(function (fileToLoad) {
+												var fileReader = new FileReader();
+												fileReader.onload = function (e) {
+													page.content.image[file] = e.target.result;
+												};
+												fileReader.readAsArrayBuffer(fileToLoad, "UTF-8");
 											});
-										}
-									);
+										});
+									});
 								} else {
 									loadImage(file, url);
 								}
-							} else
-								game.getDB("image", `extension-${name}:${file}`).then((value) => {
+							} else {
+								game.getDB("image", `extension-${name}:${file}`).then(value => {
 									createButton(i, value, fullskin);
 									loadImage(file, value);
 								});
+							}
 						}
 					} else {
 						page.content = {
@@ -1451,16 +1407,11 @@ export const extensionMenu = function (connectMenu) {
 					}
 					updatePile();
 				};
-				ui.create.div(
-					".config.more.margin-bottom",
-					'<div style="transform:none;margin-right:3px">←</div>返回',
-					page,
-					function () {
-						ui.create.templayer();
-						page.hide();
-						pageboard.show();
-					}
-				);
+				ui.create.div(".config.more.margin-bottom", '<div style="transform:none;margin-right:3px">←</div>返回', page, function () {
+					ui.create.templayer();
+					page.hide();
+					pageboard.show();
+				});
 				page.content = {
 					pack: {
 						card: {},
@@ -1497,8 +1448,7 @@ export const extensionMenu = function (connectMenu) {
 					editnode.classList.add("disabled");
 					delnode.innerHTML = "取消";
 					delete delnode.button;
-					container.code =
-						'card={\n    \n}\n\n/*\n示例：\ncard={\n    type:"basic",\n    enable:true,\n    filterTarget:true,\n    content:function(){\n        target.draw()\n    },\n    ai:{\n        order:1,\n        result:{\n            target:1\n        }\n    }\n}\n此例的效果为目标摸一张牌\n导出时本段代码中的换行、缩进以及注释将被清除\n*/';
+					container.code = 'card={\n    \n}\n\n/*\n示例：\ncard={\n    type:"basic",\n    enable:true,\n    filterTarget:true,\n    content:function(){\n        target.draw()\n    },\n    ai:{\n        order:1,\n        result:{\n            target:1\n        }\n    }\n}\n此例的效果为目标摸一张牌\n导出时本段代码中的换行、缩进以及注释将被清除\n*/';
 				};
 
 				newCard = ui.create.div(".new_character", page);
@@ -1542,16 +1492,8 @@ export const extensionMenu = function (connectMenu) {
 				fakeme.imagenode = ui.create.div(".image", fakeme);
 				ui.create.div(".name", "选择背景", fakeme);
 
-				ui.create.div(
-					".indent",
-					'名称：<input class="new_name" type="text">',
-					newCard
-				).style.paddingTop = "8px";
-				ui.create.div(
-					".indent",
-					'描述：<input class="new_description" type="text">',
-					newCard
-				).style.paddingTop = "6px";
+				ui.create.div(".indent", '名称：<input class="new_name" type="text">', newCard).style.paddingTop = "8px";
+				ui.create.div(".indent", '描述：<input class="new_description" type="text">', newCard).style.paddingTop = "6px";
 				newCard.querySelector("input.new_name").onblur = updateButton;
 				var codeButton = document.createElement("button");
 				newCard.appendChild(codeButton);
@@ -1618,8 +1560,7 @@ export const extensionMenu = function (connectMenu) {
 					container.code = "card=" + get.stringify(lib.card[selectname.value]);
 					codeButton.onclick.call(codeButton);
 					if (lib.translate[selectname.value + "_info"]) {
-						newCard.querySelector("input.new_description").value =
-							lib.translate[selectname.value + "_info"];
+						newCard.querySelector("input.new_description").value = lib.translate[selectname.value + "_info"];
 					}
 				};
 
@@ -1699,131 +1640,114 @@ export const extensionMenu = function (connectMenu) {
 					delete window.saveNonameInput;
 				};
 				var editor = ui.create.editor(container, saveInput);
-				container.code =
-					'card={\n    \n}\n\n/*\n示例：\ncard={\n    type:"basic",\n    enable:true,\n    filterTarget:true,\n    content:function(){\n        target.draw()\n    },\n    ai:{\n        order:1,\n        result:{\n            target:1\n        }\n    }\n}\n此例的效果为目标摸一张牌\n导出时本段代码中的换行、缩进以及注释将被清除\n*/';
+				container.code = 'card={\n    \n}\n\n/*\n示例：\ncard={\n    type:"basic",\n    enable:true,\n    filterTarget:true,\n    content:function(){\n        target.draw()\n    },\n    ai:{\n        order:1,\n        result:{\n            target:1\n        }\n    }\n}\n此例的效果为目标摸一张牌\n导出时本段代码中的换行、缩进以及注释将被清除\n*/';
 
-				var editnode = ui.create.div(
-					".menubutton.large.new_card.disabled",
-					"创建卡牌",
-					newCard,
-					function () {
-						var name = page.querySelector("input.new_name").value;
-						if (!name) {
-							alert("请填写卡牌名\n提示：卡牌名格式为id+|+中文名，其中id必须惟一");
-							return;
-						}
-						name = name.split("|");
-						var translate = name[1] || name[0];
-						var info = page.querySelector("input.new_description").value;
-						name = name[0];
-						if (currentButton) {
-							if (currentButton.link != name) {
-								if (lib.card[name] || page.content.pack.card[name]) {
-									alert(
-										"卡牌名与现有卡牌重复，请更改\n提示：卡牌名格式为id+|+中文名，其中id必须惟一"
-									);
-									return;
-								}
-								var extname;
-								if (currentButton.classList.contains("fullskin")) {
-									extname = ".png";
-								} else {
-									extname = ".jpg";
-								}
-								page.content.image[name + extname] =
-									page.content.image[currentButton.link + extname];
-								delete page.content.image[currentButton.link + extname];
-								delete page.content.pack.card[currentButton.link];
-								delete page.content.pack.translate[currentButton.link];
-								delete page.content.pack.translate[currentButton.link + "_info"];
-								currentButton.link = name;
-							}
-						} else {
+				var editnode = ui.create.div(".menubutton.large.new_card.disabled", "创建卡牌", newCard, function () {
+					var name = page.querySelector("input.new_name").value;
+					if (!name) {
+						alert("请填写卡牌名\n提示：卡牌名格式为id+|+中文名，其中id必须惟一");
+						return;
+					}
+					name = name.split("|");
+					var translate = name[1] || name[0];
+					var info = page.querySelector("input.new_description").value;
+					name = name[0];
+					if (currentButton) {
+						if (currentButton.link != name) {
 							if (lib.card[name] || page.content.pack.card[name]) {
-								alert(
-									"卡牌名与现有卡牌重复，请更改\n提示：卡牌名格式为id+|+中文名，其中id必须惟一"
-								);
+								alert("卡牌名与现有卡牌重复，请更改\n提示：卡牌名格式为id+|+中文名，其中id必须惟一");
 								return;
 							}
-						}
-						if (fakeme.image) {
-							if (fakeme.classList.contains("fullskin")) {
-								page.content.image[name + ".png"] = fakeme.image;
-								delete page.content.image[name + ".jpg"];
+							var extname;
+							if (currentButton.classList.contains("fullskin")) {
+								extname = ".png";
 							} else {
-								page.content.image[name + ".jpg"] = fakeme.image;
-								delete page.content.image[name + ".png"];
+								extname = ".jpg";
 							}
-						} else if (!fakeme.classList.contains("inited")) {
-							alert("请选择一个卡牌背景");
+							page.content.image[name + extname] = page.content.image[currentButton.link + extname];
+							delete page.content.image[currentButton.link + extname];
+							delete page.content.pack.card[currentButton.link];
+							delete page.content.pack.translate[currentButton.link];
+							delete page.content.pack.translate[currentButton.link + "_info"];
+							currentButton.link = name;
+						}
+					} else {
+						if (lib.card[name] || page.content.pack.card[name]) {
+							alert("卡牌名与现有卡牌重复，请更改\n提示：卡牌名格式为id+|+中文名，其中id必须惟一");
 							return;
 						}
-						page.content.pack.translate[name] = translate;
-						page.content.pack.translate[name + "_info"] = info;
-						try {
-							var { card } = security.exec2(container.code);
-							if (card == null || typeof card != "object") {
-								throw "err";
-							}
-							page.content.pack.card[name] = card;
-						} catch (e) {
-							page.content.pack.card[name] = {};
+					}
+					if (fakeme.image) {
+						if (fakeme.classList.contains("fullskin")) {
+							page.content.image[name + ".png"] = fakeme.image;
+							delete page.content.image[name + ".jpg"];
+						} else {
+							page.content.image[name + ".jpg"] = fakeme.image;
+							delete page.content.image[name + ".png"];
 						}
-						if (fakeme.classList.contains("inited")) {
+					} else if (!fakeme.classList.contains("inited")) {
+						alert("请选择一个卡牌背景");
+						return;
+					}
+					page.content.pack.translate[name] = translate;
+					page.content.pack.translate[name + "_info"] = info;
+					try {
+						var { card } = security.exec2(container.code);
+						if (card == null || typeof card != "object") {
+							throw "err";
+						}
+						page.content.pack.card[name] = card;
+					} catch (e) {
+						page.content.pack.card[name] = {};
+					}
+					if (fakeme.classList.contains("inited")) {
+						if (fakeme.classList.contains("fullskin")) {
+							page.content.pack.card[name].fullskin = true;
+							delete page.content.pack.card[name].fullimage;
+						} else {
+							page.content.pack.card[name].fullimage = true;
+							delete page.content.pack.card[name].fullskin;
+						}
+					}
+					if (this.innerHTML == "创建卡牌") {
+						createButton(name, fakeme.image64, fakeme.classList.contains("fullskin"));
+					} else if (currentButton) {
+						if (fakeme.image64) {
 							if (fakeme.classList.contains("fullskin")) {
-								page.content.pack.card[name].fullskin = true;
-								delete page.content.pack.card[name].fullimage;
+								currentButton.style.color = "";
+								currentButton.style.textShadow = "";
+								currentButton.imagenode.style.backgroundImage = "url(" + fakeme.image64 + ")";
+								currentButton.style.backgroundImage = "";
+								currentButton.style.backgroundSize = "";
+								currentButton.classList.add("fullskin");
 							} else {
-								page.content.pack.card[name].fullimage = true;
-								delete page.content.pack.card[name].fullskin;
+								currentButton.style.color = "white";
+								currentButton.style.textShadow = "black 0 0 2px";
+								currentButton.imagenode.style.backgroundImage = "";
+								currentButton.style.backgroundImage = "url(" + fakeme.image64 + ")";
+								currentButton.style.backgroundSize = "cover";
+								currentButton.classList.remove("fullskin");
 							}
 						}
-						if (this.innerHTML == "创建卡牌") {
-							createButton(name, fakeme.image64, fakeme.classList.contains("fullskin"));
-						} else if (currentButton) {
-							if (fakeme.image64) {
-								if (fakeme.classList.contains("fullskin")) {
-									currentButton.style.color = "";
-									currentButton.style.textShadow = "";
-									currentButton.imagenode.style.backgroundImage =
-										"url(" + fakeme.image64 + ")";
-									currentButton.style.backgroundImage = "";
-									currentButton.style.backgroundSize = "";
-									currentButton.classList.add("fullskin");
-								} else {
-									currentButton.style.color = "white";
-									currentButton.style.textShadow = "black 0 0 2px";
-									currentButton.imagenode.style.backgroundImage = "";
-									currentButton.style.backgroundImage = "url(" + fakeme.image64 + ")";
-									currentButton.style.backgroundSize = "cover";
-									currentButton.classList.remove("fullskin");
-								}
-							}
-							currentButton.nodename.innerHTML = get.verticalStr(translate);
-						}
-						resetEditor();
+						currentButton.nodename.innerHTML = get.verticalStr(translate);
+					}
+					resetEditor();
+					updatePile();
+					dash2.link.classList.add("active");
+				});
+				var delnode = ui.create.div(".menubutton.large.new_card_delete", "取消", editnode.parentNode, function () {
+					if (this.innerHTML == "删除") {
+						this.button.remove();
+						var name = this.button.link;
+						delete dash2.content.pack.card[name];
+						delete dash2.content.pack.translate[name];
+						delete dash2.content.pack.translate[name + "_info"];
+						delete dash2.content.image[name];
 						updatePile();
 						dash2.link.classList.add("active");
 					}
-				);
-				var delnode = ui.create.div(
-					".menubutton.large.new_card_delete",
-					"取消",
-					editnode.parentNode,
-					function () {
-						if (this.innerHTML == "删除") {
-							this.button.remove();
-							var name = this.button.link;
-							delete dash2.content.pack.card[name];
-							delete dash2.content.pack.translate[name];
-							delete dash2.content.pack.translate[name + "_info"];
-							delete dash2.content.image[name];
-							updatePile();
-							dash2.link.classList.add("active");
-						}
-						resetEditor();
-					}
-				);
+					resetEditor();
+				});
 
 				var editPile;
 				var toggle2 = ui.create.div(".config.more", "编辑牌堆 <div>&gt;</div>", page, function () {
@@ -1892,11 +1816,7 @@ export const extensionMenu = function (connectMenu) {
 				);
 				cardpileaddsuit.style.width = "53px";
 				cardpileaddsuit.style.marginRight = "2px";
-				var cardpileaddnumber = ui.create.selectlist(
-					[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
-					null,
-					cardpileadd
-				);
+				var cardpileaddnumber = ui.create.selectlist([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], null, cardpileadd);
 				cardpileaddnumber.style.width = "43px";
 				cardpileaddnumber.style.marginRight = "2px";
 				var button = document.createElement("button");
@@ -1905,8 +1825,7 @@ export const extensionMenu = function (connectMenu) {
 				button.onclick = function () {
 					var card = [cardpileaddsuit.value, cardpileaddnumber.value, cardpileaddname.value];
 					var node = document.createElement("button");
-					node.innerHTML =
-						page.content.pack.translate[card[2]] + " " + lib.translate[card[0]] + card[1];
+					node.innerHTML = page.content.pack.translate[card[2]] + " " + lib.translate[card[0]] + card[1];
 					node.name = card[2];
 					node.link = card;
 					pile.appendChild(node);
@@ -1984,21 +1903,16 @@ export const extensionMenu = function (connectMenu) {
 						newSkill.style.display = "";
 					}
 				};
-				ui.create.div(
-					".config.more.margin-bottom",
-					'<div style="transform:none;margin-right:3px">←</div>返回',
-					page,
-					function () {
-						ui.create.templayer();
-						page.hide();
-						if (page.fromchar) {
-							dash1.show();
-							delete page.fromchar;
-						} else {
-							pageboard.show();
-						}
+				ui.create.div(".config.more.margin-bottom", '<div style="transform:none;margin-right:3px">←</div>返回', page, function () {
+					ui.create.templayer();
+					page.hide();
+					if (page.fromchar) {
+						dash1.show();
+						delete page.fromchar;
+					} else {
+						pageboard.show();
 					}
-				);
+				});
 				var currentButton = null;
 				var clickButton = function () {
 					if (currentButton == this) {
@@ -2010,13 +1924,11 @@ export const extensionMenu = function (connectMenu) {
 					toggle.classList.add("on");
 					newSkill.style.display = "";
 					if (page.content.pack.translate[this.link] != this.link) {
-						newSkill.querySelector(".new_name").value =
-							this.link + "|" + page.content.pack.translate[this.link];
+						newSkill.querySelector(".new_name").value = this.link + "|" + page.content.pack.translate[this.link];
 					} else {
 						newSkill.querySelector(".new_name").value = this.link;
 					}
-					newSkill.querySelector(".new_description").value =
-						page.content.pack.translate[this.link + "_info"];
+					newSkill.querySelector(".new_description").value = page.content.pack.translate[this.link + "_info"];
 					var info = page.content.pack.skill[this.link];
 					container.code =
 						"skill=" +
@@ -2032,11 +1944,17 @@ export const extensionMenu = function (connectMenu) {
 							for (const key in obj) {
 								const descriptor = Object.getOwnPropertyDescriptor(obj, key);
 								if (descriptor?.get || descriptor?.set) {
-									if (descriptor.get) str += indent + get.stringify(descriptor.get, 1) + ",\n";
-									if (descriptor.set) str += indent + get.stringify(descriptor.set, 1) + ",\n";
-								}
-								else {
+									if (descriptor.get) {
+										str += indent + get.stringify(descriptor.get, 1) + ",\n";
+									}
+									if (descriptor.set) {
+										str += indent + get.stringify(descriptor.set, 1) + ",\n";
+									}
+								} else {
 									let keyString = (/[^a-zA-Z]/.test(key) ? `"${key}"` : key) + ": ";
+									if (get.is.functionMethod(obj, key)) {
+										keyString = "";
+									}
 									str += indent + keyString + get.stringify(obj[key], 1) + ",\n";
 								}
 							}
@@ -2086,8 +2004,7 @@ export const extensionMenu = function (connectMenu) {
 					editnode.classList.add("disabled");
 					delnode.innerHTML = "取消";
 					delete delnode.button;
-					container.code =
-						'skill={\n    \n}\n\n/*\n示例：\nskill={\n    trigger:{player:"phaseJieshuBegin"},\n    frequent:true,\n    content:function(){\n        player.draw()\n    }\n}\n此例为闭月代码\n导出时本段代码中的换行、缩进以及注释将被清除\n*/';
+					container.code = 'skill={\n    \n}\n\n/*\n示例：\nskill={\n    trigger:{player:"phaseJieshuBegin"},\n    frequent:true,\n    content:function(){\n        player.draw()\n    }\n}\n此例为闭月代码\n导出时本段代码中的换行、缩进以及注释将被清除\n*/';
 					if (page.fromchar == "add") {
 						page.fromchar = true;
 					}
@@ -2095,16 +2012,8 @@ export const extensionMenu = function (connectMenu) {
 
 				newSkill = ui.create.div(".new_character.new_skill", page);
 				page.newSkill = newSkill;
-				var namenode = ui.create.div(
-					".config",
-					'名称：<input class="new_name" type="text" style="width:120px"></input>',
-					newSkill
-				);
-				var descnode = ui.create.div(
-					".config",
-					'描述：<input class="new_description" type="text" style="width:120px"></input>',
-					newSkill
-				);
+				var namenode = ui.create.div(".config", '名称：<input class="new_name" type="text" style="width:120px"></input>', newSkill);
+				var descnode = ui.create.div(".config", '描述：<input class="new_description" type="text" style="width:120px"></input>', newSkill);
 				namenode.querySelector("input.new_name").onblur = updateButton;
 				var commandline = ui.create.div(".config", newSkill);
 				var editbutton = document.createElement("button");
@@ -2175,8 +2084,7 @@ export const extensionMenu = function (connectMenu) {
 					delete window.saveNonameInput;
 				};
 				var editor = ui.create.editor(container, saveInput);
-				container.code =
-					'skill={\n    \n}\n\n/*\n示例：\nskill={\n    trigger:{player:"phaseJieshuBegin"},\n    frequent:true,\n    content:function(){\n        player.draw()\n    }\n}\n此例为闭月代码\n导出时本段代码中的换行、缩进以及注释将被清除\n*/';
+				container.code = 'skill={\n    \n}\n\n/*\n示例：\nskill={\n    trigger:{player:"phaseJieshuBegin"},\n    frequent:true,\n    content:function(){\n        player.draw()\n    }\n}\n此例为闭月代码\n导出时本段代码中的换行、缩进以及注释将被清除\n*/';
 
 				var citebutton = document.createElement("button");
 				citebutton.innerHTML = "引用代码";
@@ -2196,9 +2104,19 @@ export const extensionMenu = function (connectMenu) {
 						list.push([i, lib.translate[i]]);
 					}
 				}
-				if(!list.length){
-					if(!lib.character["noname_sunce"]) lib.character["noname_sunce"] = ["male", "wu", 4, ["jiang"], ["unseen"]];
-					if(!lib.translate["noname_sunce"]) lib.translate["noname_sunce"] = "孙策";
+				if (!list.length) {
+					if (!lib.character["noname_sunce"]) {
+						lib.character["noname_sunce"] = new Character({
+							sex: "male",
+							group: "wu",
+							hp: 4,
+							skills: ["jiang"],
+							isUnseen: true,
+						});
+					}
+					if (!lib.translate["noname_sunce"]) {
+						lib.translate["noname_sunce"] = "孙策";
+					}
 					list.push(["noname_sunce", lib.translate["noname_sunce"]]);
 				}
 				list.sort(function (a, b) {
@@ -2284,11 +2202,17 @@ export const extensionMenu = function (connectMenu) {
 							for (const key in obj) {
 								const descriptor = Object.getOwnPropertyDescriptor(obj, key);
 								if (descriptor?.get || descriptor?.set) {
-									if (descriptor.get) str += indent + get.stringify(descriptor.get, 1) + ",\n";
-									if (descriptor.set) str += indent + get.stringify(descriptor.set, 1) + ",\n";
-								}
-								else {
+									if (descriptor.get) {
+										str += indent + get.stringify(descriptor.get, 1) + ",\n";
+									}
+									if (descriptor.set) {
+										str += indent + get.stringify(descriptor.set, 1) + ",\n";
+									}
+								} else {
 									let keyString = (/[^a-zA-Z]/.test(key) ? `"${key}"` : key) + ": ";
+									if (get.is.functionMethod(obj, key)) {
+										keyString = "";
+									}
 									str += indent + keyString + get.stringify(obj[key], 1) + ",\n";
 								}
 							}
@@ -2300,8 +2224,7 @@ export const extensionMenu = function (connectMenu) {
 						})();
 					editbutton.onclick.call(editbutton);
 					if (lib.translate[skillopt.value + "_info"]) {
-						newSkill.querySelector("input.new_description").value =
-							lib.translate[skillopt.value + "_info"];
+						newSkill.querySelector("input.new_description").value = lib.translate[skillopt.value + "_info"];
 					}
 				};
 				var cancelSkillButton = document.createElement("button");
@@ -2333,9 +2256,7 @@ export const extensionMenu = function (connectMenu) {
 						if (currentButton) {
 							if (currentButton.link != name) {
 								if (lib.skill[name] || page.content.pack.skill[name]) {
-									alert(
-										"技能名与现有技能重复，请更改\n提示：技能名格式为id+|+中文名，其中id必须惟一"
-									);
+									alert("技能名与现有技能重复，请更改\n提示：技能名格式为id+|+中文名，其中id必须惟一");
 									return;
 								}
 								delete page.content.pack.skill[currentButton.link];
@@ -2345,9 +2266,7 @@ export const extensionMenu = function (connectMenu) {
 							}
 						} else {
 							if (lib.skill[name] || page.content.pack.skill[name]) {
-								alert(
-									"技能名与现有技能重复，请更改\n提示：技能名格式为id+|+中文名，其中id必须惟一"
-								);
+								alert("技能名与现有技能重复，请更改\n提示：技能名格式为id+|+中文名，其中id必须惟一");
 								return;
 							}
 						}
@@ -2383,35 +2302,30 @@ export const extensionMenu = function (connectMenu) {
 					},
 					newSkill
 				);
-				var delnode = ui.create.div(
-					".menubutton.large.new_card_delete",
-					"取消",
-					editnode.parentNode,
-					function () {
-						if (this.innerHTML == "删除") {
-							this.button.remove();
-							var name = this.button.link;
-							delete dash3.content.pack.skill[name];
-							delete dash3.content.pack.translate[name];
-							delete dash3.content.pack.translate[name + "_info"];
-							dash3.link.classList.add("active");
-							if (get.is.empty(dash3.content.pack.skill)) {
-								dash1.selectname.value = dash1.selectname.childNodes[1].value;
-							}
-							dash1.selectname.onchange.call(dash1.selectname);
-							dash1.updateSkill();
-							resetEditor();
-						} else if (page.fromchar == "add") {
-							ui.create.templayer();
-							page.hide();
-							dash1.show();
-							delete page.fromchar;
-							setTimeout(resetEditor, 600);
-						} else {
-							resetEditor();
+				var delnode = ui.create.div(".menubutton.large.new_card_delete", "取消", editnode.parentNode, function () {
+					if (this.innerHTML == "删除") {
+						this.button.remove();
+						var name = this.button.link;
+						delete dash3.content.pack.skill[name];
+						delete dash3.content.pack.translate[name];
+						delete dash3.content.pack.translate[name + "_info"];
+						dash3.link.classList.add("active");
+						if (get.is.empty(dash3.content.pack.skill)) {
+							dash1.selectname.value = dash1.selectname.childNodes[1].value;
 						}
+						dash1.selectname.onchange.call(dash1.selectname);
+						dash1.updateSkill();
+						resetEditor();
+					} else if (page.fromchar == "add") {
+						ui.create.templayer();
+						page.hide();
+						dash1.show();
+						delete page.fromchar;
+						setTimeout(resetEditor, 600);
+					} else {
+						resetEditor();
 					}
-				);
+				});
 
 				page.content = {
 					pack: {
@@ -2424,16 +2338,11 @@ export const extensionMenu = function (connectMenu) {
 			})();
 			var dash4 = (function () {
 				var page = ui.create.div(".hidden.menu-buttons");
-				ui.create.div(
-					".config.more.margin-bottom",
-					'<div style="transform:none;margin-right:3px">←</div>返回',
-					page,
-					function () {
-						ui.create.templayer();
-						page.hide();
-						pageboard.show();
-					}
-				);
+				ui.create.div(".config.more.margin-bottom", '<div style="transform:none;margin-right:3px">←</div>返回', page, function () {
+					ui.create.templayer();
+					page.hide();
+					pageboard.show();
+				});
 				page.reset = function (name) {
 					page.content = {};
 					if (lib.extensionPack[name]) {
@@ -2446,8 +2355,7 @@ export const extensionMenu = function (connectMenu) {
 									page.content[i] = lib.extensionPack[name].code[i].toString();
 									break;
 								case "object":
-									page.content[i] =
-										i + "=" + get.stringify(lib.extensionPack[name].code[i]);
+									page.content[i] = i + "=" + get.stringify(lib.extensionPack[name].code[i]);
 									break;
 							}
 						}
@@ -2556,54 +2464,12 @@ export const extensionMenu = function (connectMenu) {
 					}
 				};
 				page.content = {};
-				createCode(
-					"辅",
-					"辅助代码",
-					page,
-					clickCode,
-					"arenaReady",
-					"function(){\n    \n}\n\n/*\n函数执行时机为游戏界面创建之后\n导出时本段代码中的换行、缩进以及注释将被清除\n*/"
-				);
-				createCode(
-					"主",
-					"主代码",
-					page,
-					clickCode,
-					"content",
-					"function(config,pack){\n    \n}\n\n/*\n函数执行时机为游戏数据加载之后、界面加载之前\n参数1扩展选项（见选项代码）；参数2为扩展定义的武将、卡牌和技能等（可在此函数中修改）\n导出时本段代码中的换行、缩进以及注释将被清除\n*/"
-				);
-				createCode(
-					"预",
-					"预备代码",
-					page,
-					clickCode,
-					"prepare",
-					"function(){\n    \n}\n\n/*\n函数执行时机为游戏扩展全部加载之后\n导出时本段代码中的换行、缩进以及注释将被清除\n*/"
-				);
-				createCode(
-					"启",
-					"启动代码",
-					page,
-					clickCode,
-					"precontent",
-					"function(){\n    \n}\n\n/*\n函数执行时机为游戏数据加载之前，联机模式亦可加载\n除添加模式外请慎用\n导出时本段代码中的换行、缩进以及注释将被清除\n*/"
-				);
-				createCode(
-					"选",
-					"选项代码",
-					page,
-					clickCode,
-					"config",
-					'config={\n    \n}\n\n/*\n示例：\nconfig={\n    switcher_example:{\n        name:"示例列表选项",\n        init:"3",\n     	  item:{"1":"一","2":"二","3":"三"}\n    },\n    toggle_example:{\n        name:"示例开关选项",\n        init:true\n    }\n}\n此例中传入的主代码函数的默认参数为{switcher_example:"3",toggle_example:true}\n导出时本段代码中的换行、缩进以及注释将被清除\n*/'
-				);
-				createCode(
-					"帮",
-					"帮助代码",
-					page,
-					clickCode,
-					"help",
-					'help={\n    \n}\n\n/*\n示例：\nhelp={\n    "帮助条目":"<ul><li>列表1-条目1<li>列表1-条目2</ul><ol><li>列表2-条目1<li>列表2-条目2</ul>"\n}\n帮助内容将显示在菜单－选项－帮助中\n导出时本段代码中的换行、缩进以及注释将被清除\n*/'
-				);
+				createCode("辅", "辅助代码", page, clickCode, "arenaReady", "function(){\n    \n}\n\n/*\n函数执行时机为游戏界面创建之后\n导出时本段代码中的换行、缩进以及注释将被清除\n*/");
+				createCode("主", "主代码", page, clickCode, "content", "function(config,pack){\n    \n}\n\n/*\n函数执行时机为游戏数据加载之后、界面加载之前\n参数1扩展选项（见选项代码）；参数2为扩展定义的武将、卡牌和技能等（可在此函数中修改）\n导出时本段代码中的换行、缩进以及注释将被清除\n*/");
+				createCode("预", "预备代码", page, clickCode, "prepare", "function(){\n    \n}\n\n/*\n函数执行时机为游戏扩展全部加载之后\n导出时本段代码中的换行、缩进以及注释将被清除\n*/");
+				createCode("启", "启动代码", page, clickCode, "precontent", "function(){\n    \n}\n\n/*\n函数执行时机为游戏数据加载之前，联机模式亦可加载\n除添加模式外请慎用\n导出时本段代码中的换行、缩进以及注释将被清除\n*/");
+				createCode("选", "选项代码", page, clickCode, "config", 'config={\n    \n}\n\n/*\n示例：\nconfig={\n    switcher_example:{\n        name:"示例列表选项",\n        init:"3",\n     	  item:{"1":"一","2":"二","3":"三"}\n    },\n    toggle_example:{\n        name:"示例开关选项",\n        init:true\n    }\n}\n此例中传入的主代码函数的默认参数为{switcher_example:"3",toggle_example:true}\n导出时本段代码中的换行、缩进以及注释将被清除\n*/');
+				createCode("帮", "帮助代码", page, clickCode, "help", 'help={\n    \n}\n\n/*\n示例：\nhelp={\n    "帮助条目":"<ul><li>列表1-条目1<li>列表1-条目2</ul><ol><li>列表2-条目1<li>列表2-条目2</ul>"\n}\n帮助内容将显示在菜单－选项－帮助中\n导出时本段代码中的换行、缩进以及注释将被清除\n*/');
 
 				return page;
 			})();
@@ -2612,7 +2478,9 @@ export const extensionMenu = function (connectMenu) {
 			createDash("技", "编辑技能", dash3);
 			createDash("码", "编辑代码", dash4);
 		};
-		if (!get.config("menu_loadondemand")) node._initLink();
+		if (!get.config("menu_loadondemand")) {
+			node._initLink();
+		}
 	})();
 	(function () {
 		var page = ui.create.div("");
@@ -2652,11 +2520,7 @@ export const extensionMenu = function (connectMenu) {
 			importExtension.style.display = "none";
 			importExtension.style.width = "100%";
 			importExtension.style.textAlign = "left";
-			ui.create.div(
-				"",
-				'<input type="file" accept="application/zip" style="width:153px"><button>确定</button>',
-				importExtension
-			);
+			ui.create.div("", '<input type="file" accept="application/zip" style="width:153px"><button>确定</button>', importExtension);
 			ui.create.div(".config", "修改下载地址", page, function () {
 				alert("您可以在“设置→通用→获取扩展地址”中，修改下载扩展时所采用的地址。");
 			});
@@ -2664,8 +2528,11 @@ export const extensionMenu = function (connectMenu) {
 			var extensionURL;
 			var source = lib.config.extension_sources,
 				index = lib.config.extension_source;
-			if (source && source[index]) extensionURL = source[index];
-			else extensionURL = lib.updateURL.replace(/noname/g, "noname-extension") + "/master/";
+			if (source && source[index]) {
+				extensionURL = source[index];
+			} else {
+				extensionURL = lib.updateURL.replace(/noname/g, "noname-extension") + "/master/";
+			}
 
 			var reloadnode = ui.create.div(".config.toggle.pointerdiv", "重新启动", page, game.reload);
 			reloadnode.style.display = "none";
@@ -2675,29 +2542,32 @@ export const extensionMenu = function (connectMenu) {
 
 			importExtension.firstChild.lastChild.onclick = function () {
 				const fileToLoad = this.previousSibling.files[0];
-				if (!fileToLoad) return;
+				if (!fileToLoad) {
+					return;
+				}
 				new Promise((resolve, reject) => {
 					const fileReader = new FileReader();
 					fileReader.onerror = reject;
 					fileReader.onload = resolve;
 					fileReader.readAsArrayBuffer(fileToLoad, "UTF-8");
-				}).then(async (progressEvent) => {
+				}).then(async progressEvent => {
 					if (
-						await game.importExtension(progressEvent.target.result, () => {
+						(await game.importExtension(progressEvent.target.result, () => {
 							extensionNode.innerHTML = "导入成功，3秒后将重启";
-							new Promise((resolve) => setTimeout(resolve, 1000))
+							new Promise(resolve => setTimeout(resolve, 1000))
 								.then(() => {
 									extensionNode.innerHTML = "导入成功，2秒后将重启";
-									return new Promise((resolve) => setTimeout(resolve, 1000));
+									return new Promise(resolve => setTimeout(resolve, 1000));
 								})
 								.then(() => {
 									extensionNode.innerHTML = "导入成功，1秒后将重启";
-									return new Promise((resolve) => setTimeout(resolve, 1000));
+									return new Promise(resolve => setTimeout(resolve, 1000));
 								})
 								.then(game.reload);
-						}) !== false
-					)
+						})) !== false
+					) {
 						importExtension.style.display = "none";
+					}
 				});
 			};
 
@@ -2713,7 +2583,9 @@ export const extensionMenu = function (connectMenu) {
 				}, 200);
 			};
 			var downloadExtension = function (e) {
-				if ((this.innerHTML != "下载扩展" && this.innerHTML != "更新扩展") || !window.JSZip) return;
+				if ((this.innerHTML != "下载扩展" && this.innerHTML != "更新扩展") || !window.JSZip) {
+					return;
+				}
 				this.classList.remove("update");
 				if (e) {
 					e.stopPropagation();
@@ -2752,11 +2624,7 @@ export const extensionMenu = function (connectMenu) {
 				game.checkFileList(files, function () {
 					files.unshift("extension/" + that.info.name + "/extension.js");
 					for (var i = 0; i < files.length; i++) {
-						files[i] =
-							extensionURL +
-							that.info.name +
-							"/" +
-							files[i].slice(10 + that.info.name.length + 1);
+						files[i] = extensionURL + that.info.name + "/" + files[i].slice(10 + that.info.name.length + 1);
 					}
 					var n1 = 0,
 						n2 = files.length;
@@ -2777,7 +2645,9 @@ export const extensionMenu = function (connectMenu) {
 								lib.assetURL + "extension/" + that.info.name,
 								"extension",
 								function () {
-									if (!lib.config.dev) delete window.game;
+									if (!lib.config.dev) {
+										delete window.game;
+									}
 									if (game.importedPack) {
 										var extname = game.importedPack.name;
 										if (lib.config.extensions.includes(extname)) {
@@ -2786,19 +2656,10 @@ export const extensionMenu = function (connectMenu) {
 										lib.config.extensions.add(extname);
 										game.saveConfig("extensions", lib.config.extensions);
 										game.saveConfig("extension_" + extname + "_enable", true);
-										game.saveConfig(
-											"extension_" + extname + "_version",
-											that.info.version
-										);
+										game.saveConfig("extension_" + extname + "_version", that.info.version);
 										for (var i in game.importedPack.config) {
-											if (
-												game.importedPack.config[i] &&
-												"init" in game.importedPack.config[i]
-											) {
-												game.saveConfig(
-													"extension_" + extname + "_" + i,
-													game.importedPack.config[i].init
-												);
+											if (game.importedPack.config[i] && "init" in game.importedPack.config[i]) {
+												game.saveConfig("extension_" + extname + "_" + i, game.importedPack.config[i].init);
 											}
 										}
 										reloadnode.style.display = "";
@@ -2828,16 +2689,15 @@ export const extensionMenu = function (connectMenu) {
 			};
 
 			node.update = function () {
-				if (this.updated) return;
+				if (this.updated) {
+					return;
+				}
 				if (!window.JSZip) {
 					lib.init.js(lib.assetURL + "game", "jszip");
 				}
 				var toremove = [];
 				for (var i = 0; i < page.childElementCount; i++) {
-					if (
-						page.childNodes[i].classList.contains("menubutton") ||
-						page.childNodes[i].classList.contains("loading")
-					) {
+					if (page.childNodes[i].classList.contains("menubutton") || page.childNodes[i].classList.contains("loading")) {
 						toremove.push(page.childNodes[i]);
 					}
 				}
@@ -2857,17 +2717,9 @@ export const extensionMenu = function (connectMenu) {
 					delete window.extension;
 					loading.style.display = "none";
 					for (var i = 0; i < list.length; i++) {
-						var node = ui.create.div(
-							".videonode.menubutton.extension.large",
-							page,
-							clickExtension
-						);
+						var node = ui.create.div(".videonode.menubutton.extension.large", page, clickExtension);
 						ui.create.div(".caption", list[i].name, node);
-						ui.create.div(
-							".text.author",
-							"作者：" + list[i].author + "<span>(" + list[i].size + ")</span>",
-							node
-						);
+						ui.create.div(".text.author", "作者：" + list[i].author + "<span>(" + list[i].size + ")</span>", node);
 						ui.create.div(".text", "更新日期：" + list[i].date, node);
 						ui.create.div(".text", list[i].intro, node);
 						var download = ui.create.div(".menubutton.text.active", "下载扩展", node.firstChild, {
@@ -2909,16 +2761,11 @@ export const extensionMenu = function (connectMenu) {
 							download.listen(downloadExtension);
 							if (lib.config.extensions.includes(list[i].name)) {
 								download.classList.remove("active");
-								if (
-									lib.extensionPack[list[i].name] &&
-									lib.extensionPack[list[i].name].version == list[i].version
-								) {
+								if (lib.extensionPack[list[i].name] && lib.extensionPack[list[i].name].version == list[i].version) {
 									download.classList.add("transparent2");
 									download.classList.remove("active");
 									download.innerHTML = "已安装";
-								} else if (
-									lib.config["extension_" + list[i].name + "_version"] != list[i].version
-								) {
+								} else if (lib.config["extension_" + list[i].name + "_version"] != list[i].version) {
 									download.innerHTML = "更新扩展";
 									download.classList.add("highlight");
 									download.classList.add("update");
@@ -2953,26 +2800,31 @@ export const extensionMenu = function (connectMenu) {
 				fetch(`${extensionURL}catalog.js`, {
 					referrerPolicy: "no-referrer",
 				})
-					.then((response) => response.text())
+					.then(response => response.text())
 					.then(security.eval) // 返回的是HTML?
 					.then(loaded)
-					.catch((reason) => {
+					.catch(reason => {
 						console.log(reason);
 						delete window.extension;
-						loading.innerHTML =
-							"连接失败:" + (reason instanceof Error ? reason.message : String(reason));
+						loading.innerHTML = "连接失败:" + (reason instanceof Error ? reason.message : String(reason));
 					});
 			};
-			if (_thisUpdate) node.update();
+			if (_thisUpdate) {
+				node.update();
+			}
 		};
-		if (!get.config("menu_loadondemand")) node._initLink();
+		if (!get.config("menu_loadondemand")) {
+			node._initLink();
+		}
 	})();
 	var active = start.firstChild.querySelector(".active");
 	if (!active) {
 		active = start.firstChild.firstChild;
 		active.classList.add("active");
 	}
-	if (!active.link) active._initLink();
+	if (!active.link) {
+		active._initLink();
+	}
 	rightPane.appendChild(active.link);
 	updateNodes();
 };

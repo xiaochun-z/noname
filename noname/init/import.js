@@ -41,7 +41,7 @@ export const importMode = generateImportFunction("mode", name => `../../mode/${n
 function generateImportFunction(type, pathParser) {
 	return async name => {
 		if (type == "extension" && !game.hasExtension(name) && !lib.config.all.stockextension.includes(name)) {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			await game.import(type, await createEmptyExtension(name));
 			return;
 		}
@@ -101,24 +101,31 @@ function generateImportFunction(type, pathParser) {
 			return;
 		}
 		const modeContent = await import(path);
-		if (!modeContent.type) return;
-		if (modeContent.type !== type) throw new Error(`Loaded Content doesn't conform to "${type}" but "${modeContent.type}".`);
-		// @ts-ignore
+		if (!modeContent.type) {
+			return;
+		}
+		if (modeContent.type !== type) {
+			throw new Error(`Loaded Content doesn't conform to "${type}" but "${modeContent.type}".`);
+		}
+		// @ts-expect-error ignore
 		await game.import(type, modeContent.default);
 	};
 }
 
 async function createEmptyExtension(name) {
-	const extensionInfo = await lib.init.promises.json(`${lib.assetURL}extension/${name}/info.json`).then(info => info, () => {
-		return {
-			name,
-			intro: `扩展<b>《${name}》</b>尚未开启，请开启后查看信息。（建议扩展添加info.json以在关闭时查看信息）`,
-			author: "未知",
-			diskURL: "",
-			forumURL: "",
-			version: "1.0",
-		};
-	});
+	const extensionInfo = await lib.init.promises.json(`${lib.assetURL}extension/${name}/info.json`).then(
+		info => info,
+		() => {
+			return {
+				name,
+				intro: `扩展<b>《${name}》</b>尚未开启，请开启后查看信息。（建议扩展添加info.json以在关闭时查看信息）`,
+				author: "未知",
+				diskURL: "",
+				forumURL: "",
+				version: "1.0",
+			};
+		}
+	);
 	return {
 		name: extensionInfo.name,
 		editable: false,
