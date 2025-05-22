@@ -1760,7 +1760,7 @@ export class Library {
 				// },
 				ui_zoom: {
 					name: "界面缩放",
-					intro: "填入0.5-3以内的数值作为界面缩放比例",
+					intro: "填入0.5-3以内的数值作为界面缩放比例（最终结果系统会保留两位小数）",
 					init: 1,
 					input: true,
 					restart: true,
@@ -1771,6 +1771,7 @@ export class Library {
 							alert("填入数值不符合规范！");
 							return;
 						}
+						zoom = parseInt(zoom.toFixed(2));
 						text.innerText = zoom;
 						game.saveConfig("ui_zoom", zoom);
 						game.documentZoom = game.deviceZoom * zoom;
