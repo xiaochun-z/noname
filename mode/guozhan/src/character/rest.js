@@ -11,7 +11,7 @@ export default {
 		skills: ["fakequanji", "fakepaiyi"],
 		hasSkinInGuozhan: true,
 	}),
-	gz_shimazhao: new Character({
+	gz_simazhao: new Character({
 		sex: "male",
 		group: "ye",
 		hp: 3,
