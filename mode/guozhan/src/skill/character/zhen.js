@@ -64,7 +64,9 @@ export default {
 		filter(_event, player) {
 			return (
 				player.countCards("he", card => {
-					if (get.position(card) == "h" && _status.connectMode) return true;
+					if (get.position(card) == "h" && _status.connectMode) {
+						return true;
+					}
 					return get.type(card) == "equip";
 				}) > 0
 			);
@@ -166,7 +168,9 @@ export default {
 		filter(event, player) {
 			return game.hasPlayer(current => {
 				// @ts-expect-error 类型系统未来可期
-				if (current == _status.currentPhase || !current.isFriendOf(player)) return false;
+				if (current == _status.currentPhase || !current.isFriendOf(player)) {
+					return false;
+				}
 				// @ts-expect-error 类型系统未来可期
 				const evt = event.getl(current);
 				return evt && evt.hs && evt.hs.length && current.countCards("h") == 0;
@@ -176,7 +180,9 @@ export default {
 			const list = game
 				.filterPlayer(current => {
 					// @ts-expect-error 类型系统未来可期
-					if (current == _status.currentPhase || !current.isFriendOf(player)) return false;
+					if (current == _status.currentPhase || !current.isFriendOf(player)) {
+						return false;
+					}
 					// @ts-expect-error 类型系统未来可期
 					var evt = trigger.getl(current);
 					return evt && evt.hs && evt.hs.length;
@@ -261,7 +267,9 @@ export default {
 		filter(event, player, name) {
 			const bool = name === "useCardToPlayered";
 			// @ts-expect-error 类型系统未来可期
-			if (bool && !event.isFirstTarget) return false;
+			if (bool && !event.isFirstTarget) {
+				return false;
+			}
 			return event.card.name == "sha" && event[bool ? "player" : "target"].isFriendOf(player);
 		},
 		logTarget(event, player, name) {
@@ -334,9 +342,13 @@ export default {
 			global: "useCardToPlayered",
 		},
 		filter(event, player) {
-			if (event.card.name != "sha") return false;
+			if (event.card.name != "sha") {
+				return false;
+			}
 			// @ts-expect-error 类型系统未来可期
-			if (game.countPlayer() < 4) return false;
+			if (game.countPlayer() < 4) {
+				return false;
+			}
 			// @ts-expect-error 类型系统未来可期
 			return player.siege(event.target) && event.player.siege(event.target);
 		},
@@ -348,7 +360,9 @@ export default {
 			const id = trigger.target.playerid;
 			// @ts-expect-error 类型系统未来可期
 			const map = trigger.getParent().customArgs;
-			if (!map[id]) map[id] = {};
+			if (!map[id]) {
+				map[id] = {};
+			}
 			if (typeof map[id].shanRequired == "number") {
 				map[id].shanRequired++;
 			} else {
@@ -392,7 +406,9 @@ export default {
 					return (
 						player.isFriendOf(event.player) &&
 						player.hasCard(card => {
-							if (_status.connectMode && get.position(card) == "h") return true;
+							if (_status.connectMode && get.position(card) == "h") {
+								return true;
+							}
 							return !suits.includes(get.suit(card));
 						}, "he")
 					);
@@ -427,7 +443,9 @@ export default {
 					global: "useCardToTarget",
 				},
 				filter(event, player) {
-					if (!["basic", "trick"].includes(get.type(event.card, "trick"))) return false;
+					if (!["basic", "trick"].includes(get.type(event.card, "trick"))) {
+						return false;
+					}
 					return event.target && player.isFriendOf(event.target) && event.targets.length == 1 && player.getExpansions("qianhuan").length > 0;
 				},
 				async cost(event, trigger, player) {
@@ -467,7 +485,9 @@ export default {
 						.set("goon", goon)
 						.set("ai", function (button) {
 							// @ts-expect-error 类型系统未来可期
-							if (_status.event.goon) return 1;
+							if (_status.event.goon) {
+								return 1;
+							}
 							return 0;
 						})
 						.set("createDialog", [get.prompt("qianhuan"), '<div class="text center">移去一张“千幻”牌令' + get.translation(trigger.player) + "对" + get.translation(trigger.target) + "的" + get.translation(trigger.card) + "失效</div>", player.getExpansions("qianhuan")])

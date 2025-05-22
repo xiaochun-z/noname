@@ -63,7 +63,9 @@ export class PlayerGuozhan extends Player {
 		next.source = source;
 		// @ts-expect-error 类型就是这么写的
 		next.junling = junling;
-		if (targets.length) next.targets = targets;
+		if (targets.length) {
+			next.targets = targets;
+		}
 		// @ts-expect-error 类型就是这么写的
 		next.setContent("chooseJunlingControl");
 		return next;
@@ -82,7 +84,9 @@ export class PlayerGuozhan extends Player {
 		next.source = source;
 		// @ts-expect-error 类型就是这么写的
 		next.player = this;
-		if (targets.length) next.targets = targets;
+		if (targets.length) {
+			next.targets = targets;
+		}
 		// @ts-expect-error 类型就是这么写的
 		next.junling = junling;
 		// @ts-expect-error 类型就是这么写的
@@ -112,9 +116,13 @@ export class PlayerGuozhan extends Player {
 			// @ts-expect-error 类型就是这么写的
 			next.skill = skill;
 			// @ts-expect-error 类型就是这么写的
-			if (repeat || (!_status.connectMode && get.config("changeViceType") == "online")) next.repeat = true;
+			if (repeat || (!_status.connectMode && get.config("changeViceType") == "online")) {
+				next.repeat = true;
+			}
 			// @ts-expect-error 类型就是这么写的
-			if (hidden == "hidden") next.hidden = true;
+			if (hidden == "hidden") {
+				next.hidden = true;
+			}
 			return next;
 		}
 	}
@@ -122,34 +130,62 @@ export class PlayerGuozhan extends Player {
 	// 后面摆了，相信后人的智慧
 
 	differentIdentityFrom(target, self) {
-		if (this == target) return false;
-		if (this.getStorage("yexinjia_friend").includes(target)) return false;
-		if (target.getStorage("yexinjia_friend").includes(this)) return false;
+		if (this == target) {
+			return false;
+		}
+		if (this.getStorage("yexinjia_friend").includes(target)) {
+			return false;
+		}
+		if (target.getStorage("yexinjia_friend").includes(this)) {
+			return false;
+		}
 		if (self) {
-			if (target.identity == "unknown") return false;
-			if (target.identity == "ye" || this.identity == "ye") return true;
+			if (target.identity == "unknown") {
+				return false;
+			}
+			if (target.identity == "ye" || this.identity == "ye") {
+				return true;
+			}
 			if (this.identity == "unknown") {
 				var identity = lib.character[this.name1][1];
-				if (this.wontYe()) return identity != target.identity;
+				if (this.wontYe()) {
+					return identity != target.identity;
+				}
 				return true;
 			}
 		} else {
-			if (this.identity == "unknown" || target.identity == "unknown") return false;
-			if (this.identity == "ye" || target.identity == "ye") return true;
+			if (this.identity == "unknown" || target.identity == "unknown") {
+				return false;
+			}
+			if (this.identity == "ye" || target.identity == "ye") {
+				return true;
+			}
 		}
 		return this.identity != target.identity;
 	}
 	sameIdentityAs(target, shown) {
-		if (this.getStorage("yexinjia_friend").includes(target)) return true;
-		if (target.getStorage("yexinjia_friend").includes(this)) return true;
+		if (this.getStorage("yexinjia_friend").includes(target)) {
+			return true;
+		}
+		if (target.getStorage("yexinjia_friend").includes(this)) {
+			return true;
+		}
 		if (shown) {
-			if (this.identity == "ye" || this.identity == "unknown") return false;
+			if (this.identity == "ye" || this.identity == "unknown") {
+				return false;
+			}
 		} else {
-			if (this == target) return true;
-			if (target.identity == "unknown" || target.identity == "ye" || this.identity == "ye") return false;
+			if (this == target) {
+				return true;
+			}
+			if (target.identity == "unknown" || target.identity == "ye" || this.identity == "ye") {
+				return false;
+			}
 			if (this.identity == "unknown") {
 				var identity = lib.character[this.name1][1];
-				if (this.wontYe()) return identity == target.identity;
+				if (this.wontYe()) {
+					return identity == target.identity;
+				}
 				return false;
 			}
 		}
@@ -162,9 +198,15 @@ export class PlayerGuozhan extends Player {
 		};
 	}
 	setModeState(info) {
-		if (info.mode.unseen) this.classList.add("unseen");
-		if (info.mode.unseen2) this.classList.add("unseen2");
-		if (!info.name) return;
+		if (info.mode.unseen) {
+			this.classList.add("unseen");
+		}
+		if (info.mode.unseen2) {
+			this.classList.add("unseen2");
+		}
+		if (!info.name) {
+			return;
+		}
 		// if(info.name.indexOf('unknown')==0){
 		// 	if(this==game.me){
 		// 		lib.translate[info.name]+='（你）';
@@ -187,14 +229,19 @@ export class PlayerGuozhan extends Player {
 	}
 	dieAfter2(source) {
 		var that = this;
-		if (that.hasSkillTag("noDieAfter", null, source)) return;
-		if (source && source.hasSkillTag("noDieAfter2", null, that)) return;
+		if (that.hasSkillTag("noDieAfter", null, source)) {
+			return;
+		}
+		if (source && source.hasSkillTag("noDieAfter2", null, that)) {
+			return;
+		}
 		if (source && source.shijun) {
 			source.discard(source.getCards("he"));
 			delete source.shijun;
 		} else if (source && source.identity != "unknown") {
-			if (source.identity == "ye" && !source.getStorage("yexinjia_friend").length) source.draw(3);
-			else if (source.shijun2) {
+			if (source.identity == "ye" && !source.getStorage("yexinjia_friend").length) {
+				source.draw(3);
+			} else if (source.shijun2) {
 				delete source.shijun2;
 				source.draw(
 					1 +
@@ -203,27 +250,41 @@ export class PlayerGuozhan extends Player {
 						})
 				);
 			} else if (that.identity == "ye") {
-				if (that.getStorage("yexinjia_friend").includes(source) || source.getStorage("yexinjia_friend").includes(that)) source.discard(source.getCards("he"));
-				else
+				if (that.getStorage("yexinjia_friend").includes(source) || source.getStorage("yexinjia_friend").includes(that)) {
+					source.discard(source.getCards("he"));
+				} else {
 					source.draw(
 						1 +
 							game.countPlayer(function (current) {
 								// @ts-expect-error 类型就是这么写的
-								if (current == that) return false;
-								if (current.getStorage("yexinjia_friend").includes(that)) return true;
-								if (that.getStorage("yexinjia_friend").includes(current)) return true;
+								if (current == that) {
+									return false;
+								}
+								if (current.getStorage("yexinjia_friend").includes(that)) {
+									return true;
+								}
+								if (that.getStorage("yexinjia_friend").includes(current)) {
+									return true;
+								}
 								return false;
 							})
 					);
-			} else if (that.identity != source.identity) source.draw(get.population(that.identity) + 1);
-			else source.discard(source.getCards("he"));
+				}
+			} else if (that.identity != source.identity) {
+				source.draw(get.population(that.identity) + 1);
+			} else {
+				source.discard(source.getCards("he"));
+			}
 		}
 	}
 	dieAfter(source) {
 		this.showCharacter(2);
 		if (get.is.jun(this.name1)) {
-			if (source && source.identity == this.identity) source.shijun = true;
-			else if (source && source.identity != "ye") source.shijun2 = true;
+			if (source && source.identity == this.identity) {
+				source.shijun = true;
+			} else if (source && source.identity != "ye") {
+				source.shijun2 = true;
+			}
 			var yelist = [];
 			for (var i = 0; i < game.players.length; i++) {
 				if (game.players[i].identity == this.identity) {
@@ -305,8 +366,12 @@ export class PlayerGuozhan extends Player {
 		}
 	}
 	removeMaxHp(num) {
-		if (game.online) return;
-		if (!num) num = 1;
+		if (game.online) {
+			return;
+		}
+		if (!num) {
+			num = 1;
+		}
 		while (num > 0) {
 			num--;
 			if (typeof this.singleHp == "boolean") {
@@ -323,7 +388,9 @@ export class PlayerGuozhan extends Player {
 		this.update();
 	}
 	hideCharacter(num, log) {
-		if (this.isUnseen(2)) return;
+		if (this.isUnseen(2)) {
+			return;
+		}
 		var name = this["name" + (num + 1)];
 		var next = game.createEvent("hideCharacter");
 		// @ts-expect-error 类型就是这么写的
@@ -351,7 +418,9 @@ export class PlayerGuozhan extends Player {
 	$removeCharacter(num) {
 		var name = this["name" + (num + 1)];
 		var info = lib.character[name];
-		if (!info) return;
+		if (!info) {
+			return;
+		}
 		var to = "gz_shibing" + (info[0] == "male" ? 1 : 2) + info[1];
 		game.log(this, "移除了" + (num ? "副将" : "主将"), "#b" + name);
 		this.reinit(name, to, false);
@@ -367,7 +436,9 @@ export class PlayerGuozhan extends Player {
 		next.setContent("changeVice");
 		next.num = !_status.connectMode && get.config("changeViceType") == "online" ? 1 : 3;
 		// @ts-expect-error 类型就是这么写的
-		if (hidden) next.hidden = true;
+		if (hidden) {
+			next.hidden = true;
+		}
 		return next;
 	}
 	hasMainCharacter() {
@@ -426,21 +497,31 @@ export class PlayerGuozhan extends Player {
 		var skills;
 		switch (num) {
 			case 0:
-				if (log !== false) game.log(this, "展示了主将", "#b" + this.name1);
+				if (log !== false) {
+					game.log(this, "展示了主将", "#b" + this.name1);
+				}
 				this.name = this.name1;
 				skills = lib.character[this.name][3];
 				this.sex = lib.character[this.name][0];
 				this.classList.remove("unseen");
 				break;
 			case 1:
-				if (log !== false) game.log(this, "展示了副将", "#b" + this.name2);
+				if (log !== false) {
+					game.log(this, "展示了副将", "#b" + this.name2);
+				}
 				skills = lib.character[this.name2][3];
-				if (this.sex == "unknown") this.sex = lib.character[this.name2][0];
-				if (this.name.indexOf("unknown") == 0) this.name = this.name2;
+				if (this.sex == "unknown") {
+					this.sex = lib.character[this.name2][0];
+				}
+				if (this.name.indexOf("unknown") == 0) {
+					this.name = this.name2;
+				}
 				this.classList.remove("unseen2");
 				break;
 			case 2:
-				if (log !== false) game.log(this, "展示了主将", "#b" + this.name1, "、副将", "#b" + this.name2);
+				if (log !== false) {
+					game.log(this, "展示了主将", "#b" + this.name1, "、副将", "#b" + this.name2);
+				}
 				this.name = this.name1;
 				skills = lib.character[this.name][3].concat(lib.character[this.name2][3]);
 				this.sex = lib.character[this.name][0];
@@ -503,7 +584,9 @@ export class PlayerGuozhan extends Player {
 		// @ts-expect-error 类型就是这么写的
 		if (!this.viceChanged) {
 			var initdraw = get.config("initshow_draw");
-			if (_status.connectMode) initdraw = lib.configOL.initshow_draw;
+			if (_status.connectMode) {
+				initdraw = lib.configOL.initshow_draw;
+			}
 			// @ts-expect-error 类型就是这么写的
 			if (!_status.initshown && !_status.overing && initdraw != "off" && this.isAlive() && _status.mode != "mingjiang") {
 				this.popup("首亮");
@@ -540,28 +623,49 @@ export class PlayerGuozhan extends Player {
 	}
 	wontYe(group, numOfReadyToShow) {
 		if (!group) {
-			if (this.trueIdentity) group = this.trueIdentity;
-			else group = lib.character[this.name1][1];
+			if (this.trueIdentity) {
+				group = this.trueIdentity;
+			} else {
+				group = lib.character[this.name1][1];
+			}
 		}
 		// @ts-expect-error 类型就是这么写的
-		if (_status.yeidentity && _status.yeidentity.includes(group)) return false;
-		if (get.zhu(this, null, group)) return true;
-		if (!numOfReadyToShow) numOfReadyToShow = 1;
+		if (_status.yeidentity && _status.yeidentity.includes(group)) {
+			return false;
+		}
+		if (get.zhu(this, null, group)) {
+			return true;
+		}
+		if (!numOfReadyToShow) {
+			numOfReadyToShow = 1;
+		}
 		// @ts-expect-error 类型就是这么写的
 		return get.totalPopulation(group) + numOfReadyToShow <= (_status.separatism ? Math.max(get.population() / 2 - 1, 1) : get.population() / 2);
 	}
 	perfectPair(choosing) {
 		if (_status.connectMode) {
-			if (!lib.configOL.zhulian) return false;
+			if (!lib.configOL.zhulian) {
+				return false;
+			}
 		} else {
-			if (!get.config("zhulian")) return false;
+			if (!get.config("zhulian")) {
+				return false;
+			}
 		}
 		var name1 = this.name1;
 		var name2 = this.name2;
-		if (name1.indexOf("gz_shibing") == 0) return false;
-		if (name2.indexOf("gz_shibing") == 0) return false;
-		if (get.is.jun(this.name1)) return true;
-		if (choosing && lib.character[name1][1] != "ye" && lib.character[name2][1] != "ye" && lib.character[name1][1] != lib.character[name2][1]) return false;
+		if (name1.indexOf("gz_shibing") == 0) {
+			return false;
+		}
+		if (name2.indexOf("gz_shibing") == 0) {
+			return false;
+		}
+		if (get.is.jun(this.name1)) {
+			return true;
+		}
+		if (choosing && lib.character[name1][1] != "ye" && lib.character[name2][1] != "ye" && lib.character[name1][1] != lib.character[name2][1]) {
+			return false;
+		}
 		if (name1.indexOf("gz_") == 0) {
 			name1 = name1.slice(name1.indexOf("_") + 1);
 		} else {
@@ -577,39 +681,53 @@ export class PlayerGuozhan extends Player {
 			}
 		}
 		var list = Object.keys(lib.perfectPair).concat(Object.values(lib.perfectPair)).flat();
-		if (!list.includes(name1) || !list.includes(name2)) return false;
+		if (!list.includes(name1) || !list.includes(name2)) {
+			return false;
+		}
 		return (lib.perfectPair[name1] && lib.perfectPair[name1].flat(Infinity).includes(name2)) || (lib.perfectPair[name2] && lib.perfectPair[name2].flat(Infinity).includes(name1));
 	}
 	siege(player) {
-		if (this.identity == "unknown" || this.hasSkill("undist")) return false;
+		if (this.identity == "unknown" || this.hasSkill("undist")) {
+			return false;
+		}
 		if (!player) {
 			var next = this.getNext();
 			// @ts-expect-error 类型就是这么写的
-			if (next && next.sieged()) return true;
+			if (next && next.sieged()) {
+				return true;
+			}
 			var previous = this.getPrevious();
 			// @ts-expect-error 类型就是这么写的
-			if (previous && previous.sieged()) return true;
+			if (previous && previous.sieged()) {
+				return true;
+			}
 			return false;
 		} else {
 			return player.sieged() && (player.getNext() == this || player.getPrevious() == this);
 		}
 	}
 	sieged(player) {
-		if (this.identity == "unknown") return false;
+		if (this.identity == "unknown") {
+			return false;
+		}
 		if (player) {
 			return player.siege(this);
 		} else {
 			var next = this.getNext();
 			var previous = this.getPrevious();
 			if (next && previous && next != previous) {
-				if (next.identity == "unknown" || next.isFriendOf(this)) return false;
+				if (next.identity == "unknown" || next.isFriendOf(this)) {
+					return false;
+				}
 				return next.isFriendOf(previous);
 			}
 			return false;
 		}
 	}
 	inline() {
-		if (this.identity == "unknown" || this.identity == "ye" || this.hasSkill("undist")) return false;
+		if (this.identity == "unknown" || this.identity == "ye" || this.hasSkill("undist")) {
+			return false;
+		}
 		var next = this,
 			previous = this;
 		var list = [];
@@ -635,14 +753,20 @@ export class PlayerGuozhan extends Player {
 				}
 			}
 		}
-		if (!list.length) return false;
+		if (!list.length) {
+			return false;
+		}
 		for (var i = 0; i < arguments.length; i++) {
-			if (!list.includes(arguments[i]) && arguments[i] != this) return false;
+			if (!list.includes(arguments[i]) && arguments[i] != this) {
+				return false;
+			}
 		}
 		return true;
 	}
 	logAi(targets, card) {
-		if (this.ai.shown == 1 || this.isMad()) return;
+		if (this.ai.shown == 1 || this.isMad()) {
+			return;
+		}
 		if (typeof targets == "number") {
 			// @ts-expect-error 类型就是这么写的
 			this.ai.shown += targets;
@@ -667,28 +791,43 @@ export class PlayerGuozhan extends Player {
 			if (targets.length > 0) {
 				for (var i = 0; i < targets.length; i++) {
 					shown = Math.abs(targets[i].ai.shown);
-					if (shown < 0.2 || targets[i].identity == "nei") c = 0;
-					else if (shown < 0.4) c = 0.5;
-					else if (shown < 0.6) c = 0.8;
-					else c = 1;
+					if (shown < 0.2 || targets[i].identity == "nei") {
+						c = 0;
+					} else if (shown < 0.4) {
+						c = 0.5;
+					} else if (shown < 0.6) {
+						c = 0.8;
+					} else {
+						c = 1;
+					}
 					effect += get.effect(targets[i], card, this) * c;
 				}
 			}
 			if (effect > 0) {
-				if (effect < 1) c = 0.5;
-				else c = 1;
+				if (effect < 1) {
+					c = 0.5;
+				} else {
+					c = 1;
+				}
 				// @ts-expect-error 类型就是这么写的
-				if (targets.length == 1 && targets[0] == this);
-				else if (targets.length == 1)
+				if (targets.length == 1 && targets[0] == this) {
+				} else if (targets.length == 1) {
 					// @ts-expect-error 类型就是这么写的
 					this.ai.shown += 0.2 * c;
+				}
 				// @ts-expect-error 类型就是这么写的
-				else this.ai.shown += 0.1 * c;
+				else {
+					this.ai.shown += 0.1 * c;
+				}
 			}
 		}
 		// @ts-expect-error 类型就是这么写的
-		if (this.ai.shown > 0.95) this.ai.shown = 0.95;
+		if (this.ai.shown > 0.95) {
+			this.ai.shown = 0.95;
+		}
 		// @ts-expect-error 类型就是这么写的
-		if (this.ai.shown < -0.5) this.ai.shown = -0.5;
+		if (this.ai.shown < -0.5) {
+			this.ai.shown = -0.5;
+		}
 	}
 }

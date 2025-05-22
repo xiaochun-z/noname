@@ -331,7 +331,6 @@ export default {
 		hujia: 0,
 		skills: ["qiaoyan", "xianzhu"],
 	}),
-	
 
 	gz_re_xusheng: new Character({
 		sex: "male",
@@ -350,8 +349,6 @@ export default {
 		hujia: 0,
 		skills: ["olsbhulie", "olsbyipo"],
 	}),
-
-	
 
 	gz_jun_liubei: new Character({
 		sex: "male",
@@ -377,8 +374,6 @@ export default {
 		hujia: 0,
 		skills: ["jiahe", "lianzi", "jubao"],
 	}),
-
-	
 
 	gz_lingcao: new Character({
 		sex: "male",
@@ -452,7 +447,7 @@ export default {
 		hujia: 0,
 		skills: ["fakekuangcai", "gzshejian"],
 		hasSkinInGuozhan: true,
-		dieAudios: ["re_miheng"], 
+		dieAudios: ["re_miheng"],
 	}),
 	gz_fengxi: new Character({
 		sex: "male",
@@ -513,8 +508,6 @@ export default {
 		hujia: 0,
 		skills: ["gzdeshao", "gzmingfa"],
 	}),
-
-	
 
 	gz_jun_caocao: new Character({
 		sex: "male",
@@ -876,6 +869,6 @@ export default {
 		hujia: 0,
 		skills: ["fakechongxin", "fakeweirong"],
 	}),
-}
+};
 
 export const sort = "";

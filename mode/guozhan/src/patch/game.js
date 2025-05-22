@@ -66,7 +66,9 @@ export class GameGuozhan extends Game {
 						break;
 					}
 				}
-				if (group) choice.splice(i--, 1);
+				if (group) {
+					choice.splice(i--, 1);
+				}
 			} else {
 				// @ts-expect-error 祖宗之法就是这么写的
 				var group = lib.character[choice[i]][1];
@@ -77,7 +79,9 @@ export class GameGuozhan extends Game {
 		}
 		if (map.ye.length) {
 			for (const i in map) {
-				if (i != "ye" && map[i].length) return choice.randomSort();
+				if (i != "ye" && map[i].length) {
+					return choice.randomSort();
+				}
 			}
 			choice.remove(map.ye[0]);
 			map.ye.remove(map.ye[0]);
@@ -120,7 +124,9 @@ export class GameGuozhan extends Game {
 				} else {
 					if (!map[lib.character[list[i]][1]] && !get.is.double(list[i])) {
 						group = lib.character[list[i]][1];
-						if (group == "ye") group = null;
+						if (group == "ye") {
+							group = null;
+						}
 						choice.push(list[i]);
 						list.splice(i--, 1);
 						if (choice.length >= num) {
@@ -241,9 +247,13 @@ export class GameGuozhan extends Game {
 	 */
 	getIdentityList(player) {
 		// @ts-expect-error 祖宗之法就是这么写的
-		if (!player.isUnseen()) return;
+		if (!player.isUnseen()) {
+			return;
+		}
 		// @ts-expect-error 祖宗之法就是这么写的
-		if (player === game.me) return;
+		if (player === game.me) {
+			return;
+		}
 
 		let list = {
 			wei: "魏",
@@ -335,7 +345,9 @@ export class GameGuozhan extends Game {
 	 * @param {boolean} started
 	 */
 	showIdentity(started) {
-		if (game.phaseNumber == 0 && !started) return;
+		if (game.phaseNumber == 0 && !started) {
+			return;
+		}
 		for (var i = 0; i < game.players.length; i++) {
 			game.players[i].showCharacter(2, false);
 		}
@@ -368,23 +380,26 @@ export class GameGuozhan extends Game {
 				sides.push(i.playerid);
 			}
 		}
-		if (!sides.length) return;
-		else if (sides.length > 1) {
+		if (!sides.length) {
+			return;
+		} else if (sides.length > 1) {
 			if (!hiddens.length && sides.length == 2) {
 				if (
 					map[sides[0]].length == 1 &&
 					!map[sides[1]].filter(function (i) {
 						return i.identity != "ye" && i.isUnseen(0);
 					}).length
-				)
+				) {
 					map[sides[0]][0].showGiveup();
+				}
 				if (
 					map[sides[1]].length == 1 &&
 					!map[sides[0]].filter(function (i) {
 						return i.identity != "ye" && i.isUnseen(0);
 					}).length
-				)
+				) {
 					map[sides[1]][0].showGiveup();
+				}
 			}
 		} else {
 			var isYe = function (player) {
@@ -409,15 +424,21 @@ export class GameGuozhan extends Game {
 				game.checkResult();
 			} else {
 				var identity = map[sides[0]][0].identity;
-				if (identity == "ye") return;
+				if (identity == "ye") {
+					return;
+				}
 				// @ts-expect-error 祖宗之法就是这么写的
 				for (var i of map[sides[0]]) {
-					if (isYe(i)) return;
+					if (isYe(i)) {
+						return;
+					}
 				}
 				for (var ind = 0; ind < hiddens.length; ind++) {
 					var current = hiddens[ind];
 					// @ts-expect-error 祖宗之法就是这么写的
-					if (isYe(current) || current.getGuozhanGroup(2) != identity || !current.wontYe(null, ind + 1)) return;
+					if (isYe(current) || current.getGuozhanGroup(2) != identity || !current.wontYe(null, ind + 1)) {
+						return;
+					}
 				}
 				broadcastAll(function (id) {
 					// @ts-expect-error 祖宗之法就是这么写的
@@ -482,7 +503,9 @@ export class GameGuozhan extends Game {
 			}
 			var filterChoice = function (name1, name2) {
 				// @ts-expect-error 祖宗之法就是这么写的
-				if (_status.separatism) return true;
+				if (_status.separatism) {
+					return true;
+				}
 				var group1 = lib.character[name1][1];
 				var group2 = lib.character[name2][1];
 				// @ts-expect-error 祖宗之法就是这么写的
@@ -491,15 +514,21 @@ export class GameGuozhan extends Game {
 					// @ts-expect-error 祖宗之法就是这么写的
 					var double = get.is.double(name2, true);
 					// @ts-expect-error 祖宗之法就是这么写的
-					if (double) return doublex.some(group => double.includes(group));
+					if (double) {
+						return doublex.some(group => double.includes(group));
+					}
 					// @ts-expect-error 祖宗之法就是这么写的
 					return doublex.includes(group2);
 				} else {
-					if (group1 == "ye") return group2 != "ye";
+					if (group1 == "ye") {
+						return group2 != "ye";
+					}
 					// @ts-expect-error 祖宗之法就是这么写的
 					var double = get.is.double(name2, true);
 					// @ts-expect-error 祖宗之法就是这么写的
-					if (double) return double.includes(group1);
+					if (double) {
+						return double.includes(group1);
+					}
 					return group1 == group2;
 				}
 			};
@@ -517,9 +546,11 @@ export class GameGuozhan extends Game {
 						// @ts-expect-error 祖宗之法就是这么写的
 						if (get.is.double(mainx, true)) {
 							// @ts-expect-error 祖宗之法就是这么写的
-							if (!get.is.double(vicex, true)) player.trueIdentity = lib.character[vicex][1];
+							if (!get.is.double(vicex, true)) {
+								player.trueIdentity = lib.character[vicex][1];
+							}
 							// @ts-expect-error 祖宗之法就是这么写的
-							else if (get.is.double(mainx, true).removeArray(get.is.double(vicex, true)).length == 0 || get.is.double(vicex, true).removeArray(get.is.double(mainx, true)).length == 0)
+							else if (get.is.double(mainx, true).removeArray(get.is.double(vicex, true)).length == 0 || get.is.double(vicex, true).removeArray(get.is.double(mainx, true)).length == 0) {
 								// @ts-expect-error 祖宗之法就是这么写的
 								player.trueIdentity = get.is
 									// @ts-expect-error 祖宗之法就是这么写的
@@ -527,10 +558,15 @@ export class GameGuozhan extends Game {
 									// @ts-expect-error 祖宗之法就是这么写的
 									.filter(group => get.is.double(mainx, true).includes(group))
 									.randomGet();
+							}
 							// @ts-expect-error 祖宗之法就是这么写的
-							else player.trueIdentity = get.is.double(mainx, true).find(group => get.is.double(vicex, true).includes(group));
+							else {
+								player.trueIdentity = get.is.double(mainx, true).find(group => get.is.double(vicex, true).includes(group));
+							}
 							// @ts-expect-error 祖宗之法就是这么写的
-						} else if (lib.character[mainx][1] == "ye" && get.is.double(vicex, true)) player.trueIdentity = get.is.double(vicex, true).randomGet();
+						} else if (lib.character[mainx][1] == "ye" && get.is.double(vicex, true)) {
+							player.trueIdentity = get.is.double(vicex, true).randomGet();
+						}
 						if (back) {
 							list.remove(player.name1);
 							list.remove(player.name2);
@@ -553,11 +589,11 @@ export class GameGuozhan extends Game {
 
 	/**
 	 * 类型兼容版本
-	 * 
-	 * @param {string} type 
+	 *
+	 * @param {string} type
 	 * @param {Player?} player
 	 * @param {any} [content]
-	 * @returns 
+	 * @returns
 	 */
 	// @ts-expect-error 祖宗之法就是这么写的
 	addVideo(type, player, content) {

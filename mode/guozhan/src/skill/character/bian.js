@@ -74,9 +74,15 @@ export default {
 							}
 						}
 					}
-					if (target != player) return 0;
-					if (get.damageEffect(target, player, player) >= 0) return 10;
-					if (target.hp >= 4) return 5;
+					if (target != player) {
+						return 0;
+					}
+					if (get.damageEffect(target, player, player) >= 0) {
+						return 10;
+					}
+					if (target.hp >= 4) {
+						return 5;
+					}
 					if (target.hp == 3) {
 						if (
 							player.countCards("h") <= 2 &&
@@ -97,13 +103,21 @@ export default {
 		audio: "yigui",
 		enable: "chooseToUse",
 		filter(event, player) {
-			if (event.type == "wuxie" || event.type == "respondShan") return false;
+			if (event.type == "wuxie" || event.type == "respondShan") {
+				return false;
+			}
 			const storage = player.getStorage("fake_yigui"),
 				storage2 = player.getStorage("fake_yigui2");
-			if (!storage.length || storage2.length > 1) return false;
+			if (!storage.length || storage2.length > 1) {
+				return false;
+			}
 			if (event.type == "dying") {
-				if (storage2.includes("basic")) return false;
-				if (!event.filterCard({ name: "tao" }, player, event) && !event.filterCard({ name: "jiu" }, player, event)) return false;
+				if (storage2.includes("basic")) {
+					return false;
+				}
+				if (!event.filterCard({ name: "tao" }, player, event) && !event.filterCard({ name: "jiu" }, player, event)) {
+					return false;
+				}
 				// @ts-expect-error 类型系统未来可期
 				const target = event.dying;
 				return (
@@ -111,26 +125,36 @@ export default {
 					target.identity == "ye" ||
 					storage.some(i => {
 						var group = get.character(i, 1);
-						if (group == "ye" || target.identity == group) return true;
+						if (group == "ye" || target.identity == group) {
+							return true;
+						}
 						// @ts-expect-error 类型系统未来可期
 						var double = get.is.double(i, true);
 						// @ts-expect-error 类型系统未来可期
-						if (double && double.includes(target.identity)) return true;
+						if (double && double.includes(target.identity)) {
+							return true;
+						}
 					})
 				);
 			}
 			return get
 				.inpileVCardList(info => {
 					const name = info[2];
-					if (storage2.includes(get.type(name))) return false;
+					if (storage2.includes(get.type(name))) {
+						return false;
+					}
 					return get.type(name) == "basic" || get.type(name) == "trick";
 				})
 				.some(cardx => {
 					const card = { name: cardx[2], nature: cardx[3] },
 						info = get.info(card);
 					return storage.some(character => {
-						if (!lib.filter.filterCard(card, player, event)) return false;
-						if (event.filterCard && !event.filterCard(card, player, event)) return false;
+						if (!lib.filter.filterCard(card, player, event)) {
+							return false;
+						}
+						if (event.filterCard && !event.filterCard(card, player, event)) {
+							return false;
+						}
 						const group = get.character(character, 1),
 							// @ts-expect-error 类型系统未来可期
 							double = get.is.double(character, true);
@@ -148,8 +172,12 @@ export default {
 										break;
 									}
 								}
-								if (giveup) continue;
-								if (!giveup) return true;
+								if (giveup) {
+									continue;
+								}
+								if (!giveup) {
+									return true;
+								}
 							}
 							return false;
 						}
@@ -161,7 +189,9 @@ export default {
 				});
 		},
 		hiddenCard(player, name) {
-			if (["shan", "wuxie"].includes(name) || !["basic", "trick"].includes(get.type(name))) return false;
+			if (["shan", "wuxie"].includes(name) || !["basic", "trick"].includes(get.type(name))) {
+				return false;
+			}
 			return lib.inpile.includes(name) && player.getStorage("fake_yigui").length && !player.getStorage("fake_yigui2").includes(get.type2(name));
 		},
 		chooseButton: {
@@ -171,7 +201,9 @@ export default {
 				dialog.add([player.getStorage("fake_yigui"), "character"]);
 				const list = get.inpileVCardList(info => {
 					const name = info[2];
-					if (player.getStorage("fake_yigui2").includes(get.type(name))) return false;
+					if (player.getStorage("fake_yigui2").includes(get.type(name))) {
+						return false;
+					}
 					return get.type(name) == "basic" || get.type(name) == "trick";
 				});
 				// @ts-expect-error 类型系统未来可期
@@ -183,11 +215,15 @@ export default {
 				var evt = _status.event.getParent("chooseToUse");
 				if (!ui.selected.buttons.length) {
 					// @ts-expect-error 类型系统未来可期
-					if (typeof button.link != "string") return false;
+					if (typeof button.link != "string") {
+						return false;
+					}
 					// @ts-expect-error 类型系统未来可期
 					if (evt.type == "dying") {
 						// @ts-expect-error 类型系统未来可期
-						if (evt.dying.identity == "unknown" || evt.dying.identity == "ye") return true;
+						if (evt.dying.identity == "unknown" || evt.dying.identity == "ye") {
+							return true;
+						}
 						// @ts-expect-error 类型系统未来可期
 						var double = get.is.double(button.link, true);
 						// @ts-expect-error 类型系统未来可期
@@ -196,25 +232,39 @@ export default {
 					return true;
 				} else {
 					// @ts-expect-error 类型系统未来可期
-					if (typeof ui.selected.buttons[0].link != "string") return false;
+					if (typeof ui.selected.buttons[0].link != "string") {
+						return false;
+					}
 					// @ts-expect-error 类型系统未来可期
-					if (typeof button.link != "object") return false;
+					if (typeof button.link != "object") {
+						return false;
+					}
 					// @ts-expect-error 类型系统未来可期
 					var name = button.link[2];
-					if (player.getStorage("fake_yigui2").includes(get.type(name))) return false;
+					if (player.getStorage("fake_yigui2").includes(get.type(name))) {
+						return false;
+					}
 					var card = { name: name };
 					// @ts-expect-error 类型系统未来可期
-					if (button.link[3]) card.nature = button.link[3];
+					if (button.link[3]) {
+						card.nature = button.link[3];
+					}
 					var info = get.info(card);
 					// @ts-expect-error 类型系统未来可期
 					var group = lib.character[ui.selected.buttons[0].link][1];
 					// @ts-expect-error 类型系统未来可期
 					var double = get.is.double(ui.selected.buttons[0].link, true);
 					// @ts-expect-error 类型系统未来可期
-					if (evt.type == "dying") return evt.filterCard(card, player, evt);
-					if (!lib.filter.filterCard(card, player, evt)) return false;
+					if (evt.type == "dying") {
+						return evt.filterCard(card, player, evt);
+					}
+					if (!lib.filter.filterCard(card, player, evt)) {
+						return false;
+					}
 					// @ts-expect-error 类型系统未来可期
-					else if (evt.filterCard && !evt.filterCard(card, player, evt)) return false;
+					else if (evt.filterCard && !evt.filterCard(card, player, evt)) {
+						return false;
+					}
 					if (info.changeTarget) {
 						// @ts-expect-error 类型系统未来可期
 						var list = game.filterPlayer(function (current) {
@@ -231,15 +281,20 @@ export default {
 									break;
 								}
 							}
-							if (giveup) continue;
-							if (giveup == false) return true;
+							if (giveup) {
+								continue;
+							}
+							if (giveup == false) {
+								return true;
+							}
 						}
 						return false;
-					} else
+					} else {
 						return game.hasPlayer(function (current) {
 							// @ts-expect-error 类型系统未来可期
 							return evt.filterTarget(card, player, current) && (group == "ye" || current.identity == "unknown" || current.identity == "ye" || current.identity == group || (double && double.includes(current.identity)));
 						});
+					}
 				}
 			},
 			check(button) {
@@ -257,11 +312,17 @@ export default {
 					// @ts-expect-error 类型系统未来可期
 					if (evt.type == "dying") {
 						// @ts-expect-error 类型系统未来可期
-						if (evt.dying != player && get.effect(evt.dying, { name: name }, player, player) <= 0) return 0;
-						if (name == "jiu") return 2.1;
+						if (evt.dying != player && get.effect(evt.dying, { name: name }, player, player) <= 0) {
+							return 0;
+						}
+						if (name == "jiu") {
+							return 2.1;
+						}
 						return 2;
 					}
-					if (!["tao", "juedou", "guohe", "shunshou", "wuzhong", "xietianzi", "yuanjiao", "taoyuan", "wugu", "wanjian", "nanman", "huoshaolianying"].includes(name)) return 0;
+					if (!["tao", "juedou", "guohe", "shunshou", "wuzhong", "xietianzi", "yuanjiao", "taoyuan", "wugu", "wanjian", "nanman", "huoshaolianying"].includes(name)) {
+						return 0;
+					}
 					if (["taoyuan", "wugu", "wanjian", "nanman", "huoshaolianying"].includes(name)) {
 						var list = game.filterPlayer(function (current) {
 							// @ts-expect-error 类型系统未来可期
@@ -271,8 +332,12 @@ export default {
 						for (var i = 0; i < list.length; i++) {
 							num += get.effect(list[i], { name: name }, player, player);
 						}
-						if (num <= 0) return 0;
-						if (list.length > 1) return (1.7 + Math.random()) * Math.max(num, 1);
+						if (num <= 0) {
+							return 0;
+						}
+						if (list.length > 1) {
+							return (1.7 + Math.random()) * Math.max(num, 1);
+						}
 					}
 				}
 				return 1 + Math.random();
@@ -302,17 +367,23 @@ export default {
 						var double = get.is.double(xx.character, true);
 						var info = get.info(card);
 						// @ts-expect-error 类型系统未来可期
-						if (!(info.singleCard && ui.selected.targets.length) && group != "ye" && target.identity != "unknown" && target.identity != "ye" && target.identity != group && (!double || !double.includes(target.identity))) return false;
+						if (!(info.singleCard && ui.selected.targets.length) && group != "ye" && target.identity != "unknown" && target.identity != "ye" && target.identity != group && (!double || !double.includes(target.identity))) {
+							return false;
+						}
 						if (info.changeTarget) {
 							var targets = [target];
 							info.changeTarget(player, targets);
 							for (var i = 0; i < targets.length; i++) {
 								// @ts-expect-error 类型系统未来可期
-								if (group != "ye" && targets[i].identity != "unknown" && targets[i].identity != "ye" && targets[i].identity != group && (!double || !double.includes(targets[i].identity))) return false;
+								if (group != "ye" && targets[i].identity != "unknown" && targets[i].identity != "ye" && targets[i].identity != group && (!double || !double.includes(targets[i].identity))) {
+									return false;
+								}
 							}
 						}
 						// @ts-expect-error 类型系统未来可期
-						if (evt._backup && evt._backup.filterTarget) return evt._backup.filterTarget(card, player, target);
+						if (evt._backup && evt._backup.filterTarget) {
+							return evt._backup.filterTarget(card, player, target);
+						}
 						return lib.filter.filterTarget(card, player, target);
 					},
 					onuse(result, player) {
@@ -352,9 +423,14 @@ export default {
 			mark(dialog, storage, player) {
 				if (storage && storage.length) {
 					// @ts-expect-error 类型系统未来可期
-					if (player.isUnderControl(true)) dialog.addSmall([storage, "character"]);
-					else return "共有" + get.cnNumber(storage.length) + "张“魂”";
-				} else return "没有“魂”";
+					if (player.isUnderControl(true)) {
+						dialog.addSmall([storage, "character"]);
+					} else {
+						return "共有" + get.cnNumber(storage.length) + "张“魂”";
+					}
+				} else {
+					return "没有“魂”";
+				}
 			},
 			content(storage) {
 				return "共有" + get.cnNumber(storage.length) + "张“魂”";
@@ -378,7 +454,9 @@ export default {
 				trigger: { player: "showCharacterAfter" },
 				filter(event, player) {
 					// @ts-expect-error 类型系统未来可期
-					if (!event.toShow.some(i => get.character(i, 3).includes("fake_yigui"))) return false;
+					if (!event.toShow.some(i => get.character(i, 3).includes("fake_yigui"))) {
+						return false;
+					}
 					return (
 						game
 							.getAllGlobalHistory(
@@ -428,11 +506,15 @@ export default {
 								// @ts-expect-error 类型系统未来可期
 								game.countPlayer(target => {
 									const group = get.character(character, 1);
-									if (group == "ye" || target.identity == group) return true;
+									if (group == "ye" || target.identity == group) {
+										return true;
+									}
 									// @ts-expect-error 类型系统未来可期
 									const double = get.is.double(character, true);
 									// @ts-expect-error 类型系统未来可期
-									if (double && double.includes(target.identity)) return true;
+									if (double && double.includes(target.identity)) {
+										return true;
+									}
 								}) + 1
 							);
 						};
@@ -465,7 +547,9 @@ export default {
 					event.player.getHistory("useCard", function (evt) {
 						if (evt.targets) {
 							var targets = evt.targets.slice(0);
-							while (targets.includes(event.player)) targets.remove(event.player);
+							while (targets.includes(event.player)) {
+								targets.remove(event.player);
+							}
 							return targets.length != 0;
 						}
 						return false;
@@ -495,11 +579,15 @@ export default {
 		enable: "phaseUse",
 		filter(_event, player) {
 			var hs = player.getCards("h");
-			if (!hs.length) return false;
+			if (!hs.length) {
+				return false;
+			}
 			for (var i = 0; i < hs.length; i++) {
 				// @ts-expect-error 类型系统未来可期
 				var mod2 = game.checkMod(hs[i], player, "unchanged", "cardEnabled2", player);
-				if (mod2 === false) return false;
+				if (mod2 === false) {
+					return false;
+				}
 			}
 			return true;
 		},
@@ -508,7 +596,9 @@ export default {
 				var list = lib.inpile;
 				var list2 = [];
 				for (var i = 0; i < list.length; i++) {
-					if (list[i] != "wuxie" && get.type(list[i]) == "trick") list2.push(["锦囊", "", list[i]]);
+					if (list[i] != "wuxie" && get.type(list[i]) == "trick") {
+						list2.push(["锦囊", "", list[i]]);
+					}
 				}
 				return ui.create.dialog(get.translation("gz_qice"), [list2, "vcard"]);
 			},
@@ -550,7 +640,9 @@ export default {
 			},
 			check(button) {
 				// @ts-expect-error 类型系统未来可期
-				if (["chiling", "xietianzi", "tiesuo", "lulitongxin", "diaohulishan", "jiedao"].includes(button.link[2])) return 0;
+				if (["chiling", "xietianzi", "tiesuo", "lulitongxin", "diaohulishan", "jiedao"].includes(button.link[2])) {
+					return 0;
+				}
 				// @ts-expect-error 类型系统未来可期
 				return _status.event.player.getUseValue(button.link[2]);
 			},
@@ -617,7 +709,9 @@ export default {
 				player(player) {
 					var num = 0;
 					var cards = player.getCards("h");
-					if (cards.length >= 3 && player.hp >= 3) return 0;
+					if (cards.length >= 3 && player.hp >= 3) {
+						return 0;
+					}
 					for (var i = 0; i < cards.length; i++) {
 						num += Math.max(0, get.value(cards[i], player, "raw"));
 					}
@@ -635,7 +729,9 @@ export default {
 		},
 		filter(event, player) {
 			return game.hasPlayer(current => {
-				if (!current.isFriendOf(player)) return false;
+				if (!current.isFriendOf(player)) {
+					return false;
+				}
 				return current.countGainableCards(player, "e") > 0;
 			});
 		},
@@ -701,9 +797,15 @@ export default {
 					global: "useCard",
 				},
 				filter(event, player) {
-					if (get.type(event.card) !== "equip") return false;
-					if (!event.player.isIn()) return false;
-					if (!event.player.isFriendOf(player)) return false;
+					if (get.type(event.card) !== "equip") {
+						return false;
+					}
+					if (!event.player.isIn()) {
+						return false;
+					}
+					if (!event.player.isFriendOf(player)) {
+						return false;
+					}
 					return player === event.player || player.hasSkill("gz_diaodu_best");
 				},
 				logTarget: "player",
@@ -733,7 +835,9 @@ export default {
 		preHidden: true,
 		filter(event, player) {
 			// @ts-expect-error 类型系统未来可期
-			if (_status.currentPhase === player) return false;
+			if (_status.currentPhase === player) {
+				return false;
+			}
 
 			let num = 0;
 

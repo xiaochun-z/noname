@@ -7,5 +7,5 @@ export default {
 	...normalIntro,
 	...zhenIntro,
 	...shiIntro,
-	...bianIntro
+	...bianIntro,
 };

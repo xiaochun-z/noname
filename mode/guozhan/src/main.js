@@ -157,7 +157,9 @@ export async function start(event, trigger, player) {
 						let list = lib.character?.[i.slice(3)]?.dieAudios;
 						lib.character[i].dieAudios = list?.length ? list : [i.slice(3)];
 					}
-					if (!lib.translate[i]) lib.translate[i] = lib.translate[i.slice(3)];
+					if (!lib.translate[i]) {
+						lib.translate[i] = lib.translate[i.slice(3)];
+					}
 				}
 				break;
 			}
@@ -215,7 +217,9 @@ export async function start(event, trigger, player) {
 		} else {
 			playerFirst = game.players[game.players.length - seat];
 		}
-		if (!playerFirst) playerFirst = game.me;
+		if (!playerFirst) {
+			playerFirst = game.me;
+		}
 		// @ts-expect-error 祖宗之法就是这么写的
 		delete _status.cheat_seat;
 	} else {
@@ -273,7 +277,9 @@ export function startBefore() {
 	// @ts-expect-error 祖宗之法就是这么写的
 	for (let character in lib.characterPack.mode_guozhan) {
 		if (!get.config("onlyguozhan") && !playback) {
-			if (lib.character[character.slice(3)]) continue;
+			if (lib.character[character.slice(3)]) {
+				continue;
+			}
 		}
 		// @ts-expect-error 祖宗之法就是这么写的
 		lib.character[character] = lib.characterPack.mode_guozhan[character];

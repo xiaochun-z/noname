@@ -22,7 +22,9 @@ export default {
 			if (player.countCards("h", card => get.value(card) < 7)) {
 				/** @type {PlayerGuozhan} */
 				const playerRef = cast(player);
-				if (playerRef.isUnseen()) return Math.random() > 0.7;
+				if (playerRef.isUnseen()) {
+					return Math.random() > 0.7;
+				}
 				return true;
 			}
 		},
@@ -73,7 +75,9 @@ export default {
 							ai2(target) {
 								const player = get.player();
 								const att = get.attitude(player, target);
-								if (att > 0) return 0;
+								if (att > 0) {
+									return 0;
+								}
 								return -(att - 1) / target.countCards("h");
 							},
 						})
@@ -105,7 +109,7 @@ export default {
 				choices.push("两张基本牌");
 			}
 
-			if (choices.length)
+			if (choices.length) {
 				result = await target
 					.chooseControl(choices)
 					.set("ai", (event, player) => {
@@ -119,7 +123,7 @@ export default {
 					})
 					.set("prompt", "征辟：交给" + get.translation(player) + "…</div>")
 					.forResult();
-			else {
+			} else {
 				if (target.countCards("h")) {
 					const cards = target.getCards("h");
 					await target.give(cards, player);
@@ -160,7 +164,9 @@ export default {
 					) {
 						identity = game.players.find(item => item.isMajor())?.identity;
 					}
-					if (!player.isUnseen() && player.identity != identity && get.population(player.identity) + 1 >= get.population(identity)) return 0;
+					if (!player.isUnseen() && player.identity != identity && get.population(player.identity) + 1 >= get.population(identity)) {
+						return 0;
+					}
 					return 1;
 				}
 				return 0;
@@ -185,13 +191,19 @@ export default {
 				async content(_event, _trigger, player) {
 					var num = 0;
 					var target = player.storage.gz_zhengbi_eff1;
-					if (target.countGainableCards(player, "h")) num++;
-					if (target.countGainableCards(player, "e")) num++;
+					if (target.countGainableCards(player, "h")) {
+						num++;
+					}
+					if (target.countGainableCards(player, "e")) {
+						num++;
+					}
 					if (num) {
 						player.gainPlayerCard(target, num, "he", true).set("filterButton", button => {
 							for (let i = 0; i < ui.selected.buttons.length; i++) {
 								// @ts-expect-error 类型系统未来可期
-								if (get.position(button.link) == get.position(ui.selected.buttons[i].link)) return false;
+								if (get.position(button.link) == get.position(ui.selected.buttons[i].link)) {
+									return false;
+								}
 							}
 							return true;
 						});
@@ -236,7 +248,9 @@ export default {
 				player(player) {
 					let value = 0;
 					const cards = player.getCards("h");
-					if (cards.length >= 4) return 0;
+					if (cards.length >= 4) {
+						return 0;
+					}
 					for (let i = 0; i < cards.length; i++) {
 						value += Math.max(0, get.value(cards[i], player, "raw"));
 					}
@@ -284,12 +298,16 @@ export default {
 						return target.identity != "wei" && target != player;
 					},
 					ai1(card, player, target) {
-						if (get.attitude(player, target) > 0) return 11 - get.value(card);
+						if (get.attitude(player, target) > 0) {
+							return 11 - get.value(card);
+						}
 						return 7 - get.value(card);
 					},
 					ai2(target) {
 						var att = get.attitude(get.event().player, target);
-						if (att < 0) return -att;
+						if (att < 0) {
+							return -att;
+						}
 						return 1;
 					},
 				})

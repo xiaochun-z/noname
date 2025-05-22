@@ -33,16 +33,16 @@ export default {
 
 	setup() {
 		const titleStyle = {
-			margin: "10px"
+			margin: "10px",
 		};
 
 		const listStyle = {
-			marginTop: "0"
+			marginTop: "0",
 		};
 
 		return {
 			titleStyle,
-			listStyle
-		}
+			listStyle,
+		};
 	},
 };

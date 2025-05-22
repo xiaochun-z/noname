@@ -50,7 +50,9 @@ export default {
 					player: "phaseDiscardEnd",
 				},
 				filter(event, player) {
-					if (event.cards?.length) return false;
+					if (event.cards?.length) {
+						return false;
+					}
 					return player.storage.gz_hengjiang3.some(target => target?.isIn() && target.countCards("h") < target.maxHp);
 				},
 				onremove(player) {
@@ -142,14 +144,30 @@ export default {
 					var num = 0;
 					if (player.isDamaged() && target.isFriendOf(player)) {
 						num++;
-						if (target.hasSkill("kanpo")) num += 0.5;
-						if (target.hasSkill("liegong")) num += 0.5;
-						if (target.hasSkill("tieji")) num += 0.5;
-						if (target.hasSkill("gzrende")) num += 1.2;
-						if (target.hasSkill("longdan")) num += 1.2;
-						if (target.hasSkill("paoxiao")) num += 1.2;
-						if (target.hasSkill("zhangwu")) num += 1.5;
-						if (target != player) num += 0.5;
+						if (target.hasSkill("kanpo")) {
+							num += 0.5;
+						}
+						if (target.hasSkill("liegong")) {
+							num += 0.5;
+						}
+						if (target.hasSkill("tieji")) {
+							num += 0.5;
+						}
+						if (target.hasSkill("gzrende")) {
+							num += 1.2;
+						}
+						if (target.hasSkill("longdan")) {
+							num += 1.2;
+						}
+						if (target.hasSkill("paoxiao")) {
+							num += 1.2;
+						}
+						if (target.hasSkill("zhangwu")) {
+							num += 1.5;
+						}
+						if (target != player) {
+							num += 0.5;
+						}
 					}
 					return num;
 				},
@@ -203,12 +221,16 @@ export default {
 					// @ts-expect-error 类型系统未来可期
 					trigger.num1 += 3;
 					// @ts-expect-error 类型系统未来可期
-					if (trigger.num1 > 13) trigger.num1 = 13;
+					if (trigger.num1 > 13) {
+						trigger.num1 = 13;
+					}
 				} else {
 					// @ts-expect-error 类型系统未来可期
 					trigger.num2 += 3;
 					// @ts-expect-error 类型系统未来可期
-					if (trigger.num2 > 13) trigger.num2 = 13;
+					if (trigger.num2 > 13) {
+						trigger.num2 = 13;
+					}
 				}
 			} else {
 				game.log(player, "拼点牌点数-3");
@@ -216,12 +238,16 @@ export default {
 					// @ts-expect-error 类型系统未来可期
 					trigger.num1 -= 3;
 					// @ts-expect-error 类型系统未来可期
-					if (trigger.num1 < 1) trigger.num1 = 1;
+					if (trigger.num1 < 1) {
+						trigger.num1 = 1;
+					}
 				} else {
 					// @ts-expect-error 类型系统未来可期
 					trigger.num2 -= 3;
 					// @ts-expect-error 类型系统未来可期
-					if (trigger.num2 < 1) trigger.num2 = 1;
+					if (trigger.num2 < 1) {
+						trigger.num2 = 1;
+					}
 				}
 			}
 		},
@@ -254,15 +280,21 @@ export default {
 		},
 		ai: {
 			threaten(_player, target) {
-				if (target.hp == 1) return 2;
+				if (target.hp == 1) {
+					return 2;
+				}
 				return 0.5;
 			},
 			maixie: true,
 			effect: {
 				target(card, player, target) {
-					if (!target.hasFriend()) return;
+					if (!target.hasFriend()) {
+						return;
+					}
 					// @ts-expect-error 类型系统未来可期
-					if (get.tag(card, "damage") == 1 && target.hp == 2 && !target.isTurnedOver() && _status.currentPhase != target && get.distance(_status.currentPhase, target, "absolute") <= 3) return [0.5, 1];
+					if (get.tag(card, "damage") == 1 && target.hp == 2 && !target.isTurnedOver() && _status.currentPhase != target && get.distance(_status.currentPhase, target, "absolute") <= 3) {
+						return [0.5, 1];
+					}
 				},
 			},
 		},
@@ -362,14 +394,20 @@ export default {
 				.set("choiceList", ["失去1点体力", "减1点体力上限", "背水！依次执行前两项，然后执行一个额外的摸牌阶段"])
 				.set("ai", () => {
 					const player = get.event("player");
-					if (player.maxHp > 1 && (player.getHp() == 2 || !player.countCards("h"))) return "背水！";
+					if (player.maxHp > 1 && (player.getHp() == 2 || !player.countCards("h"))) {
+						return "背水！";
+					}
 					return player.isDamaged() ? "上限" : "体力";
 				});
 			// @ts-expect-error 类型系统未来可期
 			player.popup(control);
 			game.log(player, "选择了", "#g" + control);
-			if (control != "上限") await player.loseHp();
-			if (control != "体力") await player.loseMaxHp();
+			if (control != "上限") {
+				await player.loseHp();
+			}
+			if (control != "体力") {
+				await player.loseMaxHp();
+			}
 			if (control == "背水！") {
 				const next = player.phaseDraw();
 				event.next.remove(next);
@@ -387,7 +425,9 @@ export default {
 		},
 		filter(event, player) {
 			// @ts-expect-error 类型系统未来可期
-			if (event.card.name != "sha" || game.countPlayer() < 4) return false;
+			if (event.card.name != "sha" || game.countPlayer() < 4) {
+				return false;
+			}
 			// @ts-expect-error 类型系统未来可期
 			return player.siege(event.target) && event.player.siege(event.target) && event.target.countCards("e");
 		},

@@ -1,4 +1,3 @@
-
 export default {
 	junling1: {
 		type: "junling",
@@ -33,4 +32,4 @@ export default {
 	zhulian_card: {
 		cardimage: "wuzhong",
 	},
-} ;
+};
