@@ -1765,18 +1765,37 @@ export class Library {
 					input: true,
 					restart: true,
 					onblur(e) {
-						let text = e.target,
-							zoom = Number(text.innerText);
+						const text = e.target;
+						let zoom = Number.parseFloat(text.innerText);
+
+						const originalValue = lib.config.ui_zoom.toFixed(2);
 						if (isNaN(zoom) || zoom < 0.5 || zoom > 3) {
 							alert("填入数值不符合规范！");
+							text.innerText = originalValue;
 							return;
 						}
-						zoom = parseInt(zoom.toFixed(2));
-						text.innerText = zoom;
+
+						const zoomText = zoom.toFixed(2);
+						zoom = Number.parseFloat(zoomText);
+
+						const confirmed = confirm(`确定要将界面缩放比例修改为 ${zoomText} 吗？`);
+						if (!confirmed) {
+							text.innerText = originalValue;
+							return;
+						}
+
+						text.innerText = zoomText;
 						game.saveConfig("ui_zoom", zoom);
 						game.documentZoom = game.deviceZoom * zoom;
+
 						ui.updatez();
-						Array.isArray(lib.onresize) && lib.onresize.forEach(fun => typeof fun === "function" && fun());
+						if (Array.isArray(lib.onresize)) {
+							lib.onresize.forEach(fun => {
+								if (typeof fun === "function") {
+									fun();
+								}
+							});
+						}
 					},
 				},
 				image_background: {
@@ -3724,6 +3743,10 @@ export class Library {
 						map.autoborder_count.hide();
 						map.autoborder_start.hide();
 					}
+
+					// ui_zoom
+					const zoomValue = map.ui_zoom.childNodes[1];
+					zoomValue.innerText = Number.parseFloat(zoomValue.innerText).toFixed(2);
 				},
 			},
 		},
