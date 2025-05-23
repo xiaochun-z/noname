@@ -1487,7 +1487,7 @@ const skills = {
 		initList() {
 			//先用许劭评鉴那个函数初始化一下角色列表
 			if (!_status.characterlist) {
-				lib.skill.pingjian.initList();
+				game.initCharactertList();;
 			}
 			//把key包和怀旧包的去了，太多没维护的了
 			const characters = _status.characterlist.slice(),
@@ -19504,7 +19504,7 @@ const skills = {
 	zyshilu: {
 		init() {
 			if (!_status.characterlist) {
-				lib.skill.pingjian.initList();
+				game.initCharactertList();;
 			}
 		},
 		audio: 2,

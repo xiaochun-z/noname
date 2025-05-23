@@ -8825,7 +8825,7 @@ const skills = {
 		},
 		content() {
 			if (!_status.characterlist) {
-				lib.skill.pingjian.initList();
+				game.initCharactertList();;
 			}
 			var characters = _status.characterlist.randomRemove(4);
 			lib.skill.sbyingmen.addVisitors(characters, player);
@@ -8845,7 +8845,7 @@ const skills = {
 				},
 				content() {
 					if (!_status.characterlist) {
-						lib.skill.pingjian.initList();
+						game.initCharactertList();;
 					}
 					var characters = _status.characterlist.randomRemove(4 - player.getStorage("sbyingmen").length);
 					lib.skill.sbyingmen.addVisitors(characters, player);
@@ -9785,7 +9785,7 @@ const skills = {
 		content() {
 			"step 0";
 			if (!_status.characterlist) {
-				lib.skill.pingjian.initList();
+				game.initCharactertList();;
 			}
 			var num = player.getStorage("jsrgyingmen").length;
 			var list = [];

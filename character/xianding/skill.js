@@ -13696,7 +13696,7 @@ const skills = {
 			"step 1";
 			var character = result.control;
 			if (!_status.characterlist) {
-				lib.skill.pingjian.initList();
+				game.initCharactertList();;
 			}
 			player.reinitCharacter(get.character(player.name2, 3).includes("dcxunbie") ? player.name2 : player.name1, character);
 			"step 2";
@@ -22931,7 +22931,7 @@ const skills = {
 			"step 0";
 			player.awakenSkill(event.name);
 			if (!_status.characterlist) {
-				lib.skill.pingjian.initList();
+				game.initCharactertList();;
 			}
 			if (_status.characterlist.includes("xushi")) {
 				if (player.name2 && get.character(player.name2)[3].includes("syxiongyi")) {
