@@ -3022,7 +3022,7 @@ const skills = {
 						if (get.name(card, event.player) == "sha") {
 							return true;
 						}
-						const str = lib.skill.shencai.getStr(card);
+						const str = get.cardDescription(card);
 						return str.includes("【杀】");
 					})
 				);
@@ -3086,7 +3086,7 @@ const skills = {
 								if (
 									!player.isPhaseUsing() ||
 									!player.hasCard(card => {
-										if (!lib.skill.shencai.getStr(card).includes("【杀】")) {
+										if (!get.cardDescription(card).includes("【杀】")) {
 											return false;
 										}
 										return player.hasValueTarget(get.autoViewAs({ name: "juedou" }, [card]));
@@ -5366,7 +5366,7 @@ const skills = {
 				player.gain(card, "gain2");
 			}
 			var list = [],
-				str = lib.skill.shencai.getStr(card);
+				str = get.cardDescription(card);
 			for (var i in lib.skill.shencai.filterx) {
 				if (str.indexOf(lib.skill.shencai.filterx[i]) != -1) {
 					list.push("shencai_" + i);
