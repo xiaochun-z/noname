@@ -5392,8 +5392,6 @@ const skills = {
 			let result;
 			if (!skills.length) {
 				result = { bool: false };
-			} else if (skills.length == 1) {
-				result = { bool: true, links: skills.slice() };
 			} else {
 				result = await player
 					.chooseButton(["蹈节：失去一个锁定技，或点“取消”失去1点体力", [skills, "skill"]])
