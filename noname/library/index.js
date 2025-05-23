@@ -1778,15 +1778,23 @@ export class Library {
 						const zoomText = zoom.toFixed(2);
 						zoom = Number.parseFloat(zoomText);
 
-						const isConfirmed = confirm(`确定要将界面缩放比例修改为 ${zoomText} 吗？`);
-						if (isConfirmed) {
-							text.innerText = zoomText;
-							game.saveConfig("ui_zoom", zoom);
-							game.documentZoom = game.deviceZoom * zoom;
-							ui.updatez();
-							Array.isArray(lib.onresize) && lib.onresize.forEach(fun => typeof fun === "function" && fun());
-						} else {
+						const confirmed = confirm(`确定要将界面缩放比例修改为 ${zoomText} 吗？`);
+						if (!confirmed) {
 							text.innerText = originalValue;
+							return;
+						}
+
+						text.innerText = zoomText;
+						game.saveConfig("ui_zoom", zoom);
+						game.documentZoom = game.deviceZoom * zoom;
+
+						ui.updatez();
+						if (Array.isArray(lib.onresize)) {
+							lib.onresize.forEach(fun => {
+								if (typeof fun === "function") {
+									fun();
+								}
+							});
 						}
 					},
 				},
