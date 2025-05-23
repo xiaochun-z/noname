@@ -12760,7 +12760,7 @@ const skills = {
 				return;
 			}
 			if (!_status.characterlist) {
-				game.initCharactertList();;
+				game.initCharactertList();
 			}
 			_status.characterlist.randomSort();
 			for (let i = 0; i < _status.characterlist.length; i++) {
