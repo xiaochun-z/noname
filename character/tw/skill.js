@@ -10902,8 +10902,7 @@ const skills = {
 		audio: 2,
 		trigger: { global: "damageEnd" },
 		filter(event, player) {
-			if (event.player === player) return false;
-			return event.player.isIn() && get.distance(event.player, player) <= 1;
+			return event.player.isIn() && event.player !== player && get.distance(event.player, player) <= 1;
 		},
 		logTarget: "player",
 		check(event, player) {
