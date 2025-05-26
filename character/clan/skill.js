@@ -181,7 +181,7 @@ const skills = {
 				if (!list.length) {
 					return "没有记录";
 				}
-				const num1 = list.reduce((sum, card) => (sum += get.number(card, false)), 0);
+				const num1 = list.reduce((sum, card) => sum + get.number(card, false), 0);
 				dialog.addText(`“逸”牌总点数：${num1}`);
 				dialog.addSmall(list);
 				const num2 = player.countMark("clanfennu_record");
