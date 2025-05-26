@@ -253,14 +253,14 @@ export const cardPackMenu = function (connectMenu) {
 				})(),
 				onclick: togglePack,
 			});
-            if (lib.translate[mode + "_info"]) {
-                var modeTranslation = "<p style=\"padding-left: 2em;\">" + lib.translate[mode + "_info"] + "</p>";
-                page.insertAdjacentHTML('beforeend', modeTranslation);
-            }
 			if (!mode.startsWith("mode_") || (cardPack && cardPack.closeable)) {
 				page.appendChild(cfgnode);
 			} else {
 				page.style.paddingTop = "8px";
+			}
+			if (lib.translate[mode + "_info"]) {
+				var modeTranslation = "<p style=\"padding-left: 2em;\">" + lib.translate[mode + "_info"] + "</p>";
+				page.insertAdjacentHTML('beforeend', modeTranslation);
 			}
 			var banCard = function (e) {
 				if (_status.clicked) {
