@@ -2395,29 +2395,31 @@ const skills = {
 					await player.gainPlayerCard(target, "h", storage[2], true);
 					break;
 			}
-			player.storage[event.name][index] = 1;
-			const nums = Array.from({ length: 3 })
-				.map((_, i) => i)
-				.filter(i => i !== index);
-			for (const num of nums) {
-				player.storage[event.name][num]++;
-			}
-			get.info(event.name).updateMark(player, event.name);
-			if (
-				!storage[3] &&
-				Array.from({ length: 3 })
+			if (Array.isArray(player.storage[event.name])) {
+				player.storage[event.name][index] = 1;
+				const nums = Array.from({ length: 3 })
 					.map((_, i) => i)
-					.every(num => {
-						return (
-							game.getAllGlobalHistory("everything", evt => {
-								return evt.name === event.name && evt.player === player && evt.index === num;
-							}).length > 0
-						);
-					})
-			) {
-				player.storage[event.name][3] = true;
-				player.popup(event.name);
-				game.log(player, "修改了技能", "#g【" + get.translation(event.name) + "】");
+					.filter(i => i !== index);
+				for (const num of nums) {
+					player.storage[event.name][num]++;
+				}
+				get.info(event.name).updateMark(player, event.name);
+				if (
+					!storage[3] &&
+					Array.from({ length: 3 })
+						.map((_, i) => i)
+						.every(num => {
+							return (
+								game.getAllGlobalHistory("everything", evt => {
+									return evt.name === event.name && evt.player === player && evt.index === num;
+								}).length > 0
+							);
+						})
+				) {
+					player.storage[event.name][3] = true;
+					player.popup(event.name);
+					game.log(player, "修改了技能", "#g【" + get.translation(event.name) + "】");
+				}
 			}
 		},
 		init(player, skill) {
@@ -2530,16 +2532,18 @@ const skills = {
 					break;
 				}
 			}
-			player.storage[event.name][index] = 1;
-			const nums = Array.from({ length: 3 })
-				.map((_, i) => i)
-				.filter(i => i !== index);
-			for (const num of nums) {
-				if (player.storage[event.name][num] < 3) {
-					player.storage[event.name][num]++;
+			if (Array.isArray(player.storage[event.name])) {
+				player.storage[event.name][index] = 1;
+				const nums = Array.from({ length: 3 })
+					.map((_, i) => i)
+					.filter(i => i !== index);
+				for (const num of nums) {
+					if (player.storage[event.name][num] < 3) {
+						player.storage[event.name][num]++;
+					}
 				}
+				get.info(event.name).updateMark(player, event.name);
 			}
-			get.info(event.name).updateMark(player, event.name);
 		},
 		init(player, skill) {
 			player.storage[skill] = [1, 1, 1, false];
