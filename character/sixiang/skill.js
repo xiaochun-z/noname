@@ -269,12 +269,15 @@ const skills = {
 	stdlingjian: {
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
-			return player.getHistory("useCard", evt => evt.card?.name == "sha").indexOf(event) == 0 && !player.hasHistory("sourceDamage", evt => evt.card && evt.getParent("useCard") === event);
+			return player.getHistory("useCard", evt => evt.card?.name == "sha").indexOf(event) == 0 && !player.hasHistory("sourceDamage", evt => evt.card && evt.getParent("useCard") === event) && player.hasSkill("stdmingshi", null, false, false) && player.awakenedSkills.includes("stdmingshi");
 		},
 		forced: true,
-		content() {
+		async content(event, trigger, player) {
 			player.restoreSkill("stdmingshi");
+			player.popup("明识");
+			game.log(player, "恢复了技能", "#g【明识】");
 		},
+		ai: { combo: "stdmingshi" },
 	},
 	stdmingshi: {
 		enable: "phaseUse",
@@ -295,24 +298,27 @@ const skills = {
 				]);
 				return dialog;
 			},
-			filter(button, player) {
-				if (button.link == "recover") {
+			filter(button) {
+				const player = get.player();
+				const { link } = button;
+				if (link == "recover") {
 					return player.isDamaged();
 				}
-				if (button.link == "move") {
+				if (link == "move") {
 					return player.canMoveCard();
 				}
 				return true;
 			},
 			check(button) {
 				const player = get.player();
-				if (button.link == "recover") {
+				const { link } = button;
+				if (link == "recover") {
 					return get.recoverEffect(player, player, player);
 				}
-				if (button.link == "draw") {
-					return get.effect(player, { name: "wuzhong_copy" }, player, player);
+				if (link == "draw") {
+					return get.effect(player, { name: "wuzhong" }, player, player);
 				}
-				if (button.link == "damage") {
+				if (link == "damage") {
 					return game
 						.filterPlayer()
 						.map(target => get.damageEffect(target, player, player))
@@ -326,13 +332,10 @@ const skills = {
 			backup(links, player) {
 				return {
 					link: links[0],
-					log: false,
 					delay: false,
 					async content(event, trigger, player) {
-						const skill = "stdmingshi";
-						player.logSkill(skill);
-						player.awakenSkill(skill);
-						const link = lib.skill[event.name].link;
+						player.awakenSkill("stdmingshi");
+						const { link } = get.info(event.name);
 						switch (link) {
 							case "draw":
 								await player.draw(2);
@@ -343,11 +346,11 @@ const skills = {
 								}
 								break;
 							case "damage": {
-								const result = await player
-									.chooseTarget(`明识：对一名角色造成一点伤害`, true)
-									.set("ai", target => get.damageEffect(target, player, player))
-									.forResult();
-								if (result?.targets) {
+								const { result } = await player.chooseTarget(`明识：对一名角色造成一点伤害`, true).set("ai", target => {
+									const player = get.player();
+									return get.damageEffect(target, player, player);
+								});
+								if (result?.targets?.length) {
 									player.line(result.targets);
 									await result.targets[0].damage();
 								}
@@ -365,10 +368,9 @@ const skills = {
 		},
 		ai: {
 			order: 10,
-			result: {
-				player: 1,
-			},
+			result: { player: 1 },
 		},
+		subSkill: { backup: {} },
 	},
 	//标南华老仙
 	stdxianlu: {
