@@ -196,8 +196,11 @@ const skills = {
 									const att = get.attitude(player, target);
 									let eff = get.effect(target, link, player, player);
 									if (eff < 0) {
-										if (att > 0) return 0;
-										else eff += 4;
+										if (att > 0) {
+											return 0;
+										} else {
+											eff += 4;
+										}
 									}
 									if (att > 0 && target.canEquip(link)) {
 										eff += 4;
