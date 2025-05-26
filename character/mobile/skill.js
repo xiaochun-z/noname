@@ -4,6 +4,7 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 const skills = {
 	//手杀孟达
 	mbjili: {
+		audio: 9,
 		trigger: {
 			global: "phaseBegin",
 		},
@@ -43,6 +44,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "mbjili",
 				trigger: {
 					global: "phaseJieshuBegin",
 				},
@@ -89,6 +91,7 @@ const skills = {
 		},
 	},
 	mbshishu: {
+		audio: 2,
 		trigger: {
 			global: ["gainAfter", "loseAsyncAfter"],
 		},
@@ -300,6 +303,10 @@ const skills = {
 		},
 	},
 	mbfeijing: {
+		audio: 4,
+		logAudio() {
+			return ["mbfeijing3.mp3", "mbfeijing4.mp3"];
+		},
 		trigger: {
 			player: "useCardToPlayer",
 		},
@@ -471,6 +478,7 @@ const skills = {
 		subSkill: {
 			viewas: {
 				audio: "mbfeijing",
+				logAudio: () => 2,
 				enable: ["chooseToRespond", "chooseToUse"],
 				filterCard(card, player) {
 					return get.type2(card) == "trick" && get.tag(card, "damage");
@@ -504,6 +512,7 @@ const skills = {
 		},
 	},
 	mbxiaoge: {
+		audio: 4,
 		trigger: {
 			source: "damageBegin2",
 			player: "useCardAfter",
@@ -518,6 +527,12 @@ const skills = {
 		},
 		logTarget(event, player) {
 			return event[event.name == "damage" ? "player" : "targets"];
+		},
+		logAudio(event) {
+			if (event.name == "damage") {
+				return 2;
+			}
+			return ["mbxiaoge3.mp3", "mbxiaoge4.mp3"];
 		},
 		async content(event, trigger, player) {
 			if (trigger.name == "damage") {
@@ -4114,7 +4129,20 @@ const skills = {
 							}
 						}
 						const result = await player
-							.chooseButton(dialog, true)
+							.chooseButton(dialog)
+							.set("filterButton", button => {
+								const card = button.link,
+									{ player, useCard, targets } = get.event();
+								if (!targets) {
+									return true;
+								}
+								ui.selected.cards.add(card);
+								const bool = targets.some(target => player.canUse(useCard, target));
+								ui.selected.cards.remove(card);
+								return bool;
+							})
+							.set("useCard", event.result.card)
+							.set("targets", event.result.targets)
 							.set("ai", button => {
 								const player = get.player(),
 									source = get.owner(button.link);
@@ -10395,6 +10423,9 @@ const skills = {
 	mutao: {
 		audio: "twmutao",
 		inherit: "twmutao",
+		filterTarget(card, player, target) {
+			return target.countCards("h");
+		},
 		async content(event, trigger, player) {
 			const source = event.target;
 			const cards = source.getCards("h", { name: "sha" });
@@ -10423,6 +10454,9 @@ const skills = {
 	},
 	yimou: {
 		audio: ["twyimou1.mp3", "yimou.mp3"],
+		filter(event, player) {
+			return event.player.isIn() && get.distance(event.player, player) <= 1;
+		},
 		inherit: "twyimou",
 		content() {
 			"step 0";

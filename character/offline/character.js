@@ -1,4 +1,42 @@
 const characters = {
+	ca_fanchou: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["caxingwei", "caqianmu"],
+	},
+	ca_zhangji: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["casilve", "casuibian"],
+	},
+	ca_guosi: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["casixi", "calvedao"],
+	},
+	ca_lijue: {
+		sex: "male",
+		group: "qun",
+		hp: 6,
+		skills: ["cacuixi", "cajujun"],
+	},
+	ca_lvbu: {
+		sex: "male",
+		group: "qun",
+		hp: 5,
+		skills: ["wushuang", "caliyu"],
+	},
+	ca_wangyun: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["calianji", "camoucheng"],
+		clans: ["太原王氏"],
+		img: "image/character/wangyun.jpg",
+	},
 	hs_caohuan: {
 		sex: "male",
 		group: "wei",
@@ -234,7 +272,7 @@ const characters = {
 		group: "shu",
 		hp: 5,
 		skills: ["psxiaofan", "psjiaohu", "psquanpan", "pshuoluan"],
-		doubleGroup: ["qun", "shu", "wu"],
+		//doubleGroup: ["qun", "shu", "wu"],
 	},
 	hm_guigu: {
 		sex: "male",

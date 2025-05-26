@@ -410,7 +410,7 @@ export class Library {
 														return 0;
 													}
 													return 5 - get.value(cardx);
-												},
+											  },
 								});
 								if (!game.online) {
 									return;
@@ -1782,58 +1782,40 @@ export class Library {
 				// },
 				ui_zoom: {
 					name: "界面缩放",
-					unfrequent: true,
-					init: "normal",
-					item: {
-						esmall: "80%",
-						vsmall: "90%",
-						small: "95%",
-						normal: "100%",
-						big: "105%",
-						vbig: "110%",
-						ebig: "120%",
-						eebig: "150%",
-						eeebig: "180%",
-						eeeebig: "200%",
-					},
-					onclick(zoom) {
-						game.saveConfig("ui_zoom", zoom);
-						switch (zoom) {
-							case "esmall":
-								zoom = 0.8;
-								break;
-							case "vsmall":
-								zoom = 0.9;
-								break;
-							case "small":
-								zoom = 0.93;
-								break;
-							case "big":
-								zoom = 1.05;
-								break;
-							case "vbig":
-								zoom = 1.1;
-								break;
-							case "ebig":
-								zoom = 1.2;
-								break;
-							case "eebig":
-								zoom = 1.5;
-								break;
-							case "eeebig":
-								zoom = 1.8;
-								break;
-							case "eeeebig":
-								zoom = 2;
-								break;
-							default:
-								zoom = 1;
+					intro: "填入50~300以内的整数作为界面缩放比例（系统会转换为对应缩放百分比）",
+					init: "100%",
+					input: true,
+					restart: true,
+					onblur(e) {
+						const text = e.target;
+						let zoom = Number.parseInt(text.innerText);
+						const originalValue = lib.config.ui_zoom;
+
+						if (isNaN(zoom)) {
+							alert("请填写数值！");
 						}
-						game.documentZoom = game.deviceZoom * zoom;
+						if (zoom < 50 || zoom > 300) {
+							alert("请填入50~300以内的整数！");
+							text.innerText = originalValue;
+							return;
+						}
+
+						const zoomText = `${zoom}%`;
+
+						const confirmed = confirm(`确定要将界面缩放比例修改为 ${zoomText} 吗？`);
+						if (!confirmed) {
+							text.innerText = originalValue;
+							return;
+						}
+
+						text.innerText = zoomText;
+						game.saveConfig("ui_zoom", zoomText);
+						game.documentZoom = (game.deviceZoom * zoom) / 100;
+
 						ui.updatez();
 						if (Array.isArray(lib.onresize)) {
 							lib.onresize.forEach(fun => {
-								if (typeof fun == "function") {
+								if (typeof fun === "function") {
 									fun();
 								}
 							});
@@ -8744,7 +8726,7 @@ export class Library {
 					for (const content of item) {
 						yield content;
 					}
-				})()
+			  })()
 			: Promise.resolve(item);
 	}
 	gnc = {
@@ -11826,7 +11808,7 @@ export class Library {
 								storage: {
 									stratagem_buffed: 1,
 								},
-							})
+						  })
 						: new lib.element.VCard();
 				}
 				return null;

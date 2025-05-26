@@ -1,4 +1,18 @@
 const characters = {
+	wufu: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["dchuairen", "dcchizei"],
+	},
+	ze_wufu: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["dczhonge", "dcjuekai"],
+		dieAudios: ["wufu"],
+		img: "image/character/wufu.jpg",
+	},
 	yj_sb_guojia: {
 		sex: "male",
 		group: "wei",
@@ -86,6 +100,7 @@ const characters = {
 		group: "wu",
 		hp: 4,
 		skills: ["lkbushi", "lkzhongzhuang"],
+		clans: ["吴郡陆氏"],
 	},
 	linghuyu: {
 		sex: "male",

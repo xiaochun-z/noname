@@ -1973,41 +1973,48 @@ const skills = {
 		},
 		async content({ target }, trigger, player) {
 			const {
-				result: {
-					links: [card1],
-				},
+				result: result1,
 			} = await player.choosePlayerCard("h", target).set("forced", true).set("visible", true);
 			const {
-				result: {
-					links: [card2],
-				},
+				result: result2,
 			} = await target.choosePlayerCard("h", player).set("forced", true).set("visible", true);
-			await player.showCards([card1]);
-			await target.showCards([card2]);
-			await player.gain(
-				get.cardPile(function (card) {
-					return get.type(card) === get.type(card1);
-				}),
-				"gain2"
-			);
-			await target.gain(
-				get.cardPile(function (card) {
-					return get.type(card) === get.type(card2);
-				}),
-				"gain2"
-			);
-			if (get.type(card1) === get.type(card2)) {
+			if (result1?.bool) {
+				await player.showCards(result1.links);
+			}
+			if (result2?.bool) {
+				await target.showCards(result2.links);
+			}
+			if (result1?.bool) {
+				await player.gain(
+					get.cardPile(function (card) {
+						return get.type(card) === get.type(result1.links[0]);
+					}),
+					"gain2"
+				);
+			}
+			if (result2?.bool) {
+				await target.gain(
+					get.cardPile(function (card) {
+						return get.type(card) === get.type(result2.links[0]);
+					}),
+					"gain2"
+				);
+			}
+			if (!result1?.bool || !result2?.bool) {
+				return;
+			}
+			if (get.type(result1.links[0]) === get.type(result2.links[0])) {
 				await game.asyncDraw([player, target], 2);
 			} else {
 				await player.gain(
 					get.cardPile(function (card) {
-						return get.type(card) === get.type(card1);
+						return get.type(card) === get.type(result1.links[0]);
 					}),
 					"gain2"
 				);
 				await target.gain(
 					get.cardPile(function (card) {
-						return get.type(card) === get.type(card2);
+						return get.type(card) === get.type(result2.links[0]);
 					}),
 					"gain2"
 				);
@@ -10846,7 +10853,7 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		filterTarget(card, player, target) {
-			return target.countCards("h");
+			return target.countCards("h") && target !== player;
 		},
 		usable: 1,
 		async content(event, trigger, player) {
@@ -10902,7 +10909,7 @@ const skills = {
 		audio: 2,
 		trigger: { global: "damageEnd" },
 		filter(event, player) {
-			return event.player.isIn() && get.distance(event.player, player) <= 1;
+			return event.player.isIn() && event.player !== player && get.distance(event.player, player) <= 1;
 		},
 		logTarget: "player",
 		check(event, player) {

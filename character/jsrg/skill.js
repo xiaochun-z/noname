@@ -577,19 +577,16 @@ const skills = {
 			});
 			cardsLost = cardsLost.filterInD("d");
 			let max = 0;
-			return cardsLost.reduce(
-				(maxCard, card) => {
-					const num = get.number(card, false);
-					if (num > max) {
-						max = num;
-						return card;
-					} else if (num === max) {
-						return void 0;
-					}
-					return maxCard;
-				},
-				void 0
-			);
+			return cardsLost.reduce((maxCard, card) => {
+				const num = get.number(card, false);
+				if (num > max) {
+					max = num;
+					return card;
+				} else if (num === max) {
+					return void 0;
+				}
+				return maxCard;
+			}, void 0);
 		},
 	},
 	jsrgyangge: {
@@ -1223,7 +1220,7 @@ const skills = {
 				target === player
 					? game.filterPlayer(current => {
 							return current !== source && current !== player && current.isDamaged() && current.countCards("he") >= 1;
-						})
+					  })
 					: [player]
 			).filter(current => current !== source && current !== target && current.countCards("he") >= 1);
 			targets.sortBySeat();
@@ -1860,7 +1857,6 @@ const skills = {
 										solver(result, current);
 									}
 								});
-								
 							}
 						});
 					})
@@ -2802,66 +2798,45 @@ const skills = {
 					global: "roundEnd",
 				},
 				filter(event, player) {
-					let count = 0;
-					let roundCount = 1 + (event.name != "damage");
-					const curLen = player.actionHistory.length;
-					for (let i = curLen - 1; i >= 0; i--) {
-						if (
-							roundCount == 1 &&
-							game.hasPlayer(current => {
-								const history = current.actionHistory[i];
-								if (!history.isMe || history.isSkipped) {
-									return false;
-								}
-								return true;
-							})
-						) {
-							count++;
-						}
-						if (player.actionHistory[i].isRound) {
-							roundCount--;
-						}
-						if (roundCount <= 0) {
-							break;
-						}
-					}
-					if (!player.storage.jsrgzhendan_mark && count > 0) {
+					if (event.name === "damage" && !player.isTempBanned("olzhendan")) {
 						return true;
+					}
+					const history = _status.globalHistory;
+					if (event.name !== "damage" || !history[history.length - 1].isRound) {
+						for (let i = history.length - (event.name === "damage" ? 2 : 1); i >= 0; i--) {
+							if (
+								game.hasPlayer2(current => {
+									const actionHistory = current.actionHistory[i];
+									return actionHistory.isMe && !actionHistory.isSkipped;
+								})
+							) {
+								return true;
+							}
+							if (history[i].isRound) {
+								break;
+							}
+						}
 					}
 					return false;
 				},
 				forced: true,
 				locked: false,
 				async content(event, trigger, player) {
-					let count = 0;
-					let roundCount = 1 + (trigger.name != "damage");
-					const curLen = player.actionHistory.length;
-					for (let i = curLen - 1; i >= 0; i--) {
-						if (
-							roundCount == 1 &&
-							game.hasPlayer(current => {
-								const history = current.actionHistory[i];
-								if (!history.isMe || history.isSkipped) {
-									return false;
-								}
-								return true;
-							})
-						) {
-							count++;
-						}
-						if (player.actionHistory[i].isRound) {
-							roundCount--;
-						}
-						if (roundCount <= 0) {
-							break;
+					const history = _status.globalHistory;
+					let num = 0;
+					if (trigger.name !== "damage" || !history[history.length - 1].isRound) {
+						for (let i = history.length - (trigger.name === "damage" ? 2 : 1); i >= 0; i--) {
+							game.hasPlayer2(current => {
+								const actionHistory = current.actionHistory[i];
+								return actionHistory.isMe && !actionHistory.isSkipped;
+							}) && num++;
+							if (num === 5 || history[i].isRound) {
+								break;
+							}
 						}
 					}
-					if (count > 0) {
-						await player.draw(count);
-					}
-					if (trigger.name === "damage") {
-						player.tempBanSkill("jsrgzhendan", "roundStart");
-					}
+					num > 0 && (await player.draw(num));
+					trigger.name === "damage" && player.tempBanSkill("jsrgzhendan", "roundStart");
 				},
 			},
 		},
@@ -2954,10 +2929,7 @@ const skills = {
 				trigger: { global: "roundEnd" },
 				filter(event, player) {
 					const curLen = player.actionHistory.length;
-					if (curLen <= 2) {
-						return false;
-					}
-					for (let i = curLen - 2; i >= 0; i--) {
+					for (let i = curLen - 1; i >= 0; i--) {
 						const history = player.actionHistory[i];
 						if (history.isMe && !history.isSkipped) {
 							return false;
@@ -6345,7 +6317,6 @@ const skills = {
 							if (!get.tag(card, "damage") || !targets.includes(player)) {
 								continue;
 							}
-							game.log(evt.player);
 							player.addTip(skill, `互雠 ${get.translation(evt.player)}`);
 							break round;
 						}
@@ -6458,9 +6429,7 @@ const skills = {
 					}
 					return player.countCards("hes", card => get.color(card) == "black" && get.type2(card) != "trick") > 0;
 				},
-				viewAs: { name: "bingliang" },
 				position: "hes",
-				discard: false,
 				prompt() {
 					var list = game.filterPlayer(target => {
 						return target.hasSkill("jsrghuozhong");
@@ -6470,38 +6439,27 @@ const skills = {
 				filterCard(card, player, event) {
 					return get.color(card) == "black" && get.type2(card) != "trick" && player.canAddJudge({ name: "bingliang", cards: [card] });
 				},
-				selectTarget: -1,
+				selectTarget() {
+					const targets = game.filterPlayer(target => {
+						return target.hasSkill("jsrghuozhong");
+					});
+					if (targets.length > 1) {
+						return 1;
+					}
+					return -1;
+				},
 				filterTarget(card, player, target) {
-					return player == target;
+					return target.hasSkill("jsrghuozhong");
 				},
 				check(card) {
 					return 6 - get.value(card);
 				},
-				*precontent(event, map) {
-					var player = map.player;
-					var targets = game.filterPlayer(current => current.hasSkill("jsrghuozhong"));
-					var result;
-					if (targets.length) {
-						result = { bool: true, targets: targets };
-					} else {
-						result = yield player
-							.chooseTarget("请选择一名传教士，发动其的【惑众】", true, (card, player, target) => {
-								return get.event("targets").includes(target);
-							})
-							.set("targets", targets);
-					}
-					if (result.bool) {
-						var target = result.targets[0];
-						player.logSkill("jsrghuozhong", target);
-						var next = game.createEvent("jsrghuozhong_draw", false);
-						next.set("player", player);
-						next.set("target", target);
-						event.next.remove(next);
-						event.getParent().after.push(next);
-						next.setContent(function () {
-							target.draw(2);
-						});
-					}
+				discard: false,
+				lose: false,
+				prepare: "throw",
+				async content(event, trigger, player) {
+					await player.addJudge({ name: "bingliang" }, event.cards);
+					await event.target.draw(2);
 				},
 				ai: {
 					result: {
@@ -6982,13 +6940,11 @@ const skills = {
 		trigger: {
 			player: "phaseEnd",
 		},
-		direct: true,
-		content() {
-			"step 0";
-			var list = lib.group.slice();
+		async cost(event, trigger, player) {
+			let list = lib.group.slice();
 			list.remove(player.group);
-			var getV = function (group) {
-				var val = 1;
+			let getV = function (group) {
+				let val = 1;
 				if (group == "wei" || group == "qun") {
 					val++;
 				}
@@ -6996,7 +6952,7 @@ const skills = {
 					if (current.group != group) {
 						return false;
 					}
-					var att = get.attitude(player, current);
+					let att = get.attitude(player, current);
 					if (att > 0) {
 						val++;
 					} else if (att == 0) {
@@ -7007,36 +6963,34 @@ const skills = {
 				});
 				return val;
 			};
-			var maxGroup = list.slice().sort((a, b) => {
+			let maxGroup = list.slice().sort((a, b) => {
 				return getV(b) - getV(a);
 			})[0];
 			list.push("cancel2");
-			player
+			const { result } = await player
 				.chooseControl(list)
-				.set("prompt", get.prompt("jsrglipan"))
+				.set("prompt", get.prompt(event.skill))
 				.set("prompt2", "变更为另一个势力")
 				.set("ai", () => {
 					return _status.event.choice;
 				})
 				.set("choice", maxGroup);
-			"step 1";
-			var group = result.control;
-			if (group == "cancel2") {
-				return;
-			}
-			player.logSkill("jsrglipan");
+			event.result = {
+				bool: result.control != "cancel2",
+				cost_data: result.control,
+			};
+		},
+		async content(event, trigger, player) {
+			const group = event.cost_data;
 			player.popup(group + "2", get.groupnature(group, "raw"));
-			player.changeGroup(group);
-			var num = game.countPlayer(current => {
+			await player.changeGroup(group);
+			let num = game.countPlayer(current => {
 				return current.group == group && current != player;
 			});
 			if (num > 0) {
 				player.draw(num);
 			}
-			var next = player.phaseUse();
-			next.jsrglipan = true;
-			event.next.remove(next);
-			trigger.next.push(next);
+			trigger.phaseList.splice(trigger.num, 0, `phaseUse|${event.name}`);
 			player.addTempSkill("jsrglipan_backfire");
 		},
 		subSkill: {
@@ -7048,7 +7002,7 @@ const skills = {
 				forced: true,
 				popup: false,
 				filter(event, player) {
-					return event.jsrglipan;
+					return event._extraPhaseReason == "jsrglipan";
 				},
 				content() {
 					"step 0";
@@ -8853,7 +8807,7 @@ const skills = {
 		},
 		content() {
 			if (!_status.characterlist) {
-				lib.skill.pingjian.initList();
+				game.initCharactertList();
 			}
 			var characters = _status.characterlist.randomRemove(4);
 			lib.skill.sbyingmen.addVisitors(characters, player);
@@ -8873,7 +8827,7 @@ const skills = {
 				},
 				content() {
 					if (!_status.characterlist) {
-						lib.skill.pingjian.initList();
+						game.initCharactertList();
 					}
 					var characters = _status.characterlist.randomRemove(4 - player.getStorage("sbyingmen").length);
 					lib.skill.sbyingmen.addVisitors(characters, player);
@@ -9813,7 +9767,7 @@ const skills = {
 		content() {
 			"step 0";
 			if (!_status.characterlist) {
-				lib.skill.pingjian.initList();
+				game.initCharactertList();
 			}
 			var num = player.getStorage("jsrgyingmen").length;
 			var list = [];
@@ -12451,7 +12405,7 @@ const skills = {
 									return 20 - get.value(button.link);
 								}
 								return 0;
-							});
+						  });
 				if (!bool) {
 					return;
 				}
@@ -12972,7 +12926,7 @@ const skills = {
 						.forResult();
 					if (result.bool) {
 						const result2 = await player.discardPlayerCard(result.targets[0], "ej", [1, discard - i]).forResult();
-						if (result2.bool) {
+						if (result2?.bool && result2?.links?.length) {
 							i += result2.links.length;
 						} else {
 							break;

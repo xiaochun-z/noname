@@ -2417,42 +2417,31 @@ export class Create {
 		ui.sidebar.ontouchmove = ui.click.touchScroll;
 		ui.sidebar.style.webkitOverflowScrolling = "touch";
 
-		var zoom;
-		switch (lib.config.ui_zoom) {
-			case "esmall":
-				zoom = 0.8;
-				break;
-			case "vsmall":
-				zoom = 0.9;
-				break;
-			case "small":
-				zoom = 0.93;
-				break;
-			case "big":
-				zoom = 1.05;
-				break;
-			case "vbig":
-				zoom = 1.1;
-				break;
-			case "ebig":
-				zoom = 1.2;
-				break;
-			case "eebig":
-				zoom = 1.5;
-				break;
-			case "eeebig":
-				zoom = 1.8;
-				break;
-			case "eeeebig":
-				zoom = 2;
-				break;
-			default:
-				zoom = 1;
+		const oldZoomMap = {
+			esmall: 80,
+			vsmall: 90,
+			small: 93,
+			normal: 100,
+			big: 105,
+			vbig: 110,
+			ebig: 120,
+			eebig: 150,
+			eeebig: 180,
+			eeeebig: 200,
+		};
+
+		let zoom = Number.parseInt(lib.config.ui_zoom);
+		if (isNaN(zoom) || zoom < 50 || zoom > 300) {
+			if (zoom < 3 && zoom > 0.5) {
+				zoom = Math.round(100 * zoom);
+			} else {
+				zoom = oldZoomMap[lib.config.ui_zoom] || 100;
+			}
+			game.saveConfig("ui_zoom", `${zoom}%`);
 		}
-		game.documentZoom = game.deviceZoom * zoom;
-		if (zoom != 1) {
-			ui.updatez();
-		}
+
+		game.documentZoom = (game.deviceZoom * zoom) / 100;
+		zoom !== 100 && ui.updatez();
 
 		ui.system1 = ui.create.div("#system1", ui.system);
 		ui.system2 = ui.create.div("#system2", ui.system);

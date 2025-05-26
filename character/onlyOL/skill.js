@@ -240,7 +240,7 @@ const skills = {
 		initList() {
 			//先用许劭评鉴那个函数初始化一下角色列表
 			if (!_status.characterlist) {
-				lib.skill.pingjian.initList();
+				game.initCharactertList();
 			}
 			//获取各个角色的技能并去重
 			const skills = _status.characterlist
@@ -248,7 +248,7 @@ const skills = {
 				.flat()
 				.unique();
 			//展开技能
-			game.expandSkills(skills);
+			game.expandSkills(skills, true);
 			const list = [];
 			//筛选技能
 			for (let skill of skills) {
@@ -1002,54 +1002,29 @@ const skills = {
 		subSkill: {
 			backup: {},
 			damage: {
-				audio: "olzhendan",
-				trigger: { player: "damageEnd" },
-				forced: true,
-				locked: false,
-				content() {
+				audio: "jsrgzhendan",
+				trigger: {
+					player: "damageEnd",
+					global: "roundEnd",
+				},
+				filter(event, player) {
+					if (event.name === "damage" && !player.isTempBanned("olzhendan")) {
+						return true;
+					}
 					const history = _status.globalHistory;
-					if (!history[history.length - 1].isRound) {
-						let num = 0;
-						for (let i = history.length - 2; i >= 0; i--) {
+					if (event.name !== "damage" || !history[history.length - 1].isRound) {
+						for (let i = history.length - (event.name === "damage" ? 2 : 1); i >= 0; i--) {
 							if (
 								game.hasPlayer2(current => {
 									const actionHistory = current.actionHistory[i];
 									return actionHistory.isMe && !actionHistory.isSkipped;
 								})
 							) {
-								num++;
+								return true;
 							}
-							if (num === 5 || history[i].isRound) {
+							if (history[i].isRound) {
 								break;
 							}
-						}
-						player.draw(num);
-					}
-					player.tempBanSkill("olzhendan", "roundStart");
-				},
-			},
-			round: {
-				audio: "olzhendan",
-				trigger: { global: "roundStart" },
-				filter(event, player) {
-					if (game.roundNumber <= 1) {
-						return false;
-					}
-					if (player.getRoundHistory("useSkill", evt => evt.skill === "olzhendan_damage", 1).length > 0) {
-						return false;
-					}
-					const history = _status.globalHistory;
-					for (let i = history.length - 2; i >= 0; i--) {
-						if (
-							game.hasPlayer2(current => {
-								const actionHistory = current.actionHistory[i];
-								return actionHistory.isMe && !actionHistory.isSkipped;
-							})
-						) {
-							return true;
-						}
-						if (history[i].isRound) {
-							break;
 						}
 					}
 					return false;
@@ -1058,20 +1033,20 @@ const skills = {
 				locked: false,
 				async content(event, trigger, player) {
 					const history = _status.globalHistory;
-					for (let i = history.length - 2; i >= 0; i--) {
-						if (
+					let num = 0;
+					if (trigger.name !== "damage" || !history[history.length - 1].isRound) {
+						for (let i = history.length - (trigger.name === "damage" ? 2 : 1); i >= 0; i--) {
 							game.hasPlayer2(current => {
 								const actionHistory = current.actionHistory[i];
 								return actionHistory.isMe && !actionHistory.isSkipped;
-							})
-						) {
-							num++;
-						}
-						if (num === 5 || history[i].isRound) {
-							break;
+							}) && num++;
+							if (num === 5 || history[i].isRound) {
+								break;
+							}
 						}
 					}
-					player.draw(num);
+					num > 0 && (await player.draw(num));
+					trigger.name === "damage" && player.tempBanSkill("olzhendan", "roundStart");
 				},
 			},
 		},
@@ -1311,7 +1286,7 @@ const skills = {
 				audio: "olsbchenzhi",
 				trigger: { global: "roundEnd" },
 				filter(event, player) {
-					if (game.roundNumber <= 1 || player.getRoundHistory("useSkill", evt => evt.skill === "olsbchenzhi", 1).length > 0) {
+					if (player.getRoundHistory("useSkill", evt => evt.skill === "olsbchenzhi").length > 0) {
 						return false;
 					}
 					return game.hasPlayer(target => {

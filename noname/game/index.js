@@ -137,6 +137,23 @@ export class Game extends GameCompatible {
 		}
 	})();
 	/**
+	 * 初始化角色列表
+	 */
+	initCharactertList() {
+		let list = [];
+		if (_status.connectMode) {
+			list = get.charactersOL();
+		} else {
+			list = Object.keys(lib.character).filter(name => !lib.filter.characterDisabled2(name) && !lib.filter.characterDisabled(name));
+		}
+		if (list?.length) {
+			game.countPlayer2(current => {
+				list.removeArray(get.nameList(current));
+			});
+		}
+		_status.characterlist = list;
+	}
+	/**
 	 * 交换任意两个元素的位置，附带过渡动画
 	 * @param {HTMLDivElement} e1
 	 * @param {HTMLDivElement} e2
@@ -1772,7 +1789,7 @@ export class Game extends GameCompatible {
 				: {
 						path: args.filter(arg => typeof arg === "string" || typeof arg === "number").join("/"),
 						onError: args.find(arg => typeof arg === "function"),
-					};
+				  };
 
 		const {
 			path = "",
@@ -5378,13 +5395,10 @@ export class Game extends GameCompatible {
 					div.style.transform += " translateX(" + -(Math.pow(Math.pow(x1 - x0, 2) + Math.pow(y1 - y0, 2), 0.5) + 2) + "px)";
 					div2.style.transform = "rotate(" + getAngle(x0, y0, x1, y1) + "deg) scaleX(1)";
 				}, 50);
-				setTimeout(
-					function () {
-						div2.style.transition = "all " + (timeS * 2) / 3 + "s";
-						div2.style.transform = "rotate(" + getAngle(x0, y0, x1, y1) + "deg) translateX(" + (Math.pow(Math.pow(x1 - x0, 2) + Math.pow(y1 - y0, 2), 0.5) + 2 - Math.pow(Math.pow(div.offsetHeight / 2, 2) + Math.pow(div.offsetWidth / 2, 2), 0.5)) + "px) scaleX(0.01)";
-					},
-					50 + ((timeS * 4) / 3) * 1000
-				);
+				setTimeout(function () {
+					div2.style.transition = "all " + (timeS * 2) / 3 + "s";
+					div2.style.transform = "rotate(" + getAngle(x0, y0, x1, y1) + "deg) translateX(" + (Math.pow(Math.pow(x1 - x0, 2) + Math.pow(y1 - y0, 2), 0.5) + 2 - Math.pow(Math.pow(div.offsetHeight / 2, 2) + Math.pow(div.offsetWidth / 2, 2), 0.5)) + "px) scaleX(0.01)";
+				}, 50 + ((timeS * 4) / 3) * 1000);
 				node.appendChild(div2);
 			}
 			if (animation.time <= 100000) {
@@ -9060,7 +9074,7 @@ export class Game extends GameCompatible {
 							game.reload2();
 							resolve(result);
 						};
-					}
+				  }
 				: (resolve, reject) => {
 						lib.status.reload++;
 						const idbRequest = lib.db.transaction([storeName], "readwrite").objectStore(storeName).openCursor(),
@@ -9090,7 +9104,7 @@ export class Game extends GameCompatible {
 							game.reload2();
 							resolve(object);
 						};
-					}
+				  }
 		);
 	}
 	/**
@@ -9154,7 +9168,7 @@ export class Game extends GameCompatible {
 						game.reload2();
 						resolve(event);
 					};
-				})
+			  })
 			: game.getDB(storeName).then(object => {
 					const keys = Object.keys(object);
 					lib.status.reload += keys.length;
@@ -9175,7 +9189,7 @@ export class Game extends GameCompatible {
 								})
 						)
 					);
-				});
+			  });
 	}
 	/**
 	 * @param { string } key
@@ -9663,8 +9677,9 @@ export class Game extends GameCompatible {
 	}
 	/**
 	 * @param { string[] } skills
+	 * @param { boolean } [subSkill]
 	 */
-	expandSkills(skills) {
+	expandSkills(skills, subSkill = false) {
 		return skills.addArray(
 			skills.reduce((previousValue, currentValue) => {
 				const info = get.info(currentValue);
@@ -9672,6 +9687,12 @@ export class Game extends GameCompatible {
 					if (info.group) {
 						const adds = (Array.isArray(info.group) ? info.group : [info.group]).filter(i => lib.skill[i]);
 						previousValue.push(...adds);
+					}
+					if (subSkill && info.subSkill) {
+						const adds = Object.keys(info.subSkill)?.filter(i => lib.skill[`${currentValue}_${i}`]);
+						if (adds?.length) {
+							previousValue.push(...adds.map(i => `${currentValue}_${i}`));
+						}
 					}
 				} else {
 					console.log(currentValue);
