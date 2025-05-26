@@ -6452,7 +6452,7 @@ const skills = {
 				async content(event, trigger, player) {
 					const { cost_data } = event;
 					const { source } = trigger;
-					await player.loseToDiscardpile(cost_data);
+					await source.loseToDiscardpile(cost_data);
 					trigger.num++;
 				},
 			},
