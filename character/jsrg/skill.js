@@ -12132,6 +12132,7 @@ const skills = {
 			const result = await player
 				.chooseButton([get.prompt2(event.skill), cards])
 				.set("ai", button => {
+					const player = get.player();
 					return get.equipValue(button.link, player);
 				})
 				.forResult();

@@ -1172,7 +1172,7 @@ const skills = {
 			player: "enterGame",
 		},
 		filter(event, player) {
-			return event.name != "phase" || game.phaseNumber == 0;
+			return (event.name != "phase" || game.phaseNumber == 0) && game.hasPlayer(target => target != player);
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -1775,7 +1775,7 @@ const skills = {
 								const targets = get.event().getTrigger().targets;
 								return targets.includes(target) && target !== player && target.countGainableCards(player, "he");
 							},
-							"请选择【" + get.translation(event.skill) + "】的目标",
+							"请选择【" + get.translation("dcguangyong") + "】的目标",
 							prompt
 						)
 						.set("ai", target => {
@@ -3477,18 +3477,20 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const { result } = await player
-				.chooseTarget("选择一名此阶段你对其造成过伤害的角色")
+				.chooseTarget(get.prompt(event.skill), "选择一名此阶段你对其造成过伤害的角色")
 				.set("filterTarget", (card, player, target) => {
-					return (
-						player.getHistory("sourceDamage", evt => {
-							return evt.player === target && evt.getParent("phaseUse") === trigger;
-						}).length > 0
-					);
+					return get.event("targets").includes(target);
 				})
+				.sett(
+					"targets",
+					player
+						.getHistory("sourceDamage", evt => {
+							return evt.player === target && evt.getParent("phaseUse") === trigger;
+						})
+						.map(evt => evt.player)
+				)
 				.set("ai", function (target) {
-					const sha = get.autoViewAs({
-						name: "sha",
-					});
+					const sha = get.autoViewAs({ name: "sha" });
 					return get.effect(target, sha, get.player());
 				});
 			event.result = result;
@@ -3497,13 +3499,12 @@ const skills = {
 			const {
 				targets: [target],
 			} = event;
-			let i = 0;
-			const numx = player.getHistory("sourceDamage", evt => {
+			let numx = player.getHistory("sourceDamage", evt => {
 				return evt.player === target && evt.getParent("phaseUse") === trigger;
 			}).length;
-			while (i < numx) {
-				await player.chooseUseTarget("sha", [target], "nodistance", false);
-				i++;
+			const sha = get.autoViewAs({ name: "sha", isCard: true });
+			while (numx--) {
+				if (player.canUse(sha, target, false)) await player.useCard(sha, target, false);
 			}
 		},
 	},
