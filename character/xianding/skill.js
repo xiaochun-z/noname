@@ -3465,9 +3465,7 @@ const skills = {
 	//SP马超一号
 	onedcspzhuiji: {
 		audio: "zhuiji",
-		trigger: {
-			player: "phaseUseEnd",
-		},
+		trigger: { player: "phaseUseEnd" },
 		filter(event, player) {
 			return (
 				player.getHistory("sourceDamage", evt => {
@@ -3477,15 +3475,15 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const { result } = await player
-				.chooseTarget(get.prompt(event.skill), "选择一名此阶段你对其造成过伤害的角色")
+				.chooseTarget(get.prompt2(event.skill))
 				.set("filterTarget", (card, player, target) => {
 					return get.event("targets").includes(target);
 				})
-				.sett(
+				.set(
 					"targets",
 					player
 						.getHistory("sourceDamage", evt => {
-							return evt.player === target && evt.getParent("phaseUse") === trigger;
+							return evt.getParent("phaseUse") === trigger;
 						})
 						.map(evt => evt.player)
 				)
