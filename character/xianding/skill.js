@@ -3499,7 +3499,7 @@ const skills = {
 			} = event;
 			let numx = player.getHistory("sourceDamage", evt => {
 				return evt.player === target && evt.getParent("phaseUse") === trigger;
-			}).length;
+			}).reduce((num, evt) => num + evt.num, 0);
 			const sha = get.autoViewAs({ name: "sha", isCard: true });
 			while (numx--) {
 				if (player.canUse(sha, target, false)) {
