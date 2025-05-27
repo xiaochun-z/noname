@@ -3504,7 +3504,9 @@ const skills = {
 			}).length;
 			const sha = get.autoViewAs({ name: "sha", isCard: true });
 			while (numx--) {
-				if (player.canUse(sha, target, false)) await player.useCard(sha, target, false);
+				if (player.canUse(sha, target, false)) {
+					await player.useCard(sha, target, false);
+				}
 			}
 		},
 	},
