@@ -399,6 +399,17 @@ export default () => {
 						skill
 					);
 				}
+				let enable_mingcha;
+				if (_status.connectMode) {
+					enable_mingcha = lib.configOL.enable_mingcha;
+				} else {
+					enable_mingcha = get.config("enable_mingcha");
+				}
+				if (enable_mingcha) {
+					game.broadcastAll(player => {
+						player.addSkill("identity_mingcha");
+					}, game.zhu);
+				}
 			}
 			game.syncState();
 			event.trigger("gameStart");
