@@ -10284,6 +10284,11 @@ export class Library {
 		phaseUse: "出牌阶段",
 		phaseDiscard: "弃牌阶段",
 		phaseJieshu: "结束阶段",
+
+		dongcha: "洞察",
+		dongcha_info: "①游戏开始时，随机一名反贼的身份对你可见。②准备阶段，你可以弃置场上的一张牌。",
+		sheshen: "舍身",
+		sheshen_info: "锁定技。当主公即将死亡时，你令其增加1点体力上限并回复体力至X点（X为你的体力值），然后其获得你的所有牌。若如此做，你死亡。",
 	};
 
 	experimental = Experimental;
@@ -13272,6 +13277,109 @@ export class Library {
 			},
 			set ai(ai) {
 				lib.skill._recasting.ai = ai;
+			},
+		},
+		dongcha: {
+			mode: ["identity"],
+			available(mode) {
+				if (mode == "identity" && _status.mode !== "zhong") {
+					return false;
+				}
+			},
+			trigger: { player: "phaseZhunbeiBegin" },
+			unique: true,
+			filter(event, player) {
+				return game.hasPlayer(current => current.countDiscardableCards(player, "ej") > 0);
+			},
+			charlotte: true,
+			forceunique: true,
+			async cost(event, trigger, player) {
+				event.result = await player
+					.chooseTarget(get.prompt(event.skill), "弃置场上的一张牌", (card, player, target) => {
+						return target.countDiscardableCards(player, "ej") > 0;
+					})
+					.set("ai", target => {
+						const player = get.player();
+						return get.effect(target, { name: "guohe_copy", position: "ej" }, player, player);
+					})
+					.forResult();
+			},
+			async content(event, trigger, player) {
+				const [target] = event.targets;
+				target.addExpose(0.1);
+				await game.delayx();
+				await player.discardPlayerCard("ej", true, target);
+			},
+			group: ["dongcha_begin", "dongcha_log"],
+			subSkill: {
+				begin: {
+					charlotte: true,
+					trigger: {
+						global: "phaseBefore",
+						player: "enterGame",
+					},
+					forced: true,
+					popup: false,
+					filter(event, player) {
+						return game.hasPlayer(current => current.identity == "fan") && (event.name != "phase" || game.phaseNumber == 0);
+					},
+					async content(event, trigger, player) {
+						const list = game.filterPlayer(current => current.identity == "fan");
+						const target = list.randomGet();
+						player.storage.dongcha = target;
+						if (!_status.connectMode) {
+							if (player == game.me) {
+								target.setIdentity("fan");
+								target.node.identity.classList.remove("guessing");
+								target.fanfixed = true;
+								player.line(target, "green");
+								player.popup("dongcha");
+							}
+						} else {
+							await player.chooseControl("ok").set("dialog", [get.translation(target) + "是反贼", [[target.name], "character"]]);
+						}
+					},
+				},
+				log: {
+					charlotte: true,
+					trigger: { player: "useCard" },
+					forced: true,
+					popup: false,
+					filter(event, player) {
+						return event.targets?.length == 1 && event.targets[0] == player.storage.dongcha && event.targets[0].ai.shown < 0.95;
+					},
+					async content(event, trigger, player) {
+						trigger.targets[0].addExpose(0.2);
+					},
+				},
+			},
+		},
+		sheshen: {
+			mode: ["identity"],
+			available(mode) {
+				if (mode == "identity" && _status.mode !== "zhong") {
+					return false;
+				}
+			},
+			trigger: { global: "dieBefore" },
+			forced: true,
+			unique: true,
+			charlotte: true,
+			forceunique: true,
+			filter(event, player) {
+				return event.player == game.zhu && player.hp > 0;
+			},
+			logTarget: "player",
+			async content(event, trigger, player) {
+				const { player: target } = trigger;
+				await target.gainMaxHp();
+				await target.recoverTo(player.hp);
+				const cards = player.getCards("he");
+				if (cards.length) {
+					await target.gain(cards, player, "giveAuto");
+				}
+				trigger.cancel();
+				await player.die();
 			},
 		},
 	};

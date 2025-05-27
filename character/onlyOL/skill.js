@@ -4047,7 +4047,7 @@ const skills = {
 			return game.hasPlayer(current => !event.targets.includes(current) && lib.filter.targetEnabled2(event.card, player, current));
 		},
 		async cost(event, trigger, player) {
-			const num = parseInt(player.storage.olsbjinming_used.slice(0, 1));
+			const num = player.storage.olsbjinming_used ? parseInt(player.storage.olsbjinming_used.slice(0, 1)) : 0;
 			event.result = await player
 				.chooseTarget(get.prompt2(event.skill), function (card, player, target) {
 					const trigger = get.event().getTrigger();
@@ -4549,16 +4549,13 @@ const skills = {
 				player.line(targets);
 				for (const target of targets) {
 					const result = await target
-						.chooseToUse(
-							function (card) {
-								const evt = _status.event;
-								if (!lib.filter.cardEnabled(card, evt.player, evt)) {
-									return false;
-								}
-								return get.position(card) == "h";
-							},
-							'###立文###<div class="text center">使用一张手牌，或移去所有“贤”标记并令' + get.translation(player) + "摸等量的牌</div>"
-						)
+						.chooseToUse(function (card) {
+							const evt = _status.event;
+							if (!lib.filter.cardEnabled(card, evt.player, evt)) {
+								return false;
+							}
+							return get.position(card) == "h";
+						}, '###立文###<div class="text center">使用一张手牌，或移去所有“贤”标记并令' + get.translation(player) + "摸等量的牌</div>")
 						.set("addCount", false)
 						.forResult();
 					if (!result.bool) {
@@ -4632,9 +4629,9 @@ const skills = {
 								}
 								return next.forResult().then(result => {
 									if (_status.connectMode) {
-										game.me.unwait(result, current)
+										game.me.unwait(result, current);
 									} else {
-										solver(result, current)
+										solver(result, current);
 									}
 								});
 							}
@@ -5330,15 +5327,12 @@ const skills = {
 					const target2 = result2.targets[0];
 					player.line(target2);
 					const result = await target
-						.chooseToUse(
-							function (card, player, event) {
-								if (get.name(card) != "sha") {
-									return false;
-								}
-								return lib.filter.filterCard.apply(this, arguments);
-							},
-							"眩惑：对" + get.translation(target2) + "使用一张【杀】，或令" + get.translation(player) + "你的手牌并获得你的两张牌"
-						)
+						.chooseToUse(function (card, player, event) {
+							if (get.name(card) != "sha") {
+								return false;
+							}
+							return lib.filter.filterCard.apply(this, arguments);
+						}, "眩惑：对" + get.translation(target2) + "使用一张【杀】，或令" + get.translation(player) + "你的手牌并获得你的两张牌")
 						.set("filterTarget", function (card, player, target) {
 							if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 								return false;
