@@ -329,6 +329,7 @@ const skills = {
 			}
 		},
 		ai: {
+			combo: "dczhonge",
 			order: 1,
 			result: {
 				player(player) {
