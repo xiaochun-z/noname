@@ -1024,7 +1024,7 @@ export default () => {
 							continue;
 						}
 						var group = lib.character[i][1];
-						if (group == "shen" || group == "western") {
+						if (lib.selectGroup.includes(group)) {
 							continue;
 						}
 						if (!map[group]) {
@@ -1213,7 +1213,7 @@ export default () => {
 							continue;
 						}
 						var group = lib.character[i][1];
-						if (group == "shen" || group == "western") {
+						if (lib.selectGroup.includes(group)) {
 							continue;
 						}
 						if (!map[group]) {
@@ -1479,7 +1479,7 @@ export default () => {
 						} else {
 							result[i] = result[i].links;
 						}
-						if (get.is.double(result[i][0]) || (lib.character[result[i][0]] && (lib.character[result[i][0]].group == "shen" || lib.character[result[i][0]].group == "western") && !lib.character[result[i][0]].hasHiddenSkill)) {
+						if (get.is.double(result[i][0]) || (lib.character[result[i][0]] && lib.selectGroup.includes(lib.character[result[i][0]].group) && !lib.character[result[i][0]].hasHiddenSkill)) {
 							shen.push(lib.playerOL[i]);
 						}
 					}
@@ -1719,7 +1719,7 @@ export default () => {
 						player._groupChosen = "double";
 						player.group = get.is.double(player.name1, true).randomGet();
 						player.node.name.dataset.nature = get.groupnature(player.group);
-					} else if (get.config("choose_group") && (player.group == "shen" || player.group == "western") && !player.isUnseen(0)) {
+					} else if (get.config("choose_group") && lib.selectGroup.includes(player.group) && !player.isUnseen(0)) {
 						player._groupChosen = "kami";
 						var list = lib.group.slice(0);
 						list.remove("shen");
@@ -2363,7 +2363,7 @@ export default () => {
 					if (get.is.double(name)) {
 						game.me._groupChosen = "double";
 						game.me.chooseControl(get.is.double(name, true)).set("prompt", "请选择你的势力");
-					} else if ((lib.character[name].group == "shen" || lib.character[name].group == "western") && !lib.character[name].hasHiddenSkill && get.config("choose_group")) {
+					} else if (lib.selectGroup.includes(lib.character[name].group) && !lib.character[name].hasHiddenSkill && get.config("choose_group")) {
 						game.me._groupChosen = "kami";
 						var list = lib.group.slice(0);
 						list.remove("shen");
@@ -2669,7 +2669,7 @@ export default () => {
 						game.players.length > 4
 					);
 
-					if ((game.zhu.group == "shen" || game.zhu.group == "western") && !game.zhu.isUnseen(0)) {
+					if (lib.selectGroup.includes(game.zhu.group) && !game.zhu.isUnseen(0)) {
 						game.zhu._groupChosen = "kami";
 						var list = ["wei", "shu", "wu", "qun", "jin", "key"];
 						for (var i = 0; i < list.length; i++) {
@@ -2752,7 +2752,7 @@ export default () => {
 						} else {
 							result[i] = result[i].links;
 						}
-						if (get.is.double(result[i][0]) || (lib.character[result[i][0]] && (lib.character[result[i][0]].group == "shen" || lib.character[result[i][0]].group == "western") && !lib.character[result[i][0]].hasHiddenSkill)) {
+						if (get.is.double(result[i][0]) || (lib.character[result[i][0]] && lib.selectGroup.includes(lib.character[result[i][0]].group) && !lib.character[result[i][0]].hasHiddenSkill)) {
 							shen.push(lib.playerOL[i]);
 						}
 					}
