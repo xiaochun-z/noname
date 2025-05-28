@@ -10896,11 +10896,8 @@ export class Library {
 				return true;
 			}
 			if (info[4]) {
-				if (info.isBoss) {
-					return true;
-				}
-				if (info.isHiddenBoss) {
-					return true;
+				if (info.isBoss || info.isHiddenBoss) {
+					return !lib.config?.plays?.includes("boss");
 				}
 				if (info.isMinskin) {
 					return true;
