@@ -2663,6 +2663,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 					break;
 				}
 			}
+			return str2;
 		}
 		return "";
 	}
