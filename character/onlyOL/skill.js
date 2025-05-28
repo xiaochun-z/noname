@@ -3290,7 +3290,7 @@ const skills = {
 				} else {
 					return;
 				}
-				if (!result.bool) {
+				if (!result?.bool || !result?.links?.length) {
 					return;
 				}
 				const toGive = result.links;
@@ -3313,13 +3313,13 @@ const skills = {
 					})
 					.set("toEnemy", get.value(toGive[0], player, "raw") < 0)
 					.forResult();
-				if (result.bool) {
+				if (result?.bool && result?.targets?.length) {
 					cards.removeArray(toGive);
 					const id = result.targets[0].playerid;
-					if (!given_map[id]) {
-						given_map[id] = [];
-					}
+					given_map[id] ??= [];
 					given_map[id].addArray(toGive);
+				} else {
+					return;
 				}
 			}
 			if (_status.connectMode) {
@@ -3359,6 +3359,7 @@ const skills = {
 			used: { charlotte: true },
 			round: { charlotte: true },
 			clear: {
+				marktext: "赏",
 				charlotte: true,
 				onremove(player, skill) {
 					player.removeTip(skill);

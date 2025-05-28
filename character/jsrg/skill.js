@@ -12599,7 +12599,7 @@ const skills = {
 					.set("ai", card => {
 						const { player, targetx } = get.event();
 						let att = 0;
-						if (player && target) {
+						if (player && targetx) {
 							att = get.sgnAttitude(player, targetx);
 						}
 						let val = 7 - get.value(card);
@@ -12609,7 +12609,7 @@ const skills = {
 						return val;
 					})
 					.forResult();
-				if (result.bool) {
+				if (result?.bool && result?.cards?.length) {
 					target.$throw(1, 1000);
 					game.log(target, "将", "#y一张手牌", "置于了牌堆顶");
 					await target.lose(result.cards, ui.cardPile, "insert");
