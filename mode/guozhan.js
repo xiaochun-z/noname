@@ -7725,7 +7725,7 @@ export default () => {
 								if (event.type != "discard" || event.player == player) {
 									return false;
 								}
-								if ((event.discarder || event.getParent(event.getParent(2).name == "chooseToDiscard" ? 3 : 2).player) != player) {
+								if ((event.getParent(event.getParent(2).name == "chooseToDiscard" ? 3 : 2).player || event.discarder) != player) {
 									return false;
 								}
 								for (var i of event.cards2) {
@@ -16126,15 +16126,16 @@ export default () => {
 				},
 				selectTarget: 2,
 				multitarget: true,
-				targetprompt: ["受到伤害</br>然后摸牌", "回复体力"],
-				content() {
-					"step 0";
-					targets[0].damage(player);
-					"step 1";
-					if (targets[0].isAlive()) {
-						targets[0].draw(2);
+				targetprompt: ["受伤摸牌", "回复体力"],
+				async content(event, trigger, player) {
+					const {
+						targets: [target1, target2],
+					} = event;
+					await target1.damage(player);
+					if (target1.isAlive()) {
+						await target1.draw(2);
 					}
-					targets[1].recover();
+					await target2.recover();
 				},
 				ai: {
 					threaten: 1.2,
