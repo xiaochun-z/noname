@@ -7725,7 +7725,7 @@ export default () => {
 								if (event.type != "discard" || event.player == player) {
 									return false;
 								}
-								if ((event.getParent(event.getParent(2).name == "chooseToDiscard" ? 3 : 2).player || event.discarder) != player) {
+								if ((event.discarder || event.getParent(event.getParent(2).name == "chooseToDiscard" ? 3 : 2).player) != player) {
 									return false;
 								}
 								for (var i of event.cards2) {
@@ -16126,16 +16126,15 @@ export default () => {
 				},
 				selectTarget: 2,
 				multitarget: true,
-				targetprompt: ["受伤摸牌", "回复体力"],
-				async content(event, trigger, player) {
-					const {
-						targets: [target1, target2],
-					} = event;
-					await target1.damage(player);
-					if (target1.isAlive()) {
-						await target1.draw(2);
+				targetprompt: ["受到伤害</br>然后摸牌", "回复体力"],
+				content() {
+					"step 0";
+					targets[0].damage(player);
+					"step 1";
+					if (targets[0].isAlive()) {
+						targets[0].draw(2);
 					}
-					await target2.recover();
+					targets[1].recover();
 				},
 				ai: {
 					threaten: 1.2,
@@ -21445,13 +21444,22 @@ export default () => {
 						skills = lib.character[trigger.source.name2][3];
 						game.log(trigger.source, "失去了副将技能");
 					}
-					var list = skills.filter(skill => {
-						const info = get.info(skill);
-						return info && !info.charlotte;
-					});
-					if (list.length) {
-						trigger.source.removeSkills(list);
+					var list = [];
+					for (var i = 0; i < skills.length; i++) {
+						list.add(skills[i]);
+						var info = lib.skill[skills[i]];
+						if (info.charlotte) {
+							list.splice(i--);
+							continue;
+						}
+						if (typeof info.derivation == "string") {
+							list.add(info.derivation);
+						} else if (Array.isArray(info.derivation)) {
+							list.addArray(info.derivation);
+						}
 					}
+					trigger.source.removeSkill(list);
+					trigger.source.syncSkills();
 					player.line(trigger.source, "green");
 				},
 				logTarget: "source",
