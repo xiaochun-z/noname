@@ -20886,7 +20886,7 @@ export default () => {
 					}
 					var list = skills.filter(skill => {
 						const info = get.info(skill);
-						return info && !info.charlotte;
+						return info && !info.charlotte && !info.persevereSkill;
 					});
 					if (list.length) {
 						trigger.source.removeSkills(list);
