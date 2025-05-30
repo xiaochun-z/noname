@@ -2689,10 +2689,6 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 					break;
 				}
 				if (setPrefix.length) {
-					//兼容版特化处理
-					if (lib.compatibleEdition) {
-						return `${setPrefix.map(prefix => get.prefixSpan(prefix, str), "").join("")}<span>${slimName}</span>`;
-					}
 					return `${setPrefix.map(prefix => get.prefixSpan(prefix, str), "").join("")}<span>${slimName}</span>`;
 				}
 			}
