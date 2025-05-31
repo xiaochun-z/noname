@@ -961,7 +961,9 @@ const skills = {
 				player.addExpose(0.2);
 			}
 			await player.draw(2);
-			if (!player.countCards("he")) return;
+			if (!player.countCards("he")) {
+				return;
+			}
 			const result = await player
 				.chooseCard(2, "he", true, "交给" + get.translation(trigger.player) + "两张牌")
 				.set("ai", function (card) {
@@ -977,7 +979,7 @@ const skills = {
 					return 0;
 				})
 				.forResult();
-			if (result?.cards) {
+			if (result?.cards?.length) {
 				const target = trigger.player;
 				await player.give(result.cards, target);
 				target.addTempSkill("rexiantu_check", "phaseUseAfter");
@@ -1927,8 +1929,8 @@ const skills = {
 				return typeof to != "number";
 			});
 			next.set("processAI", function (list) {
-				const player = _status.event.player,
-					cards = list[0][1].concat(list[1][1]),
+				const player = _status.event.player;
+				let cards = list[0][1].concat(list[1][1]),
 					cards2 = [];
 				cards.sort((a, b) => {
 					return get.useful(a) - get.useful(b);
@@ -2565,7 +2567,9 @@ const skills = {
 					await target.damage();
 				}
 			}
-			if (targets.length >= player.getHistory("skipped").length) return;
+			if (targets.length >= player.getHistory("skipped").length) {
+				return;
+			}
 			const targets2 = targets.filter(function (target) {
 				return target.countDiscardableCards(player, "e") > 0;
 			});
@@ -2734,7 +2738,9 @@ const skills = {
 						return Math.random() < evt.player.countCards("h") / 4;
 					})
 					.forResult();
-				if (!result) continue;
+				if (!result) {
+					continue;
+				}
 				if (result.bool) {
 					target.chat("有杀");
 					game.log(target, "认为", player, "#g有杀");
@@ -3740,7 +3746,7 @@ const skills = {
 				giver = targets[0];
 			}
 			const result = await gainner.gainPlayerCard(giver, true, "h", "visibleMove").forResult();
-			if (result?.cards) {
+			if (result?.cards?.length) {
 				const card = result.cards[0];
 				if (gainner.getCards("h").includes(card) && get.suit(card, gainner) != "spade") {
 					await player.draw();
