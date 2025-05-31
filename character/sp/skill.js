@@ -8324,7 +8324,9 @@ const skills = {
 			player.popup(list[result[0]]);
 			target.popup(list[result[1]]);
 			for (let current of [player, target]) {
-				if (!current.isIn()) continue;
+				if (!current.isIn()) {
+					continue;
+				}
 				switch (list[result[current == player ? 0 : 1]]) {
 					case "重铸": {
 						if (current.countCards("he", card => current.canRecast(card))) {
