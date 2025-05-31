@@ -286,12 +286,13 @@ game.import("card", function () {
 				type: "equip",
 				subtype: "equip1",
 				distance: { attackFrom: -1 },
-				ai: {
-					basic: {
-						equipValue: 2,
-					},
-				},
+				ai: { basic: { equipValue: 2 } },
 				skills: ["ty_feilongduofeng_skill"],
+				onLose() {
+					if (player.storage.counttrigger?.ty_feilongduofeng_skill > 0) {
+						delete player.storage.counttrigger.ty_feilongduofeng_skill;
+					}
+				},
 			},
 			shangfangbaojian: {
 				fullskin: true,
