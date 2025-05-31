@@ -1007,7 +1007,7 @@ const skills = {
 				videoId,
 				cardMap,
 				list,
-				num,
+				num
 			);
 			const result2 = await player.chooseBool(`是否令你的点数+${num}？`).set("dialog", get.idDialog(videoId)).forResult();
 			game.broadcastAll("closeDialog", videoId);
@@ -2837,7 +2837,6 @@ const skills = {
 				}
 				const str = get.plainText(get.skillInfoTranslation(skill));
 				if (!["当", "当做", "当作"].some(s => str.includes(s))) {
-					console.log(skill);
 					continue;
 				}
 				list.add(skill);
@@ -7030,7 +7029,6 @@ const skills = {
 					await player.gain(cards, "draw");
 				},
 				onremove: true,
-				mark: true,
 				intro: {
 					markcount: "expansion",
 					mark(dialog, storage, player) {
@@ -7058,14 +7056,14 @@ const skills = {
 			global: ["equipEnd", "addJudgeEnd", "gainEnd", "loseAsyncEnd", "addToExpansionEnd"],
 		},
 		filter(event, player) {
-			return (player.countExpansions("hm_zhouyuan_expansion") && event.name != "die") ^ player.hasSkill("hm_zhaobing_in");
+			return (game.hasPlayer(target => target.countExpansions("hm_zhouyuan_expansion")) && event.name != "die") ^ player.hasSkill("hm_zhaobing_in");
 		},
 		forced: true,
 		firstDo: true,
 		silent: true,
 		forceDie: true,
 		content() {
-			if (player.countExpansions("hm_zhouyuan_expansion") && trigger.name != "die") {
+			if (game.hasPlayer(target => target.countExpansions("hm_zhouyuan_expansion")) && trigger.name != "die") {
 				const cards = game
 					.filterPlayer()
 					.map(target => target.getExpansions("hm_zhouyuan_expansion"))
@@ -7090,10 +7088,10 @@ const skills = {
 			in: {
 				charlotte: true,
 				trigger: {
-					player: "addToExpansionEnd",
+					global: ["addToExpansionEnd", "gainEnd", "loseEnd", "equipEnd", "addJudgeEnd", "loseAsyncEnd"],
 				},
 				filter(event, player) {
-					return event.gaintag.includes("hm_zhouyuan_expansion");
+					return event.gaintag?.includes("hm_zhouyuan_expansion") || Object.values(event.gaintag_map || {})?.flat().includes("hm_zhouyuan_expansion");
 				},
 				forced: true,
 				locked: false,
