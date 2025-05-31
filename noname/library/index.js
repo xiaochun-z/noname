@@ -197,7 +197,42 @@ export class Library {
 	/**
 	 * @type { Function[] | undefined }
 	 */
-	arenaReady = [];
+	arenaReady = [
+		//预处理技能拥有者
+		function () {
+			_status.skillOwner = {};
+			//武将包排序
+			let packSort = ["standard", "shenhua", "yijiang", "refresh", "extra", "sp", "xinghuoliaoyuan", "sp2", "mobile", "tw", "yingbian", "offline", "sb", "clan", "huicui", "shiji", "xianding", "jsrg", "onlyOL", "newjiang", "sixiang", "sxrm"];
+			packSort = packSort.reverse();
+			const packs = Object.keys(lib.characterPack).sort((a, b) => {
+				return packSort.indexOf(b) - packSort.indexOf(a);
+			});
+			for (let i of packs) {
+				for (let j in lib.characterPack[i]) {
+					const info = get.character(j);
+					if (!info || info[4]?.includes("unseen")) {
+						continue;
+					}
+					if (info[3]?.length > 0) {
+						let skills = info[3].slice(0);
+						for (const skill of skills) {
+							const skillInfo = get.info(skill);
+							if (!skillInfo) {
+								continue;
+							}
+							if (skillInfo.derivation) {
+								const der = skillInfo.derivation.slice(0);
+								Array.isArray(der) ? skills.addArray(der) : skills.add(der);
+							}
+							if (!_status.skillOwner[skill]) {
+								_status.skillOwner[skill] = j;
+							}
+						}
+					}
+				}
+			}
+		},
+	];
 	onfree = [];
 	inpile = [];
 	inpile_nature = [];
