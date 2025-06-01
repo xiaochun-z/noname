@@ -4,7 +4,7 @@ const characterSort = {
 	offline_sticker: ["sp_gongsunzan", "sp_simazhao", "sp_wangyuanji", "sp_xinxianying", "sp_liuxie"],
 	offline_yijiang: ["ol_xinxianying", "ol_liuyu", "ol_zhangrang"],
 	offline_luanwu: ["ns_lijue", "ns_zhangji", "ns_fanchou"],
-	offline_yongjian: ["ns_chendao", "yj_caoang", "yj_caocao", "yj_liru", "yj_caohong", "yj_zhangfei", "yongjian_ganning", "yj_dongzhuo", "yj_xuyou", "yj_jiaxu", "yj_zhenji"],
+	offline_yongjian: ["ns_chendao", "yj_caoang", "yj_caocao", "yj_liru", "yj_caohong", "yj_zhangfei", "yongjian_ganning", "yj_dongzhuo", "yj_xuyou", "yj_jiaxu", "yj_zhenji", "yj_caocaoyuanshao"],
 	offline_piracyE_zy: ["pe_wangyun", "pe_zhonghui", "pe_sunchen", "pe_mengda", "pe_wenqin", "ns_caoanmin", "jiangqing", "kongrong", "jiling", "tianfeng", "mateng"],
 	offline_piracyE_xk: ["xk_luoli", "xk_cuilian", "xk_penghu", "xk_shanfu", "xk_pengqi", "xk_zulang"],
 	offline_piracyE: ["yj_zhouji", "yj_ehuan", "yj_tianchuan", "yj_zhonghui", "yj_jiling", "yj_yongkai", "yj_chezhou"],
