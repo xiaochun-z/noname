@@ -5,6 +5,7 @@ const characters = {
 		doubleGroup: ["wei", "qun"],
 		hp: 4,
 		skills: ["yjguibei", "yjjiechu", "yjdaojue", "yjtuonan"],
+		names: "曹|操-袁|绍",
 	},
 	ps_caocao: {
 		sex: "male",
