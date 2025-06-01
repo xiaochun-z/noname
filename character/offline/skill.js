@@ -5550,6 +5550,7 @@ const skills = {
 		},
 		subSkill: {
 			temp: {
+				charlotte: true,
 				mod: {
 					maxHandcard(player, num) {
 						return num + player.countMark("hm_tuntian_temp");
@@ -5570,7 +5571,7 @@ const skills = {
 				},
 				onremove: true,
 				mark: true,
-				intro: { content: "本局游戏的摸牌阶段摸牌数、手牌上限、本回合首次造成的伤害+#" },
+				intro: { content: "本局游戏的摸牌阶段摸牌数、手牌上限、本回合首次受到的伤害+#" },
 			},
 		},
 	},
