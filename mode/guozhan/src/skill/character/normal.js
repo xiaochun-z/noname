@@ -610,7 +610,7 @@ export default {
 				if (!result.targets?.length) {
 					return;
 				}
-				await player.gainMultiple(result.targets);
+				await player.gainMultiple(cast(result.targets));
 				await game.delay();
 			}
 		},
@@ -2301,8 +2301,8 @@ export default {
 					game.cardsDiscard(trigger.card);
 				}
 				game.log(trigger.card, "进入了弃牌堆");
-				// @ts-expect-error 类型系统未来可期
 			} else {
+				// @ts-expect-error 类型系统未来可期
 				trigger.getParent()?.targets?.remove(player);
 			}
 		},
@@ -2659,7 +2659,7 @@ export default {
 		},
 		check(card) {
 			const player = get.player();
-			const targets = game.filterPlayer(current => player.canUse("wanjian", current) ?? false);
+			const targets = game.filterPlayer(current => player.canUse("wanjian", cast(current)) ?? false);
 			let num = 0;
 			for (let i = 0; i < targets.length; i++) {
 				let eff = get.sgn(get.effect(targets[i], { name: "wanjian" }, player, player));
@@ -3155,7 +3155,6 @@ export default {
 					return target != player && !target.isUnseen(2);
 				})
 				.set("ai", target => {
-					// @ts-expect-error 类型系统未来可期
 					return -get.attitude(_status.event.player, target);
 				})
 				.forResult();
