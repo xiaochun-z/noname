@@ -1,6 +1,7 @@
 import card from "./card/index.js";
 import character from "./character/index.js";
 import skill from "./skill/index.js";
+import rest from "./rest.js";
 
 export default {
 	yexinjia_mark: "野心家",
@@ -13,7 +14,10 @@ export default {
 	_zhenfazhaohuan: "阵法召唤",
 	_zhenfazhaohuan_info: "由拥有阵法技的角色发起，满足此阵法技条件的未确定势力角色均可按逆时针顺序依次明置其一张武将牌(响应阵法召唤)，以发挥阵法技的效果。",
 
+	...rest,
 	...card,
 	...character,
 	...skill,
 };
+
+export { default as dynamic } from "./dynamic.js";

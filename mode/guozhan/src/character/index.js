@@ -137,12 +137,12 @@ export const pack = {
 		isUnseen: true,
 	}),
 
+	...restCharacter,
 	...normal,
 	...zhen,
 	...shi,
 	...bian,
 	...quan,
-	...restCharacter,
 };
 
 export { default as intro } from "./intro.js";

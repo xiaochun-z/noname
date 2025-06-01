@@ -4,7 +4,10 @@ import shi from "./shi.js";
 import bian from "./bian.js";
 import quan from "./quan.js";
 
+import rest from "./rest.js";
+
 export default {
+	...rest,
 	...normal,
 	...zhen,
 	...shi,
