@@ -1041,8 +1041,7 @@ const skills = {
 		limited: true,
 		skillAnimation: true,
 		animationColor: "metal",
-		selectCard: [0, 1],
-		filterCard: () => false,
+		manualConfirm: true,
 		filter(event, player) {
 			return Math.min(player.hp, player.countCards("h")) < player.maxHp;
 		},
