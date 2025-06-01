@@ -1073,6 +1073,7 @@ const skills = {
 	},
 	//谋曹洪
 	dcsbyingjia: {
+		audio: 2,
 		trigger: { player: "useCardAfter" },
 		forced: true,
 		filter(event, player) {
@@ -1136,6 +1137,7 @@ const skills = {
 		},
 	},
 	dcsbxianju: {
+		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
