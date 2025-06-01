@@ -2,7 +2,7 @@ const characters = {
 	strong_caochong: {
 		sex: "male",
 		group: "wei",
-		hp: 4,
+		hp: 3,
 		skills: ["strongduanti", "strongchuanshu", "olchengxiang"],
 	},
 	taipingsangong: {
