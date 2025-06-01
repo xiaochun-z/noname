@@ -30,10 +30,14 @@ const skills = {
 		marktext: "☯",
 		intro: {
 			content(storage, player, skill) {
-				if (storage) return "当你成为【杀】的目标时，你可以弃置一张手牌改变【杀】的花色和属性。";
-				else return "出牌阶段，你可以视为使用一张【顺手牵羊】，结算结束后成为目标的角色可以对你使你一张【杀】。";
+				if (storage) {
+					return "当你成为【杀】的目标时，你可以弃置一张手牌改变【杀】的花色和属性。";
+				} else {
+					return "出牌阶段，你可以视为使用一张【顺手牵羊】，结算结束后成为目标的角色可以对你使用一张【杀】。";
+				}
 			},
-		}, group: ["yjjiechu_use", "yjjiechu_sha"],
+		},
+		group: ["yjjiechu_use", "yjjiechu_sha"],
 		subSkill: {
 			sha: {
 				trigger: {
@@ -78,8 +82,11 @@ const skills = {
 					trigger.card.color = Object.entries(lib.color)
 						.find(([_, suits]) => suits.includes(suit))?.[0] || null;
 					const nature = choice[1]
-					if (nature === "无") game.setNature(trigger.card, []);
-					else game.setNature(trigger.card, nature);
+					if (nature === "无") {
+						game.setNature(trigger.card, []);
+					} else {
+						game.setNature(trigger.card, nature);
+					}
 					if (get.itemtype(trigger.card) == "card") {
 						var next = game.createEvent("zhuque_clear");
 						next.card = trigger.card;
@@ -107,14 +114,18 @@ const skills = {
 					for (const c of trigger.targets.filter(c => c.isIn()).sortBySeat()) {
 						await c
 							.chooseToUse(function (card, player, event) {
-								if (get.name(card) !== "sha") return false;
+								if (get.name(card) !== "sha") {
+									return false;
+								}
 								return lib.filter.filterCard.apply(this, arguments);
 							}, "你可对" + get.translation(player) + "使用一张杀")
 							.set("targetRequired", true)
 							.set("complexSelect", true)
 							.set("filterTarget", function (card, player, target) {
 								const sourcex = get.event("sourcex")
-								if (target !== sourcex && !ui.selected.targets.includes(sourcex)) return false;
+								if (target !== sourcex && !ui.selected.targets.includes(sourcex)) {
+									return false;
+								}
 								return lib.filter.filterTarget.apply(this, arguments);
 							})
 							.set("sourcex", player);
@@ -218,7 +229,9 @@ const skills = {
 						if (player.hasUsableCard("sha", "use")) {
 							await player
 								.chooseToUse(function (card, player, event) {
-									if (get.name(card) !== "sha") return false;
+									if (get.name(card) !== "sha") {
+										return false;
+									}
 									return lib.filter.filterCard.apply(this, arguments);
 								}, "对所有角色使用一张杀", true)
 								.set("targetRequired", true)
@@ -235,8 +248,11 @@ const skills = {
 							get.prompt(event.name),
 							["获得" + get.translation(card), "使用一张指定所有其他角色的【杀】。"], true)
 						.set("ai", () => {
-							if (get.event("card").map(c => get.value(c)).reduce((sum, cur) => sum + cur, 0) > 4) return 0;
-							else return 1;
+							if (get.event("card").map(c => get.value(c)).reduce((sum, cur) => sum + cur, 0) > 4) {
+								return 0;
+							} else {
+								return 1;
+							}
 						}).set("card", card).forResult();
 					if (result.index === 0) {
 						await player.gain(card, "gain2", "log")
@@ -244,7 +260,9 @@ const skills = {
 					else if (player.hasUsableCard("sha", "use")) {
 						await player
 							.chooseToUse(function (card, player, event) {
-								if (get.name(card) !== "sha") return false;
+								if (get.name(card) !== "sha") {
+									return false;
+								}
 								return lib.filter.filterCard.apply(this, arguments);
 							}, "对所有角色使用一张杀", true)
 							.set("targetRequired", true)
@@ -273,7 +291,9 @@ const skills = {
 			await player.recover()
 			const skills = player.getSkills(null, false, false).filter(skill => {
 				let info = get.info(skill);
-				if (!info || info.charlotte || get.skillInfoTranslation(skill, player).length == 0 || !get.skillCategoriesOf(skill, player).length) return false;
+				if (!info || info.charlotte || get.skillInfoTranslation(skill, player).length == 0 || !get.skillCategoriesOf(skill, player).length) {
+					return false;
+				}
 				return true;
 			});
 			const list = skills.map(skill => [
@@ -281,14 +301,18 @@ const skills = {
 				'<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">' +
 				(() => {
 					let str = get.translation(skill);
-					if (!lib.skill[skill]?.nobracket) str = "【" + str + "】";
+					if (!lib.skill[skill]?.nobracket) {
+						str = "【" + str + "】";
+					}
 					return str;
 				})() +
 				"</div><div>" +
 				lib.translate[skill + "_info"] +
 				"</div></div>",
 			]);
-			if (!list.length) return
+			if (!list.length) {
+				return
+			}
 			const result = await player
 				.chooseButton(["脱难：失去一个带有标签的技能", [list, "textbutton"]], true)
 				.set("displayIndex", false)
@@ -297,16 +321,26 @@ const skills = {
 					const skills = get.event("listx").slice();
 					skills.removeArray(["clanbaichu"]);
 					const { link } = button;
-					if (skills.includes(link)) return 0;
+					if (skills.includes(link)) {
+						return 0;
+					}
 					const info = get.info(link);
-					if (info?.ai?.neg || info?.ai?.halfneg) return 3;
-					if (get.effect(player, { name: "losehp" }, player, player) >= 0 || player.hp > 3 || player.countCards("hs", card => player.canSaveCard(card, player))) return 0;
-					if (Math.random() < 0.75 && link == "clandaojie") return 2;
+					if (info?.ai?.neg || info?.ai?.halfneg) {
+						return 3;
+					}
+					if (get.effect(player, { name: "losehp" }, player, player) >= 0 || player.hp > 3 || player.countCards("hs", card => player.canSaveCard(card, player))) {
+						return 0;
+					}
+					if (Math.random() < 0.75 && link == "clandaojie") {
+						return 2;
+					}
 					return 1;
 				})
 				.set("listx", skills)
 				.forResult();
-			if (result?.bool && result?.links?.length) await player.removeSkills(result.links);
+			if (result?.bool && result?.links?.length) {
+				await player.removeSkills(result.links);
+			}
 		},
 	},
 	//风云际会曹操
