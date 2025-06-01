@@ -187,6 +187,7 @@ export class Library {
 		biexiao_emotion: 18,
 		chaijun_emotion: 43,
 		maoshu_emotion: 18,
+		mobile_emotion: 16,
 	};
 	animate = {
 		skill: {},
@@ -5240,6 +5241,7 @@ export class Library {
 						map.connect_choice_zhu.hide();
 						map.connect_limit_zhu.hide();
 						map.connect_enhance_zhu.hide();
+						map.connect_enable_mingcha.hide();
 						map.connect_choice_zhong.hide();
 						map.connect_choice_fan.hide();
 						map.connect_choice_nei.hide();
@@ -5256,6 +5258,7 @@ export class Library {
 						map.connect_choice_zhu.show();
 						map.connect_limit_zhu.hide();
 						map.connect_enhance_zhu.hide();
+						map.connect_enable_mingcha.hide();
 						map.connect_choice_zhong.show();
 						map.connect_choice_fan.show();
 						map.connect_choice_nei.show();
@@ -5270,6 +5273,7 @@ export class Library {
 						map.connect_choice_zhu.hide();
 						map.connect_limit_zhu.hide();
 						map.connect_enhance_zhu.hide();
+						map.connect_enable_mingcha.hide();
 						map.connect_choice_zhong.hide();
 						map.connect_choice_fan.hide();
 						map.connect_choice_nei.hide();
@@ -5286,6 +5290,7 @@ export class Library {
 						map.connect_choice_zhu.show();
 						map.connect_limit_zhu.show();
 						map.connect_enhance_zhu.show();
+						map.connect_enable_mingcha.show();
 						map.connect_choice_zhong.show();
 						map.connect_choice_fan.show();
 						map.connect_choice_nei.show();
@@ -5492,6 +5497,15 @@ export class Library {
 					restart: true,
 					intro: "为主公增加一个额外技能。<br><li>四象标记：主公随机获得一个四象标记（限发动一次）；每个回合结束时，若场上没有反贼，主公失去此标记。<br><li>专属技能：至少三名反贼的身份场，主公获得一个专属技能（无则改为〖天命〗）；一名角色阵亡后，若存活反贼数小于3，主公失去此技能。",
 				},
+				connect_enable_mingcha: {
+					name: "启用明察",
+					init: false,
+					restart: true,
+					frequent: false,
+					get intro() {
+						return lib.mode.identity.config.enable_mingcha.intro;
+					},
+				},
 			},
 			config: {
 				update: function (config, map) {
@@ -5505,6 +5519,7 @@ export class Library {
 					if (config.identity_mode == "zhong") {
 						map.player_number.hide();
 						map.enhance_zhu.hide();
+						map.enable_mingcha.hide();
 						map.double_nei.hide();
 						map.auto_identity.hide();
 						map.choice_zhu.hide();
@@ -5536,6 +5551,7 @@ export class Library {
 						map.continue_game.show();
 						map.player_number.show();
 						map.enhance_zhu.hide();
+						map.enable_mingcha.hide();
 						map.auto_identity.hide();
 						if (config.player_number != "2") {
 							map.double_nei.show();
@@ -5577,6 +5593,7 @@ export class Library {
 					} else if (config.identity_mode == "purple") {
 						map.player_number.hide();
 						map.enhance_zhu.hide();
+						map.enable_mingcha.hide();
 						map.double_nei.hide();
 						map.auto_identity.hide();
 						map.choice_zhu.hide();
@@ -5604,6 +5621,7 @@ export class Library {
 						map.continue_game.show();
 						map.player_number.show();
 						map.enhance_zhu.show();
+						map.enable_mingcha.show();
 						map.auto_identity.show();
 						map.double_nei[config.player_number != "2" && !config.enable_commoner ? "show" : "hide"]();
 						map.choice_zhu.show();
@@ -6067,6 +6085,13 @@ export class Library {
 					restart: true,
 					frequent: false,
 					intro: "开启后将会加入年机制。<br>年机制的具体规则请查看帮助。",
+				},
+				enable_mingcha: {
+					name: "启用明察",
+					init: false,
+					restart: true,
+					frequent: false,
+					intro: "开启后主公将获得技能〖明察〗。",
 				},
 			},
 		},
@@ -10131,6 +10156,7 @@ export class Library {
 		wu: "吴",
 		qun: "群",
 		shen: "神",
+		devil: "魔",
 		western: "西",
 		key: "键",
 		jin: "晋",
@@ -10141,6 +10167,7 @@ export class Library {
 		wu2: "吴国",
 		qun2: "群雄",
 		shen2: "神明",
+		devil2: "入魔",
 		western2: "西方",
 		key2: "KEY",
 		jin2: "晋朝",
@@ -10165,6 +10192,7 @@ export class Library {
 		westernColor: "#ffe14c",
 		jinColor: "#ffe14c",
 		keyColor: "#c9b1fd",
+		devilColor: "#9b2234",
 		basic: "基本",
 		equip: "装备",
 		trick: "锦囊",
@@ -10214,6 +10242,7 @@ export class Library {
 		chaijun_emotion: "柴郡表情",
 		huangdou_emotion: "黄豆表情",
 		maoshu_emotion: "猫鼠表情",
+		mobile_emotion: "手杀表情",
 
 		pause: "暂停",
 		config: "选项",
@@ -10306,6 +10335,13 @@ export class Library {
 		phaseUse: "出牌阶段",
 		phaseDiscard: "弃牌阶段",
 		phaseJieshu: "结束阶段",
+
+		dongcha: "洞察",
+		dongcha_info: "①游戏开始时，随机一名反贼的身份对你可见。②准备阶段，你可以弃置场上的一张牌。",
+		sheshen: "舍身",
+		sheshen_info: "锁定技。当主公即将死亡时，你令其增加1点体力上限并回复体力至X点（X为你的体力值），然后其获得你的所有牌。若如此做，你死亡。",
+		identity_mingcha: "明察",
+		identity_mingcha_info: "游戏开始时，你可以查看一名角色的身份是否为反贼（对所有玩家可见）。",
 	};
 
 	experimental = experimental;
@@ -10887,11 +10923,8 @@ export class Library {
 				return true;
 			}
 			if (info[4]) {
-				if (info.isBoss) {
-					return true;
-				}
-				if (info.isHiddenBoss) {
-					return true;
+				if (info.isBoss || info.isHiddenBoss) {
+					return !lib.config?.plays?.includes("boss");
 				}
 				if (info.isMinskin) {
 					return true;
@@ -11430,8 +11463,11 @@ export class Library {
 				if (group == "shen") {
 					return base + 7;
 				}
-				if (group == "double") {
+				if (group == "devil") {
 					return base + 7;
+				}
+				if (group == "double") {
+					return base + 8;
 				}
 				return base + 9;
 			};
@@ -11448,7 +11484,7 @@ export class Library {
 					base = 9;
 				}
 				const group = info[1];
-				if (group == "shen") {
+				if (group == "shen" || group == "devil") {
 					return base - 1;
 				}
 				if (group == "wei") {
@@ -13296,6 +13332,152 @@ export class Library {
 				lib.skill._recasting.ai = ai;
 			},
 		},
+		dongcha: {
+			mode: ["identity"],
+			available(mode) {
+				if (mode == "identity" && _status.mode !== "zhong") {
+					return false;
+				}
+			},
+			trigger: { player: "phaseZhunbeiBegin" },
+			unique: true,
+			filter(event, player) {
+				return game.hasPlayer(current => current.countDiscardableCards(player, "ej") > 0);
+			},
+			charlotte: true,
+			forceunique: true,
+			async cost(event, trigger, player) {
+				event.result = await player
+					.chooseTarget(get.prompt(event.skill), "弃置场上的一张牌", (card, player, target) => {
+						return target.countDiscardableCards(player, "ej") > 0;
+					})
+					.set("ai", target => {
+						const player = get.player();
+						return get.effect(target, { name: "guohe_copy", position: "ej" }, player, player);
+					})
+					.forResult();
+			},
+			async content(event, trigger, player) {
+				const [target] = event.targets;
+				target.addExpose(0.1);
+				await game.delayx();
+				await player.discardPlayerCard("ej", true, target);
+			},
+			group: ["dongcha_begin", "dongcha_log"],
+			subSkill: {
+				begin: {
+					charlotte: true,
+					trigger: {
+						global: "phaseBefore",
+						player: "enterGame",
+					},
+					forced: true,
+					popup: false,
+					filter(event, player) {
+						return game.hasPlayer(current => current.identity == "fan") && (event.name != "phase" || game.phaseNumber == 0);
+					},
+					async content(event, trigger, player) {
+						const list = game.filterPlayer(current => current.identity == "fan");
+						const target = list.randomGet();
+						player.storage.dongcha = target;
+						if (!_status.connectMode) {
+							if (player == game.me) {
+								target.setIdentity("fan");
+								target.node.identity.classList.remove("guessing");
+								target.fanfixed = true;
+								player.line(target, "green");
+								player.popup("dongcha");
+							}
+						} else {
+							await player.chooseControl("ok").set("dialog", [get.translation(target) + "是反贼", [[target.name], "character"]]);
+						}
+					},
+				},
+				log: {
+					charlotte: true,
+					trigger: { player: "useCard" },
+					forced: true,
+					popup: false,
+					filter(event, player) {
+						return event.targets?.length == 1 && event.targets[0] == player.storage.dongcha && event.targets[0].ai.shown < 0.95;
+					},
+					async content(event, trigger, player) {
+						trigger.targets[0].addExpose(0.2);
+					},
+				},
+			},
+		},
+		sheshen: {
+			mode: ["identity"],
+			available(mode) {
+				if (mode == "identity" && _status.mode !== "zhong") {
+					return false;
+				}
+			},
+			trigger: { global: "dieBefore" },
+			forced: true,
+			unique: true,
+			charlotte: true,
+			forceunique: true,
+			filter(event, player) {
+				return event.player == game.zhu && player.hp > 0;
+			},
+			logTarget: "player",
+			async content(event, trigger, player) {
+				const { player: target } = trigger;
+				await target.gainMaxHp();
+				await target.recoverTo(player.hp);
+				const cards = player.getCards("he");
+				if (cards.length) {
+					await target.gain(cards, player, "giveAuto");
+				}
+				trigger.cancel();
+				await player.die();
+			},
+		},
+		identity_mingcha: {
+			mode: ["identity"],
+			trigger: {
+				global: "phaseBefore",
+				player: "enterGame",
+			},
+			filter(event, player) {
+				return game.hasPlayer(current => current !== player) && (event.name != "phase" || game.phaseNumber == 0);
+			},
+			unique: true,
+			charlotte: true,
+			forceunique: true,
+			async cost(event, trigger, player) {
+				event.result = await player
+					.chooseTarget(get.prompt(event.skill), "请选择一名你要查看身份的目标", lib.filter.notMe)
+					.set("ai", target => {
+						const player = get.player();
+						return get.threaten(target);
+					})
+					.forResult();
+			},
+			async content(event, trigger, player) {
+				const [target] = event.targets;
+				target.addExpose(0.15);
+				await game.delayx();
+				const { identity } = target;
+				if (identity == "fan") {
+					game.broadcastAll(player => {
+						player.showIdentity();
+					}, target);
+					event.videoId = lib.status.videoId++;
+					const createDialog = (player, target, identity, id) => {
+						const dialog = ui.create.dialog(`${get.translation(player)}展示了${get.translation(target)}的身份牌<br>`, "forcebutton");
+						dialog.videoId = id;
+						ui.create.spinningIdentityCard(identity, dialog);
+					};
+					game.broadcastAll(createDialog, player, target, identity, event.videoId);
+					game.log(target, "的身份为", `#g${get.translation(identity + "2")}`);
+					await game.delay(3);
+					game.broadcastAll("closeDialog", event.videoId);
+				}
+			},
+		},
 	};
 	/** @type {Object<string, import("./element/character.js").Character>} */
 	character = new Proxy(
@@ -14863,6 +15045,13 @@ export class Library {
 			},
 		],
 		[
+			"疑",
+			{
+				color: "#5a6968",
+				nature: "gray",
+			},
+		],
+		[
 			"用间",
 			{
 				color: "#c3f9ff",
@@ -15473,6 +15662,17 @@ export class Library {
 				},
 			},
 		],
+		[
+			"风云",
+			{
+				getSpan: () => {
+					const span = document.createElement("span");
+					span.style.fontFamily = "NonameSuits";
+					span.textContent = "☁️";
+					return span.outerHTML;
+				},
+			},
+		],
 	]);
 	groupnature = {
 		shen: "shen",
@@ -15484,6 +15684,7 @@ export class Library {
 		key: "key",
 		jin: "thunder",
 		ye: "thunder",
+		devil: "devil",
 	};
 	lineColor = new Map([
 		["fire", [255, 146, 68]],
@@ -15498,6 +15699,7 @@ export class Library {
 		["brown", [195, 161, 223]],
 		["legend", [233, 131, 255]],
 	]);
+	selectGroup = ["shen", "western", "devil"];
 	phaseName = ["phaseZhunbei", "phaseJudge", "phaseDraw", "phaseUse", "phaseDiscard", "phaseJieshu"];
 	quickVoice = ["我从未见过如此厚颜无耻之人！", "这波不亏", "请收下我的膝盖", "你咋不上天呢", "放开我的队友，冲我来", "你随便杀，闪不了算我输", "见证奇迹的时刻到了", "能不能快一点啊，兵贵神速啊", "主公，别开枪，自己人", "小内再不跳，后面还怎么玩儿啊", "你们忍心，就这么让我酱油了？", "我，我惹你们了吗", "姑娘，你真是条汉子", "三十六计，走为上，容我去去便回", "人心散了，队伍不好带啊", "昏君，昏君啊！", "风吹鸡蛋壳，牌去人安乐", "小内啊，您老悠着点儿", "不好意思，刚才卡了", "你可以打得再烂一点吗", "哥们，给力点儿行嘛", "哥哥，交个朋友吧", "妹子，交个朋友吧"];
 	other = {

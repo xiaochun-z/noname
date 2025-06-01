@@ -1151,7 +1151,7 @@ export default () => {
 					}
 					var chooseGroup = false;
 					if (event.chosen.length) {
-						if (lib.character[event.chosen[0]][1] == "shen" || lib.character[event.chosen[0]][1] == "western") {
+						if (lib.selectGroup.includes(lib.character[event.chosen[0]][1])) {
 							chooseGroup = true;
 						}
 					} else if (event.modchosen) {
@@ -1163,12 +1163,12 @@ export default () => {
 					} else if (result.buttons.length == 2) {
 						event.choosed = [result.buttons[0].link, result.buttons[1].link];
 						game.addRecentCharacter(result.buttons[0].link, result.buttons[1].link);
-						if (lib.character[event.choosed[0]][1] == "shen" || lib.character[event.choosed[0]][1] == "western") {
+						if (lib.selectGroup.includes(lib.character[event.choosed[0]][1])) {
 							chooseGroup = true;
 						}
 					} else {
 						event.choosed = [result.buttons[0].link];
-						if (lib.character[event.choosed[0]][1] == "shen" || lib.character[event.choosed[0]][1] == "western") {
+						if (lib.selectGroup.includes(lib.character[event.choosed[0]][1])) {
 							chooseGroup = true;
 						}
 						game.addRecentCharacter(result.buttons[0].link);
@@ -2600,8 +2600,8 @@ export default () => {
 				},
 				async cost(event, trigger, player) {
 					event.result = await player
-						.chooseToDiscard("he", 2, get.prompt("feiyang"), "弃置两张牌，然后弃置判定区里的所有牌")
-						.set("logSkill", "feiyang")
+						.chooseToDiscard("he", 2, get.prompt(event.skill), "弃置两张牌，然后弃置判定区里的所有牌")
+						.set("logSkill", event.skill)
 						.set("ai", function (card) {
 							if (_status.event.goon) {
 								return 7 - get.value(card);
