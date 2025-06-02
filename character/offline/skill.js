@@ -30,15 +30,16 @@ const skills = {
 				.set("targetprompt", ["执行回合", "交换位置"])
 				.set("complexTarget", true)
 				.set("ai", target => {
-					return get.attitude(get.player(), target);
+					const att = get.attitude(get.player(), target);
+					if (ui.selected.targets.length) {
+						return -att;
+					}
+					return att;
 				})
 				.forResult() : {
 				bool: true,
 				targets: targets,
 			};
-		},
-		onRound(event) {
-			return !event.yingzhen_phase;
 		},
 		async content(event, trigger, player) {
 			const targets = event.targets;
@@ -52,55 +53,23 @@ const skills = {
 				);
 			}
 			await game.delay(3);
-			player.insertPhase();
+			const evt = player.insertPhase();
+			evt.pushHandler("onPhase", (event, option) => {
+        	    if (event.step === 0 && option.state === "begin") {
+        	        event.step = 1;
+        	    }
+        	});
 			targets[0].insertPhase();
 			if (trigger.name == "phase" && !trigger._finished) {
-				trigger.player
-					.when({ player: "phaseBeforeEnd" })
-					.assign({
-						firstDo: true,
-					})
-					.step(async (event, trigger, player) => {
-						trigger.finish();
-						trigger.untrigger(true);
-						trigger._triggered = 5;
-						if (!lib.onround.includes(lib.skill.peyingzhen.onRound)) {
-							lib.onround.push(lib.skill.peyingzhen.onRound);
-						}
-						const evt = player.insertPhase();
-						evt.yingzhen_phase = true;
-						evt.relatedEvent = trigger.relatedEvent || trigger.getParent(2);
-						evt.skill = trigger.skill;
-						evt._noTurnOver = true;
-						evt.pushHandler("yingzhen_phase", (event, option) => {
-							if (event.step === 0 && option.state === "begin") {
-								event.step = 4;
-								_status.globalHistory.push({
-									cardMove: [],
-									custom: [],
-									useCard: [],
-									changeHp: [],
-									everything: [],
-								});
-								var players = game.players.slice(0).concat(game.dead);
-								for (var i = 0; i < players.length; i++) {
-									var current = players[i];
-									current.actionHistory.push({
-										useCard: [],
-										respond: [],
-										skipped: [],
-										lose: [],
-										gain: [],
-										sourceDamage: [],
-										damage: [],
-										custom: [],
-										useSkill: [],
-									});
-									current.stat.push({ card: {}, skill: {} });
-								}
-							}
-						});
-					})
+				let first = game.findPlayer(current => current.getSeatNum() == 1) || trigger.player;
+				trigger.finish();
+        	    trigger._triggered = 5;
+        	    const evtx = first.insertPhase();
+        	    delete evtx.skill;
+        	    const evt2 = trigger.getParent();
+        	    if (evt2.name == "phaseLoop" && evt2._isStandardLoop) {
+        	        evt2.player = first;
+        	    }
 			}
 		},
 	},
@@ -194,7 +163,7 @@ const skills = {
 				])
 				.set("displayIndex", false)
 				.set("ai", () => {
-					return get.player().hp <= 1 ? "选项二" : "选项一";
+					return get.player().hp <= 2 ? "选项二" : "选项一";
 				})
 				.set("prompt", get.prompt(event.skill))
 				.forResult();
@@ -281,6 +250,24 @@ const skills = {
 					zhu.getPrevious(),
 				);
 			}
+			let newzhu = game.findPlayer(i => i.getSeatNum() == 1);
+			if (trigger.name === "phase" && newzhu != zhu && !trigger._finished) {
+        	    trigger.finish();
+        	    trigger._triggered = 5;
+        	    const evt = newzhu.insertPhase();
+        	    delete evt.skill;
+        	    const evt2 = trigger.getParent();
+        	    if (evt2.name == "phaseLoop" && evt2._isStandardLoop) {
+        	        evt2.player = newzhu;
+        	    }
+        	    //跳过新回合的phaseBefore
+        	    evt.pushHandler("onPhase", (event, option) => {
+        	        if (event.step === 0 && option.state === "begin") {
+        	            event.step = 1;
+        	        }
+        	    });
+        	}
+        	await game.delay();
 		},
 	},
 	yjjiechu: {
