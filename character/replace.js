@@ -253,7 +253,7 @@ window.noname_character_replace = {
 	wangyuanji: ["jin_wangyuanji", "wangyuanji", "std_wangyuanji", "jd_jin_wangyuanji", "sp_wangyuanji"],
 	wangyun: ["wangyun", "clan_wangyun", "dc_wangyun", "re_wangyun", "jsrg_wangyun", "std_wangyun", "pe_wangyun", "ns_wangyun", "old_wangyun", "ca_wangyun"],
 	weiwenzhugezhi: ["weiwenzhugezhi", "re_weiwenzhugezhi", "jsrg_weiwenzhugezhi"],
-	weiyan: ["re_weiyan", "ol_weiyan", "weiyan", "yj_weiyan", "huan_weiyan"],
+	weiyan: ["re_weiyan", "ol_weiyan", "weiyan", "yj_weiyan", "huan_weiyan", "pot_weiyan"],
 	wenpin: ["wenpin", "re_wenpin"],
 	wenyang: ["wenyang", "db_wenyang", "jsrg_wenyang", "std_db_wenyang", "diy_wenyang"],
 	wuanguo: ["ol_wuanguo", "wuanguo"],
