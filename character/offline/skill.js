@@ -1041,8 +1041,7 @@ const skills = {
 		limited: true,
 		skillAnimation: true,
 		animationColor: "metal",
-		selectCard: [0, 1],
-		filterCard: () => false,
+		manualConfirm: true,
 		filter(event, player) {
 			return Math.min(player.hp, player.countCards("h")) < player.maxHp;
 		},
@@ -2467,6 +2466,25 @@ const skills = {
 						};
 						lib.element.player.isFriendOf = isFriendOf;
 						[...game.players, ...game.dead].forEach(i => (i.isFriendOf = isFriendOf));
+					}
+					if (typeof lib.element.player.getEnemies === "function") {
+						const origin_getEnemies = lib.element.player.getEnemies;
+						const getEnemies = function (func, includeDie) {
+							if (this["zombieshibian"]) {
+								return this["zombieshibian"].getEnemies(func, includeDie);
+							}
+							else {
+								const player = this;
+								return [...origin_getEnemies.apply(this, arguments), ...game[includeDie ? "filterPlayer2" : "filterPlayer"](target => {
+									return origin_getEnemies.apply(this, arguments).includes(target["zombieshibian"] || target);
+								})]
+									.filter(i => player != (i["zombieshibian"] || i))
+									.unique()
+									.sortBySeat(player);
+							}
+						};
+						lib.element.player.getEnemies = getEnemies;
+						[...game.players, ...game.dead].forEach(i => (i.getEnemies = getEnemies));
 					}
 				},
 				player,
@@ -17157,7 +17175,7 @@ const skills = {
 						1,
 						target
 							.getHistory("lose", evt => {
-								return evt.type == "discard" && evt.getParent(event.name) == event;
+								return evt.type == "discard" && evt.getParent(2) == event;
 							})
 							.reduce((sum, evt) => (sum += evt.getl(target)?.cards2?.length), 0)
 					);
