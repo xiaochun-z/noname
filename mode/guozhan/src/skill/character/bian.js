@@ -743,7 +743,7 @@ export default {
 			next.set("ai", target => {
 				let num = 0;
 
-				if (target.hasSkill("gz_xiaoji")) {
+				if (target.hasSkill("gzxiaoji")) {
 					num += 2.5;
 				}
 				if (target.isDamaged() && target.getEquip("baiyin")) {
