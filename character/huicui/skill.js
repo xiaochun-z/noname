@@ -10036,22 +10036,17 @@ const skills = {
 		},
 		animationColor: "thunder",
 		skillAnimation: "legend",
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			if (!target.isMaxMaxHp()) {
-				target.gainMaxHp();
+			const target = event.target;
+			if (target.isMinMaxHp() || target.isMinHp()) {
+				await target.gainMaxHp();
+				await target.recover();
 			}
-			"step 1";
-			if (target.isMinHp()) {
-				target.recover();
-			}
-			"step 2";
 			if (target.isMinHandcard()) {
-				target.draw(Math.min(5, target.maxHp));
+				await target.draw(Math.min(5, target.maxHp));
 			}
-			"step 3";
-			game.delayx();
+			await game.delayx();
 		},
 		ai: {
 			expose: 0.3,
