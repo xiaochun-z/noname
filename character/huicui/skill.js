@@ -378,7 +378,7 @@ const skills = {
 			}
 			if (result.control == "选项一") {
 				const resultx = await target
-					.chooseToDiscard(`睦阵：请弃置${num}张类型不为${get.translation(type)}的牌`, "he", num, true, card => get.event().cardsx.includes(card))
+					.chooseToDiscard(`睦阵：请弃置${num}张类型不为${get.translation(type)}的牌`, "he", num, true, card => get.event().cardsx?.includes(card))
 					.set(
 						"cardsx",
 						target.getCards("he", card => get.type2(card, target) != type)

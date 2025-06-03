@@ -1920,8 +1920,8 @@ const skills = {
 					return list.sortBySeat();
 				},
 				async content(event, trigger, player) {
-					const targets = event.targets,
-						storage = player.getStorage(event.name).slice();
+					const { targets } = event,
+						storage = player.getStorage(event.name);
 					player.removeSkill(event.name);
 					for (let target of targets) {
 						if (storage.includes(0)) {
@@ -1951,7 +1951,7 @@ const skills = {
 								.chooseButton([`设座：将所有手牌当作一张普通锦囊牌使用`, [list, "vcard"]], true)
 								.set("filterButton", button => get.player().hasUseTarget(get.event().viewAs(button), true, false))
 								.set("ai", button => get.player().getUseValue(get.event().viewAs(button)))
-								.set("viewAs", button => get.autoViewAs({ name: button.link[2] }, hs))
+								.set("viewAs", button => get.autoViewAs({ name: button.link[2] }, get.player().getCards("h")))
 								.forResult();
 							if (result?.links?.length) {
 								const name = result.links[0][2],
@@ -7092,7 +7092,12 @@ const skills = {
 					global: ["addToExpansionEnd", "gainEnd", "loseEnd", "equipEnd", "addJudgeEnd", "loseAsyncEnd"],
 				},
 				filter(event, player) {
-					return event.gaintag?.includes("hm_zhouyuan_expansion") || Object.values(event.gaintag_map || {})?.flat().includes("hm_zhouyuan_expansion");
+					return (
+						event.gaintag?.includes("hm_zhouyuan_expansion") ||
+						Object.values(event.gaintag_map || {})
+							?.flat()
+							.includes("hm_zhouyuan_expansion")
+					);
 				},
 				forced: true,
 				locked: false,
