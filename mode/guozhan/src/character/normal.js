@@ -312,7 +312,7 @@ export default {
 		hp: 3,
 		maxHp: 3,
 		hujia: 0,
-		skills: ["jieyin", "gzxiaoji"],
+		skills: ["jieyin", "gz_xiaoji"],
 		hasSkinInGuozhan: true,
 	}),
 	gz_sunjian: new Character({
