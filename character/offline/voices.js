@@ -63,7 +63,7 @@ export default {
 	"#zyshilu2": "将这些乱臣贼子，尽皆诛之！",
 	"#zyxiongnve1": "当今天子乃我所立，他敢怎样？",
 	"#zyxiongnve2": "我兄弟三人同掌禁军，有何所惧？",
-	"#gz_sunchen:die": "愿陛下念臣昔日之功，陛下？陛下！！",
+	"#pe_sunchen:die": "愿陛下念臣昔日之功，陛下？陛下！！",
 	"#ns_lijue:die": "若无内讧，也不至如此……",
 	"#ns_fanchou:die": "唉，稚然疑心，甚重……",
 };
