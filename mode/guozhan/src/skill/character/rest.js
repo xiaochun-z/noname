@@ -15665,6 +15665,7 @@ export default {
 							return true;
 						})
 						.set("target", target)
+						.setHiddenSkill("gzzongyu")
 						.forResult();
 					event.result.targets = [target];
 				},
