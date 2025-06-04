@@ -619,7 +619,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
-				audio: 2,
+				audio: "olfuhun",
 				trigger: {
 					source: "damageSource",
 				},
@@ -635,7 +635,7 @@ const skills = {
 				},
 			},
 			mark: {
-				audio: 2,
+				audio: "olfuhun",
 				forced: true,
 				locked: false,
 				trigger: { player: "useCard" },
@@ -1714,6 +1714,7 @@ const skills = {
 				intro: { content: "本轮已使用牌名：$" },
 			},
 			effect: {
+				audio: "olsblucun",
 				charlotte: true,
 				trigger: {
 					player: "useCardAfter",
@@ -2128,6 +2129,7 @@ const skills = {
 		},
 		subSkill: {
 			buff: {
+				audio: "olsbnilan",
 				charlotte: true,
 				onremove: true,
 				trigger: { player: "damageEnd" },
@@ -3120,6 +3122,7 @@ const skills = {
 		},
 		subSkill: {
 			backup: {
+				audio: "olsbjiewan",
 				filterCard(card) {
 					return get.itemtype(card) == "card";
 				},
@@ -5435,6 +5438,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "olzhenlie",
 				charlotte: true,
 				onremove: true,
 				intro: { content: "本回合的结束阶段额外发动#次〖秘计〗" },
@@ -7038,6 +7042,7 @@ const skills = {
 		},
 		subSkill: {
 			norecover: {
+				audio: "olsbranji",
 				charlotte: true,
 				mark: true,
 				intro: { content: "不能回复体力" },

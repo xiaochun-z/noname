@@ -1530,6 +1530,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "sbgongqi",
 				trigger: {
 					player: "useCard",
 				},
@@ -5441,6 +5442,7 @@ const skills = {
 				},
 			},
 			dangxian: {
+				audio: "sbliuli",
 				trigger: { player: "phaseBegin" },
 				forced: true,
 				charlotte: true,
@@ -7299,6 +7301,7 @@ const skills = {
 				group: "sbpaoxiao_recoil",
 			},
 			recoil: {
+				audio: "sbpaoxiao",
 				charlotte: true,
 				trigger: { source: "damageSource" },
 				forced: true,
