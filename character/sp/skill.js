@@ -149,6 +149,9 @@ const skills = {
 	},
 	//OL张曼成 —— by 星の语
 	olkuangxin: {
+		init(player) {
+			player.addSkill("olkuangxin_record");
+		},
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
 		forced: true,
@@ -186,6 +189,42 @@ const skills = {
 		intro: {
 			content: "上次展示了#张牌",
 		},
+		group: ["olkuangxin_recover"],
+		subSkill: {
+			record: {
+				trigger: { player: ["phaseZhunbeiAfter", "phaseBefore", "enterGame"] },
+				lastDo: true,
+				charlotte: true,
+				forced: true,
+				popup: false,
+				forceDie: true,
+				filter(event, player) {
+					return event.name != "phase" || game.phaseNumber == 0;
+				},
+				content() {
+					if (!_status.olkuangxin) {
+						_status.olkuangxin = {};
+					}
+					_status.olkuangxin = player.hp;
+				},
+			},
+			recover: {
+				trigger: { player: "phaseJieshuBegin" },
+				filter(event, player) {
+					return _status.olkuangxin > 0;
+				},
+				forced: true,
+				locked: false,
+				async content(event, trigger, player) {
+					const num = _status.olkuangxin - player.hp;
+					if (num > 0) {
+						await player.recover(num);
+					} else if (num < 0) {
+						await player.loseHp(num);
+					}
+				},
+			},
+		},
 	},
 	olleishi: {
 		audio: 2,
@@ -221,9 +260,7 @@ const skills = {
 					return;
 				}
 				const resultx = await player
-					.chooseTarget(`雷噬：对一名目标角色造成一点雷电伤害`, true, (card, player, target) => {
-						return get.event().targets.includes(target);
-					})
+					.chooseTarget(`雷噬：对一名角色造成一点雷电伤害`, true)
 					.set("targets", targets)
 					.set("ai", target => get.damageEffect(target, get.player(), get.player(), "thunder"))
 					.forResult();

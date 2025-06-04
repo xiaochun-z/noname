@@ -430,7 +430,6 @@ game.import("card", function () {
 					player.line(targets);
 					for (const target of targets) {
 						const num = get.rand(1, target.countCards("h"));
-						console.log(num);
 						const cards = target.getCards("h").randomGets(num);
 						if (!cards.length) {
 							continue;
@@ -940,9 +939,10 @@ game.import("card", function () {
 					return player != target && target.isDying();
 				},
 				async content(event, trigger, player) {
+					const {target} = event;
 					player.addSkill("shengsi_debuff");
 					player.markAuto("shengsi_debuff", target);
-					event.target.recover(2);
+					target.recover(2);
 				},
 				ai: {
 					order: 1,
