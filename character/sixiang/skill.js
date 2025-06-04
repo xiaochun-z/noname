@@ -107,7 +107,7 @@ const skills = {
 						if (!selected.length) {
 							return true;
 						}
-						return get.number(card, player) + selected.reduce((sum, card) => (sum += get.number(card, get.player())), 0) <= 13;
+						return get.number(card, player) + selected.reduce((sum, card) => (sum + get.number(card, get.player())), 0) <= 13;
 					},
 					selectCard: [2, Infinity],
 					filterOk() {
@@ -115,7 +115,7 @@ const skills = {
 						if (!selected.length) {
 							return false;
 						}
-						return selected.reduce((sum, card) => (sum += get.number(card, get.player())), 0) == 13;
+						return selected.reduce((sum, card) => (sum + get.number(card, get.player())), 0) == 13;
 					},
 					ai1(card) {
 						const player = get.player();

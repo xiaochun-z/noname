@@ -150,7 +150,7 @@ game.import("card", function () {
 					return player != target;
 				},
 				async content(event, trigger, player) {
-					target.addMark("jinnao_skill");
+					event.target.addMark("jinnao_skill");
 				},
 				ai: {
 					wuxie() {
@@ -174,7 +174,7 @@ game.import("card", function () {
 				filterTarget: true,
 				reverseOrder: true,
 				async content(event, trigger, player) {
-					target.addTempSkill("yinglang_skill", "roundEnd");
+					event.target.addTempSkill("yinglang_skill", "roundEnd");
 				},
 				ai: {
 					wuxie() {
@@ -406,7 +406,7 @@ game.import("card", function () {
 					return player != target && target.isDead();
 				},
 				async content(event, trigger, player) {
-					target.revive();
+					event.target.revive();
 				},
 				ai: {
 					order: 10,
@@ -744,7 +744,7 @@ game.import("card", function () {
 						}
 					}
 					if (cards.length) {
-						await target.gain(cards, "gain2");
+						await event.target.gain(cards, "gain2");
 					}
 				},
 				//增兵减灶的ai
@@ -775,7 +775,7 @@ game.import("card", function () {
 				filterTarget: true,
 				reverseOrder: true,
 				async content(event, trigger, player) {
-					const target = event.target;
+					const { target } = event;
 					const result = await target
 						.chooseToUse("劝酒：使用一张【酒】或点数为9的牌，否则失去1点体力", function (card) {
 							if (get.name(card) != "jiu" && get.number(card) != "unsure" && get.number(card) != 9) {
@@ -843,7 +843,8 @@ game.import("card", function () {
 				filterTarget(card, player, target) {
 					return player != target && target.isDying();
 				},
-				content() {
+				async content(event, trigger, player) {
+					const { target } = event;
 					player.$skill(get.translation("luojing"), null, get.groupnature(player.group, "raw"));
 					const evt = event.getParent("dying");
 					if (evt.player == target) {
@@ -941,7 +942,7 @@ game.import("card", function () {
 				async content(event, trigger, player) {
 					player.addSkill("shengsi_debuff");
 					player.markAuto("shengsi_debuff", target);
-					target.recover(2);
+					event.target.recover(2);
 				},
 				ai: {
 					order: 1,
@@ -1018,7 +1019,7 @@ game.import("card", function () {
 				},
 				reverseOrder: true,
 				async content(event, trigger, player) {
-					await target.link(true);
+					await event.target.link(true);
 				},
 				//照搬铁索的ai
 				ai: {
@@ -1310,7 +1311,7 @@ game.import("card", function () {
 				async content(event, trigger, player) {
 					const num = game.countPlayer2(target => target.hasHistory("damage", evt => evt.getParent(2) == trigger && evt.notLink()));
 					if (num > 0) {
-						player.draw(num);
+						await player.draw(num);
 					}
 				},
 			},
