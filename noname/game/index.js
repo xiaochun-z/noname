@@ -7014,7 +7014,8 @@ export class Game extends GameCompatible {
 
 		if (event.isMine() && game.chess && get.config("show_distance") && game.me) {
 			const players = game.players.slice();
-			if (event.deadTarget || (event.skill && get.info(event.skill)?.deadTarget)) {
+			const card = get.card();
+			if (event.deadTarget || (event.skill && get.info(event.skill)?.deadTarget) || (card && get.info(card)?.deadTarget)) {
 				players.addArray(game.dead);
 			}
 			players.forEach(player => {

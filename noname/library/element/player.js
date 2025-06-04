@@ -9332,9 +9332,9 @@ export class Player extends HTMLDivElement {
 	 */
 	hasUseTarget(card, distance, includecard) {
 		var player = this;
-		return game.hasPlayer(function (current) {
+		return game.hasPlayer2(function (current) {
 			return player.canUse(card, current, distance, includecard);
-		});
+		}, true);
 	}
 	/**
 	 * 场上是否存在收益为正的目标
