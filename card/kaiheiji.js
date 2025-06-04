@@ -149,7 +149,7 @@ game.import("card", function () {
 				modTarget(card, player, target) {
 					return player != target;
 				},
-				content() {
+				async content(event, trigger, player) {
 					target.addMark("jinnao_skill");
 				},
 				ai: {
@@ -173,7 +173,7 @@ game.import("card", function () {
 				selectTarget: -1,
 				filterTarget: true,
 				reverseOrder: true,
-				content() {
+				async content(event, trigger, player) {
 					target.addTempSkill("yinglang_skill", "roundEnd");
 				},
 				ai: {
@@ -194,7 +194,6 @@ game.import("card", function () {
 				fullskin: true,
 				type: "trick",
 				enable: true,
-				selectTarget: 1,
 				filterTarget(card, player, target) {
 					if (get.mode() == "versus" && _status.mode == "two") {
 						return player.isFriendOf(target) && player != target;
@@ -226,7 +225,6 @@ game.import("card", function () {
 				fullskin: true,
 				type: "trick",
 				enable: true,
-				selectTarget: 1,
 				filterTarget(card, player, target) {
 					if (get.mode() == "versus" && _status.mode == "two") {
 						return player.isFriendOf(target) && player != target;
@@ -272,7 +270,6 @@ game.import("card", function () {
 				fullskin: true,
 				type: "trick",
 				enable: true,
-				selectTarget: 1,
 				filterTarget(card, player, target) {
 					if (get.mode() == "versus" && _status.mode == "two") {
 						return player.isFriendOf(target) && player != target;
@@ -387,6 +384,7 @@ game.import("card", function () {
 						},
 					},
 					tag: {
+						multitarget: 1,
 						norepeat: 1,
 					},
 				},
@@ -398,7 +396,6 @@ game.import("card", function () {
 				type: "trick",
 				enable: true,
 				deadTarget: true,
-				selectTarget: 1,
 				filterTarget(card, player, target) {
 					if (get.mode() == "versus" && _status.mode == "two") {
 						return player.isFriendOf(target) && player != target && target.isDead();
@@ -408,7 +405,7 @@ game.import("card", function () {
 				modTarget(card, player, target) {
 					return player != target && target.isDead();
 				},
-				content() {
+				async content(event, trigger, player) {
 					target.revive();
 				},
 				ai: {
@@ -736,7 +733,7 @@ game.import("card", function () {
 				type: "trick",
 				filterTarget: lib.filter.notMe,
 				modTarget: true,
-				content() {
+				async content(event, trigger, player) {
 					const cards = [];
 					while (cards.length < 2) {
 						const card = get.cardPile(card => get.tag(card, "damage") > 0.5 && !cards.includes(card));
@@ -747,7 +744,7 @@ game.import("card", function () {
 						}
 					}
 					if (cards.length) {
-						target.gain(cards, "gain2");
+						await target.gain(cards, "gain2");
 					}
 				},
 				//增兵减灶的ai
@@ -941,7 +938,7 @@ game.import("card", function () {
 				filterTarget(card, player, target) {
 					return player != target && target.isDying();
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.addSkill("shengsi_debuff");
 					player.markAuto("shengsi_debuff", target);
 					target.recover(2);
@@ -1020,10 +1017,8 @@ game.import("card", function () {
 					return !target.isLinked();
 				},
 				reverseOrder: true,
-				content() {
-					if (!target.isLinked()) {
-						target.link(true);
-					}
+				async content(event, trigger, player) {
+					await target.link(true);
 				},
 				//照搬铁索的ai
 				ai: {
@@ -1119,7 +1114,7 @@ game.import("card", function () {
 				filter(event, player) {
 					return player.hasMark("jinnao_skill");
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.removeMark(event.name, 1);
 					trigger.cancel();
 				},
@@ -1138,8 +1133,8 @@ game.import("card", function () {
 				filter(event, player) {
 					return event.target.countGainableCards(player, "he") && event.target != player;
 				},
-				content() {
-					player.gainPlayerCard(trigger.target, "he", true);
+				async content(event, trigger, player) {
+					await player.gainPlayerCard(trigger.target, "he", true);
 				},
 			},
 			youfu_skill: {
@@ -1203,7 +1198,7 @@ game.import("card", function () {
 				trigger: { global: "die" },
 				firstDo: true,
 				silent: true,
-				content() {
+				async content(event, trigger, player) {
 					game.broadcastAll(() => {
 						if (_status.nisiwohuo?.length) {
 							delete _status.nisiwohuo;
@@ -1227,7 +1222,7 @@ game.import("card", function () {
 					}
 					return player.hasUsableCard("luojing");
 				},
-				content() {
+				async content(event, trigger, player) {
 					player
 						.chooseToUse(
 							get.prompt("luojing", trigger.player).replace(/发动/, "使用"),
@@ -1264,7 +1259,7 @@ game.import("card", function () {
 					}
 					return player.hasUsableCard("shengsi");
 				},
-				content() {
+				async content(event, trigger, player) {
 					player
 						.chooseToUse(
 							get.prompt("shengsi", trigger.player).replace(/发动/, "使用"),
@@ -1299,7 +1294,7 @@ game.import("card", function () {
 				filter(event, player) {
 					return player.getStorage("shengsi_debuff").includes(event.player);
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.$skill(get.translation("shengsi"), null, get.groupnature(player.group, "raw"));
 					player.unmarkAuto(event.name, trigger.player);
 					player.die();
@@ -1312,7 +1307,7 @@ game.import("card", function () {
 				filter(event, player) {
 					return event.card.name == "leigong";
 				},
-				content() {
+				async content(event, trigger, player) {
 					const num = game.countPlayer2(target => target.hasHistory("damage", evt => evt.getParent(2) == trigger && evt.notLink()));
 					if (num > 0) {
 						player.draw(num);
