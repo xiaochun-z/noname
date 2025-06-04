@@ -9348,7 +9348,7 @@ export class Player extends HTMLDivElement {
 			card = { name: card, isCard: true };
 		}
 		var player = this;
-		var targets = game.filterPlayer();
+		var targets = game.filterPlayer2(null, null, true);
 		var value = [];
 		var min = 0;
 		var info = get.info(card);
@@ -9410,7 +9410,7 @@ export class Player extends HTMLDivElement {
 			card = { name: card, isCard: true };
 		}
 		var player = this;
-		var targets = game.filterPlayer();
+		var targets = game.filterPlayer2(null, null, true);
 		var value = [];
 		var min = 0;
 		var info = get.info(card);
