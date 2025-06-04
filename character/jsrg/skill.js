@@ -1900,6 +1900,7 @@ const skills = {
 				player.addTempSkill("jsrgzhuni_effect");
 				player.markAuto("jsrgzhuni_effect", [target]);
 			}
+			event.getParent().maxTicket = maxTicket;
 		},
 		ai: {
 			order: 10,
@@ -12645,6 +12646,9 @@ const skills = {
 			await player.changeSkills(["jsrgweisi", "jsrgdangyi"], ["jsrgqiantun"]);
 		},
 		derivation: ["jsrgweisi", "jsrgdangyi"],
+		ai: {
+			combo: "jsrgxiezheng",
+		},
 	},
 	jsrgweisi: {
 		audio: 3,
