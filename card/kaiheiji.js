@@ -295,7 +295,9 @@ game.import("card", function () {
 						evt.finish();
 					}
 					await player.turnOver();
-					ui.click.auto();
+					if (!_status.auto) {
+						ui.click.auto();
+					}
 					target.when({ player: "phaseBegin" }).step(async (event, trigger, player) => {
 						const result = await player
 							.chooseControl("摸牌阶段", "出牌阶段")
@@ -406,7 +408,9 @@ game.import("card", function () {
 					return player != target && target.isDead();
 				},
 				async content(event, trigger, player) {
-					event.target.revive();
+					const { target } = event;
+					target.revive();
+					await target.draw(3);
 				},
 				ai: {
 					order: 10,
@@ -482,7 +486,7 @@ game.import("card", function () {
 						if (!result?.bool) {
 							const damage = game.filterPlayer(current => current != target).sortBySeat();
 							if (damage.length) {
-								while (damage.length) {
+								while (damage.length && target.isIn()) {
 									const current = damage.shift();
 									current.line(target, "yellow");
 									await target.damage(current);
@@ -526,18 +530,20 @@ game.import("card", function () {
 						}
 						_status.nisiwohuo.push(event);
 					}, event);
-					let count = 0;
+					let count = 0,
+						num = 0;
 					const goon = function () {
 						if (!_status.nisiwohuo?.includes(event)) {
 							return false;
 						}
 						return true;
 					};
-					while (goon()) {
-						const target = targets[count];
+					while (goon() && count < 100) {
+						const target = targets[num];
 						count++;
-						if (count >= targets.length) {
-							count = 0;
+						num++;
+						if (num >= targets.length) {
+							num = 0;
 						}
 						if (!target.isAlive()) {
 							continue;
@@ -939,7 +945,7 @@ game.import("card", function () {
 					return player != target && target.isDying();
 				},
 				async content(event, trigger, player) {
-					const {target} = event;
+					const { target } = event;
 					player.addSkill("shengsi_debuff");
 					player.markAuto("shengsi_debuff", target);
 					target.recover(2);
@@ -1185,7 +1191,7 @@ game.import("card", function () {
 							.forResult();
 					}
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.line(event.targets);
 					trigger.targets.addArray(event.targets);
 					game.log(event.targets, "成为了", trigger.card, "的额外目标");

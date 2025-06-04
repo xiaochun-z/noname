@@ -2697,6 +2697,7 @@ window.noname_character_rank = {
 			"sxrm_caocao",
 		],
 		epic: [
+			"yj_caocaoyuanshao",
 			"v_caopi",
 			"ca_lijue",
 			"dc_sb_liuxie",
