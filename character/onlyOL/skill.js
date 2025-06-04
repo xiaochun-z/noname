@@ -186,9 +186,15 @@ const skills = {
 				},
 				intro: {
 					markcount(storage, player) {
+						if (!storage) {
+							return "当前暂无记录";
+						}
 						return Object.values(storage).flat().length;
 					},
 					content(storage, player) {
+						if (!storage) {
+							return "当前暂无记录";
+						}
 						const cards = storage["card"],
 							skills = storage["skill"];
 						let str = "";
