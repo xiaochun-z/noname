@@ -1360,9 +1360,8 @@ export default {
 				await player.loseMaxHp();
 			}
 			if (control == "背水！") {
-				const next = player.phaseDraw();
-				event.next.remove(next);
-				trigger.getParent().next.push(next);
+				let num = trigger.getParent().num + 1;
+				trigger.getParent().phaseList.splice(num, 0, `phaseDraw|${event.name}`);
 			}
 		},
 	},
@@ -7423,19 +7422,15 @@ export default {
 		},
 		preHidden: true,
 		frequent: true,
-		content() {
-			var num1 = player.getHistory("useCard").length,
-				num2 = lib.skill.gzjingce.getDiscardNum();
-			var num3 = player.hp;
-			if (num2 >= num3) {
-				var next = player.phaseDraw();
-				event.next.remove(next);
-				trigger.after.push(next);
-			}
+		async content(event, trigger, player) {
+			let num1 = player.getHistory("useCard").length,
+				num2 = lib.skill.gzjingce.getDiscardNum(),
+				num3 = player.hp;
 			if (num1 >= num3) {
-				var next = player.phaseUse();
-				event.next.remove(next);
-				trigger.after.push(next);
+				trigger.phaseList.splice(trigger.num, 0, `phaseUse|${event.name}`);
+			}
+			if (num2 >= num3) {
+				trigger.phaseList.splice(trigger.num, 0, `phaseDraw|${event.name}`);
 			}
 		},
 		ai: { threaten: 2.6 },
@@ -9391,11 +9386,9 @@ export default {
 		preHidden: true,
 		audio: "dangxian",
 		audioname: ["guansuo"],
-		content() {
-			var next = player.phaseUse();
-			event.next.remove(next);
-			trigger.next.push(next);
-		},
+		async content(event, trigger, player) {
+    	    trigger.phaseList.splice(trigger.num, 0, `phaseUse|${event.name}`);
+    	},
 		group: "gzdangxian_show",
 		subSkill: {
 			show: {

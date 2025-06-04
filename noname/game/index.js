@@ -7002,7 +7002,7 @@ export class Game extends GameCompatible {
 			}
 		}
 		const eventinfo = get.info(get.card() || {}) || skillinfo;
-		if (eventinfo?.manualConfirm === true) {
+		if (_status.event.name == "chooseToUse" && eventinfo?.manualConfirm === true) {
 			auto_confirm = false;
 		}
 
