@@ -4,8 +4,8 @@ game.import("card", function () {
 		name: "kaiheiji",
 		connect: true,
 		card: {
-			//新杀的劝酒
-			khquanjiux: {
+			//烈火
+			liehuo: {
 				audio: true,
 				fullskin: true,
 				type: "trick",
@@ -15,11 +15,426 @@ game.import("card", function () {
 				reverseOrder: true,
 				multitarget: true,
 				multiline: true,
+				async content(event, trigger, player) {
+					let { targets } = event;
+					targets = targets.filter(target => target.countCards("h")).sortBySeat();
+					const chooseEvent = player
+						.chooseCardOL(targets, "烈火：请选择一张手牌", true)
+						.set("ai", function (card) {
+							return Math.random();
+						})
+						.set("source", player);
+					chooseEvent.aiCard = function (target) {
+						const hs = target.getCards("h");
+						return { bool: true, cards: [hs.randomGet()] };
+					};
+					chooseEvent._args.remove("glow_result");
+					const result = await chooseEvent.forResult();
+					if (!targets.includes(player)) {
+						return;
+					}
+					let card = result[targets.indexOf(player)]?.cards[0],
+						damage = [];
+					if (!card) {
+						return;
+					}
+					for (let i = 0; i < targets.length; i++) {
+						if (targets[i] != player) {
+							if (get.color(result[i].cards[0], targets[i]) == get.color(card, player)) {
+								damage.push(targets[i]);
+							}
+						}
+					}
+					if (damage.length) {
+						await player.modedDiscard(card);
+						player.line(damage, "fire");
+						for (const target of damage.sortBySeat()) {
+							await target.damage("fire");
+						}
+					}
+				},
+				ai: {
+					wuxie() {
+						return Math.random() > 0.75;
+					},
+					order: 7,
+					useful: 6,
+					value: 6.5,
+					result: {
+						target: -1,
+					},
+					tag: {
+						damage: 0.5,
+						multitarget: 1,
+						multineg: 1,
+					},
+				},
+			},
+			//神兵
+			shenbing: {
+				audio: true,
+				fullskin: true,
+				type: "trick",
+				enable: true,
+				selectTarget: -1,
+				filterTarget: true,
+				reverseOrder: true,
+				async contentBefore(event, trigger, player) {
+					const evt = event.getParent();
+					if (!evt.shenbing) {
+						const result = await player
+							.chooseControl("弃置牌", "使用牌")
+							.set("prompt", `神兵：令目标弃置装备区所有牌或依次使用牌堆不用副类型的装备牌各一张。`)
+							.set("ai", () => (Math.random() > 0.5 ? "弃置牌" : "使用牌"))
+							.forResult();
+						if (result?.control) {
+							evt.shenbing = result.control == "弃置牌" ? "discard" : "useCard";
+						}
+					}
+				},
+				async content(event, trigger, player) {
+					const evt = event.getParent(),
+						{ target } = event;
+					if (evt.shenbing == "discard") {
+						const cards = target.getCards("e");
+						if (cards.length) {
+							await target.modedDiscard(cards);
+						}
+					}
+					if (evt.shenbing == "useCard") {
+						for (let i = 1; i < 6; i++) {
+							if (!target.hasEnabledSlot(i)) {
+								return;
+							}
+							const card = get.cardPile2(function (card) {
+								return get.subtype(card) == "equip" + i && target.canUse(card, target);
+							});
+							if (card) {
+								await target.chooseUseTarget(card, true, "nopopup");
+							}
+						}
+					}
+				},
+				ai: {
+					wuxie() {
+						return 0;
+					},
+					order: 7,
+					useful: 6.5,
+					value: 7,
+					result: {
+						player: 1,
+					},
+					tag: {
+						multitarget: 1,
+					},
+				},
+			},
+			//金铙
+			jinnao: {
+				global: ["jinnao_skill"],
+				enable: true,
+				fullskin: true,
+				type: "trick",
+				toself: true,
+				filterTarget(card, player, target) {
+					if (get.mode() == "versus" && _status.mode == "two") {
+						return player.isFriendOf(target) && player != target;
+					}
+					return player != target;
+				},
+				changeTarget(player, targets) {
+					targets.push(player);
+				},
+				modTarget(card, player, target) {
+					return player != target;
+				},
+				content() {
+					target.addMark("jinnao_skill");
+				},
+				ai: {
+					wuxie() {
+						return Math.random() > 0.5;
+					},
+					order: 5,
+					useful: 7,
+					value: 7.2,
+					result: {
+						target: 1,
+					},
+				},
+			},
+			//鹰狼
+			yinglang: {
+				audio: true,
+				fullskin: true,
+				type: "trick",
+				enable: true,
+				selectTarget: -1,
+				filterTarget: true,
+				reverseOrder: true,
+				content() {
+					target.addTempSkill("yinglang_skill", "roundEnd");
+				},
+				ai: {
+					wuxie() {
+						return 0;
+					},
+					order: 9,
+					useful: 8.5,
+					value: 8.5,
+					result: {
+						target: 1,
+					},
+				},
+			},
+			//有福同享
+			youfu: {
+				audio: true,
+				fullskin: true,
+				type: "trick",
+				enable: true,
+				selectTarget: 1,
+				filterTarget(card, player, target) {
+					if (get.mode() == "versus" && _status.mode == "two") {
+						return player.isFriendOf(target) && player != target;
+					}
+					return lplayer != target;
+				},
+				modTarget(card, player, target) {
+					return player != target;
+				},
+				async content(event, trigger, player) {
+					player.addTempSkill("youfu_skill", ["phaseBefore", "phaseChange", "phaseAfter"]);
+					player.markAuto("youfu_skill", event.target);
+				},
+				ai: {
+					wuxie() {
+						return Math.random() > 0.5;
+					},
+					order: 8,
+					useful: 6.5,
+					value: 7,
+					result: {
+						target: 1,
+					},
+				},
+			},
+			//富贵
+			fugui: {
+				audio: true,
+				fullskin: true,
+				type: "trick",
+				enable: true,
+				selectTarget: 1,
+				filterTarget(card, player, target) {
+					if (get.mode() == "versus" && _status.mode == "two") {
+						return player.isFriendOf(target) && player != target;
+					}
+					return player != target;
+				},
+				modTarget(card, player, target) {
+					return player != target;
+				},
+				async content(event, trigger, player) {
+					const { target } = event;
+					target
+						.when({
+							player: "gainAfter",
+							global: "loseAsyncAfter",
+						})
+						.assign({
+							firstDo: true,
+						})
+						.filter(evt => evt.getg(target)?.length)
+						.then(() => {
+							sourcex.draw(trigger.getg(player)?.length);
+						})
+						.vars({
+							sourcex: player,
+						});
+				},
+				ai: {
+					wuxie() {
+						return Math.random() > 0.5;
+					},
+					order: 7,
+					useful: 6.5,
+					value: 7,
+					result: {
+						player: 1,
+					},
+				},
+			},
+			//躺赢狗！
+			tangying: {
+				audio: true,
+				fullskin: true,
+				type: "trick",
+				enable: true,
+				selectTarget: 1,
+				filterTarget(card, player, target) {
+					if (get.mode() == "versus" && _status.mode == "two") {
+						return player.isFriendOf(target) && player != target;
+					}
+					return player != target;
+				},
+				modTarget(card, player, target) {
+					return player != target;
+				},
+				async content(event, trigger, player) {
+					const { target } = event;
+					for (const phase of lib.phaseName) {
+						const evt = event.getParent(phase);
+						if (evt?.name === phase && !evt.skipped) {
+							const name = get.translation(phase);
+							game.log(player, "结束了" + name);
+							evt.skipped = true;
+						}
+					}
+					const evt = event.getParent("phase");
+					if (!evt.finished) {
+						game.log(player, "结束了回合");
+						evt.finish();
+					}
+					await player.turnOver();
+					ui.click.auto();
+					target.when({ player: "phaseBegin" }).step(async (event, trigger, player) => {
+						const result = await player
+							.chooseControl("摸牌阶段", "出牌阶段")
+							.set("prompt", "躺赢：选择要执行的额外阶段")
+							.set("ai", () => (Math.random() > 0.5 ? "摸牌阶段" : "出牌阶段"))
+							.forResult();
+						if (result?.control) {
+							const name = result.control == "摸牌阶段" ? "phaseDraw" : "phaseUse";
+							trigger.phaseList.splice(trigger.num, 0, `${name}|${event.name}`);
+						}
+					});
+				},
+				ai: {
+					wuxie() {
+						return Math.random() > 0.5;
+					},
+					order: 1,
+					useful: 5.5,
+					value: 6,
+					result: {
+						target: 1,
+					},
+				},
+			},
+			//大师
+			dashi: {
+				audio: true,
+				fullskin: true,
+				type: "trick",
+				enable: true,
+				selectTarget: 2,
+				filterTarget: lib.filter.notMe,
+				multitarget: true,
+				multiline: true,
+				reverseOrder: true,
+				modTarget: false,
+				async content(event, trigger, player) {
+					event.targets[0].swapHandcards(event.targets[1]);
+				},
+				ai: {
+					order: 6,
+					useful: 8,
+					value: 8.2,
+					result: {
+						target(player, target) {
+							const list = [];
+							//const num = player.countCards("he");
+							const players = game.filterPlayer();
+							if (ui.selected.targets.length == 0) {
+								for (let i = 0; i < players.length; i++) {
+									if (players[i] != player && get.attitude(player, players[i]) > 3) {
+										list.push(players[i]);
+									}
+								}
+								list.sort(function (a, b) {
+									return a.countCards("h") - b.countCards("h");
+								});
+								if (target == list[0]) {
+									return get.attitude(player, target);
+								}
+								return -get.attitude(player, target);
+							} else {
+								const from = ui.selected.targets[0];
+								for (let i = 0; i < players.length; i++) {
+									if (players[i] != player && get.attitude(player, players[i]) < 1) {
+										list.push(players[i]);
+									}
+								}
+								list.sort(function (a, b) {
+									return b.countCards("h") - a.countCards("h");
+								});
+								if (from.countCards("h") >= list[0].countCards("h")) {
+									return -get.attitude(player, target);
+								}
+								for (let i = 0; i < list.length && from.countCards("h") < list[i].countCards("h"); i++) {
+									const count = list[i].countCards("h") - from.countCards("h");
+									if (count < 2 && from.countCards("h") >= 2) {
+										return -get.attitude(player, target);
+									}
+									if (target == list[i]) {
+										return get.attitude(player, target);
+									}
+									return -get.attitude(player, target);
+								}
+							}
+						},
+					},
+					tag: {
+						norepeat: 1,
+					},
+				},
+			},
+			//武圣归来
+			guilai: {
+				audio: true,
+				fullskin: true,
+				type: "trick",
+				enable: true,
+				deadTarget: true,
+				selectTarget: 1,
+				filterTarget(card, player, target) {
+					if (get.mode() == "versus" && _status.mode == "two") {
+						return player.isFriendOf(target) && player != target && target.isDead();
+					}
+					return player != target && target.isDead();
+				},
+				modTarget(card, player, target) {
+					return player != target && target.isDead();
+				},
+				content() {
+					target.revive();
+				},
+				ai: {
+					order: 10,
+					useful: 8.5,
+					value: 8.5,
+					result: {
+						target: 1,
+					},
+				},
+			},
+			//新杀的劝酒
+			khquanjiux: {
+				audio: true,
+				fullskin: true,
+				type: "trick",
+				enable: true,
+				notarget: true,
 				wuxieable: false,
 				async content(event, trigger, player) {
-					const { targets } = event;
+					const targets = game.filterPlayer().sortBySeat();
+					player.line(targets);
 					for (const target of targets) {
-						const cards = target.getCards("h").randomGets(get.rand(1, target.countCards("h")));
+						const num = get.rand(1, target.countCards("h"));
+						console.log(num);
+						const cards = target.getCards("h").randomGets(num);
 						if (!cards.length) {
 							continue;
 						}
@@ -86,7 +501,7 @@ game.import("card", function () {
 					useful: 7.5,
 					value: 7.5,
 					result: {
-						target: -1,
+						player: 1,
 					},
 					tag: {
 						damage: 0.2,
@@ -101,16 +516,14 @@ game.import("card", function () {
 				fullskin: true,
 				type: "trick",
 				enable: true,
-				selectTarget: -1,
-				filterTarget: lib.filter.notMe,
-				reverseOrder: true,
-				multitarget: true,
-				multiline: true,
+				notarget: true,
 				wuxieable: false,
 				global: "nisiwohuo_end",
 				async content(event, trigger, player) {
-					player.$skill(get.translation(event.name), null, get.groupnature(player.group, "raw"));
-					const { targets } = event;
+					player.$skill(get.translation(event.name), null, "thunder", null, "shen_jiaxu");
+					await game.delayx();
+					const targets = game.filterPlayer(target => target != player).sortBySeat();
+					player.line(targets);
 					game.broadcastAll(event => {
 						if (!_status.nisiwohuo) {
 							_status.nisiwohuo = [];
@@ -181,7 +594,7 @@ game.import("card", function () {
 					useful: 9.5,
 					value: 10,
 					result: {
-						target: -1,
+						player: 1,
 					},
 					tag: {
 						//damage: 0.5,
@@ -698,6 +1111,94 @@ game.import("card", function () {
 			},
 		},
 		skill: {
+			jinnao_skill: {
+				charlotte: true,
+				silent: true,
+				firstDo: true,
+				trigger: { player: "damageBegin3" },
+				filter(event, player) {
+					return player.hasMark("jinnao_skill");
+				},
+				content() {
+					player.removeMark(event.name, 1);
+					trigger.cancel();
+				},
+				intro: {
+					name: "金铙（金）",
+					name2: "金",
+					content: "mark",
+					markcount: "mark",
+				},
+			},
+			yinglang_skill: {
+				charlotte: true,
+				silent: true,
+				firstDo: true,
+				trigger: { player: "useCardToPlayered" },
+				filter(event, player) {
+					return event.target.countGainableCards(player, "he") && event.target != player;
+				},
+				content() {
+					player.gainPlayerCard(trigger.target, "he", true);
+				},
+			},
+			youfu_skill: {
+				popup: false,
+				charlotte: true,
+				onremove: true,
+				trigger: { player: "useCard2" },
+				filter(event, player) {
+					if (!["basic", "trick"].includes(get.type(event.card))) {
+						return false;
+					}
+					if (!Array.isArray(event.targets) || !event.targets.includes(player)) {
+						return false;
+					}
+					return game.hasPlayer(target => {
+						if (!player.getStorage("youfu_skill").includes(target)) {
+							return false;
+						}
+						return !event.targets.includes(target) && lib.filter.targetEnabled2(event.card, player, target);
+					});
+				},
+				async cost(event, trigger, player) {
+					const targets = game.filterPlayer(target => {
+						if (!player.getStorage("youfu_skill").includes(target)) {
+							return false;
+						}
+						return !trigger.targets.includes(target) && lib.filter.targetEnabled2(trigger.card, player, target);
+					});
+					if (targets.length == 1) {
+						const target = targets[0];
+						const bool = await player.chooseBool(get.prompt(event.skill, target), "令" + get.translation(target) + "也成为" + get.translation(trigger.card) + "的目标").forResult("bool");
+						event.result = { bool: bool, targets: targets };
+					} else {
+						event.result = await player
+							.chooseTarget(get.prompt(event.skill), "令任意名【有福同享】的目标角色也成为" + get.translation(trigger.card) + "的目标", (card, player, target) => {
+								const trigger = get.event().getTrigger();
+								if (!player.getStorage("youfu_skill").includes(target)) {
+									return false;
+								}
+								return !trigger.targets.includes(target) && lib.filter.targetEnabled2(trigger.card, player, target);
+							})
+							.set("ai", target => {
+								const player = get.player(),
+									trigger = get.event().getTrigger();
+								return get.effect(target, trigger.card, player, player);
+							})
+							.forResult();
+					}
+				},
+				content() {
+					player.line(event.targets);
+					trigger.targets.addArray(event.targets);
+					game.log(event.targets, "成为了", trigger.card, "的额外目标");
+				},
+				mark: true,
+				intro: {
+					content: "对自己使用基本牌和普通锦囊牌时，可以额外指定 $ 为目标",
+				},
+			},
 			nisiwohuo_end: {
 				trigger: { global: "die" },
 				firstDo: true,
@@ -820,6 +1321,51 @@ game.import("card", function () {
 			},
 		},
 		translate: {
+			liehuo: "烈火",
+			liehuo_bg: "烈",
+			liehuo_info: "出牌阶段，对所有角色使用，令目标暗中选择一张手牌，若有角色与你选择的牌颜色相同，你弃置你选择的牌对这些角色各造成一点火焰伤害。",
+			shenbing: "神兵",
+			shenbing_bg: "兵",
+			shenbing_info: "出牌阶段，对所有角色使用，令目标弃置装备区所有牌或依次使用牌堆不用副类型的装备牌各一张。",
+			jinnao: "金铙",
+			jinnao_skill: "金铙",
+			jinnao_bg: "金",
+			get jinnao_info() {
+				const str = get.mode() == "versus" && _status.mode == "two" ? "一名队友" : "一名其他角色";
+				return `出牌阶段，对你和${str}使用，令目标获得一个「金」标记。（当目标受到伤害时，其移去一个「金」防止此伤害）`;
+			},
+			yinglang: "鹰狼",
+			yinglang_skill: "鹰狼",
+			yinglang_bg: "鹰",
+			yinglang_info: "出牌阶段，对所有角色使用，令目标本轮使用牌指定其他角色为目标后，获得该目标一张牌。",
+			youfu: "有福同享",
+			youfu_skill: "有福同享",
+			youfu_bg: "福",
+			get youfu_info() {
+				const str = get.mode() == "versus" && _status.mode == "two" ? "一名队友" : "一名其他角色";
+				return `出牌阶段，对${str}使用，令你此阶段对自己使用基本牌和普通锦囊牌时，可以额外指定其为目标`;
+			},
+			fugui: "富贵",
+			fugui_bg: "富",
+			get fugui_info() {
+				const str = get.mode() == "versus" && _status.mode == "two" ? "一名队友" : "一名其他角色";
+				return `出牌阶段，对${str}使用，其下次获得牌后你摸等量张牌。`;
+			},
+			tangying: "躺赢",
+			tangying_bg: "躺",
+			get tangying_info() {
+				const str = get.mode() == "versus" && _status.mode == "two" ? "一名队友" : "一名其他角色";
+				return `出牌阶段，你结束当前回合，然后翻面并进入托管状态。令${str}下个回合开始时选择额外执行一个摸牌或出牌阶段。`;
+			},
+			dashi: "大师",
+			dashi_bg: "师",
+			dashi_info: "出牌阶段，令两名其他角色交换手牌。",
+			guilai: "武圣归来",
+			guilai_bg: "归",
+			get guilai_info() {
+				const str = get.mode() == "versus" && _status.mode == "two" ? "一名队友" : "一名其他角色";
+				return `出牌阶段，令${str}复活`;
+			},
 			khquanjiux: "劝酒",
 			khquanjiux_tag: "劝酒",
 			khquanjiux_bg: "劝",
@@ -861,6 +1407,32 @@ game.import("card", function () {
 			leigong_info: "出牌阶段，对所有角色使用，令目标依次进行一次【闪电】判定，然后每有一名角色因此受到非传导伤害，你摸一张牌。",
 		},
 		list: [
+			[lib.suit.randomGet(), get.rand(1, 13), "liehuo"],
+			[lib.suit.randomGet(), get.rand(1, 13), "liehuo"],
+
+			[lib.suit.randomGet(), get.rand(1, 13), "shenbing"],
+			[lib.suit.randomGet(), get.rand(1, 13), "shenbing"],
+
+			[lib.suit.randomGet(), get.rand(1, 13), "jinnao"],
+			[lib.suit.randomGet(), get.rand(1, 13), "jinnao"],
+
+			[lib.suit.randomGet(), get.rand(1, 13), "yinglang"],
+			[lib.suit.randomGet(), get.rand(1, 13), "yinglang"],
+
+			[lib.suit.randomGet(), get.rand(1, 13), "youfu"],
+			[lib.suit.randomGet(), get.rand(1, 13), "youfu"],
+
+			[lib.suit.randomGet(), get.rand(1, 13), "fugui"],
+			[lib.suit.randomGet(), get.rand(1, 13), "fugui"],
+
+			[lib.suit.randomGet(), get.rand(1, 13), "tangying"],
+			[lib.suit.randomGet(), get.rand(1, 13), "tangying"],
+
+			[lib.suit.randomGet(), get.rand(1, 13), "guilai"],
+
+			[lib.suit.randomGet(), get.rand(1, 13), "dashi"],
+			[lib.suit.randomGet(), get.rand(1, 13), "dashi"],
+
 			["spade", 13, "khquanjiux"],
 			["diamond", 13, "khquanjiux"],
 			["heart", 13, "khquanjiux"],

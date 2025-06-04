@@ -1320,7 +1320,7 @@ const skills = {
 						.set("target", target)
 						.forResult("bool");
 					if (!bool) {
-						await player.damage(1, target);
+						await player.damage(1, target, "thunder");
 					}
 				},
 			},
@@ -35464,39 +35464,42 @@ const skills = {
 				});
 			}
 			do {
-				const { result } = cards.length > 1 ? await player
-					.chooseButtonTarget({
-						createDialog: [`礼让：是否分配本次弃置的牌？`, cards],
-						selectButton: [1, Infinity],
-						cardsx: cards,
-						filterTarget: lib.filter.notMe,
-						ai1(button) {
-							return get.value(button.link);
-						},
-						canHidden: true,
-						ai2(target) {
-							const player = get.player();
-							const card = ui.selected.buttons[0].link;
-							if (card) {
-								return get.value(card, target) * get.attitude(player, target);
-							}
-							return 1;
-						},
-					})
-					.setHiddenSkill("lirang") : await player
-						.chooseTarget(`礼让：是否令一名角色获得${get.translation(cards)}？`, lib.filter.notMe)
-						.set("ai", target => {
-							const att = get.attitude(_status.event.player, target);
-							if (_status.event.enemy) {
-								return -att;
-							} else if (att > 0) {
-								return att / (1 + target.countCards("h"));
-							} else {
-								return att / 100;
-							}
-						})
-						.setHiddenSkill("lirang")
-						.set("enemy", get.value(cards[0], player, "raw") < 0);
+				const { result } =
+					cards.length > 1
+						? await player
+								.chooseButtonTarget({
+									createDialog: [`礼让：是否分配本次弃置的牌？`, cards],
+									selectButton: [1, Infinity],
+									cardsx: cards,
+									filterTarget: lib.filter.notMe,
+									ai1(button) {
+										return get.value(button.link);
+									},
+									canHidden: true,
+									ai2(target) {
+										const player = get.player();
+										const card = ui.selected.buttons[0].link;
+										if (card) {
+											return get.value(card, target) * get.attitude(player, target);
+										}
+										return 1;
+									},
+								})
+								.setHiddenSkill("lirang")
+						: await player
+								.chooseTarget(`礼让：是否令一名角色获得${get.translation(cards)}？`, lib.filter.notMe)
+								.set("ai", target => {
+									const att = get.attitude(_status.event.player, target);
+									if (_status.event.enemy) {
+										return -att;
+									} else if (att > 0) {
+										return att / (1 + target.countCards("h"));
+									} else {
+										return att / 100;
+									}
+								})
+								.setHiddenSkill("lirang")
+								.set("enemy", get.value(cards[0], player, "raw") < 0);
 				if (result?.bool) {
 					if (!result.links?.length) {
 						result.links = cards.slice(0);
@@ -35507,8 +35510,7 @@ const skills = {
 						give_map[id] = [];
 					}
 					give_map[id].addArray(result.links);
-				}
-				else {
+				} else {
 					break;
 				}
 			} while (cards.length > 0);
@@ -35529,14 +35531,16 @@ const skills = {
 				bool: targets.length > 0,
 				targets: targets?.sortBySeat(),
 				cost_data: lose_list,
-			}
+			};
 		},
 		async content(event, trigger, player) {
-			await game.loseAsync({
-				gain_list: event.cost_data,
-				giver: player,
-				animate: "gain2",
-			}).setContent("gaincardMultiple");
+			await game
+				.loseAsync({
+					gain_list: event.cost_data,
+					giver: player,
+					animate: "gain2",
+				})
+				.setContent("gaincardMultiple");
 		},
 		ai: {
 			expose: 0.1,
