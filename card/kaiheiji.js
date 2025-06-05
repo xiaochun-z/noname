@@ -15,6 +15,9 @@ game.import("card", function () {
 				reverseOrder: true,
 				multitarget: true,
 				multiline: true,
+				changeTarget(player, targets) {
+					return targets.push(player);
+				},
 				async content(event, trigger, player) {
 					let { targets } = event;
 					targets = targets.filter(target => target.countCards("h")).sortBySeat();
@@ -110,7 +113,7 @@ game.import("card", function () {
 								return get.subtype(card) == "equip" + i && target.canUse(card, target);
 							});
 							if (card) {
-								await target.chooseUseTarget(card, true, "nopopup");
+								await target.chooseUseTarget(card, true, "nothrow", "nopopup");
 							}
 						}
 					}
@@ -198,7 +201,7 @@ game.import("card", function () {
 					if (get.mode() == "versus" && _status.mode == "two") {
 						return player.isFriendOf(target) && player != target;
 					}
-					return lplayer != target;
+					return player != target;
 				},
 				modTarget(card, player, target) {
 					return player != target;
@@ -328,14 +331,18 @@ game.import("card", function () {
 				fullskin: true,
 				type: "trick",
 				enable: true,
-				selectTarget: 2,
+				singleCard: true,
 				filterTarget: lib.filter.notMe,
-				multitarget: true,
-				multiline: true,
-				reverseOrder: true,
-				modTarget: false,
+				filterAddedTarget(card, player, target, preTarget) {
+					return target != preTarget && target != player;
+				},
+				multicheck() {
+					return game.hasPlayer(target => target.countCards("h"));
+				},
+				complexSelect: true,
+				complexTarget: true,
 				async content(event, trigger, player) {
-					event.targets[0].swapHandcards(event.targets[1]);
+					event.target.swapHandcards(event.addedTarget);
 				},
 				ai: {
 					order: 6,
@@ -344,9 +351,13 @@ game.import("card", function () {
 					result: {
 						target(player, target) {
 							const list = [];
+							let targets = ui.selected.targets.slice();
+							if (_status.event.preTarget) {
+								targets.add(_status.event.preTarget);
+							}
 							//const num = player.countCards("he");
 							const players = game.filterPlayer();
-							if (ui.selected.targets.length == 0) {
+							if (targets.length == 0) {
 								for (let i = 0; i < players.length; i++) {
 									if (players[i] != player && get.attitude(player, players[i]) > 3) {
 										list.push(players[i]);
@@ -409,7 +420,7 @@ game.import("card", function () {
 				},
 				async content(event, trigger, player) {
 					const { target } = event;
-					target.revive();
+					await target.revive();
 					await target.draw(3);
 				},
 				ai: {
@@ -423,6 +434,7 @@ game.import("card", function () {
 			},
 			//新杀的劝酒
 			khquanjiux: {
+				global: ["khquanjiux_skill"],
 				audio: true,
 				fullskin: true,
 				type: "trick",
@@ -441,18 +453,18 @@ game.import("card", function () {
 						target.addGaintag(cards, "khquanjiux_tag");
 						cards.forEach(card => {
 							game.broadcastAll(card => {
-								if (!card.storage?.origin_info) {
-									card.storage.origin_info = [card.suit, card.number, card.name, card.nature];
+								if (!card.storage?.khquanjiux) {
+									card.storage.khquanjiux = [card.suit, card.number, card.name, card.nature];
 								}
 								card.init([card.suit, card.number, "jiu"]);
 								//改回原来的牌名
-								card.destroyed = (card, position, player, event) => {
-									if (card.storage?.origin_info) {
-										card.init(card.storage.origin_info);
-										delete card.storage.origin_info;
+								/*card.destroyed = (card, position, player, event) => {
+									if (card.storage?.khquanjiux) {
+										card.init(card.storage.khquanjiux);
+										delete card.storage.khquanjiux;
 									}
 									return false;
-								};
+								};*/
 							}, card);
 						});
 					}
@@ -467,22 +479,22 @@ game.import("card", function () {
 							continue;
 						}
 						const { result } = await target
-							.chooseToUse("劝酒：使用一张【酒】否则受到每名其他角色造成的一点伤害", function (card) {
+							.chooseToRespond("劝酒：打出一张【酒】否则受到每名其他角色造成的一点伤害", function (card) {
 								if (get.name(card) != "jiu") {
 									return false;
 								}
 								return lib.filter.filterCard.apply(this, arguments);
 							})
-							.set("ai1", () => 114514)
+							.set("ai", () => 114514);
+						/*.set("ai1", () => 114514)
 							.set("ai2", function () {
 								return get.effect_use.apply(this, arguments) - get.event("effect") + 114514;
 							})
-							.set("targetRequired", true)
 							.set(
 								"effect",
 								game.filterPlayer(current => current != target).reduce((eff, current) => eff + get.damageEffect(target, current, target), 0)
 							)
-							.set("addCount", false);
+							.set("addCount", false);*/
 						if (!result?.bool) {
 							const damage = game.filterPlayer(current => current != target).sortBySeat();
 							if (damage.length) {
@@ -1113,6 +1125,29 @@ game.import("card", function () {
 			},
 		},
 		skill: {
+			khquanjiux_skill: {
+				charlotte: true,
+				silent: true,
+				firstDo: true,
+				trigger: {
+					player: "loseBegin",
+					global: ["addToExpansionBegin", "equipBegin", "loseAsyncBegin", "addJudgeBegin", "gainBegin"],
+				},
+				filter(event, player) {
+					return event.getl(player)?.cards?.some(card => card.storage?.khquanjiux?.length);
+				},
+				async content(event, trigger, player) {
+					const cards = trigger.getl(player)?.cards?.filter(card => card.storage?.khquanjiux?.length);
+					game.broadcastAll(cards => {
+						cards.forEach(card => {
+							if (card.storage?.khquanjiux?.length) {
+								card.init(card.storage.khquanjiux);
+								delete card.storage.khquanjiux;
+							}
+						});
+					}, cards);
+				},
+			},
 			jinnao_skill: {
 				charlotte: true,
 				silent: true,
@@ -1325,7 +1360,7 @@ game.import("card", function () {
 		translate: {
 			liehuo: "烈火",
 			liehuo_bg: "烈",
-			liehuo_info: "出牌阶段，对所有角色使用，令目标暗中选择一张手牌，若有角色与你选择的牌颜色相同，你弃置你选择的牌对这些角色各造成一点火焰伤害。",
+			liehuo_info: "出牌阶段，对所有其他角色使用，令你和目标暗中选择一张手牌，若有角色与你选择的牌颜色相同，你弃置你选择的牌对这些角色各造成一点火焰伤害。",
 			shenbing: "神兵",
 			shenbing_bg: "兵",
 			shenbing_info: "出牌阶段，对所有角色使用，令目标弃置装备区所有牌或依次使用牌堆不用副类型的装备牌各一张。",
@@ -1371,7 +1406,7 @@ game.import("card", function () {
 			khquanjiux: "劝酒",
 			khquanjiux_tag: "劝酒",
 			khquanjiux_bg: "劝",
-			khquanjiux_info: "出牌阶段，对所有角色使用，所有角色手牌随机变成【酒】，然后依次使用一张【酒】，重复此效果直到有角色不使用，该角色受到每名其他角色造成的一点伤害。此牌不能被【无懈可击】响应。",
+			khquanjiux_info: "出牌阶段，对所有角色使用，所有角色手牌随机变成【酒】，然后依次打出一张【酒】，重复此效果直到有角色不使用，该角色受到每名其他角色造成的一点伤害。此牌不能被【无懈可击】响应。",
 			nisiwohuo: "你死我活",
 			nisiwohuo_end: "你死我活",
 			nisiwohuo_bg: "死",

@@ -227,7 +227,7 @@ const skills = {
 											if (mod != "unchanged") {
 												return mod;
 											}
-											const savable = get.info(card).savable;
+											let savable = get.info(card).savable;
 											if (typeof savable == "function") {
 												savable = savable(card, player, player);
 											}
@@ -270,7 +270,7 @@ const skills = {
 										if (mod != "unchanged") {
 											return mod;
 										}
-										const savable = get.info(card).savable;
+										let savable = get.info(card).savable;
 										if (typeof savable == "function") {
 											savable = savable(card, player, target);
 										}
@@ -503,7 +503,7 @@ const skills = {
 						.set("ai", target => {
 							const player = _status.event.player;
 							const eff = get.damageEffect(target, player, player);
-							const num = player.countMark("twmingce");
+							let num = player.countMark("twmingce");
 							if (target.hasSkillTag("filterDamage", null, { player: player })) {
 								num = 1;
 							}
