@@ -3852,6 +3852,7 @@ const skills = {
 		derivation: ["twhuanji", "twchanggui"],
 		subSkill: {
 			buff: {
+				audio: "twhunyou",
 				trigger: { player: ["damageBefore", "loseHpBefore"] },
 				forced: true,
 				charlotte: true,
@@ -4061,6 +4062,7 @@ const skills = {
 		group: "twqinghan_compare",
 		subSkill: {
 			compare: {
+				audio: "twqinghan",
 				trigger: {
 					player: "compare",
 					target: "compare",
@@ -8641,6 +8643,7 @@ const skills = {
 		},
 		subSkill: {
 			damage: {
+				audio: "twshoushou",
 				trigger: {
 					player: "damageEnd",
 					source: "damageSource",
@@ -9060,6 +9063,7 @@ const skills = {
 		},
 		subSkill: {
 			remove: {
+				audio: "twduoren",
 				trigger: { source: "dying" },
 				filter(event, player) {
 					return (
@@ -9996,6 +10000,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "twxiafeng",
 				trigger: { player: "useCard" },
 				filter(event, player) {
 					return !player.storage.twxiafeng_effect2;
@@ -17660,6 +17665,7 @@ const skills = {
 		},
 		subSkill: {
 			addCount: {
+				audio: "twyulong",
 				charlotte: true,
 				forced: true,
 				trigger: { source: "damageSource" },
@@ -19539,6 +19545,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "twzhongchi",
 				mark: true,
 				marktext: "斥",
 				intro: { content: "受到渠道为【杀】的伤害+1" },
@@ -22871,6 +22878,7 @@ const skills = {
 		},
 		subSkill: {
 			restore: {
+				audio: "twjuezhu",
 				trigger: { global: "die" },
 				forced: true,
 				charlotte: true,
