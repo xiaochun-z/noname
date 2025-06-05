@@ -1092,6 +1092,7 @@ const skills = {
 		group: "kunyu_debuff",
 		subSkill: {
 			debuff: {
+				audio: "kunyu",
 				trigger: {
 					global: "phaseBefore",
 					player: ["gainMaxHpBegin", "loseMaxHpBegin", "enterGame"],
@@ -4708,6 +4709,7 @@ const skills = {
 						}
 					},
 				},
+				audio: "dctuoyu",
 				trigger: { player: "useCard" },
 				forced: true,
 				filter(event, player) {
@@ -7013,6 +7015,7 @@ const skills = {
 		group: "yuheng_losehp",
 		subSkill: {
 			losehp: {
+				audio: "yuheng",
 				trigger: { player: "phaseUseEnd" },
 				forced: true,
 				locked: false,
@@ -7168,6 +7171,7 @@ const skills = {
 		intro: { content: "mark" },
 		subSkill: {
 			maxHp: {
+				audio: "tianren",
 				trigger: { player: ["tianrenAfter", "gainMaxHpAfter", "loseMaxHpAfter"] },
 				forced: true,
 				filter(event, player) {

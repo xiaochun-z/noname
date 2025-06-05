@@ -616,6 +616,7 @@ const skills = {
 		},
 		subSkill: {
 			restore: {
+				audio: "rexingshuai",
 				trigger: {
 					global: "dieAfter",
 				},
@@ -1809,6 +1810,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "rekuangbi",
 				mod: {
 					aiOrder(player, card, num) {
 						if (num <= 0 || !player.getExpansions("rekuangbi_effect").length) {
@@ -6051,6 +6053,7 @@ const skills = {
 		},
 		subSkill: {
 			discard: {
+				audio: "oldimeng",
 				trigger: { player: "phaseUseEnd" },
 				forced: true,
 				charlotte: true,
@@ -7613,6 +7616,7 @@ const skills = {
 		},
 		subSkill: {
 			draw: {
+				audio: "changbiao",
 				trigger: { player: "phaseUseEnd" },
 				forced: true,
 				charlotte: true,
