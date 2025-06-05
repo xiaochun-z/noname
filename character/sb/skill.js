@@ -55,7 +55,11 @@ const skills = {
 			return event.player != player && event?.card?.name == "sha" && event.player.countGainableCards(player, "hej") > 0 && event.player.isIn();
 		},
 		async cost(event, trigger, player) {
-			event.result = await player.gainPlayerCard(get.prompt2(event.skill), trigger.player, "hej", [1, trigger.num]).set("chooseonly", true).forResult();
+			const target = trigger.player;
+			event.result = await player
+				.gainPlayerCard(get.prompt2(event.skill), trigger.player, "hej", [1, trigger.num])
+				.set("logSkill", [event.skill, [target], null, null, [get.rand(1, 2)]])
+				.forResult();
 		},
 		popup: false,
 		async content(event, trigger, player) {
