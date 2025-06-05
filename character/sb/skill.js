@@ -4550,6 +4550,7 @@ const skills = {
 		filterTarget(card, player, target) {
 			return target != player && !target.getSkills().some(skill => skill.indexOf("sbtianxiang_") == 0);
 		},
+		position: "he",
 		discard: false,
 		lose: false,
 		delay: 0,
