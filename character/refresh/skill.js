@@ -2251,7 +2251,7 @@ const skills = {
 				result = await trigger.source.chooseToDiscard("智愚：请弃置一张手牌", true).forResult();
 			}
 			let cards = player.getCards("h");
-			const bool = cards.map(card => get.color(card, player)).unique();
+			const bool = cards.map(card => get.color(card, player)).unique().length == 1;
 			if (bool) {
 				cards = result.cards.filterInD("d");
 				if (cards.length) {
