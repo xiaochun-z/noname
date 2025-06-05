@@ -1,18 +1,4 @@
 const characters = {
-	tw_sb_chengong: {
-		sex: "male",
-		group: "qun",
-		hp: 3,
-		skills: ["twmingce", "sbzhichi"],
-		dieAudios: ["sb_chengong"],
-	},
-	tw_yanpu: {
-		sex: "male",
-		group: "qun",
-		hp: 3,
-		skills: ["twhuantu", "twbihuo"],
-		dieAudios: ["yanpu"],
-	},
 	tw_zhuzhi: {
 		sex: "male",
 		group: "wu",
