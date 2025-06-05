@@ -11,15 +11,13 @@ game.import("card", function () {
 				type: "trick",
 				enable: true,
 				selectTarget: -1,
-				filterTarget: true,
+				filterTarget: lib.filter.notMe,
 				reverseOrder: true,
 				multitarget: true,
 				multiline: true,
-				changeTarget(player, targets) {
-					return targets.push(player);
-				},
 				async content(event, trigger, player) {
 					let { targets } = event;
+					targets.add(player);
 					targets = targets.filter(target => target.countCards("h")).sortBySeat();
 					const chooseEvent = player
 						.chooseCardOL(targets, "烈火：请选择一张手牌", true)
@@ -146,13 +144,14 @@ game.import("card", function () {
 					}
 					return player != target;
 				},
-				changeTarget(player, targets) {
+				/*changeTarget(player, targets) {
 					targets.push(player);
-				},
+				},*/
 				modTarget(card, player, target) {
 					return player != target;
 				},
 				async content(event, trigger, player) {
+					player.addMark("jinnao_skill");
 					event.target.addMark("jinnao_skill");
 				},
 				ai: {
@@ -1369,7 +1368,7 @@ game.import("card", function () {
 			jinnao_bg: "金",
 			get jinnao_info() {
 				const str = get.mode() == "versus" && _status.mode == "two" ? "一名队友" : "一名其他角色";
-				return `出牌阶段，对你和${str}使用，令目标获得一个「金」标记。（当目标受到伤害时，其移去一个「金」防止此伤害）`;
+				return `出牌阶段，对${str}使用，令你和目标获得一个「金」标记。（当目标受到伤害时，其移去一个「金」防止此伤害）`;
 			},
 			yinglang: "鹰狼",
 			yinglang_skill: "鹰狼",
