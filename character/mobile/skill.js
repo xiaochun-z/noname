@@ -574,6 +574,7 @@ const skills = {
 				charlotte: true,
 			},
 			effect: {
+				audio: "mbjinzu",
 				trigger: {
 					player: "useCard",
 					source: "damageBegin1",
@@ -1410,6 +1411,7 @@ const skills = {
 				onremove: true,
 				charlotte: true,
 				forced: true,
+				popup: false,
 				trigger: { player: "phaseEnd" },
 				filter(event, player) {
 					return lib.skill.mbganggeng_effect.logTarget(event, player).length;
@@ -7287,6 +7289,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "mbchoumang",
 				trigger: {
 					global: "shaMiss",
 				},
@@ -15033,6 +15036,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "jingzhong",
 				trigger: { global: "useCardAfter" },
 				forced: true,
 				charlotte: true,
@@ -15173,6 +15177,7 @@ const skills = {
 				},
 			},
 			init: {
+				audio: "sbyaoming",
 				trigger: {
 					global: "phaseBefore",
 					player: "enterGame",

@@ -124,6 +124,7 @@ const skills = {
 				},
 			},
 			mark: {
+				audio: "olcunze",
 				onremove: true,
 				charlotte: true,
 				trigger: {
@@ -253,6 +254,7 @@ const skills = {
 		},
 		subSkill: {
 			judge: {
+				audio: "olleishi",
 				onremove(player, skill) {
 					player.removeGaintag(skill);
 				},
@@ -5208,6 +5210,7 @@ const skills = {
 		subSkill: {
 			backup: {},
 			effect: {
+				audio: "olleiluan",
 				trigger: { global: "roundEnd" },
 				filter(event, player) {
 					return player.getRoundHistory("useCard", evt => get.type(evt.card) == "basic").length >= lib.skill.olleiluan.getNum(player);
@@ -6234,6 +6237,7 @@ const skills = {
 		},
 		subSkill: {
 			addTarget: {
+				audio: "olhunjiang",
 				charlotte: true,
 				onremove: true,
 				intro: { content: "本阶段使用【杀】可以额外指定$为目标" },
@@ -10788,6 +10792,7 @@ const skills = {
 		},
 		subSkill: {
 			buff: {
+				audio: "olgangshu",
 				init(player) {
 					let info = lib.skill.olgangshu.getInfo(player);
 					player.addTip("olgangshu_buff", "刚述 " + info.slice().join(" "));
@@ -14313,6 +14318,7 @@ const skills = {
 				},
 			},
 			gain: {
+				audio: "olmiuyan",
 				trigger: { player: "useCardAfter" },
 				forced: true,
 				charlotte: true,
@@ -14348,6 +14354,7 @@ const skills = {
 				},
 			},
 			remove: {
+				audio: "olmiuyan",
 				trigger: { player: "useCardAfter" },
 				forced: true,
 				charlotte: true,
@@ -16014,6 +16021,7 @@ const skills = {
 		},
 		subSkill: {
 			put: {
+				audio: "oltongduo",
 				trigger: { player: "phaseUseEnd" },
 				charlotte: true,
 				forced: true,
@@ -17084,6 +17092,7 @@ const skills = {
 		},
 		subSkill: {
 			lottery: {
+				audio: "olhuanfu",
 				trigger: { global: "useCardAfter" },
 				forced: true,
 				charlotte: true,
@@ -28201,6 +28210,7 @@ const skills = {
 		group: "moucheng_awaken",
 		subSkill: {
 			awaken: {
+				audio: "moucheng",
 				trigger: { player: "mouchengAwaken" },
 				forced: true,
 				skillAnimation: true,
@@ -32562,6 +32572,7 @@ const skills = {
 		},
 		subSkill: {
 			discard: {
+				audio: "yinbing",
 				trigger: { player: "damageEnd" },
 				forced: true,
 				filter(event, player) {
@@ -34320,6 +34331,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "canshi",
 				trigger: { player: "useCard" },
 				forced: true,
 				filter(event, player) {
@@ -35799,6 +35811,7 @@ const skills = {
 		},
 		subSkill: {
 			draw: {
+				audio: "qiluan2",
 				trigger: { global: "dieAfter" },
 				frequent: true,
 				filter(event, player) {
