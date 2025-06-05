@@ -55,11 +55,7 @@ const skills = {
 			return event.player != player && event?.card?.name == "sha" && event.player.countGainableCards(player, "hej") > 0 && event.player.isIn();
 		},
 		async cost(event, trigger, player) {
-			const target = trigger.player;
-			event.result = await player
-				.gainPlayerCard(get.prompt2(event.skill), trigger.player, "hej", [1, trigger.num])
-				.set("logSkill", [event.skill, [target], null, null, [get.rand(1, 2)]])
-				.forResult();
+			event.result = await player.gainPlayerCard(get.prompt2(event.skill), trigger.player, "hej", [1, trigger.num]).set("chooseonly", true).forResult();
 		},
 		popup: false,
 		async content(event, trigger, player) {
@@ -115,7 +111,7 @@ const skills = {
 								})
 								.set("animate", false)
 								.forResult();
-							if (result2?.bool && result.targets?.length) {
+							if (result2?.bool && result2.targets?.length) {
 								target.line2([player, result2.targets[0]]);
 								await game.delayx();
 								await player.useCard(new lib.element.VCard({ name: "juedou", isCard: true }), result2.targets[0], false, "noai").set("animate", false);
