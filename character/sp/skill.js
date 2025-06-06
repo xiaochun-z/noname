@@ -5114,12 +5114,11 @@ const skills = {
 	oltingji: {
 		audio: 2,
 		mod: {
-			inRange(from, to) {
-				if (from._oltingji) {
-					return;
+			mod: {
+				inRange(from, to) {
+					return !to.isDamaged();
 				}
-				return !to.isDamaged();
-			},
+			}
 		},
 		trigger: {
 			global: "useCardToTargeted",
@@ -5165,8 +5164,7 @@ const skills = {
 				}).length) {
 					player.markAuto(event.name + "_save", [get.name(result.card, target)])
 					player.addTempSkill(event.name + "_save")
-				}
-				else {
+				} else {
 					return
 				}
 			}
@@ -5336,14 +5334,13 @@ const skills = {
 			global: "roundEnd",
 		},
 		filter(event, player, name) {
-			return _status.currentPhase && event.name === "useCard" && get.type(event.card) === "basic" || _status.currentPhase && name === "roundEnd" && game.hasPlayer(current => current.isLinked())
+			return _status.currentPhase && ((event.name == "useCard" && get.type(event.card) === "basic") || (name === "roundEnd" && game.hasPlayer(current => current.isLinked())))
 		},
 		forced: true,
 		logTarget: (__, _, name) => {
 			if (name === "useCardAfter") {
-				return _status.currentPhase;
-			}
-			else {
+				return !_status.currentPhase.isLinked()
+			} else {
 				return game.filterPlayer(c => c.isLinked() || c === get.player())
 			}
 		},
@@ -5352,8 +5349,7 @@ const skills = {
 				if (!_status.currentPhase.isLinked()) {
 					await _status.currentPhase.link(true);
 				}
-			}
-			else {
+			} else {
 				await game.asyncDraw([player].concat(game.filterPlayer(c => c.isLinked()).sortBySeat()));
 				if (game.hasPlayer(c => c.isLinked())) {
 					game.filterPlayer(c => c.isLinked()).sortBySeat().forEach(c => c.chooseToDiscard(lib.skill.leiluan.getNum(), "he", true))
