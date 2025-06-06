@@ -5134,7 +5134,7 @@ const skills = {
 		},
 		forced: true,
 		popup: false,
-		content() {
+		async content(event, trigger, player) {
 			trigger.getParent().directHit.push(trigger.target);
 		},
 	},
@@ -5249,7 +5249,7 @@ const skills = {
 					},
 					position: "hes",
 					popname: true,
-					precontent() {
+					async precontent(event, trigger, player) {
 						player.addTempSkill("leiluan_effect")
 					},
 				};
