@@ -35,7 +35,6 @@ const skills = {
 					audio: "dczouyi",
 					links: links,
 					async content(event, trigger, player) {
-						const links = lib.skill[event.name].links;
 						if (links.includes("draw")) {
 							await player.draw(2);
 							if (game.hasPlayer(target => target.countDiscardableCards(player, "he") && target != player)) {
@@ -103,8 +102,8 @@ const skills = {
 				card = get.autoViewAs({ name: "sha", isCard: true });
 			let isFirst = true;
 			while (player.countMark(event.name) > 0 && player.canUse(card, target, false, false) && target.isIn()) {
-				isFirst = false;
 				if (!isFirst) {
+					isFirst = false;
 					player.logSkill(event.name, target);
 				}
 				player.removeMark(event.name, 1, false);
