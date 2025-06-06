@@ -419,7 +419,7 @@ game.import("card", function () {
 				},
 				async content(event, trigger, player) {
 					const { target } = event;
-					await target.revive();
+					await target.reviveEvent();
 					await target.draw(3);
 				},
 				ai: {
