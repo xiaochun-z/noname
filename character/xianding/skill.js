@@ -613,6 +613,7 @@ const skills = {
 	},
 	//钟毓
 	dczhidui: {
+		audio: 2,
 		init(player) {
 			player.addSkill("dczhidui_mark");
 		},
@@ -752,32 +753,76 @@ const skills = {
 		},
 	},
 	dcjiesi: {
+		audio: 2,
 		enable: "phaseUse",
-		filter(event, player) {
-			return player.countDiscardableCards("he");
+		usable: 1,
+		chooseButton: {
+			dialog(event, player) {
+				return ui.create.dialog("###捷思###", get.translation("dcjiesi_info"));
+			},
+			chooseControl(event, player) {
+				const list = ["cardPile", "discardPile"]
+					.map(pos => Array.from(ui[pos].childNodes))
+					.flat()
+					.map(card => get.cardNameLength(card))
+					.unique()
+					.sort();
+				list.push("cancel2");
+				return list;
+			},
+			check(event, player) {
+				const sortlist = [4, 1, 2, 3, 5];
+				const list = ["cardPile", "discardPile"]
+					.map(pos => Array.from(ui[pos].childNodes))
+					.flat()
+					.map(card => get.cardNameLength(card))
+					.unique()
+					.sort();
+				return list.sort((a, b) => {
+					return sortlist.indexOf(a) - sortlist.indexOf(b);
+				})[0];
+			},
+			backup(result, player) {
+				return {
+					length: result.control,
+					audio: "dcjiesi",
+					async content(event, trigger, player) {
+						const len = lib.skill.dcjiesi_backup.length;
+						const card = get.cardPile(cardx => get.cardNameLength(cardx) == len);
+						if (!card) {
+							player.chat(`一张${num}字牌都没有？！`);
+							return;
+						}
+						await player.gain(card, "gain2");
+						const skill = "dcjiesi_used";
+						player.addTempSkill(skill, "phaseUseAfter");
+						player.markAuto(skill, card);
+						if (!player.getStorage(skill).some(cardx => card != cardx && cardx.name == card.name)) {
+							const result = await player
+								.chooseToDiscard(`捷思：是否弃置${len}张牌，然后重置此技能？`, len, "he")
+								.set("ai", card => (get.event().goon ? 7 - get.value(card) : 0))
+								.set("goon", player.countCards("he", card => 6 - get.value(card)) >= len)
+								.forResult();
+							if (result?.bool) {
+								delete player.getStat().skill.dcjiesi;
+							}
+						}
+					},
+				};
+			},
 		},
-		filterCard: lib.filter.cardDiscardable,
-		selectCard: [1, Infinity],
-		position: "he",
-		check(card) {
-			return 7 - get.value(card);
-		},
-		async content(event, trigger, player) {
-			const num = event.cards.length;
-			const card = get.cardPile(cardx => get.cardNameLength(cardx) == num);
-			if (!card) {
-				player.chat(`一张${num}字牌都没有？！`);
-				return;
-			}
-			await player.gain(card, "gain2");
-			const skill = event.name + "_used";
-			player.addTempSkill(skill, "phaseUseAfter");
-			if (player.getStorage(skill).some(cardx => cardx.name == card.name)) {
-				player.tempBanSkill(event.name, "phaseUseAfter");
-			}
-			player.markAuto(skill, card);
+		locked: false,
+		mod: {
+			aiOrder(player, card, num) {
+				if (typeof card == "object") {
+					if (get.type(card) == "equip") {
+						return num - 3;
+					}
+				}
+			},
 		},
 		subSkill: {
+			backup: {},
 			used: {
 				charlotte: true,
 				onremove: true,
@@ -787,7 +832,7 @@ const skills = {
 			},
 		},
 		ai: {
-			order: 5,
+			order: 7,
 			result: {
 				player: 1,
 			},
