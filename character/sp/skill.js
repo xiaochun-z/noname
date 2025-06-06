@@ -5118,19 +5118,14 @@ const skills = {
 				if (from._oltingji) {
 					return;
 				}
-				from._oltingji = true;
-				const bool = !to.isDamaged()
-				delete from._oltingji;
-				if (bool) {
-					return true;
-				}
+				return !to.isDamaged();
 			},
 		},
 		trigger: {
 			global: "useCardToTargeted",
 		},
 		filter(event, player) {
-			return event.target?.isIn() && !event?.target.isDamaged() && _status.currentPhase === player
+			return event.target === player && event.target?.isIn() && !event?.target.isDamaged() && _status.currentPhase === player
 		},
 		forced: true,
 		popup: false,
@@ -5341,12 +5336,12 @@ const skills = {
 			global: "roundEnd",
 		},
 		filter(event, player, name) {
-			return _status.currentPhase && event.name === "useCard" && get.type(event.card) === "basic" || name === "roundEnd"
+			return _status.currentPhase && event.name === "useCard" && get.type(event.card) === "basic" || _status.currentPhase && name === "roundEnd" && game.hasPlayer(current => current.isLinked())
 		},
 		forced: true,
 		logTarget: (__, _, name) => {
 			if (name === "useCardAfter") {
-				return !_status?.currentPhase.isLinked()
+				return _status.currentPhase;
 			}
 			else {
 				return game.filterPlayer(c => c.isLinked() || c === get.player())
