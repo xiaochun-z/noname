@@ -6403,7 +6403,7 @@ const skills = {
 				return ui.create.dialog("威临", [list, "vcard"]);
 			},
 			filter(button, player) {
-				return _status.event.getParent().filterCard({ name: button.link[2], nature: button.link[3] }, player, _status.event.getParent());
+				return _status.event.getParent().filterCard(get.autoViewAs({ name: button.link[2], nature: button.link[3] }, "unsure"), player, _status.event.getParent());
 			},
 			check(button) {
 				if (_status.event.getParent().type != "phase") {

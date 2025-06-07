@@ -756,38 +756,42 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
+		onChooseToUse(event) {
+			if (!game.online && !event.dcjiesi) {
+				event.set(
+					"dcjiesi",
+					["cardPile", "discardPile"]
+						.map(pos => Array.from(ui[pos].childNodes))
+						.flat()
+						.map(card => get.cardNameLength(card))
+						.unique()
+						.sort()
+				);
+			}
+		},
 		chooseButton: {
 			dialog(event, player) {
 				return ui.create.dialog("###捷思###", get.translation("dcjiesi_info"));
 			},
 			chooseControl(event, player) {
-				const list = ["cardPile", "discardPile"]
-					.map(pos => Array.from(ui[pos].childNodes))
-					.flat()
-					.map(card => get.cardNameLength(card))
-					.unique()
-					.sort();
+				const list = event.dcjiesi.slice();
 				list.push("cancel2");
 				return list;
 			},
 			check(event, player) {
 				const sortlist = [4, 1, 2, 3, 5];
-				const list = ["cardPile", "discardPile"]
-					.map(pos => Array.from(ui[pos].childNodes))
-					.flat()
-					.map(card => get.cardNameLength(card))
-					.unique()
-					.sort();
-				return list.sort((a, b) => {
-					return sortlist.indexOf(a) - sortlist.indexOf(b);
-				})[0];
+				const list = event.dcjiesi.slice();
+				return (
+					list.sort((a, b) => {
+						return sortlist.indexOf(a) - sortlist.indexOf(b);
+					})[0] - 1
+				);
 			},
 			backup(result, player) {
 				return {
-					length: result.control,
 					audio: "dcjiesi",
 					async content(event, trigger, player) {
-						const len = lib.skill.dcjiesi_backup.length;
+						const len = result.control;
 						const card = get.cardPile(cardx => get.cardNameLength(cardx) == len);
 						if (!card) {
 							player.chat(`一张${num}字牌都没有？！`);
@@ -800,7 +804,7 @@ const skills = {
 						if (!player.getStorage(skill).some(cardx => card != cardx && cardx.name == card.name)) {
 							const result = await player
 								.chooseToDiscard(`捷思：是否弃置${len}张牌，然后重置此技能？`, len, "he")
-								.set("ai", card => (get.event().goon ? 7 - get.value(card) : 0))
+								.set("ai", card => (get.event().goon ? 6.5 - get.value(card) : 0))
 								.set("goon", player.countCards("he", card => 6 - get.value(card)) >= len)
 								.forResult();
 							if (result?.bool) {
@@ -4330,7 +4334,7 @@ const skills = {
 				},
 				mod: {
 					cardUsable(card) {
-						if (get.number(card) === "unsure" || card.cards?.every(card => card.hasGaintag("dcyuxi"))) {
+						if (get.number(card) === "unsure" || card.cards?.some(card => card.hasGaintag("dcyuxi"))) {
 							return Infinity;
 						}
 					},
