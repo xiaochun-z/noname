@@ -5322,7 +5322,7 @@ const skills = {
 					if (card.length) {
 						await player.gain(card, "gain2");
 					}
-					player.tempBanSkill("leiluan", "damageEnd");
+					player.tempBanSkill("leiluan", { player: "damageEnd", });
 				},
 			},
 		},
