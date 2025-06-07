@@ -9,7 +9,7 @@ const skills = {
 		usable: 1,
 		chooseButton: {
 			dialog(event, player) {
-				return ui.create.dialog(`###诹议###`, [
+				return ui.create.dialog(`###诹议###${get.translation("dczouyi_info")}`, [
 					[
 						["draw", "你摸2张牌并可弃置一名其他角色1张牌"],
 						["discard", "你弃置1张牌并可令一名其他角色摸2张牌"],
@@ -67,11 +67,8 @@ const skills = {
 								await target.draw(2);
 							}
 						}
-						player.addMark(
-							"dcyanxi",
-							game.countPlayer(target => target.countCards("h") == player.countCards("h")),
-							false
-						);
+						const num = game.countPlayer(target => target.countCards("h") == player.countCards("h"));
+						player.addMark("dcyanxi", num, false);
 					},
 				};
 			},
@@ -102,8 +99,9 @@ const skills = {
 				card = get.autoViewAs({ name: "sha", isCard: true });
 			let isFirst = true;
 			while (player.countMark(event.name) > 0 && player.canUse(card, target, false, false) && target.isIn()) {
-				if (!isFirst) {
+				if (isFirst) {
 					isFirst = false;
+				} else {
 					player.logSkill(event.name, target);
 				}
 				player.removeMark(event.name, 1, false);
