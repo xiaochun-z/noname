@@ -5337,7 +5337,7 @@ const skills = {
 			if (event.name == "useCard") {
 				return _status.currentPhase?.isIn() && get.type(event.card) === "basic";
 			}
-			return game.hasPlayer(current => current.isLinked());
+			return true;
 		},
 		forced: true,
 		logTarget: (__, _, name) => {
