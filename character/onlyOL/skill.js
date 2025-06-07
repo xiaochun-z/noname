@@ -2426,7 +2426,7 @@ const skills = {
 					if (event._extraPhaseReason !== "oldangxian") {
 						return false;
 					}
-					return name.endsWith("Begin") || !player.hasHistory("sourceDamage", evt => evt.getParent(event.name) === event);
+					return name.endsWith("Begin") || (event.oldangxian_draw && !player.hasHistory("sourceDamage", evt => evt.getParent(event.name) === event));
 				},
 				async cost(event, trigger, player) {
 					if (event.triggername.endsWith("Begin")) {
@@ -2442,14 +2442,15 @@ const skills = {
 						event.result = { bool: true };
 					}
 				},
-				content() {
+				async content(event, trigger, player) {
 					if (event.triggername.endsWith("Begin")) {
+						trigger.set("oldangxian_draw", true);
 						const card = get.cardPile({ name: "sha" });
 						if (card) {
-							player.gain(card, "draw").gaintag.add("oldangxian");
+							await player.gain(card, "draw").gaintag.add("oldangxian");
 						}
 					} else {
-						player.damage();
+						await player.damage();
 					}
 				},
 			},

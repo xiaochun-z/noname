@@ -25181,7 +25181,7 @@ const skills = {
 			complexSelect: true,
 			check(button) {
 				const card = button.link;
-				const suits = player
+				const suits = get.player()
 					.getHistory("lose", evt => {
 						return evt.getParent().name == "discard" && evt.getParent(2).skill == "twlingbao_backup";
 					})
@@ -25197,13 +25197,12 @@ const skills = {
 				return {
 					audio: "twlingbao",
 					filterCard(card) {
-						return lib.skill.twlingbao_backup.cards.includes(card);
+						return links.includes(card);
 					},
-					cards: links,
 					selectCard: -1,
 					position: "x",
 					async content(event, trigger, player) {
-						const cards = lib.skill.twlingbao_backup.cards,
+						const cards = links,
 							colors = cards.map(card => get.color(card)).unique();
 						await player.draw(2);
 						if (colors.length == 1 && colors[0] == "red") {
