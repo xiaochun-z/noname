@@ -25181,13 +25181,14 @@ const skills = {
 			complexSelect: true,
 			check(button) {
 				const card = button.link;
-				const suits = get.player()
+				const suits = get
+					.player()
 					.getHistory("lose", evt => {
 						return evt.getParent().name == "discard" && evt.getParent(2).skill == "twlingbao_backup";
 					})
 					.map(evt => evt.cards.map(card => get.suit(card)))
 					.flat();
-				if (suits.includes(get.suit(card))) {
+				if (!suits.includes(get.suit(card))) {
 					return 2;
 				}
 				return 1;
@@ -25227,7 +25228,7 @@ const skills = {
 								}
 							}
 						}
-						if (colors.length == 1 && colors[0] == "black") {
+						if (colors.length == 1 && colors[0] == "black" && game.hasPlayer(target => target.countDiscardableCards(player, "hej"))) {
 							const result = await player
 								.chooseTarget(`灵宝：你弃置一名角色至多两个不同区域的共计至多两张牌`, true, (card, player, target) => {
 									return target.countDiscardableCards(player, "hej");
@@ -25241,13 +25242,15 @@ const skills = {
 							}
 						}
 						if (colors.length > 1) {
+							const canDiscard = game.hasPlayer(target => target.countDiscardableCards(target, "hej"));
 							const result = await player
-								.chooseTarget(`灵宝：你令一名角色摸两张牌，另一名角色弃置一张牌`, 2, true, (card, player, target) => {
+								.chooseTarget(`灵宝：你令一名角色摸两张牌` + (canDiscard ? `，另一名角色弃置一张牌` : ``), true, (card, player, target) => {
 									if (!ui.selected.targets.length) {
 										return true;
 									}
-									return target.countDiscardableCards(player, "hej");
+									return target.countDiscardableCards(target, "hej");
 								})
+								.set("selectTarget", canDiscard ? 2 : 1)
 								.set("ai", target => {
 									const player = get.player();
 									if (!ui.selected.targets.length) {
@@ -25264,7 +25267,9 @@ const skills = {
 									discard = result.targets[1];
 								player.line(result.targets);
 								await draw.draw(2);
-								await discard.chooseToDiscard("he", true);
+								if (discard) {
+									await discard.chooseToDiscard("he", true);
+								}
 							}
 						}
 						const suits = player

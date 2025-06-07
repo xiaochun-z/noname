@@ -1094,9 +1094,6 @@ const skills = {
 				player: 1,
 			},
 		},
-		subSkill: {
-			backup: {},
-		},
 	},
 	dcsbchensheng: {
 		audio: 2,
