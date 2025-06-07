@@ -5333,9 +5333,9 @@ const skills = {
 			player: "useCardAfter",
 			global: "roundEnd",
 		},
-		filter(event, player, name) {
+				filter(event, player) {
 			if (event.name == "useCard") {
-				return _status.currentPhase?.isIn() && get.type(event.card) === "basic";
+				return _status.currentPhase?.isIn() && !_status.currentPhase.isLinked() && get.type(event.card) === "basic";
 			}
 			return true;
 		},
@@ -5349,9 +5349,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			if (trigger.name === "useCard") {
-				if (!_status.currentPhase.isLinked()) {
-					await _status.currentPhase.link(true);
-				}
+				await _status.currentPhase.link(true);
 			} else {
 				await game.asyncDraw([player].concat(game.filterPlayer(c => c.isLinked()).sortBySeat()));
 				if (game.hasPlayer(c => c.isLinked())) {
