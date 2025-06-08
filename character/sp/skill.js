@@ -5114,22 +5114,18 @@ const skills = {
 	oltingji: {
 		audio: 2,
 		mod: {
-			mod: {
-				inRange(from, to) {
-					return !to.isDamaged();
-				}
-			}
+			inRange(from, to) {
+				return !to.isDamaged();
+			},
 		},
-		trigger: {
-			global: "useCardToTargeted",
-		},
+		trigger: { global: "useCardToTargeted" },
 		filter(event, player) {
-			return event.target === player && event.target?.isIn() && !event?.target.isDamaged() && _status.currentPhase === player;
+			return event.target !== player && event.target.isIn() && !event.target.isDamaged() && _status.currentPhase === player;
 		},
 		forced: true,
 		popup: false,
 		async content(event, trigger, player) {
-			trigger.getParent().directHit.push(trigger.target);
+			trigger.getParent().directHit.add(trigger.target);
 		},
 	},
 	olxuanliu: {
@@ -5147,7 +5143,7 @@ const skills = {
 				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
 					return target !== player;
 				})
-				.set("ai", (target) => {
+				.set("ai", target => {
 					return get.attitude(get.player(), target);
 				})
 				.forResult();
@@ -5156,12 +5152,24 @@ const skills = {
 			let target = event.targets[0];
 			while (true) {
 				await target.draw();
-				const result = await target
-					.chooseToUse().set("position", "h").forResult();
-				if (result.bool && player.getHistory("useCard", evt => {
-					const card = evt.card;
-					return !player.getStorage(event.name + "_save").includes(get.name(result.card, target)) && get.name(result.card, target) === get.name(card, target) && evt.getParent("phaseUse") === trigger;
-				}).length) {
+				const { result } = await target.chooseToUse({
+					filterCard(card) {
+						if (get.itemtype(card) != "card" || (get.position(card) != "h" && get.position(card) != "s")) {
+							return false;
+						}
+						return lib.filter.filterCard.apply(this, arguments);
+					},
+					prompt: "是否使用一张手牌",
+					addCount: false,
+				});
+				if (
+					result?.bool &&
+					result.card &&
+					player.getHistory("useCard", evt => {
+						const card = evt.card;
+						return !player.getStorage(event.name + "_save").includes(get.name(result.card, target)) && get.name(result.card, target) === get.name(card, target) && evt.getParent("phaseUse") === trigger;
+					}).length
+				) {
 					player.markAuto(event.name + "_save", [get.name(result.card, target)]);
 					player.addTempSkill(event.name + "_save");
 				} else {
@@ -5192,7 +5200,10 @@ const skills = {
 			}
 		},
 		getNum() {
-			return Math.max(1, game.countPlayer(current => current.isLinked()));
+			return Math.max(
+				1,
+				game.countPlayer(current => current.isLinked())
+			);
 		},
 		enable: "chooseToUse",
 		filter(event, player) {
@@ -5318,11 +5329,14 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					await player.draw(2);
-					let card = [get.discarded().filter(c => get.type(c) === "trick").randomGet()];
-					if (card.length) {
+					let card = get
+						.discarded()
+						.filter(c => get.type(c) === "trick")
+						.randomGet();
+					if (card) {
 						await player.gain(card, "gain2");
 					}
-					player.tempBanSkill("leiluan", { player: "damageEnd", });
+					player.tempBanSkill("leiluan", { player: "damageEnd" });
 				},
 			},
 		},
@@ -5333,27 +5347,32 @@ const skills = {
 			player: "useCardAfter",
 			global: "roundEnd",
 		},
-				filter(event, player) {
+		filter(event, player) {
 			if (event.name == "useCard") {
 				return _status.currentPhase?.isIn() && !_status.currentPhase.isLinked() && get.type(event.card) === "basic";
 			}
 			return true;
 		},
 		forced: true,
-		logTarget: (__, _, name) => {
-			if (name === "useCardAfter") {
+		logTarget(event, player) {
+			if (event.name == "useCard") {
 				return _status.currentPhase;
-			} else {
-				return game.filterPlayer(c => c.isLinked() || c === get.player());
 			}
+			return game.filterPlayer(current => current.isLinked() || current === player).sortBySeat();
 		},
 		async content(event, trigger, player) {
 			if (trigger.name === "useCard") {
 				await _status.currentPhase.link(true);
 			} else {
-				await game.asyncDraw([player].concat(game.filterPlayer(c => c.isLinked()).sortBySeat()));
-				if (game.hasPlayer(c => c.isLinked())) {
-					game.filterPlayer(c => c.isLinked()).sortBySeat().forEach(c => c.chooseToDiscard(lib.skill.leiluan.getNum(), "he", true));
+				await game.asyncDraw([player].concat(game.filterPlayer(current => current.isLinked()).sortBySeat()));
+				if (game.hasPlayer(current => current.isLinked())) {
+					const num = lib.skill.leiluan.getNum();
+					for (const target of game.filterPlayer(current => current.isLinked()).sortBySeat()) {
+						if (!target.isIn() || !target.countDiscardableCards(target, "he")) {
+							continue;
+						}
+						await target.chooseToDiscard(num, "he", true);
+					}
 				}
 			}
 		},

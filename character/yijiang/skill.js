@@ -11557,14 +11557,11 @@ const skills = {
 				targets: [target],
 			} = event;
 			const { card } = trigger;
-			const [cardx] = await target
-				.chooseToGive("he", `交给${get.translation(player)}一张牌，若此牌不为【闪】，则成为${get.translation(card)}的额外目标`, player)
-				.set("ai", card => {
-					const { player, target } = get.event();
-					return Math.sign(Math.sign(get.attitude(player, target)) - 0.5) * get.value(card, player, "raw");
-				})
-				.forResult("cards");
-			if (!cardx || get.name(cardx, target) !== "shan") {
+			const { result } = await target.chooseToGive("he", `交给${get.translation(player)}一张牌，若此牌不为【闪】，则成为${get.translation(card)}的额外目标`, player).set("ai", card => {
+				const { player, target } = get.event();
+				return Math.sign(Math.sign(get.attitude(player, target)) - 0.5) * get.value(card, player, "raw");
+			});
+			if (!result?.bool || !result?.cards?.length || get.name(result.cards[0], target) !== "shan") {
 				trigger.getParent().targets.push(target);
 				trigger.getParent().triggeredTargets2.push(target);
 				game.log(target, "成为了", card, "的额外目标");
