@@ -5181,7 +5181,7 @@ player.removeVirtualEquip(card);
 			if (event.result?.cancel) {
 				event.goto(0);
 			} else {
-				const old_logSkill = event.logSkill;
+				const oldLogSkill = event.logSkill;
 				if (event.chooseonly) {
 					event.logSkill = false;
 				}
@@ -5189,8 +5189,8 @@ player.removeVirtualEquip(card);
 				if (event.chooseonly && get.itemtype(ResultEvent) == "event") {
 					event.next.remove(ResultEvent);
 					event.result.cost_data = { ResultEvent };
-					if (old_logSkill) {
-						event.result.cost_data.logSkill = old_logSkill;
+					if (oldLogSkill) {
+						event.result.cost_data.logSkill = oldLogSkill;
 					}
 				}
 			}
