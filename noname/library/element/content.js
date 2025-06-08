@@ -5181,7 +5181,18 @@ player.removeVirtualEquip(card);
 			if (event.result?.cancel) {
 				event.goto(0);
 			} else {
-				player.useResult(event.result, event);
+				const old_logSkill = event.logSkill;
+				if (event.chooseonly) {
+					event.logSkill = false;
+				}
+				const ResultEvent = player.useResult(event.result, event);
+				if (event.chooseonly && get.itemtype(ResultEvent) == "event") {
+					event.next.remove(ResultEvent);
+					event.result.cost_data = { ResultEvent };
+					if (old_logSkill) {
+						event.result.cost_data.logSkill = old_logSkill;
+					}
+				}
 			}
 		} else if (event._sendskill) {
 			event.result._sendskill = event._sendskill;

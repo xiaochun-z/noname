@@ -5362,7 +5362,11 @@ export class Player extends HTMLDivElement {
 				} else if (typeof arguments[i] == "boolean") {
 					next.forced = arguments[i];
 				} else if (typeof arguments[i] == "string") {
-					next.prompt = arguments[i];
+					if (arguments[i] == "chooseonly") {
+						next.chooseonly = true;
+					} else {
+						next.prompt = arguments[i];
+					}
 				}
 			}
 		}
