@@ -1136,15 +1136,12 @@ game.import("card", function () {
 				charlotte: true,
 				silent: true,
 				firstDo: true,
-				trigger: {
-					player: "loseBegin",
-					global: ["addToExpansionBegin", "equipBegin", "loseAsyncBegin", "addJudgeBegin", "gainBegin"],
-				},
+				trigger: { player: "loseBefore" },
 				filter(event, player) {
-					return event.getl(player)?.cards?.some(card => card.storage?.khquanjiux?.length);
+					return event.cards?.some(card => card.storage?.khquanjiux?.length);
 				},
 				async content(event, trigger, player) {
-					const cards = trigger.getl(player)?.cards?.filter(card => card.storage?.khquanjiux?.length);
+					const cards = trigger.cards.filter(card => card.storage?.khquanjiux?.length);
 					game.broadcastAll(cards => {
 						cards.forEach(card => {
 							if (card.storage?.khquanjiux?.length) {
