@@ -114,9 +114,10 @@ export const Content = {
 			}, event.chooseTime);
 		}
 		let result;
-		event.numbers ??= [];
-		if (!Array.isArray(event.numbers)) event.numbers = [];
-		if (!event.numbers.length)
+		if (!Array.isArray(event.numbers)) {
+			event.numbers = [];
+		}
+		if (!event.numbers.length) {
 			event.list.forEach(function (item) {
 				if (Array.isArray(item)) {
 					if (["asc", "sort"].includes(item[0])) {
@@ -130,6 +131,7 @@ export const Content = {
 					event.numbers.push(item.min || 0);
 				}
 			});
+		}
 		if (event.isMine()) {
 			result = await new Promise(function (resolve, reject) {
 				_status.imchoosing = true;
@@ -209,7 +211,9 @@ export const Content = {
 								}
 							}
 							option.value = num;
-							if (num == current) option.selected = true;
+							if (num == current) {
+								option.selected = true;
+							}
 							if (!event.filterSelect(num, index, event)) {
 								option.disabled = true;
 							}
@@ -284,10 +288,11 @@ export const Content = {
 		} else {
 			result = "ai";
 		}
-		if (event.time)
+		if (event.time) {
 			game.broadcastAll(function (time) {
 				lib.configOL.choose_timeout = time;
 			}, event.time);
+		}
 		if ((!result || result == "ai" || (event.forced && !result.bool)) && event.processAI) {
 			const numbers = event.processAI(event);
 			if (typeof numbers == "boolean") {
