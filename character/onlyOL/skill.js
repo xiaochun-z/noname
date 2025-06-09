@@ -634,7 +634,7 @@ const skills = {
 					if (["new_rewusheng", "olpaoxiao"].every(skill => player.hasSkill(skill, null, false, false))) {
 						return false;
 					}
-					return player.isPhaseUsing && event.card?.name == "sha";
+					return player.isPhaseUsing() && event.card?.name == "sha";
 				},
 				content() {
 					player.addTempSkills(["new_rewusheng", "olpaoxiao"]);

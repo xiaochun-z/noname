@@ -9549,26 +9549,26 @@ const skills = {
 				return 4;
 			},
 		},
-		group: "fuhun2",
-	},
-	fuhun2: {
-		audio: "fuhun",
-		audioname: ["re_guanzhang"],
-		trigger: { source: "damageSource" },
-		forced: true,
-		sourceSkill: "fuhun",
-		filter(event, player) {
-			if (["new_rewusheng", "olpaoxiao"].every(skill => player.hasSkill(skill, null, false, false))) {
-				return false;
-			}
-			return event.getParent().skill == "fuhun";
+		group: "fuhun_effect",
+		subSkill: {
+			effect: {
+				audio: "fuhun",
+				audioname: ["re_guanzhang"],
+				trigger: { source: "damageSource" },
+				forced: true,
+				sourceSkill: "fuhun",
+				filter(event, player) {
+					if (["new_rewusheng", "olpaoxiao"].every(skill => player.hasSkill(skill, null, false, false))) {
+						return false;
+					}
+					return event.getParent().skill == "fuhun";
+				},
+				async content(event, trigger, player) {
+					await player.addTempSkills(["new_rewusheng", "olpaoxiao"]);
+				},
+			},
 		},
-		content() {
-			player.addTempSkills(["new_rewusheng", "olpaoxiao"]);
-			// player.addTempSkill('fuhun3');
-		},
 	},
-	fuhun3: {},
 	wusheng_guanzhang: { audio: 1 },
 	paoxiao_guanzhang: { audio: 1 },
 	fencheng: {
