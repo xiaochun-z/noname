@@ -84,6 +84,9 @@ const skills = {
 				ai2(target) {
 					const player = get.player();
 					const card = ui.selected.buttons[0]?.link;
+					if (!card) {
+						return 0;
+					}
 					if (!target.countCards("h")) {
 						return get.value(card, target) * get.attitude(player, target);
 					}
