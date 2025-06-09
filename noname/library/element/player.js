@@ -6230,8 +6230,11 @@ export class Player extends HTMLDivElement {
 			} else if (typeof argument == "object" && Array.isArray(argument)) {
 				next.list.push(...argument);
 			} else if (typeof argument == "function") {
-				if (!next.processAI) next.processAI = argument;
-				else next.filterSelect = argument;
+				if (!next.processAI) {
+					next.processAI = argument;
+				} else {
+					next.filterSelect = argument;
+				}
 			}
 		}
 		if (!next.list.length) {
@@ -6239,14 +6242,22 @@ export class Player extends HTMLDivElement {
 			next.resolve();
 		}
 		if (!next.filterSelect) {
-			if (next.optionSum) next.filterSelect = (num, index, event) => num + event.numbers.reduce((sum, num) => sum + num, 0) - (event.numbers[index] || 0) <= event.optionSum;
-			else next.filterSelect = () => true;
+			if (next.optionSum) {
+				next.filterSelect = (num, index, event) => num + event.numbers.reduce((sum, num) => sum + num, 0) - (event.numbers[index] || 0) <= event.optionSum;
+			} else {
+				next.filterSelect = () => true;
+			}
 		}
 		if (!next.filterOk) {
-			if (next.optionSum) next.filterOk = event => event.numbers.reduce((sum, num) => sum + num, 0) <= event.optionSum;
-			else next.filterOk = () => true;
+			if (next.optionSum) {
+				next.filterOk = event => event.numbers.reduce((sum, num) => sum + num, 0) <= event.optionSum;
+			} else {
+				next.filterOk = () => true;
+			}
 		}
-		if (!next.forced) next.forced = false;
+		if (!next.forced) {
+			next.forced = false;
+		}
 		next.setContent("chooseNumbers");
 		next._args = Array.from(arguments);
 		return next;

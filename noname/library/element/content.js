@@ -119,9 +119,13 @@ export const Content = {
 		if (!event.numbers.length)
 			event.list.forEach(function (item) {
 				if (Array.isArray(item)) {
-					if (["asc", "sort"].includes(item[0])) event.numbers.push(item.slice(1).sort((a, b) => a - b)[0]);
-					else if (item[0] == "desc") event.numbers.push(item.slice(1).sort((a, b) => b - a)[0]);
-					else event.numbers.push(item[0]);
+					if (["asc", "sort"].includes(item[0])) {
+						event.numbers.push(item.slice(1).sort((a, b) => a - b)[0]);
+					} else if (item[0] == "desc") {
+						event.numbers.push(item.slice(1).sort((a, b) => b - a)[0]);
+					} else {
+						event.numbers.push(item[0]);
+					}
 				} else {
 					event.numbers.push(item.min || 0);
 				}
@@ -131,16 +135,23 @@ export const Content = {
 				_status.imchoosing = true;
 				event.settleed = false;
 				event.dialog = ui.create.dialog(event.prompt || "请调整以下数值", "forcebutton", "hidden");
-				if (event.prompt2) event.dialog.addText(event.prompt2);
+				if (event.prompt2) {
+					event.dialog.addText(event.prompt2);
+				}
 				event.switchToAuto = function () {
 					if (!event.filterOk(event)) {
-						if (!event.forced) event._result = { bool: false };
-						else event._result = "ai";
+						if (!event.forced) {
+							event._result = { bool: false };
+						} else {
+							event._result = "ai";
+						}
 					} else {
 						event._result = "ai";
 					}
 					event.dialog.close();
-					if (ui.confirm) ui.confirm.close();
+					if (ui.confirm) {
+						ui.confirm.close();
+					}
 					game.resume();
 					_status.imchoosing = false;
 					resolve(event._result);
@@ -150,12 +161,18 @@ export const Content = {
 					const index = parseInt(select.id.slice(6));
 					const item = event.list[index],
 						current = event.numbers[index];
-					while (select.childElementCount) select.removeChild(select.firstChild);
+					while (select.childElementCount) {
+						select.removeChild(select.firstChild);
+					}
 					if (Array.isArray(item)) {
 						let numbers;
-						if (["asc", "sort"].includes(item[0])) numbers = item.slice(1).sort((a, b) => a - b);
-						else if (item[0] == "desc") numbers = item.slice(1).sort((a, b) => b - a);
-						else numbers = item;
+						if (["asc", "sort"].includes(item[0])) {
+							numbers = item.slice(1).sort((a, b) => a - b);
+						} else if (item[0] == "desc") {
+							numbers = item.slice(1).sort((a, b) => b - a);
+						} else {
+							numbers = item;
+						}
 						for (const num of numbers) {
 							const option = document.createElement("option");
 							option.innerHTML = num;
@@ -167,14 +184,20 @@ export const Content = {
 								}
 							}
 							option.value = num;
-							if (num == current) option.selected = true;
-							if (!event.filterSelect(num, index, event)) option.disabled = true;
+							if (num == current) {
+								option.selected = true;
+							}
+							if (!event.filterSelect(num, index, event)) {
+								option.disabled = true;
+							}
 							select.appendChild(option);
 						}
 					} else {
 						let actual;
 						const max = item.max || 9;
-						if (event.optionSum) actual = event.optionSum - event.numbers.reduce((sum, num) => sum + num, 0) + current;
+						if (event.optionSum) {
+							actual = event.optionSum - event.numbers.reduce((sum, num) => sum + num, 0) + current;
+						}
 						for (let num = item.min || 0; num <= Math.min(actual || max, max); num += item.base || 1) {
 							const option = document.createElement("option");
 							option.innerHTML = num;
@@ -187,7 +210,9 @@ export const Content = {
 							}
 							option.value = num;
 							if (num == current) option.selected = true;
-							if (!event.filterSelect(num, index, event)) option.disabled = true;
+							if (!event.filterSelect(num, index, event)) {
+								option.disabled = true;
+							}
 							select.appendChild(option);
 						}
 					}
@@ -205,11 +230,17 @@ export const Content = {
 						event.numbers[parseInt(this.id.slice(6))] = parseInt(this.value);
 						event.dialog.content.querySelectorAll(`[id ^= 'select']`).forEach(select => optionUpdate(select));
 						if (event.filterOk(event)) {
-							if (event.forced) ui.create.confirm("o");
-							else ui.create.confirm("oc");
+							if (event.forced) {
+								ui.create.confirm("o");
+							} else {
+								ui.create.confirm("oc");
+							}
 						} else {
-							if (!event.forced) ui.create.confirm("c");
-							else if (ui.confirm) ui.confirm.close();
+							if (!event.forced) {
+								ui.create.confirm("c");
+							} else if (ui.confirm) {
+								ui.confirm.close();
+							}
 						}
 					};
 					optionUpdate(select);
@@ -218,20 +249,31 @@ export const Content = {
 				event.dialog.add(" <br> ");
 				event.dialog.open();
 				event.custom.replace.confirm = function (bool) {
-					if (bool) event._result = { bool: true, numbers: event.numbers };
-					else event._result = { bool: false };
+					if (bool) {
+						event._result = { bool: true, numbers: event.numbers };
+					} else {
+						event._result = { bool: false };
+					}
 					event.dialog.close();
-					if (ui.confirm) ui.confirm.close();
+					if (ui.confirm) {
+						ui.confirm.close();
+					}
 					game.resume();
 					_status.imchoosing = false;
 					resolve(event._result);
 				};
 				if (event.filterOk(event)) {
-					if (event.forced) ui.create.confirm("o");
-					else ui.create.confirm("oc");
+					if (event.forced) {
+						ui.create.confirm("o");
+					} else {
+						ui.create.confirm("oc");
+					}
 				} else {
-					if (!event.forced) ui.create.confirm("c");
-					else if (ui.confirm) ui.confirm.close();
+					if (!event.forced) {
+						ui.create.confirm("c");
+					} else if (ui.confirm) {
+						ui.confirm.close();
+					}
 				}
 				game.pause();
 				game.countChoose();
@@ -249,10 +291,16 @@ export const Content = {
 		if ((!result || result == "ai" || (event.forced && !result.bool)) && event.processAI) {
 			const numbers = event.processAI(event);
 			if (typeof numbers == "boolean") {
-				if (numbers == true) result = { bool: true, numbers: event.numbers };
-				else result = { bool: false };
-			} else if (Array.isArray(numbers)) result = { bool: true, numbers };
-			else result = { bool: false };
+				if (numbers == true) {
+					result = { bool: true, numbers: event.numbers };
+				} else {
+					result = { bool: false };
+				}
+			} else if (Array.isArray(numbers)) {
+				result = { bool: true, numbers };
+			} else {
+				result = { bool: false };
+			}
 		}
 		event.result = result;
 	},
