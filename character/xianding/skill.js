@@ -2900,7 +2900,7 @@ const skills = {
 					if (cards.includes(card)) {
 						return false;
 					}
-					return card.name == "sha" || get.cardDescription(card).includes("【杀】");
+					return card.name == "sha" || get.cardDescription(card, player).includes("【杀】");
 				});
 				if (card) {
 					cards.push(card);
