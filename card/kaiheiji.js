@@ -335,10 +335,19 @@ game.import("card", function () {
 				singleCard: true,
 				filterTarget: lib.filter.notMe,
 				filterAddedTarget(card, player, target, preTarget) {
-					return target != preTarget && target != player;
+					return target != preTarget && target != player && [target, preTarget].some(current => current.countCards("h"));
 				},
-				multicheck() {
-					return game.hasPlayer(target => target.countCards("h"));
+				multicheck(card, player) {
+					return (
+						game.hasPlayer(current => {
+							return (
+								current != player &&
+								game.hasPlayer(currentx => {
+									return currentx != player && currentx != current && [currentx, current].some(target => target.countCards("h"));
+								})
+							);
+						}) > 1
+					);
 				},
 				complexSelect: true,
 				complexTarget: true,
@@ -381,7 +390,7 @@ game.import("card", function () {
 								list.sort(function (a, b) {
 									return b.countCards("h") - a.countCards("h");
 								});
-								if (from.countCards("h") >= list[0].countCards("h")) {
+								if (from.countCards("h") >= list[0]?.countCards("h")) {
 									return -get.attitude(player, target);
 								}
 								for (let i = 0; i < list.length && from.countCards("h") < list[i].countCards("h"); i++) {
