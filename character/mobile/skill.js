@@ -4,13 +4,11 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 const skills = {
 	//势魏延
 	potzhongao: {
-		audio: 2,
 		dutySkill: true,
 		derivation: ["potkuanggu", "potkuanggu_rewrite", "kunfen"],
 		group: ["potzhongao_start", "potzhongao_achieve", "potzhongao_fail"],
 		subSkill: {
 			start: {
-				audio: "potzhongao",
 				trigger: {
 					global: "phaseBefore",
 					player: "enterGame",
@@ -25,7 +23,6 @@ const skills = {
 				},
 			},
 			achieve: {
-				audio: "potzhongao",
 				trigger: {
 					source: "dieAfter",
 				},
@@ -49,7 +46,6 @@ const skills = {
 				},
 			},
 			fail: {
-				audio: "potzhongao",
 				trigger: {
 					player: ["dying", "phaseUseBegin"],
 				},
@@ -70,7 +66,6 @@ const skills = {
 		},
 	},
 	potzhuangshi: {
-		audio: 2,
 		trigger: {
 			player: "phaseUseBegin",
 		},
@@ -134,9 +129,6 @@ const skills = {
 							let num = Math.floor(player.countCards("h") / 2);
 							return [num];
 						});
-					if (typeof result?.numbers?.[0] != "number") {
-						return;
-					}
 					const number = result.numbers[0];
 					await player.loseHp(number);
 					player.addTempSkill("potzhuangshi_limit", "phaseChange");
@@ -155,9 +147,6 @@ const skills = {
 							}
 							return 0;
 						});
-					if (!result?.cards?.length) {
-						return;
-					}
 					const number = result.cards.length;
 					player.addTempSkill("potzhuangshi_directHit", "phaseChange");
 					player.addMark("potzhuangshi_directHit", number, false);
@@ -232,7 +221,6 @@ const skills = {
 		},
 	},
 	potyinzhan: {
-		audio: 2,
 		trigger: {
 			source: "damageBegin1",
 		},
@@ -277,7 +265,6 @@ const skills = {
 		},
 	},
 	potkuanggu: {
-		audio: 2,
 		trigger: {
 			source: "damageSource",
 		},
