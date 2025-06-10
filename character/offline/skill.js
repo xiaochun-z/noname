@@ -15001,7 +15001,7 @@ const skills = {
 			}
 			return 6 - get.value(card);
 		},
-		position: "he",
+		position: "h",
 		lose: false,
 		delay: false,
 		discard: false,
@@ -27689,13 +27689,8 @@ const skills = {
 	},
 	//龙陆逊
 	dragqianxun: {
-		trigger: {
-			player: "phaseJudgeBegin",
-		},
+		trigger: { player: "phaseJudgeBegin" },
 		filter(event, player) {
-			if (event?.name == "phaseJudge" && !player.countCards("j")) {
-				return false;
-			}
 			return player.countCards("h") > 1;
 		},
 		enable: "phaseUse",

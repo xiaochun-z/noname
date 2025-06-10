@@ -14552,10 +14552,10 @@ const skills = {
 			return player.getExpansions("zyexin").length >= 4;
 		},
 		forced: true,
-		async content(e, t, player) {
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			player.loseMaxHp();
-			player.addSkills("zpaiyi");
+			await player.loseMaxHp();
+			await player.addSkills("zpaiyi");
 		},
 		ai: { combo: "zyexin" },
 	},
