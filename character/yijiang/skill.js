@@ -9549,26 +9549,26 @@ const skills = {
 				return 4;
 			},
 		},
-		group: "fuhun2",
-	},
-	fuhun2: {
-		audio: "fuhun",
-		audioname: ["re_guanzhang"],
-		trigger: { source: "damageSource" },
-		forced: true,
-		sourceSkill: "fuhun",
-		filter(event, player) {
-			if (["new_rewusheng", "olpaoxiao"].every(skill => player.hasSkill(skill, null, false, false))) {
-				return false;
-			}
-			return event.getParent().skill == "fuhun";
+		group: "fuhun_effect",
+		subSkill: {
+			effect: {
+				audio: "fuhun",
+				audioname: ["re_guanzhang"],
+				trigger: { source: "damageSource" },
+				forced: true,
+				sourceSkill: "fuhun",
+				filter(event, player) {
+					if (["new_rewusheng", "olpaoxiao"].every(skill => player.hasSkill(skill, null, false, false))) {
+						return false;
+					}
+					return event.getParent().skill == "fuhun";
+				},
+				async content(event, trigger, player) {
+					await player.addTempSkills(["new_rewusheng", "olpaoxiao"]);
+				},
+			},
 		},
-		content() {
-			player.addTempSkills(["new_rewusheng", "olpaoxiao"]);
-			// player.addTempSkill('fuhun3');
-		},
 	},
-	fuhun3: {},
 	wusheng_guanzhang: { audio: 1 },
 	paoxiao_guanzhang: { audio: 1 },
 	fencheng: {
@@ -14552,10 +14552,10 @@ const skills = {
 			return player.getExpansions("zyexin").length >= 4;
 		},
 		forced: true,
-		async content(e, t, player) {
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			player.loseMaxHp();
-			player.addSkills("zpaiyi");
+			await player.loseMaxHp();
+			await player.addSkills("zpaiyi");
 		},
 		ai: { combo: "zyexin" },
 	},
