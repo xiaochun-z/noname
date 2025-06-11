@@ -5,6 +5,7 @@ import cards from "../sp2/card.js";
 const skills = {
 	//崔令仪
 	dchuashang: {
+		audio: 2,
 		group: ["dchuashang_gaoda"],
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
@@ -92,6 +93,7 @@ const skills = {
 		},
 		subSkill: {
 			gaoda: {
+				audio: "dchuashang",
 				forced: true,
 				locked: false,
 				trigger: {
@@ -137,6 +139,7 @@ const skills = {
 		},
 	},
 	dcyuzhi: {
+		audio: 2,
 		forced: true,
 		trigger: { target: "useCardToTarget" },
 		filter(event, player) {
