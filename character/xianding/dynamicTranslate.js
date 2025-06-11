@@ -1,6 +1,13 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
+	dcyuzhi(player) {
+		let str = `1.弃置一张装备区内的牌并失去此选项至本轮结束；`;
+		if (player.hasSkill("dcyuzhi_delete")) {
+			str = `<span style="text-decoration:line-through;">${str}</span>`;
+		}
+		return `锁定技，当你成为【杀】的目标时，需选择一项执行：${str}2.此【杀】伤害增加你装备区非装备牌数。`;
+	},
 	dcdianlun(player) {
 		let str = lib.translate["dcdianlun_info"];
 		if (player.hasSkill("dcdianlun_double")) {

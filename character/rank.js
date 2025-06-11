@@ -665,6 +665,7 @@ window.noname_character_rank = {
 		"yj_zhenji",
 	],
 	bp: [
+		"cuilingyi",
 		"jimiaojimu",
 		"clan_yangzhong",
 		"ol_zhangmancheng",
@@ -2712,6 +2713,7 @@ window.noname_character_rank = {
 			"wn_shen_machao",
 		],
 		epic: [
+			"cuilingyi",
 			"jimiaojimu",
 			"yj_caocaoyuanshao",
 			"v_caopi",
