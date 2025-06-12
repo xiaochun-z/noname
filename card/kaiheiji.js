@@ -40,11 +40,13 @@ game.import("card", function () {
 						return;
 					}
 					for (let i = 0; i < targets.length; i++) {
+						const color = get.color(result[i].cards[0], targets[i]);
 						if (targets[i] != player) {
-							if (get.color(result[i].cards[0], targets[i]) == get.color(card, player)) {
+							if (color == get.color(card, player)) {
 								damage.push(targets[i]);
 							}
 						}
+						targets[i].popup(color);
 					}
 					if (damage.length) {
 						await player.modedDiscard(card);
