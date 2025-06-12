@@ -7509,7 +7509,6 @@ const skills = {
 		},
 	},
 	dcsbzijin: {
-		audio: 2,
 		trigger: {
 			player: "useCardAfter",
 		},
@@ -11235,7 +11234,6 @@ const skills = {
 	},
 	//马伶俐
 	dclima: {
-		audio: 2,
 		mod: {
 			globalFrom(from, to, distance) {
 				return (
@@ -22030,7 +22028,6 @@ const skills = {
 		derivation: "shawu",
 	},
 	shawu: {
-		audio: 2,
 		trigger: { player: "useCardToTargeted" },
 		direct: true,
 		filter(event, player) {
@@ -25186,7 +25183,6 @@ const skills = {
 		},
 	},
 	yuwei: {
-		audio: 2,
 		trigger: { player: "shiyuanBegin" },
 		filter(event, player) {
 			return _status.currentPhase && _status.currentPhase.group == "qun";

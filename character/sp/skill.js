@@ -7332,7 +7332,6 @@ const skills = {
 		},
 	},
 	oltielun: {
-		audio: 2,
 		init(player, skill) {
 			player.addSkill(skill + "_mark");
 		},
@@ -31137,7 +31136,6 @@ const skills = {
 		},
 	},
 	zhenlue: {
-		audio: 2,
 		trigger: { player: "useCard" },
 		forced: true,
 		filter(event) {
@@ -33312,7 +33310,6 @@ const skills = {
 		},
 	},
 	nuzhan: {
-		audio: 2,
 		popup: false,
 		silent: true,
 		firstDo: true,
@@ -37853,7 +37850,6 @@ const skills = {
 		},
 	},
 	baobian: {
-		audio: 2,
 		trigger: { player: ["phaseBefore", "changeHp"] },
 		forced: true,
 		popup: false,
