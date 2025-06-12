@@ -62,7 +62,7 @@ game.import("card", function () {
 					},
 					order: 7,
 					useful: 6,
-					value: 6.5,
+					value: 5.5,
 					result: {
 						target: -1,
 					},
@@ -124,7 +124,7 @@ game.import("card", function () {
 					},
 					order: 7,
 					useful: 6.5,
-					value: 7,
+					value: 6.5,
 					result: {
 						player: 1,
 					},
@@ -161,8 +161,8 @@ game.import("card", function () {
 						return Math.random() > 0.5;
 					},
 					order: 5,
-					useful: 7,
-					value: 7.2,
+					useful: 6,
+					value: 6.2,
 					result: {
 						target: 1,
 					},
@@ -216,8 +216,8 @@ game.import("card", function () {
 						return Math.random() > 0.5;
 					},
 					order: 8,
-					useful: 6.5,
-					value: 7,
+					useful: 5.5,
+					value: 5,
 					result: {
 						target: 1,
 					},
@@ -262,7 +262,7 @@ game.import("card", function () {
 					},
 					order: 7,
 					useful: 6.5,
-					value: 7,
+					value: 6.5,
 					result: {
 						player: 1,
 					},
@@ -321,8 +321,8 @@ game.import("card", function () {
 						return Math.random() > 0.5;
 					},
 					order: 1,
-					useful: 5.5,
-					value: 6,
+					useful: 5,
+					value: 5,
 					result: {
 						target: 1,
 					},
@@ -358,8 +358,8 @@ game.import("card", function () {
 				},
 				ai: {
 					order: 6,
-					useful: 8,
-					value: 8.2,
+					useful: 7.5,
+					value: 8,
 					result: {
 						target(player, target) {
 							const list = [];
@@ -437,8 +437,8 @@ game.import("card", function () {
 				},
 				ai: {
 					order: 10,
-					useful: 8.5,
-					value: 8.5,
+					useful: 7,
+					value: 7.5,
 					result: {
 						target: 1,
 					},
