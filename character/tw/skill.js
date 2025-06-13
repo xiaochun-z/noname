@@ -8798,7 +8798,6 @@ const skills = {
 	//张绣
 	twjuxiang: {
 		global: "twjuxiang_global",
-		audio: 2,
 		zhuSkill: true,
 		subSkill: {
 			global: {
@@ -8881,7 +8880,6 @@ const skills = {
 	},
 	//孟获
 	twqiushou: {
-		audio: 2,
 		trigger: { global: "useCardAfter" },
 		filter(event, player) {
 			if (event.card.name != "nanman") {
@@ -25325,7 +25323,6 @@ const skills = {
 		},
 	},
 	twrangyi: {
-		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
@@ -25399,7 +25396,6 @@ const skills = {
 		},
 	},
 	twbaimei: {
-		audio: 2,
 		trigger: {
 			player: "damageBegin4",
 		},
@@ -25433,7 +25429,6 @@ const skills = {
 		},
 	},
 	twhuzhu: {
-		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		filter(e, player) {
@@ -25476,7 +25471,6 @@ const skills = {
 		},
 	},
 	twliancai: {
-		audio: 2,
 		trigger: { player: ["turnOverEnd", "phaseJieshuBegin"] },
 		filter(card, player, target) {
 			return target == "phaseJieshuBegin" || player.countCards("h") < player.hp;
@@ -25528,7 +25522,6 @@ const skills = {
 	},
 	twqijia: {
 		//group:'twqijia_alka',
-		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
 			return player.countCards("e", function (card) {
@@ -25609,7 +25602,6 @@ const skills = {
 		},
 	},
 	twxiaolian: {
-		audio: 2,
 		trigger: { global: "useCardToTarget" },
 		logTarget: "target",
 		filter(event, player) {
@@ -25678,7 +25670,6 @@ const skills = {
 		},
 	},
 	twtijin: {
-		audio: 2,
 		trigger: { global: "useCardToPlayer" },
 		filter(event, player) {
 			return event.card?.name == "sha" && event.player != player && event.target != player && event.targets.length == 1 && player.inRange(event.player);
@@ -25705,7 +25696,6 @@ const skills = {
 		},
 	},
 	twyanqin: {
-		audio: 2,
 		trigger: { player: "phaseBegin" },
 		direct: true,
 		content() {
@@ -25736,7 +25726,6 @@ const skills = {
 		},
 	},
 	twbaobian: {
-		audio: 2,
 		trigger: { source: "damageBegin2" },
 		filter(event, player) {
 			var card = event.card;
