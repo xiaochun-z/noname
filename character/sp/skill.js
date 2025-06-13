@@ -1339,7 +1339,7 @@ const skills = {
 					}
 					if (!target?.isIn()) {
 						if (target) {
-							player.getStorage("oldici_effect").remove(target);
+							player.unmarkAuto("oldici_effect",target);
 						}
 						return false;
 					}
@@ -1350,7 +1350,7 @@ const skills = {
 				async content(event, trigger, player) {
 					const target = event.targets[0],
 						str = get.translation(target);
-					player.getStorage("oldici_effect").remove(target);
+					player.unmarkAuto("oldici_effect",target);
 					const bool = await player
 						.chooseToGive(target, "h", "交给" + str + "一张手牌，或受到" + str + "对你造成的1点雷属性伤害")
 						.set("ai", card => {
@@ -7332,7 +7332,6 @@ const skills = {
 		},
 	},
 	oltielun: {
-		audio: 2,
 		init(player, skill) {
 			player.addSkill(skill + "_mark");
 		},
@@ -31137,7 +31136,6 @@ const skills = {
 		},
 	},
 	zhenlue: {
-		audio: 2,
 		trigger: { player: "useCard" },
 		forced: true,
 		filter(event) {
@@ -33312,7 +33310,6 @@ const skills = {
 		},
 	},
 	nuzhan: {
-		audio: 2,
 		popup: false,
 		silent: true,
 		firstDo: true,
@@ -37853,7 +37850,6 @@ const skills = {
 		},
 	},
 	baobian: {
-		audio: 2,
 		trigger: { player: ["phaseBefore", "changeHp"] },
 		forced: true,
 		popup: false,
