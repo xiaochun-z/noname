@@ -3014,6 +3014,7 @@ game.import("card", function () {
 							})
 							.set("targetRequired", true)
 							.set("complexSelect", true)
+							.set("complexTarget", true)
 							.set("filterTarget", function (card, player, target) {
 								if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 									return false;
@@ -3218,6 +3219,7 @@ game.import("card", function () {
 									? 4.2
 									: 1;
 							}
+							return 1.3;
 						},
 						value: 8,
 					},

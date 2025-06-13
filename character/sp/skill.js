@@ -1134,6 +1134,7 @@ const skills = {
 						}, "复掠：是否对" + get.translation(sourcex) + "使用一张【杀】")
 						.set("targetRequired", true)
 						.set("complexSelect", true)
+						.set("complexTarget", true)
 						.set("filterTarget", function (card, player, target) {
 							if (target != get.event("sourcex") && !ui.selected.targets.includes(get.event("sourcex"))) {
 								return false;
@@ -1947,8 +1948,8 @@ const skills = {
 								const nh = target.countCards("h");
 								return Math.max(1, 5 - nh);
 							});
-						await player.give(cards, result.targets[0], false);
 						player.logSkill("olzonghu");
+						await player.give(cards, result.targets[0], false);
 						player.addTempSkill("olzonghu_used");
 					},
 				};
@@ -1959,8 +1960,10 @@ const skills = {
 		},
 		ai: {
 			order(item, player) {
-				var player = _status.event.player;
-				var event = _status.event;
+				let event = get.event();
+				if (!game.hasPlayer(current => current != player && get.attitude(player, current) > 0) && game.roundNumber > 2) {
+					return 0;
+				}
 				if (event.filterCard({ name: "sha" }, player, event)) {
 					if (
 						!player.hasShan() &&
@@ -1971,10 +1974,8 @@ const skills = {
 						return 0;
 					}
 					return 2.95;
-				} else {
-					var player = _status.event.player;
-					return 3.15;
 				}
+				return 1;
 			},
 			respondSha: true,
 			respondShan: true,
@@ -4364,6 +4365,7 @@ const skills = {
 				next.backup("spolzhubei_backup");
 				next.set("targetRequired", true);
 				next.set("complexSelect", true);
+				next.set("complexTarget", true);
 				next.set("filterTarget", function (card, player, target) {
 					if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 						return false;
@@ -7330,7 +7332,6 @@ const skills = {
 		},
 	},
 	oltielun: {
-		audio: 2,
 		init(player, skill) {
 			player.addSkill(skill + "_mark");
 		},
@@ -7473,6 +7474,7 @@ const skills = {
 						})
 						.backup("olliantao_backup")
 						.set("targetRequired", true)
+						.set("complexTarget", true)
 						.set("complexSelect", true)
 						.set("filterTarget", function (card, player, target) {
 							if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
@@ -11923,6 +11925,7 @@ const skills = {
 			});
 			next.backup(`${event.name}_backup`);
 			next.set("targetRequired", true);
+			next.set("complexTarget", true);
 			next.set("complexSelect", true);
 			next.set("filterTarget", function (card, player, target) {
 				if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
@@ -19289,6 +19292,7 @@ const skills = {
 								return lib.filter.filterCard.apply(this, arguments);
 							}, "同协：是否对" + get.translation(target) + "使用一张杀？")
 							.set("targetRequired", true)
+							.set("complexTarget", true)
 							.set("complexSelect", true)
 							.set("filterTarget", function (card, player, target) {
 								if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
@@ -23799,6 +23803,7 @@ const skills = {
 				}, "武娘：是否对" + get.translation(player) + "使用一张杀？")
 				.set("targetRequired", true)
 				.set("complexSelect", true)
+				.set("complexTarget", true)
 				.set("filterTarget", function (card, player, target) {
 					if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 						return false;
@@ -25702,6 +25707,7 @@ const skills = {
 				.chooseToUse("对" + get.translation(targets[1]) + "使用一张杀，或将装备区里的武器牌交给一名其他角色", { name: "sha" })
 				.set("targetRequired", true)
 				.set("complexSelect", true)
+				.set("complexTarget", true)
 				.set("filterTarget", function (card, player, target) {
 					if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 						return false;
@@ -31130,7 +31136,6 @@ const skills = {
 		},
 	},
 	zhenlue: {
-		audio: 2,
 		trigger: { player: "useCard" },
 		forced: true,
 		filter(event) {
@@ -33305,7 +33310,6 @@ const skills = {
 		},
 	},
 	nuzhan: {
-		audio: 2,
 		popup: false,
 		silent: true,
 		firstDo: true,
@@ -34772,7 +34776,12 @@ const skills = {
 	},
 	kunfen: {
 		audio: 2,
-		audioname2: { ol_sb_jiangwei: "kunfen_ol_sb_jiangwei" },
+		audioname2: {
+			ol_sb_jiangwei: "kunfen_ol_sb_jiangwei",
+			pot_weiyan: "kunfen_pot_weiyan",
+			pot_weiyan_achieve: "kunfen_pot_weiyan",
+			pot_weiyan_fail: "kunfen_pot_weiyan",
+		},
 		trigger: { player: "phaseJieshuBegin" },
 		locked(skill, player) {
 			if (!player || !player.storage.kunfen) {
@@ -37841,7 +37850,6 @@ const skills = {
 		},
 	},
 	baobian: {
-		audio: 2,
 		trigger: { player: ["phaseBefore", "changeHp"] },
 		forced: true,
 		popup: false,

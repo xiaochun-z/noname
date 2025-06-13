@@ -2569,6 +2569,7 @@ const skills = {
 					return lib.filter.filterTarget.apply(this, arguments);
 				})
 				.set("targetRequired", true)
+				.set("complexTarget", true)
 				.set("complexSelect", true)
 				.set("sourcex", target)
 				.set("addCount", false)
@@ -4468,6 +4469,7 @@ const skills = {
 				target.markAuto("dcyuhui_buff", [player]);
 			}
 		},
+		derivation: "dcwoheng",
 		subSkill: {
 			buff: {
 				charlotte: true,
@@ -8005,7 +8007,6 @@ const skills = {
 		},
 	},
 	dcsbzijin: {
-		audio: 2,
 		trigger: {
 			player: "useCardAfter",
 		},
@@ -11731,7 +11732,6 @@ const skills = {
 	},
 	//马伶俐
 	dclima: {
-		audio: 2,
 		mod: {
 			globalFrom(from, to, distance) {
 				return (
@@ -22526,7 +22526,6 @@ const skills = {
 		derivation: "shawu",
 	},
 	shawu: {
-		audio: 2,
 		trigger: { player: "useCardToTargeted" },
 		direct: true,
 		filter(event, player) {
@@ -23290,7 +23289,7 @@ const skills = {
 				content() {
 					if (trigger.player == player.storage.wfyuyan) {
 						player.logSkill("wfyuyan", trigger.player);
-						player.addTempSkill("iwasawa_refenyin", { player: "phaseEnd" });
+						player.addTempSkills("iwasawa_refenyin", { player: "phaseEnd" });
 					}
 					player.removeSkill("wfyuyan_dying");
 				},
@@ -25682,7 +25681,6 @@ const skills = {
 		},
 	},
 	yuwei: {
-		audio: 2,
 		trigger: { player: "shiyuanBegin" },
 		filter(event, player) {
 			return _status.currentPhase && _status.currentPhase.group == "qun";

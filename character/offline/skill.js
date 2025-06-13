@@ -572,6 +572,7 @@ const skills = {
 			if (num > 0) {
 				await player.loseHp(num);
 			}
+			event.cards = event.cards.filterInD("h");
 			await player.discard(event.cards);
 			let cards = event.cards.filter(card => card.name == "tao");
 			while (cards.length) {
@@ -1267,7 +1268,6 @@ const skills = {
 		},
 	},
 	yjjiechu: {
-		audio: 2,
 		mark: true,
 		zhuanhuanji: true,
 		marktext: "☯",
@@ -1413,6 +1413,7 @@ const skills = {
 								return lib.filter.filterCard.apply(this, arguments);
 							}, "你可对" + get.translation(player) + "使用一张杀")
 							.set("targetRequired", true)
+							.set("complexTarget", true)
 							.set("complexSelect", true)
 							.set("filterTarget", function (card, player, target) {
 								const sourcex = get.event("sourcex");
@@ -1448,7 +1449,6 @@ const skills = {
 		},
 	},
 	yjdaojue: {
-		audio: 2,
 		dutySkill: true,
 		onremove(player, skill) {
 			player.removeTip(skill);
@@ -1772,7 +1772,6 @@ const skills = {
 		},
 	},
 	yjtuonan: {
-		audio: 2,
 		trigger: {
 			player: "dying",
 		},
@@ -3112,7 +3111,7 @@ const skills = {
 				return;
 			}
 			const next = target.chooseToUse();
-			next.set("openskilldialog", `俟奋：将任意张牌当作【决斗】使用`);
+			next.set("openskilldialog", `俟奋：将任意张手牌当作【决斗】使用`);
 			next.set("norestore", true);
 			next.set("_backupevent", "hssifen_backup");
 			next.set("custom", {
@@ -3138,8 +3137,12 @@ const skills = {
 				viewAs: {
 					name: "juedou",
 				},
-				check(card) {
-					return 5 - get.value(card);
+				selectCard: [1, Infinity],
+				ai1(card) {
+					if (ui.selected.cards.length) {
+						return 0;
+					}
+ 					return 5 - get.value(card);
 				},
 				log: false,
 			},
@@ -3156,7 +3159,35 @@ const skills = {
 				filterCard: {
 					color: "red",
 				},
-				selectCard: [1, Infinity],
+				complexCard: true,
+				selectCard() {
+					const map = get.player()?.storage.hssifen_viewAs;
+					if (map && Object.keys(map)?.length) {
+						let maxCard = Object.keys(map).maxBy(i => map[i]),
+							minCard = Object.keys(map).minBy(i => map[i]);
+						if (maxCard && minCard) {
+							return [map[minCard], map[maxCard]];
+						}
+					}
+					return [1, Infinity];
+				},
+				prompt() {
+					let str = "将指定张红色牌当决斗对【俟奋】目标使用";
+					const map = get.player()?.storage.hssifen_viewAs;
+					if (map) {
+						let list = [];
+						for (const id in map) {
+							const target = game.findPlayer(current => current.playerid == id);
+							if (target) {
+								list.push(`${get.translation(target)}：${map[id]}`);
+							}
+						}
+						if (list.length) {
+							str += `<br><span class="text" style="font-family: yuanli">${list.join(" ")}</span>`;
+						}
+					}
+					return str;
+				},
 				filterTarget(card, player, target) {
 					const ids = Object.keys(player.storage.hssifen_viewAs);
 					if (!ids.includes(target.playerid)) {
@@ -3843,6 +3874,7 @@ const skills = {
 				.set("sourcex", target)
 				.set("targetRequired", true)
 				.set("complexSelect", true)
+				.set("complexTarget", true)
 				.forResult();
 			if (!result?.bool) {
 				await source.loseHp();
@@ -7554,9 +7586,6 @@ const skills = {
 		trigger: {
 			global: "dyingAfter",
 		},
-		intro: {
-			content: "已对$发动过〖溃降〗",
-		},
 		prompt2(event, player) {
 			return `对${get.translation(event.player.name)}造成1点伤害`;
 		},
@@ -7564,14 +7593,19 @@ const skills = {
 			if (event.player == player || !event.player.isIn()) {
 				return false;
 			}
-			return !player.getStorage("hm_kuixiang").includes(event.player);
+			return !player.getStorage("hm_kuixiang_used").includes(event.player);
 		},
+		onremove(player) {
+			player.removeSkill("hm_kuixiang_used");
+		},
+		logTarget: "player",
 		check(event, player) {
 			return get.attitude(player, event.player) < 0;
 		},
 		async content(event, trigger, player) {
 			const target = trigger.player;
-			player.markAuto("hm_kuixiang", [target]);
+			player.addSkill("hm_kuixiang_used");
+			player.markAuto("hm_kuixiang_used", [target]);
 			await target.damage(player);
 			if (
 				game.getGlobalHistory("everything", evt => {
@@ -7588,6 +7622,15 @@ const skills = {
 					await player.draw(3);
 				}
 			}
+		},
+		subSkill: {
+			used: {
+				intro: {
+					content: "已对$发动过〖溃降〗",
+				},
+				charlotte: true,
+				onremove: true,
+			},
 		},
 	},
 	//神皇甫嵩
@@ -8122,7 +8165,6 @@ const skills = {
 		},
 	},
 	hm_qianhu: {
-		audio: 2,
 		enable: "phaseUse",
 		filterCard: card => get.color(card) == "red",
 		filter(event, player) {
@@ -8592,7 +8634,6 @@ const skills = {
 	},
 	//邓茂
 	hm_houying: {
-		audio: 2,
 		enable: "phaseUse",
 		filterCard: card => get.color(card) == "black",
 		filter(event, player) {
@@ -12355,6 +12396,7 @@ const skills = {
 			next.backup(`${event.name}_backup`);
 			next.set("targetRequired", true);
 			next.set("complexSelect", true);
+			next.set("complexTarget", true)
 			next.set("filterTarget", function (card, player, target) {
 				const { sourcex } = get.event();
 				if (target != sourcex && !ui.selected.targets.includes(sourcex)) {
@@ -13114,7 +13156,6 @@ const skills = {
 	},
 	//刘阿
 	tyxiyu: {
-		audio: 2,
 		trigger: {
 			global: "useCardToPlayered",
 		},
@@ -13215,6 +13256,7 @@ const skills = {
 					}, "是否对" + get.translation(player) + "使用一张杀？")
 					.set("targetRequired", true)
 					.set("complexSelect", true)
+					.set("complexTarget", true)
 					.set("filterTarget", function (card, player, target) {
 						if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 							return false;
@@ -13898,7 +13940,7 @@ const skills = {
 			player.awakenSkill(event.name);
 			await player.gainMaxHp();
 			await player.recover();
-			await player.removeSkills("huxiao");
+			await player.removeSkills(["huxiao", "draghuxiao"]);
 			const result = await player
 				.chooseControl("获得青龙刀", "摸两张牌")
 				.set("prompt", "武继：选择一项")
@@ -14304,6 +14346,7 @@ const skills = {
 	},
 	//冯习
 	tyqingkou: {
+		audio: "twqingkou",
 		trigger: {
 			player: "phaseJieshuBegin",
 		},
@@ -14367,6 +14410,7 @@ const skills = {
 	},
 	//张南
 	tyfenwu: {
+		audio: "twfenwu",
 		trigger: { player: "phaseZhunbeiBegin" },
 		frequent: true,
 		async content(event, trigger, player) {
@@ -14459,7 +14503,6 @@ const skills = {
 	},
 	//程畿
 	tyzhongen: {
-		audio: 2,
 		trigger: {
 			global: "phaseJieshuBegin",
 		},
@@ -14637,7 +14680,6 @@ const skills = {
 	},
 	//龙刘备
 	tyqingshi: {
-		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -14739,7 +14781,6 @@ const skills = {
 		},
 	},
 	tyyilin: {
-		audio: 2,
 		trigger: {
 			global: ["gainAfter", "loseAsyncAfter"],
 		},
@@ -14817,7 +14858,6 @@ const skills = {
 		},
 	},
 	tychengming: {
-		audio: 2,
 		skillAnimation: true,
 		animationColor: "fire",
 		trigger: { player: "dying" },
@@ -14866,7 +14906,6 @@ const skills = {
 	},
 	//蜀孙权-孩子们，其实我早就是蜀国人了
 	tyfuhan: {
-		audio: 2,
 		trigger: {
 			global: ["gainAfter", "loseAsyncAfter"],
 		},
@@ -14985,7 +15024,6 @@ const skills = {
 		},
 	},
 	tychende: {
-		audio: 2,
 		enable: "phaseUse",
 		filterCard: true,
 		selectCard: [2, Infinity],
@@ -15039,7 +15077,6 @@ const skills = {
 		},
 	},
 	tywansu: {
-		audio: 2,
 		trigger: {
 			global: ["useCard", "damageBefore"],
 		},
@@ -15073,7 +15110,6 @@ const skills = {
 	},
 	//神秘将军-孩子们，其实我没有死
 	tywusheng: {
-		audio: 2,
 		enable: ["chooseToRespond", "chooseToUse"],
 		filterCard(card, player) {
 			return get.color(card) == "red";
@@ -15138,7 +15174,6 @@ const skills = {
 		},
 	},
 	tychengshi: {
-		audio: 2,
 		trigger: {
 			source: "damageSource",
 		},
@@ -15199,7 +15234,6 @@ const skills = {
 		},
 	},
 	tyfuwei: {
-		audio: 2,
 		trigger: {
 			global: "damageEnd",
 		},
@@ -15255,6 +15289,7 @@ const skills = {
 					}, `抚危：是否对${get.translation(trigger.source)}使用一张杀？（${num}/${trigger.num}）`)
 					.set("targetRequired", true)
 					.set("complexSelect", true)
+					.set("complexTarget", true)
 					.set("filterTarget", function (card, player, target) {
 						if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 							return false;
@@ -15661,6 +15696,7 @@ const skills = {
 							}, "对" + get.translation(player) + "使用一张杀，否则交给其一张牌且其摸一张牌")
 							.set("targetRequired", true)
 							.set("complexSelect", true)
+							.set("complexTarget", true)
 							.set("filterTarget", function (card, player, target) {
 								if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 									return false;
@@ -17138,6 +17174,7 @@ const skills = {
 				}, "挑衅：对" + get.translation(player) + "使用一张杀，或令其获得你一张牌")
 				.set("targetRequired", true)
 				.set("complexSelect", true)
+				.set("complexTarget", true)
 				.set("filterTarget", function (card, player, target) {
 					if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 						return false;
@@ -17206,7 +17243,6 @@ const skills = {
 		derivation: "jdsbbeifa",
 	},
 	jdsbbeifa: {
-		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
 			return game.hasPlayer(current => current != player);
@@ -18028,12 +18064,14 @@ const skills = {
 				.forResult();
 			if (result.bool) {
 				for (const current of game.players) {
-					await current.turnOver();
-					await current.draw(3);
+					if (current.isIn()) {
+						await current.turnOver();
+						await current.draw(3);
+					}
 				}
 				const lose_list = [];
 				for (const current of game.players) {
-					if (current.countCards("e")) {
+					if (current.countCards("e") && current.isIn()) {
 						lose_list.push([current, current.getCards("e")]);
 					}
 				}
@@ -18099,7 +18137,7 @@ const skills = {
 				return {
 					card: links[0],
 					filterTarget(card, player, target) {
-						return !player.getStorage("jxtuwei").includes(target);
+						return !player.getStorage("jxtuwei").includes(target) && target.canEquip(links[0], true);
 					},
 					check: () => 1,
 					async content(event, trigger, player) {
@@ -18282,7 +18320,6 @@ const skills = {
 	//线下E系列
 	//钟会
 	psmouchuan: {
-		audio: 2,
 		trigger: {
 			global: "roundStart",
 		},
@@ -18335,7 +18372,6 @@ const skills = {
 		derivation: ["psdaohe", "pszhiyi"],
 	},
 	pszizhong: {
-		audio: 2,
 		mod: {
 			maxHandcard(player, num) {
 				return num + get.info("jsrgjuxia").countSkill(player);
@@ -18366,7 +18402,6 @@ const skills = {
 		},
 	},
 	psjizun: {
-		audio: 2,
 		trigger: { player: "dyingAfter" },
 		filter(event, player) {
 			return player.isDamaged() || !player.hasSkill("psqingsuan");
@@ -18411,7 +18446,6 @@ const skills = {
 		},
 	},
 	psdaohe: {
-		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
@@ -18449,7 +18483,6 @@ const skills = {
 		},
 	},
 	pszhiyi: {
-		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget: true,
@@ -18549,6 +18582,7 @@ const skills = {
 							})
 							.set("targetRequired", true)
 							.set("complexSelect", true)
+							.set("complexTarget", true)
 							.set("sourcex", player);
 					}
 				},
@@ -18583,6 +18617,7 @@ const skills = {
 				})
 				.set("targetRequired", true)
 				.set("complexSelect", true)
+				.set("complexTarget", true)
 				.set("logSkill", ["psconghan", trigger.player])
 				.set("sourcex", trigger.player);
 		},
@@ -20818,7 +20853,6 @@ const skills = {
 	},
 	//官盗S系列郭嘉·一版
 	psqizuo: {
-		audio: 2,
 		trigger: { global: ["damageBegin1", "damageBegin3"] },
 		filter(event, player, name) {
 			return (name == "damageBegin1" && event.source && event.source.isIn() && player.inRange(event.source)) || (name == "damageBegin3" && event.player && event.player.isIn() && player.inRange(event.player));
@@ -20905,7 +20939,6 @@ const skills = {
 	},
 	//官盗S系列郭嘉·二版
 	psquanmou: {
-		audio: 2,
 		trigger: {
 			global: "useCardAfter",
 		},
@@ -20939,7 +20972,6 @@ const skills = {
 	},
 	//官盗S赵云·一版
 	pshuiqiang: {
-		audio: 2,
 		trigger: { player: ["shaMiss", "eventNeutralized"] },
 		direct: true,
 		clearTime: true,
@@ -20967,7 +20999,6 @@ const skills = {
 		},
 	},
 	pshuntu: {
-		audio: 2,
 		trigger: { source: "damageSource" },
 		usable: 1,
 		filter(event, player) {
@@ -20998,7 +21029,6 @@ const skills = {
 	},
 	//官盗S赵云·二版
 	psqijin: {
-		audio: 2,
 		trigger: { player: "phaseDrawBegin1" },
 		filter(event, player) {
 			return !event.numFixed;
@@ -21067,7 +21097,6 @@ const skills = {
 		},
 	},
 	psqichu: {
-		audio: 2,
 		enable: ["chooseToUse", "chooseToRespond"],
 		hiddenCard(player, name) {
 			if (player != _status.currentPhase && !player.hasSkill("psqichu_used") && get.type(name) == "basic" && lib.inpile.includes(name)) {
@@ -21230,7 +21259,6 @@ const skills = {
 		},
 	},
 	pslongxin: {
-		audio: 2,
 		trigger: { player: "phaseJudgeBegin" },
 		direct: true,
 		filter(event, player) {
@@ -21262,7 +21290,6 @@ const skills = {
 	},
 	//官盗S周瑜·一版
 	psoldshiyin: {
-		audio: 2,
 		trigger: {
 			player: "gainAfter",
 			global: "loseAsyncAfter",
@@ -21327,7 +21354,6 @@ const skills = {
 	},
 	//官盗S周瑜·二版
 	psshiyin: {
-		audio: 2,
 		trigger: {
 			global: "phaseBefore",
 			player: "enterGame",
@@ -21404,7 +21430,6 @@ const skills = {
 		},
 	},
 	psquwu: {
-		audio: 2,
 		forced: true,
 		trigger: { target: "useCardToBefore" },
 		filter(event, player) {
@@ -21455,7 +21480,6 @@ const skills = {
 		},
 	},
 	psliaozou: {
-		audio: 2,
 		enable: "phaseUse",
 		locked: false,
 		filter(event, player) {
@@ -21630,7 +21654,6 @@ const skills = {
 	},
 	//官盗S曹植
 	psliushang: {
-		audio: 2,
 		trigger: { player: "phaseDrawBegin1" },
 		forced: true,
 		filter(event, player) {
@@ -21778,7 +21801,6 @@ const skills = {
 	},
 	//官盗S曹丕
 	psjianwei: {
-		audio: 2,
 		trigger: { player: "phaseBegin" },
 		skillAnimation: true,
 		animationColor: "water",
@@ -21902,7 +21924,6 @@ const skills = {
 	},
 	//官盗S司马懿
 	pszhonghu: {
-		audio: 2,
 		trigger: { global: "dieAfter" },
 		global: "pszhonghu_skip",
 		filter(event, player) {
@@ -21943,7 +21964,6 @@ const skills = {
 	},
 	//官盗S虎啸龙吟司马懿&诸葛亮
 	pshuxiao: {
-		audio: 2,
 		trigger: { player: "phaseBegin" },
 		frequent: true,
 		content() {
@@ -22013,7 +22033,6 @@ const skills = {
 		},
 	},
 	pslongyin: {
-		audio: 2,
 		enable: ["chooseToUse", "chooseToRespond"],
 		filter(event, player) {
 			if (!player.countCards("hse") || player.hasSkill("pslongyin_used")) {
@@ -22150,7 +22169,6 @@ const skills = {
 	},
 	//官盗S武将传诸葛亮
 	pszhiji: {
-		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget(card, player, target) {
@@ -22197,7 +22215,6 @@ const skills = {
 		},
 	},
 	psjiefeng: {
-		audio: 2,
 		enable: "phaseUse",
 		filterCard: true,
 		selectCard: 2,
@@ -22279,7 +22296,6 @@ const skills = {
 	},
 	//官盗S1066★贾诩
 	psqupo: {
-		audio: 2,
 		trigger: { global: "phaseBegin" },
 		filter(event, player) {
 			return player.countCards("he") && game.countPlayer() > 2;
@@ -22411,7 +22427,6 @@ const skills = {
 		},
 	},
 	psbaoquan: {
-		audio: 2,
 		trigger: { player: "damageBegin4" },
 		filter(event, player) {
 			return player.countCards("h", { type: ["trick", "delay"] }) || _status.connectMode;
@@ -22437,7 +22452,6 @@ const skills = {
 	},
 	//官盗S吕布
 	pssheji: {
-		audio: 2,
 		enable: "phaseUse",
 		filterCard: true,
 		selectCard: -1,
@@ -23069,7 +23083,6 @@ const skills = {
 	},
 	//一战成名·群雄逐鹿·长安之战专属神贾诩
 	zybishi: {
-		audio: 2,
 		trigger: { target: "useCardToTargeted" },
 		filter(event, player) {
 			return event.card.name == "sha" && event.player != player;
@@ -23101,7 +23114,6 @@ const skills = {
 		},
 	},
 	zyjianbing: {
-		audio: 2,
 		trigger: { global: "damageBegin3" },
 		logTarget: "player",
 		filter(event, player) {
@@ -23216,6 +23228,7 @@ const skills = {
 		},
 	},
 	zymoucheng: {
+		audio: "moucheng",
 		enable: "phaseUse",
 		usable: 1,
 		viewAs: { name: "jiedao" },
@@ -23554,7 +23567,6 @@ const skills = {
 	},
 	//用间beta董卓
 	yjtuicheng: {
-		audio: 2,
 		enable: "phaseUse",
 		viewAs: { name: "tuixinzhifu", isCard: true },
 		filterCard: () => false,
@@ -23582,7 +23594,6 @@ const skills = {
 		},
 	},
 	yjyaoling: {
-		audio: 2,
 		trigger: {
 			player: "phaseUseEnd",
 		},
@@ -23639,6 +23650,7 @@ const skills = {
 						return lib.filter.filterCard.apply(this, arguments);
 					}, "耀令：对" + get.translation(targets[1]) + "使用一张杀，或令" + get.translation(player) + "弃置你的一张牌")
 					.set("targetRequired", true)
+					.set("complexTarget", true)
 					.set("filterTarget", function (card, player, target) {
 						if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 							return false;
@@ -23656,7 +23668,6 @@ const skills = {
 		},
 	},
 	yjshicha: {
-		audio: 2,
 		trigger: { player: "phaseDiscardBegin" },
 		forced: true,
 		filter(event, player) {
@@ -23690,7 +23701,6 @@ const skills = {
 		},
 	},
 	yjyongquan: {
-		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
 		zhuSkill: true,
 		filter(event, player) {
@@ -23735,7 +23745,6 @@ const skills = {
 	},
 	//用间beta甘宁的新版
 	yjjielve: {
-		audio: 2,
 		enable: "phaseUse",
 		viewAs: { name: "chenghuodajie" },
 		filterCard(card, player) {
@@ -23776,7 +23785,6 @@ const skills = {
 	},
 	//用间beta张飞
 	yjmangji: {
-		audio: 2,
 		forced: true,
 		trigger: {
 			player: ["loseAfter", "damageEnd", "loseHpEnd", "recoverEnd"],
@@ -23826,7 +23834,6 @@ const skills = {
 	},
 	//用间beta曹洪
 	yjlifeng: {
-		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		locked: false,
@@ -23867,7 +23874,6 @@ const skills = {
 	},
 	//用间篇李儒
 	yjdumou: {
-		audio: 2,
 		forced: true,
 		mod: {
 			cardname(card, player, name) {
@@ -23918,7 +23924,6 @@ const skills = {
 		ai: { threaten: 2.1 },
 	},
 	yjweiquan: {
-		audio: 2,
 		enable: "phaseUse",
 		skillAnimation: true,
 		animationColor: "soil",
@@ -24000,7 +24005,6 @@ const skills = {
 		},
 	},
 	yjrenwang: {
-		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
@@ -24587,6 +24591,7 @@ const skills = {
 				}, "是否对" + get.translation(player) + "使用一张杀？")
 				.set("targetRequired", true)
 				.set("complexSelect", true)
+				.set("complexTarget", true)
 				.set("filterTarget", function (card, player, target) {
 					if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 						return false;
