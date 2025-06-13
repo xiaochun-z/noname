@@ -837,7 +837,6 @@ const skills = {
 		},
 	},
 	startongyin: {
-		audio: 2,
 		trigger: {
 			player: "damageEnd",
 		},
@@ -908,6 +907,7 @@ const skills = {
 					}, "驱险：是否对" + get.translation(target) + "使用一张杀？")
 					.set("targetRequired", true)
 					.set("complexSelect", true)
+					.set("complexTarget", true)
 					.set("filterTarget", function (card, player, target) {
 						if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
 							return false;
@@ -12195,7 +12195,6 @@ const skills = {
 		locked: true,
 	},
 	zezhu: {
-		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
@@ -15345,7 +15344,6 @@ const skills = {
 		group: "fengshi_target",
 		subSkill: {
 			target: {
-				inherit: "dcmffengshi",
 				trigger: { target: "useCardToTargeted" },
 				filter(event, player) {
 					if (event.player == event.target) {
@@ -15358,6 +15356,28 @@ const skills = {
 							return lib.filter.cardDiscardable(card, player, "fengshi");
 						}, "he")
 					);
+				},
+				audio: "mffengshi",
+				audioname: ["sp_mifangfushiren"],
+				logTarget(event, player) {
+					return player == event.player ? event.target : event.player;
+				},
+				prompt2(event, player) {
+					var target = lib.skill.dcmffengshi.logTarget(event, player);
+					return "弃置你与" + get.translation(target) + "的各一张牌，然后令" + get.translation(event.card) + "的伤害+1";
+				},
+				check(event, player) {
+					let viewer = get.event().player,
+						user = event.player,
+						target = event.target;
+					if (get.attitude(player, target) > 0) {
+						return 0;
+					}
+					let eff = get.effect(user, { name: "guohe" }, user, viewer) + get.effect(target, { name: "guohe" }, user, viewer);
+					if (get.tag(event.card, "damage")) {
+						eff += get.effect(target, event.card, player, viewer);
+					}
+					return eff > 0;
 				},
 				async content(event, trigger, player) {
 					const target = trigger.player;
