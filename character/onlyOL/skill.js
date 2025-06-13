@@ -67,40 +67,6 @@ const skills = {
 				},
 			},
 			end: {
-				init(player, skill) {
-					lib.hooks["checkBegin"].push(event => {
-						const skill = "olmiluo_end",
-							player = event.player;
-						if (player?.hasSkill(skill) && event.name == "chooseTarget" && event.getParent().skill == skill) {
-							game.players
-								.filter(target => event.filterTarget(null, player, target))
-								.forEach(target => {
-									const str = target.countCards("h", card => card.hasGaintag("olmiluo")) ? "回复体力" : "失去体力";
-									let node;
-									if (target.node.promptx) {
-										node = target.node.promptx;
-										node.innerHTML = "";
-										node.className = "damage normal-font damageadded";
-									} else {
-										node = ui.create.div(".damage.normal-font", target);
-										target.node.promptx = node;
-										ui.refresh(node);
-										node.classList.add("damageadded");
-									}
-									node.innerHTML = str;
-									node.dataset.nature = "soil";
-								});
-						}
-					});
-					lib.hooks["uncheckBegin"].push((event, args) => {
-						game.players.forEach(target => {
-							if (target.node.promptx) {
-								target.node.promptx.remove();
-								delete target.node.promptx;
-							}
-						});
-					});
-				},
 				trigger: {
 					global: "roundEnd",
 				},
@@ -109,7 +75,7 @@ const skills = {
 				},
 				async cost(event, trigger, player) {
 					event.result = await player
-						.chooseTarget(`###${get.prompt(event.skill)}###令一名没有「迷落」牌的角色失去1点体力，或令一名有「迷落」牌的角色回复1点体力。`, (card, player, target) => {
+						.chooseTarget(`###${get.prompt(event.skill)}###令一名没有“迷落”牌的角色失去1点体力，或令一名有“迷落”牌的角色回复1点体力。`, (card, player, target) => {
 							return player.getStorage("olmiluo_clear").includes(target);
 						})
 						.set("ai", target => {
@@ -118,6 +84,12 @@ const skills = {
 								return get.recoverEffect(target, player, player);
 							}
 							return get.effect(target, { name: "loseHp" }, player, player);
+						})
+						.set("targetprompt2", target => {
+							if (!target.isIn()) {
+								return false;
+							}
+							return target.countCards("h", card => card.hasGaintag("olmiluo")) ? "回复体力" : "失去体力";
 						})
 						.forResult();
 				},
@@ -143,32 +115,23 @@ const skills = {
 	oljueyan: {
 		enable: "chooseToUse",
 		round: 1,
-		hiddenCard(name) {
-			const player = get.player();
-			return (
-				!player?.hasSkill("oljueyan_round") &&
-				player?.countCards("h", card => {
-					if (get.type(card, player) == "trick" || (get.type(card, player) == "basic" && get.suit(card, player) == "heart")) {
-						return event.filterCard(
-							get.autoViewAs({
-								name: get.name(card, player),
-								suit: get.suit(card, player),
-								nature: get.nature(card, player),
-								number: get.number(card, player),
-								isCard: true,
-							}),
-							player,
-							event
-						);
-					}
-					return false;
-				})
-			);
+		hiddenCard(player, name) {
+			return !player?.hasSkill("oljueyan_round") && player?.countCards("h", card => get.type(card, player) == "trick" || (get.type(card, player) == "basic" && get.suit(card, player) == "heart"));
 		},
 		filter(event, player) {
 			return player.countCards("h", card => {
 				if (get.type(card, player) == "trick" || (get.type(card, player) == "basic" && get.suit(card, player) == "heart")) {
-					return;
+					return event.filterCard(
+						get.autoViewAs({
+							name: get.name(card, player),
+							suit: get.suit(card, player),
+							nature: get.nature(card, player),
+							number: get.number(card, player),
+							isCard: true,
+						}),
+						player,
+						event
+					);
 				}
 				return false;
 			});
@@ -1754,6 +1717,21 @@ const skills = {
 				.map((_, i) => i + 1)
 				.removeArray(player.getStorage("olsblunzhan_used"));
 			return nums.length > 0 && player.countCards("hes") >= Math.min(...nums);
+		},
+		onChooseToUse(event) {
+			if (!game.online && !event.olsblunzhan) {
+				const player = get.player();
+				event.set("olsblunzhan", player.getHistory("useCard"));
+			}
+			event.set("targetprompt2", target => {
+				if (!target.isIn() || get.event().skill != "olsblunzhan") {
+					return false;
+				}
+				const player = get.player(),
+					history = get.event().olsblunzhan;
+				const num = history?.filter(evt => evt.targets?.includes(target)).length;
+				return `轮战${num}`;
+			});
 		},
 		filterCard: true,
 		selectCard: () => [1, 5],
