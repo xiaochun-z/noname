@@ -1251,7 +1251,9 @@ export const extensionMenu = function (connectMenu) {
 						}
 					} else if (bool && Array.isArray(oldCharacter.trashBin)) {
 						oldCharacter.trashBin = oldCharacter.trashBin.filter(tag => !tag.startsWith("des:"));
-						if (!oldCharacter.trashBin.length) delete oldCharacter.trashBin;
+						if (!oldCharacter.trashBin.length) {
+							delete oldCharacter.trashBin;
+						}
 					}
 					if (tags.includes("zhu")) {
 						newCharacter.isZhugong = true;
