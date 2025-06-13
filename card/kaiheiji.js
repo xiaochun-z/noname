@@ -334,11 +334,17 @@ game.import("card", function () {
 				fullskin: true,
 				type: "trick",
 				enable: true,
-				singleCard: true,
-				filterTarget: lib.filter.notMe,
-				filterAddedTarget(card, player, target, preTarget) {
-					return target != preTarget && target != player && [target, preTarget].some(current => current.countCards("h"));
+				//singleCard: true,
+				filterTarget(card, player, target) {
+					if (!ui.selected.targets.length) {
+						return player != target;
+					}
+					return ui.selected.targets.concat([target]).some(target => target.countCards("h")) && player != target;
 				},
+				selectTarget: 2,
+				/*filterAddedTarget(card, player, target, preTarget) {
+					return target != preTarget && target != player && [target, preTarget].some(current => current.countCards("h"));
+				},*/
 				multicheck(card, player) {
 					return (
 						game.hasPlayer(current => {
@@ -353,8 +359,14 @@ game.import("card", function () {
 				},
 				complexSelect: true,
 				complexTarget: true,
+				multitarget: true,
+				modTarget: false,
 				async content(event, trigger, player) {
-					event.target.swapHandcards(event.addedTarget);
+					const { targets } = event;
+					if (targets.length != 2) {
+						return;
+					}
+					targets[0].swapHandcards(targets[1]);
 				},
 				ai: {
 					order: 6,
