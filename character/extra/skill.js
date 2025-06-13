@@ -845,6 +845,7 @@ const skills = {
 				player.addMark("dclinjie", num);
 			}
 			await player.draw(player.countMark("dclinjie"));
+			await player.gainMaxHp();
 			await player.removeSkills("dclinjie");
 			await player.addSkills("dclishi");
 			player.markSkill("dclinjie");

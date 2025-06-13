@@ -775,7 +775,7 @@ const skills = {
 						}, 0);
 						if (num < 13) {
 							if (att > 0) {
-								8 - get.value(card);
+								return 8 - get.value(card);
 							}
 							return Math.ceil(get.number(card, player) / 4) * (6 - get.value(card));
 						}

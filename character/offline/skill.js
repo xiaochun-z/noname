@@ -6449,22 +6449,23 @@ const skills = {
 				const target = result.targets[0],
 					skill = event.name + "_effect";
 				player.addSkill(skill);
+				player.updateStorage(skill, storage => storage.concat([target]).sortBySeat(), false);
+				if (!player.storage[skill]) {
+					player.storage[skill] = [];
+				}
+				player.storage[skill].add(target);
+				player.storage[skill].sortBySeat();
 				//我自己选的我自己会不知道？(doge)
 				const func = (player, target, skill) => {
-					if (!player.storage[skill]) {
-						player.storage[skill] = [];
-					}
-					player.storage[skill].add(target);
-					player.storage[skill].sortBySeat();
 					player.markSkill(skill, null, null, true);
 				};
 				if (event.isMine()) {
 					func(player, target, skill);
 				} else if (player.isOnline2()) {
-					player.send(func, player, target);
+					player.send(func, player, target, skill);
 				}
 				target.addSkill(skill);
-				target.markAuto(skill, [player]);
+				target.updateStorage(skill, storage => storage.concat([player]).sortBySeat(), false);
 			}
 		},
 		subSkill: {
