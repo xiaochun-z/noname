@@ -1,9 +1,16 @@
 const characters = {
+	dc_sb_jiangwei: {
+		sex: "male",
+		group: "shu",
+		hp: 2,
+		maxHp: 4,
+		skills: ["dcsbjuemou", "dcsbfuzhan"],
+	},
 	dc_sb_hulie: {
 		sex: "male",
 		group: "wei",
 		hp: 4,
-		skills: ["dcchuanyu", "dcyitou"],
+		skills: ["dcsbchuanyu", "dcsbyitou"],
 	},
 	cuilingyi: {
 		sex: "female",

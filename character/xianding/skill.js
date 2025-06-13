@@ -3,14 +3,156 @@ import cards from "../sp2/card.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//谋姜维
+	dcsbjuemou: {
+		audio: 2,
+		audioname: ["dc_sb_jiangwei_shadow"],
+		zhuanhuanji(player, skill) {
+			player.storage[skill] = !player.storage[skill];
+			player.changeSkin({ characterName: "dc_sb_jiangwei" }, "dc_sb_jiangwei" + (player.storage[skill] ? "_shadow" : ""));
+		},
+		marktext: "☯",
+		mark: true,
+		intro: {
+			content(storage, player) {
+				if (!storage) {
+					return `转换技，你使用锦囊牌时，${player.storage.dcsbjuemou_rewrite ? "或回合开始和结束时，" : ""}对自己造成1点伤害并摸已损失体力值数张牌。`;
+				}
+				return `转换技，你使用锦囊牌时，${player.storage.dcsbjuemou_rewrite ? "或回合开始和结束时，" : ""}令一名角色弃置另一名角色一张牌并受到其造成的1点伤害。`;
+			},
+		},
+		trigger: {
+			player: ["useCard", "phaseBegin", "phaseEnd"],
+		},
+		filter(event, player) {
+			if (event.name == "useCard") {
+				return get.type2(event.card) == "trick";
+			}
+			return player.storage.dcsbjuemou_rewrite;
+		},
+		async cost(event, trigger, player) {
+			const storage = player.storage.dcsbjuemou;
+			if (!storage) {
+				event.result = await player
+					.chooseBool(`###${get.prompt(event.skill)}###对自己造成1点伤害并摸已损失体力值张张牌`)
+					.set("ai", () => true)
+					.forResult();
+			} else {
+				event.result = await player
+					.chooseTarget(`###${get.prompt(event.skill)}###令一名角色弃置另一名角色一张牌并受到其造成的1点伤害`, 2, (card, player, target) => {
+						const selected = ui.selected.targets;
+						if (!selected.length) {
+							return game.hasPlayer(targetx => targetx.countDiscardableCards(target, "he"));
+						}
+						return target.countDiscardableCards(selected[0], "he");
+					})
+					.set("complexTarget", true)
+					.set("complexSelect", true)
+					.set("targetprompt", ["弃牌", "被弃牌"])
+					.set("ai", target => {
+						const selected = ui.selected.targets,
+							player = get.player();
+						if (!selected.length) {
+							return Math.max(
+								...game
+									.filterPlayer(targetx => targetx.countDiscardableCards(target, "he"))
+									.map(targetx => {
+										return get.effect(targetx, { name: "guohe_copy2" }, target, player) + get.damageEffect(target, targetx, player);
+									})
+							);
+						}
+						return get.effect(selected[0], { name: "guohe_copy2" }, target, player) + get.damageEffect(target, selected[0], player);
+					})
+					.forResult();
+			}
+		},
+		line: false,
+		async content(event, trigger, player) {
+			const storage = player.storage.dcsbjuemou;
+			player.changeZhuanhuanji(event.name);
+			if (!storage) {
+				await player.damage();
+				await player.draw(player.getDamagedHp());
+			} else {
+				const source = event.targets[0],
+					target = event.targets[1];
+				player.line2([source, target], "green");
+				await source.discardPlayerCard(target, "he", true);
+				target.line(source, "yellow");
+				source.damage(target);
+			}
+		},
+		ai: {
+			threaten: 1.5,
+		},
+		group: ["dcsbjuemou_change", "dcsbjuemou_recover"],
+		subSkill: {
+			recover: {
+				audio: "dcsbjuemou",
+				audioname: ["dc_sb_jiangwei_shadow"],
+				trigger: { player: "dying" },
+				filter(event, player) {
+					return event.reason?.name == "damage" && event.reason.getParent().name == "dcsbjuemou";
+				},
+				forced: true,
+				locked: false,
+				async content(event, trigger, player) {
+					await player.recoverTo(1);
+				},
+			},
+			rewrite: {
+				charlotte: true,
+			},
+			change: {
+				audio: "dcsbjuemou",
+				audioname: ["dc_sb_jiangwei_shadow"],
+				trigger: {
+					global: "phaseBefore",
+					player: "enterGame",
+				},
+				filter(event, player) {
+					return event.name != "phase" || game.phaseNumber == 0;
+				},
+				prompt2(event, player) {
+					return "切换【绝谋】为状态" + (player.storage.dcsbjuemou ? "阳" : "阴");
+				},
+				check: () => Math.random() > 0.5,
+				content() {
+					player.changeZhuanhuanji("dcsbjuemou");
+				},
+			},
+		},
+	},
+	dcsbfuzhan: {
+		derivation: ["dcsbjuemou_rewrite"],
+		limited: true,
+		skillAnimation: true,
+		animationColor: "fire",
+		trigger: { global: "dyingAfter" },
+		filter(event, player) {
+			return event.player.isIn();
+		},
+		check(event, player) {
+			if (player.hp <= 2) {
+				return true;
+			}
+			return false;
+		},
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			await player.recoverTo(player.maxHp);
+			player.storage.dcsbjuemou_rewrite = true;
+			game.log(player, "修改了", "#g【绝谋】");
+		},
+	},
 	//谋胡烈
-	dcchuanyu: {
+	dcsbchuanyu: {
 		trigger: { global: ["roundStart", "roundEnd"] },
 		filter(event, player, name) {
 			if (name == "roundStart") {
 				return true;
 			}
-			return player.getStorage("dcchuanyu").some(target => target.isIn());
+			return player.getStorage("dcsbchuanyu").some(target => target.isIn());
 		},
 		async cost(event, trigger, player) {
 			if (event.triggername == "roundStart") {
@@ -35,8 +177,8 @@ const skills = {
 						.when({ global: "roundStart" })
 						.filter(evt => evt != trigger)
 						.then(() => {
-							player.unmarkSkill("dcchuanyu");
-							delete player.storage.dcchuanyu;
+							player.unmarkSkill("dcsbchuanyu");
+							delete player.storage.dcsbchuanyu;
 						});
 				}
 				const result = await player
@@ -72,7 +214,7 @@ const skills = {
 				}
 			} else {
 				const use = player
-						.getStorage("dcchuanyu")
+						.getStorage("dcsbchuanyu")
 						.filter(target => target.isIn())
 						.sortBySeat(),
 					card = get.autoViewAs({ name: "sha", isCard: true }),
@@ -101,12 +243,12 @@ const skills = {
 		intro: {
 			content: "本轮获得过「舆」的角色：$",
 		},
-		group: ["dcchuanyu_give"],
+		group: ["dcsbchuanyu_give"],
 		subSkill: {
 			give: {
 				trigger: { global: ["cardsDiscardAfter"] },
 				filter(event, player) {
-					return lib.skill.dcchuanyu_give.getCards(event, player).length > 0 && game.hasPlayer(target => !player.getStorage("dcchuanyu").includes(target));
+					return lib.skill.dcsbchuanyu_give.getCards(event, player).length > 0 && game.hasPlayer(target => !player.getStorage("dcsbchuanyu").includes(target));
 				},
 				getCards(event, player) {
 					const evt = event.getParent();
@@ -118,14 +260,14 @@ const skills = {
 						return [];
 					}
 					const lose = evt2.childEvents[0],
-						cards = event.getd?.()?.filter(card => lose?.gaintag_map[card.cardid]?.includes("dcchuanyu_tag"));
+						cards = event.getd?.()?.filter(card => lose?.gaintag_map[card.cardid]?.includes("dcsbchuanyu_tag"));
 					return cards;
 				},
 				async cost(event, trigger, player) {
-					const cards = lib.skill.dcchuanyu_give.getCards(trigger, player);
+					const cards = lib.skill.dcsbchuanyu_give.getCards(trigger, player);
 					event.result = await player
 						.chooseTarget(`###${get.prompt(event.skill)}###将${get.translation(cards)}交给本轮未获得过「舆」的一名角色`, (card, player, target) => {
-							return !player.getStorage("dcchuanyu").includes(target);
+							return !player.getStorage("dcsbchuanyu").includes(target);
 						})
 						.set("ai", target => {
 							const player = get.player(),
@@ -140,14 +282,14 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					const target = event.targets[0],
-						cards = lib.skill.dcchuanyu_give.getCards(trigger, player);
-					player.markAuto("dcchuanyu", target);
-					await target.gain(cards, "gain2").set("gaintag", ["dcchuanyu_tag"]);
+						cards = lib.skill.dcsbchuanyu_give.getCards(trigger, player);
+					player.markAuto("dcsbchuanyu", target);
+					await target.gain(cards, "gain2").set("gaintag", ["dcsbchuanyu_tag"]);
 				},
 			},
 		},
 	},
-	dcyitou: {
+	dcsbyitou: {
 		trigger: { global: "phaseUseBegin" },
 		filter(event, player) {
 			return event.player != player && event.player.isMaxHandcard() && player.countCards("h");
@@ -172,7 +314,7 @@ const skills = {
 				forced: true,
 				trigger: { global: "damageSource" },
 				filter(event, player) {
-					return player.getStorage("dcyitou_effect").includes(event.source);
+					return player.getStorage("dcsbyitou_effect").includes(event.source);
 				},
 				async content(event, trigger, player) {
 					await player.draw();

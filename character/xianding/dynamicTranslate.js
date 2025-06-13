@@ -1,6 +1,19 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
+	dcsbjuemou(player) {
+		const bool = player.storage.dcsbjuemou;
+		let yang = "对自己造成1点伤害并摸已损失体力值数张牌",
+			yin = "令一名角色弃置另一名角色一张牌并受到其造成的1点伤害";
+		if (bool) {
+			yin = `<span class="bluetext">${yin}</span>`;
+		} else {
+			yang = `<span class="firetext">${yang}</span>`;
+		}
+		const start = `转换技，游戏开始时可自选阴阳状态。你使用锦囊牌时，${player.storage.dcsbjuemou_rewrite ? "或回合开始和结束时，" : ""}你可以:`,
+			end = "。若你因此技能进入濒死，你将体力值回复至1点。";
+		return `${start}阳：${yang}；阴：${yin}${end}`;
+	},
 	dcyuzhi(player) {
 		let str = `1.弃置一张装备区内的牌并失去此选项至本轮结束；`;
 		if (player.hasSkill("dcyuzhi_delete")) {
