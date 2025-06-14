@@ -326,7 +326,7 @@ const skills = {
 			player: "damageBegin3",
 			source: "damageBegin1",
 		},
-		usable: 1,
+		round: 1,
 		filter(event, player) {
 			return player.countCards("h");
 		},
@@ -368,7 +368,8 @@ const skills = {
 					.set("eff", player.countCards("hs", card => player.hasValueTarget(card) && get.tag(card, "damage")) > 0)
 					.forResult();
 				if (result2.bool) {
-					player.storage.counttrigger.dcgumai--;
+					delete player.storage[event.name + "_roundcount"];
+					player.unmarkSkill(event.name + "_roundcount");
 				}
 			}
 		},

@@ -116,7 +116,7 @@ const skills = {
 		enable: "chooseToUse",
 		round: 1,
 		hiddenCard(player, name) {
-			return !player?.hasSkill("oljueyan_round") && player?.countCards("h", card => get.type(card, player) == "trick" || (get.type(card, player) == "basic" && get.suit(card, player) == "heart"));
+			return !player?.hasSkill("oljueyan_round") && player?.countCards("h", card => (get.type(card, player) == "trick" || (get.type(card, player) == "basic" && get.suit(card, player) == "heart")) && get.name(card, player) == name);
 		},
 		filter(event, player) {
 			return player.countCards("h", card => {
