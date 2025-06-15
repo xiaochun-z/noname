@@ -3415,13 +3415,13 @@ const skills = {
 		derivation: "tamo_faq",
 		async content(event, trigger, player) {
 			const toSortPlayers = game.filterPlayer(current => {
-				/*if (get.mode() === "doudizhu") {
+				if (get.mode() === "doudizhu") {
 					return current.getSeatNum() !== 3;
-				}*/
+				}
 				return !current.isZhu2();
 			});
 			toSortPlayers.sortBySeat(game.findPlayer2(current => current.getSeatNum() == 1, true));
-			const next = player.chooseToMove("榻谟：是否分配" + (game.hasPlayer(cur => cur.isZhu2()) ? "除主公外" : "") + "所有角色的座次？"); //(get.mode() != "doudizhu" ?  : "除三号位外")
+			const next = player.chooseToMove("榻谟：是否分配" + (get.mode() != "doudizhu" ? (game.hasPlayer(cur => cur.isZhu2()) ? "除主公外" : "") : "除三号位外") + "所有角色的座次？");
 			next.set("list", [
 				[
 					"（以下排列的顺序即为发动技能后角色的座次顺序）",
