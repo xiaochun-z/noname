@@ -7706,7 +7706,9 @@ player.removeVirtualEquip(card);
 				}
 			}
 			if (result?.control == "draw_card") {
-				await target.draw(event.num1);
+				const next = target.draw(event.num1);
+				next.gaintag.addArray(event.gaintag);
+				await next;
 			} else if (result?.control == "recover_hp") {
 				await target.recover(event.num2);
 			}

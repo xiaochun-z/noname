@@ -6210,6 +6210,7 @@ export class Player extends HTMLDivElement {
 		if (next.target == undefined) {
 			next.target = this;
 		}
+		next.gaintag = [];
 		next.setContent("chooseDrawRecover");
 		return next;
 	}
