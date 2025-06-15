@@ -2692,18 +2692,13 @@ const skills = {
 						player.storage.dcshicao_record = cards.slice();
 						player.storage.dcshicao_aiRecord = cards.slice();
 						player.storage.dcshicao_bottom = !bottom;
-						const func = lib.skill.dctongguan.localMark,
-							skill = "dcshicao";
-						if (event.player.isUnderControl(true)) {
-							func(skill, player);
-						} else if (event.isOnline()) {
-							player.send(func, skill, player);
-						}
+						const skill = "dcshicao";
+						player.localMarkSkill(skill, player, event);
 						if (bottom) {
 							cards.reverse();
 						}
 						await game.cardsGotoPile(cards, bottom ? "insert" : null);
-						player.tempBanSkill("dcshicao");
+						player.tempBanSkill(skill);
 					},
 					ai: {
 						result: { player: 1 },

@@ -19341,12 +19341,7 @@ const skills = {
 			"step 1";
 			if (result.control) {
 				var skill = result.control;
-				var func = lib.skill.dctongguan.localMark;
-				if (event.player == game.me) {
-					func(skill, trigger.player);
-				} else if (event.isOnline()) {
-					player.send(func, skill, trigger.player);
-				}
+				player.localMarkSkill(skill, trigger.player, event);
 				// game.log(player,'为',trigger.player,'选择了','#g「'+get.translation(skill)+'」','属性');
 				game.log(player, "为", trigger.player, "选择了", "#g一个属性");
 				// player.popup(skill);
