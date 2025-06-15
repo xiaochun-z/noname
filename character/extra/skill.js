@@ -3416,17 +3416,7 @@ const skills = {
 			const toSortPlayers = get.info(event.skill).getTargets();
 			toSortPlayers.sortBySeat(game.findPlayer2(current => current.getSeatNum() == 1, true));
 			const next = player.chooseToMove("榻谟：是否分配" + (get.mode() != "doudizhu" ? (game.hasPlayer(cur => cur.isZhu2()) ? "除主公外" : "") : "除三号位外") + "所有角色的座次？");
-			next.set("list", [
-				[
-					"（以下排列的顺序即为发动技能后角色的座次顺序）",
-					[
-						toSortPlayers.map(i => `${i.getSeatNum()}|${i.name}`),
-						(item, type, position, noclick, node) => {
-							return lib.skill.tamo.$createButton(item, type, position, noclick, node);
-						},
-					],
-				],
-			]);
+			next.set("list", [["（以下排列的顺序即为发动技能后角色的座次顺序）", [toSortPlayers.map(i => `${i.getSeatNum()}|${i.name}`), lib.skill.tamo.$createButton]]]);
 			next.set("toSortPlayers", toSortPlayers.slice(0));
 			next.set("processAI", () => {
 				const players = get.event("toSortPlayers"),
@@ -3561,19 +3551,16 @@ const skills = {
 				if (target == player || target.countCards("h") + player.countCards("h") == 0) {
 					return false;
 				}
-				return get.mode() == "identity" || target.countCards("h") <= player.countCards("h") + 1;
+				return true;
 			});
 		},
-		direct: true,
-		async content(event, trigger, player) {
-			const {
-				result: { bool, targets },
-			} = await player
-				.chooseTarget(get.prompt("zhimeng"), "与一名其他角色平分手牌", (card, player, target) => {
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt(event.skill), "与一名其他角色平分手牌", (card, player, target) => {
 					if (target == player || target.countCards("h") + player.countCards("h") == 0) {
 						return false;
 					}
-					return get.mode() == "identity" || target.countCards("h") <= player.countCards("h") + 1;
+					return true;
 				})
 				.set("ai", target => {
 					const player = get.player();
@@ -3587,12 +3574,11 @@ const skills = {
 							.map(card => get.value(card, target))
 							.reduce((p, c) => p + c, 0) * get.sgnAttitude(player, target);
 					return (pvalue + tvalue) / 2;
-				});
-			if (!bool) {
-				return;
-			}
-			const target = targets[0];
-			player.logSkill("zhimeng", target);
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
 			const lose_list = [];
 			let cards = [];
 			[player, target].forEach(current => {
@@ -3604,11 +3590,13 @@ const skills = {
 					lose_list.push([current, hs]);
 				}
 			});
-			await game
-				.loseAsync({
-					lose_list: lose_list,
-				})
-				.setContent("chooseToCompareLose");
+			if (lose_list.length) {
+				await game
+					.loseAsync({
+						lose_list,
+					})
+					.setContent("chooseToCompareLose");
+			}
 			await game.delay();
 			cards = cards.filterInD();
 			const pcards = cards.randomGets(Math.ceil(cards.length / 2));
@@ -3622,15 +3610,15 @@ const skills = {
 				list.push([target, tcards]);
 				game.log(target, "获得了", get.cnNumber(tcards.length), "张牌");
 			}
-			game.loseAsync({
-				gain_list: list,
-				player: player,
-				animate: "draw",
-			}).setContent("gaincardMultiple");
+			await game
+				.loseAsync({
+					gain_list: list,
+					player,
+					animate: "draw",
+				})
+				.setContent("gaincardMultiple");
 		},
-		ai: {
-			threaten: 4,
-		},
+		ai: { threaten: 4 },
 	},
 	//神华佗
 	wuling: {
