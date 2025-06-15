@@ -843,7 +843,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseCard(get.prompt2(event.skill), 3, "he")
-				.set("filterCard", card => {
+				.set("filterCard", (card, player) => {
 					if (!lib.filter.cardRecastable(card, player)) {
 						return false;
 					}
@@ -3142,7 +3142,7 @@ const skills = {
 					if (ui.selected.cards.length) {
 						return 0;
 					}
- 					return 5 - get.value(card);
+					return 5 - get.value(card);
 				},
 				log: false,
 			},
@@ -12396,7 +12396,7 @@ const skills = {
 			next.backup(`${event.name}_backup`);
 			next.set("targetRequired", true);
 			next.set("complexSelect", true);
-			next.set("complexTarget", true)
+			next.set("complexTarget", true);
 			next.set("filterTarget", function (card, player, target) {
 				const { sourcex } = get.event();
 				if (target != sourcex && !ui.selected.targets.includes(sourcex)) {

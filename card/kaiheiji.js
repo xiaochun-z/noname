@@ -346,21 +346,18 @@ game.import("card", function () {
 					return target != preTarget && target != player && [target, preTarget].some(current => current.countCards("h"));
 				},*/
 				multicheck(card, player) {
-					return (
-						game.hasPlayer(current => {
-							return (
-								current != player &&
-								game.hasPlayer(currentx => {
-									return currentx != player && currentx != current && [currentx, current].some(target => target.countCards("h"));
-								})
-							);
-						}) > 1
-					);
+					return game.hasPlayer(current => {
+						return (
+							current != player &&
+							game.hasPlayer(currentx => {
+								return currentx != player && currentx != current && [currentx, current].some(target => target.countCards("h"));
+							})
+						);
+					});
 				},
 				complexSelect: true,
 				complexTarget: true,
 				multitarget: true,
-				modTarget: false,
 				async content(event, trigger, player) {
 					const { targets } = event;
 					if (targets.length < 2) {
@@ -376,9 +373,6 @@ game.import("card", function () {
 						target(player, target) {
 							const list = [];
 							let targets = ui.selected.targets.slice();
-							if (_status.event.preTarget) {
-								targets.add(_status.event.preTarget);
-							}
 							//const num = player.countCards("he");
 							const players = game.filterPlayer();
 							if (targets.length == 0) {

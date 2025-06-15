@@ -602,7 +602,7 @@ const skills = {
 	},
 	dcyizheng: {
 		audio: 2,
-		trigger: { player: ["phaseBegin", "phaseEnd"] },
+		trigger: { player: ["phaseBegin"] },//, "phaseEnd"
 		filter(event, player) {
 			return (
 				player.countCards("h") &&
@@ -613,7 +613,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt2(event.skill), [1, Infinity], (card, player, target) => {
+				.chooseTarget(get.prompt2(event.skill), [1, player.maxHp], (card, player, target) => {
 					return target != player && target.countCards("h");
 				})
 				.set("ai", target => {
@@ -748,7 +748,7 @@ const skills = {
 			player.awakenSkill(event.name);
 			const num = player.getDamagedHp();
 			await player.recover(num);
-			await player.draw(num);
+			//await player.draw(num);
 			await player.removeSkills("dcyizheng");
 			if (player.hasSkill("dcboxuan")) {
 				player.storage.dcboxuan = true;
