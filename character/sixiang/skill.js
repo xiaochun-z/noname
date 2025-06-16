@@ -59,7 +59,7 @@ const skills = {
 			order: 7,
 			result: {
 				target(player, target) {
-					return -get.effect(target, { name: "guohe_copy2", player, player });
+					return -get.effect(target, { name: "guohe_copy2" }, player, player);
 				},
 			},
 		},
