@@ -4518,7 +4518,7 @@ export default {
 						};
 						lib.yingbian.condition.complex.get("zhuzhan")(trigger);
 					}
-					("step 1");
+					"step 1";
 					if (!result.bool) {
 						return;
 					}
