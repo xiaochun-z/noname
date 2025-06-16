@@ -203,7 +203,7 @@ class Rule {
 	 *
 	 * @param {Rule} thiz
 	 */
-	static #assertOperator = function (thiz) {
+	static #assertOperator(thiz) {
 		if (thiz.#domain !== Domain.current) {
 			throw new Error("当前不是 Rule 所属的运行域");
 		}
@@ -1146,7 +1146,7 @@ class DomainMonitors {
 	 * @param {DomainMonitors} thiz
 	 * @param {Monitor} monitor
 	 */
-	static #installMonitor = function (thiz, monitor) {
+	static #installMonitor(thiz, monitor) {
 		// 解构 Monitor 相关条件
 		// @ts-expect-error Sandbox
 		const [actions, allowDomains, disallowDomains, targets] = Monitor[SandboxExposer2](SandboxSignal_ExposeInfo, monitor);
@@ -1223,7 +1223,7 @@ class DomainMonitors {
 	 * @param {DomainMonitors} thiz
 	 * @param {Monitor} monitor
 	 */
-	static #uninstallMonitor = function (thiz, monitor) {
+	static #uninstallMonitor(thiz, monitor) {
 		// 解构 Monitor 相关条件
 		// @ts-expect-error Sandbox
 		const [actions, allowDomains, disallowDomains, targets] = Monitor[SandboxExposer2](SandboxSignal_ExposeInfo, monitor);
@@ -1301,7 +1301,7 @@ class DomainMonitors {
 	 * @param {Object} target
 	 * @returns {Array<Monitor>?}
 	 */
-	static #getMonitorsBy = function (sourceDomain, targetDomain, action, target) {
+	static #getMonitorsBy(sourceDomain, targetDomain, action, target) {
 		const instance = DomainMonitors.#domainMonitors.get(sourceDomain);
 
 		if (!instance) {
@@ -1338,7 +1338,7 @@ class DomainMonitors {
 	 * @param {DomainMonitors} thiz
 	 * @param {Domain} domain
 	 */
-	static #handleNewDomain = function (thiz, domain) {
+	static #handleNewDomain(thiz, domain) {
 		let actionMap = thiz.#monitorsMap.get(domain);
 
 		// 遍历所有启用的 Monitor
@@ -1633,7 +1633,7 @@ class Monitor {
 	 *
 	 * @param {Monitor} thiz
 	 */
-	static #assertOperator = function (thiz) {
+	static #assertOperator(thiz) {
 		if (thiz.#domain !== Domain.current) {
 			throw new Error("当前不是 Monitor 所属的运行域");
 		}
@@ -1954,7 +1954,7 @@ class Monitor {
 	 *
 	 * @param {Monitor} thiz
 	 */
-	static #exposeInfo = function (thiz) {
+	static #exposeInfo(thiz) {
 		return [thiz.#actions, thiz.#allowDomains, thiz.#disallowDomains, thiz.#checkInfo["target"]];
 	};
 
@@ -1966,7 +1966,7 @@ class Monitor {
 	 * @param {Record<string, any>} nameds
 	 * @param {Record<string, Set>} checkInfo
 	 */
-	static #check = function (nameds, checkInfo) {
+	static #check(nameds, checkInfo) {
 		for (const [key, value] of Object.entries(nameds)) {
 			if (key in checkInfo) {
 				if (!checkInfo[key].has(value)) {
@@ -1988,7 +1988,7 @@ class Monitor {
 	 * @param {Nameds} nameds
 	 * @param {Control} control
 	 */
-	static #handle = function (thiz, access, nameds, control) {
+	static #handle(thiz, access, nameds, control) {
 		if (!Monitor.#check(nameds, thiz.#checkInfo)) {
 			return;
 		}
@@ -2047,7 +2047,7 @@ class Marshal {
 	 * @param {any} obj
 	 * @returns {boolean}
 	 */
-	static #shouldMarshal = function (obj) {
+	static #shouldMarshal(obj) {
 		if (obj === Marshal || obj === Rule || obj === AccessAction || obj === Domain || obj === Sandbox || obj instanceof Domain) {
 			return false;
 		}
@@ -2063,7 +2063,7 @@ class Marshal {
 	 * @param {any} obj
 	 * @returns {boolean}
 	 */
-	static #strictMarshal = function (obj) {
+	static #strictMarshal(obj) {
 		return obj instanceof Sandbox || obj instanceof Rule || obj instanceof Monitor;
 	};
 
@@ -2080,7 +2080,7 @@ class Marshal {
 	 * @param {any} proxy
 	 * @returns {Reverted}
 	 */
-	static #revertProxy = function (proxy) {
+	static #revertProxy(proxy) {
 		return [proxy[Marshal.#sourceDomain], proxy[Marshal.#revertTarget]];
 	};
 
@@ -2093,7 +2093,7 @@ class Marshal {
 	 * @param {Domain} domain
 	 * @returns {Object?}
 	 */
-	static #cacheProxy = function (obj, domain) {
+	static #cacheProxy(obj, domain) {
 		return domain[SandboxExposer](SandboxSignal_GetMarshalledProxy, obj);
 	};
 
@@ -2105,7 +2105,7 @@ class Marshal {
 	 * @param {Object} obj
 	 * @returns {{rule: Rule}}
 	 */
-	static #ensureRuleRef = function (obj) {
+	static #ensureRuleRef(obj) {
 		let rule = Marshal.#marshalRules.get(obj);
 
 		if (!rule) {
@@ -2257,7 +2257,7 @@ class Marshal {
 	 * @param {Domain} domain
 	 * @param {() => any} action
 	 */
-	static #trapDomain = function (domain, action) {
+	static #trapDomain(domain, action) {
 		const prevDomain = Domain.current;
 
 		// 如果可能，应该尽量避免陷入相同运行域
@@ -2285,7 +2285,7 @@ class Marshal {
 	 * @param {Domain} targetDomain
 	 * @returns {Array}
 	 */
-	static #marshalArray = function (array, targetDomain) {
+	static #marshalArray(array, targetDomain) {
 		if (isPrimitive(array)) {
 			return array;
 		}
@@ -2310,7 +2310,7 @@ class Marshal {
 	 * @param {Domain} targetDomain
 	 * @returns {Object}
 	 */
-	static #marshalObject = function (object, targetDomain) {
+	static #marshalObject(object, targetDomain) {
 		if (isPrimitive(object)) {
 			return object;
 		}
@@ -2334,7 +2334,7 @@ class Marshal {
 	 * @param {Object} src
 	 * @returns {any}
 	 */
-	static #clonePureObject = function (src) {
+	static #clonePureObject(src) {
 		let cloned;
 
 		if (typeof src === "function") {
@@ -2363,7 +2363,7 @@ class Marshal {
 	 * @param {Domain} targetDomain
 	 * @returns {Object}
 	 */
-	static #marshal = function (obj, targetDomain) {
+	static #marshal(obj, targetDomain) {
 		// 基元封送
 		if (isPrimitive(obj)) {
 			return obj;
@@ -2976,7 +2976,7 @@ class Domain {
 	}
 
 	// 实装这个要代理Object喵
-	// static #hasInstanceMarshalled = function (obj) {
+	// static #hasInstanceMarshalled(obj) {
 	//     if (Marshal.isMarshalled(obj))
 	//         [, obj] = Marshal[SandboxExposer2]
 	//             (SandboxSignal_UnpackProxy, obj);
@@ -3108,12 +3108,12 @@ class Domain {
 	/**
 	 * @param {Domain} domain
 	 */
-	static #enterDomain = function (domain) {
+	static #enterDomain(domain) {
 		Domain.#domainStack.push(Domain.#currentDomain);
 		Domain.#currentDomain = domain;
 	};
 
-	static #exitDomain = function () {
+	static #exitDomain() {
 		if (Domain.#domainStack.length < 1) {
 			throw new ReferenceError("无法弹出更多的运行域");
 		}
@@ -3125,7 +3125,7 @@ class Domain {
 	/**
 	 * @returns {Array<Domain>}
 	 */
-	static #listDomain = function () {
+	static #listDomain() {
 		const links = Domain.#domainLinks;
 		const list = [];
 
@@ -3361,7 +3361,7 @@ class Sandbox {
 	 *
 	 * @param {Sandbox} thiz
 	 */
-	static #assertOperator = function (thiz) {
+	static #assertOperator(thiz) {
 		if (thiz.#sourceDomain !== Domain.current) {
 			throw new TypeError("当前运行域不是沙盒的所有运行域");
 		}
@@ -3375,7 +3375,7 @@ class Sandbox {
 	 * @param {Sandbox} thiz
 	 * @param {Window} global
 	 */
-	static #initDomainFunctions = function (thiz, global) {
+	static #initDomainFunctions(thiz, global) {
 		/** @type {typeof Function} */
 		const defaultFunction = global.Function;
 		/** @type {typeof Function} */
@@ -3457,7 +3457,7 @@ class Sandbox {
 	//  * @param {Window} global
 	//  * @param {any} x
 	//  */
-	// static #wrappedEval = function (trueWindow, _eval, intercepter, global, x) {
+	// static #wrappedEval(trueWindow, _eval, intercepter, global, x) {
 	// 	const intercepterName = Sandbox.#makeName("_", trueWindow);
 	// 	const evalName = Sandbox.#makeName("_", global);
 	// 	const codeName = Sandbox.#makeName("_", global);
@@ -3480,7 +3480,7 @@ class Sandbox {
 	 * @param {any} x
 	 * @returns
 	 */
-	static #wrappedEval = function (thiz, x) {
+	static #wrappedEval(thiz, x) {
 		let code = String(x).trim();
 
 		while (code.endsWith(";")) {
@@ -3750,7 +3750,7 @@ class Sandbox {
 	 * @param {"exists"|"extend"|"all"} writeContext 当执行的代码尝试为未声明的变量赋值时，应该 根据context与window的变量写入(默认行为)|默认行为并且新的变量写入context|全部写入context
 	 * @returns
 	 */
-	static #compileCore = function (thiz, code, context = null, paramList = null, inheritScope = false, writeContext = "exists") {
+	static #compileCore(thiz, code, context = null, paramList = null, inheritScope = false, writeContext = "exists") {
 		if (typeof code != "string") {
 			throw new TypeError("代码需要是一个字符串");
 		}
@@ -3963,7 +3963,7 @@ class Sandbox {
 	 *
 	 * @param {Sandbox} thiz
 	 */
-	static #createScope = function (thiz) {
+	static #createScope(thiz) {
 		let baseScope = thiz.#scope;
 		const rawScope = new thiz.#domainObject();
 
@@ -4050,7 +4050,7 @@ class Sandbox {
 		Object.defineProperties(rawScope, descriptors);
 	};
 
-	static #makeName = function (/** @type {string} */ prefix, /** @type {any} */ conflict) {
+	static #makeName(/** @type {string} */ prefix, /** @type {any} */ conflict) {
 		let builtName;
 
 		do {
