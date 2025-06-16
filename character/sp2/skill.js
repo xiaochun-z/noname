@@ -2398,7 +2398,7 @@ const skills = {
 						var num = 0,
 							sgn = effect == "wangsheng" ? 1.05 : -1;
 						game.countPlayer(function (current) {
-							if (!(current == player && sgn == -1)) {
+							if (!(current == player && sgn == -1) && current.group == group) {
 								num += get.sgn(get.attitude(player, current)) * sgn;
 							}
 						});
@@ -11676,7 +11676,13 @@ const skills = {
 		mark: true,
 		intro: { content: "本回合内不能使用或打出牌" },
 		mod: {
-			cardEnabled2(card) {
+			cardEnabled(card) {
+				return false;
+			},
+			cardSavable(card) {
+				return false;
+			},
+			cardRespondable(card) {
 				return false;
 			},
 		},
