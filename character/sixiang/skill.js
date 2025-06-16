@@ -306,7 +306,7 @@ const skills = {
 			if (target.canUse(card, player, false, false)) {
 				const result = await target
 					.chooseBool(`羸弱：是否视为对${get.translation(player)}使用一张无距离限制的【杀】`)
-					.set("choice", get.effect(player, card, target, target) > 0 ? true : false)
+					.set("choice", get.effect(player, card, target, target) > 0)
 					.forResult();
 				if (result?.bool) {
 					await target.useCard(card, player, false);
@@ -366,7 +366,7 @@ const skills = {
 					if (target.countCards("h") > target.hp) {
 						const result = await player
 							.chooseBool(`得宠：是否对${get.translation(target)}造成一点伤害`)
-							.set("choice", get.damageEffect(target, player, player) > 0 ? true : false)
+							.set("choice", get.damageEffect(target, player, player) > 0)
 							.forResult();
 						if (result?.bool) {
 							await target.damage();
@@ -430,7 +430,7 @@ const skills = {
 						return get.event().targetsx.includes(target);
 					})
 					.set("targetsx", targets)
-					.set("ai", target => get.effect(target, card, player, player))
+					.set("ai", target => get.effect(target, get.event().getTrigger().card, get.player(), get.player()))
 					.forResult();
 			}
 		},
@@ -442,7 +442,7 @@ const skills = {
 	stdjieji: {
 		trigger: { source: "damageSource" },
 		filter(event, player) {
-			return event.player != player && event.player.isIn() && event.card.name == "sha" && player.getHistory("useCard", evt => evt.card.name == "sha").indexOf(event.getParent("useCard")) == 0 && event.player.countGainableCards(player, "he");
+			return event.player != player && event.player.isIn() && event.card?.name == "sha" && player.getHistory("useCard", evt => evt.card.name == "sha").indexOf(event.getParent("useCard")) == 0 && event.player.countGainableCards(player, "he");
 		},
 		forced: true,
 		logTarget: "player",
@@ -451,7 +451,7 @@ const skills = {
 			await player.gainPlayerCard(target, "he", true);
 			const card = get.autoViewAs({ name: "sha", isCard: true });
 			if (target.canUse(card, player, false, false)) {
-				await target.useCard(card, player, false);
+				await target.useCard(card, player, false, "noai");
 			}
 		},
 	},

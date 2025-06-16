@@ -12,42 +12,6 @@ const cards = {
 		ai: {
 			basic: {
 				equipValue: 4.5,
-				order: (card, player) => {
-					const equipValue = get.equipValue(card, player) / 20;
-					return player && player.hasSkillTag("reverseEquip") ? 8.5 - equipValue : 8 + equipValue;
-				},
-				useful: 2,
-				value: (card, player, index, method) => {
-					if (!player.getCards("e").includes(card) && !player.canEquip(card, true)) {
-						return 0.01;
-					}
-					const info = get.info(card),
-						current = player.getEquip(info.subtype),
-						value = current && card != current && get.value(current, player);
-					let equipValue = info.ai.equipValue || info.ai.basic.equipValue;
-					if (typeof equipValue == "function") {
-						if (method == "raw") {
-							return equipValue(card, player);
-						}
-						if (method == "raw2") {
-							return equipValue(card, player) - value;
-						}
-						return Math.max(0.1, equipValue(card, player) - value);
-					}
-					if (typeof equipValue != "number") {
-						equipValue = 0;
-					}
-					if (method == "raw") {
-						return equipValue;
-					}
-					if (method == "raw2") {
-						return equipValue - value;
-					}
-					return Math.max(0.1, equipValue - value);
-				},
-			},
-			result: {
-				target: (player, target, card) => get.equipResult(player, target, card),
 			},
 		},
 		enable: true,
@@ -77,42 +41,6 @@ const cards = {
 		ai: {
 			basic: {
 				equipValue: 4.5,
-				order: (card, player) => {
-					const equipValue = get.equipValue(card, player) / 20;
-					return player && player.hasSkillTag("reverseEquip") ? 8.5 - equipValue : 8 + equipValue;
-				},
-				useful: 2,
-				value: (card, player, index, method) => {
-					if (!player.getCards("e").includes(card) && !player.canEquip(card, true)) {
-						return 0.01;
-					}
-					const info = get.info(card),
-						current = player.getEquip(info.subtype),
-						value = current && card != current && get.value(current, player);
-					let equipValue = info.ai.equipValue || info.ai.basic.equipValue;
-					if (typeof equipValue == "function") {
-						if (method == "raw") {
-							return equipValue(card, player);
-						}
-						if (method == "raw2") {
-							return equipValue(card, player) - value;
-						}
-						return Math.max(0.1, equipValue(card, player) - value);
-					}
-					if (typeof equipValue != "number") {
-						equipValue = 0;
-					}
-					if (method == "raw") {
-						return equipValue;
-					}
-					if (method == "raw2") {
-						return equipValue - value;
-					}
-					return Math.max(0.1, equipValue - value);
-				},
-			},
-			result: {
-				target: (player, target, card) => get.equipResult(player, target, card),
 			},
 		},
 		enable: true,
