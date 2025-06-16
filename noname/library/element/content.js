@@ -4995,7 +4995,8 @@ player.removeVirtualEquip(card);
 				}
 			}
 			var ok = game.check();
-			if (!ok || !lib.config.auto_confirm) {
+			const eventinfo = get.info(get.card() || {}) || get.info(event.skill) || {};
+			if (!ok || !lib.config.auto_confirm || eventinfo?.manualConfirm) {
 				game.pause();
 				if (lib.config.enable_vibrate && player._noVibrate) {
 					delete player._noVibrate;
@@ -5273,7 +5274,8 @@ player.removeVirtualEquip(card);
 					return;
 				}
 				var ok = game.check();
-				if (!ok || !lib.config.auto_confirm) {
+				const eventinfo = get.info(get.card() || {}) || get.info(event.skill) || {};
+				if (!ok || !lib.config.auto_confirm || eventinfo?.manualConfirm) {
 					game.pause();
 					if (event.openskilldialog) {
 						event.skillDialog = ui.create.dialog(event.openskilldialog);
@@ -7706,7 +7708,9 @@ player.removeVirtualEquip(card);
 				}
 			}
 			if (result?.control == "draw_card") {
-				await target.draw(event.num1);
+				const next = target.draw(event.num1);
+				next.gaintag.addArray(event.gaintag);
+				await next;
 			} else if (result?.control == "recover_hp") {
 				await target.recover(event.num2);
 			}
@@ -11100,7 +11104,7 @@ player.removeVirtualEquip(card);
 			var start = false;
 			var starts = [_status.currentPhase, event.source, event.player, game.me, game.players[0]];
 			for (var i = 0; i < starts.length; i++) {
-				if (get.itemtype(starts[i]) == "player") {
+				if (get.itemtype(starts[i]) == "player" && game.players.concat(game.dead).includes(starts[i])) {
 					start = starts[i];
 					break;
 				}

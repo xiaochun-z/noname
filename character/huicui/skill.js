@@ -117,6 +117,7 @@ const skills = {
 	},
 	//新杀诸葛均
 	dcgengdu: {
+		audio: 2,
 		trigger: {
 			player: "phaseUseBegin",
 		},
@@ -163,7 +164,6 @@ const skills = {
 		},
 		subSkill: {
 			red: {
-				audio: "dcgengdu",
 				enable: "chooseToUse",
 				charlotte: true,
 				filter(event, player) {
@@ -206,6 +206,7 @@ const skills = {
 					},
 					backup(links, player) {
 						return {
+							audio: "dcgengdu",
 							filterCard(card, player) {
 								return get.color(card) === "red";
 							},
@@ -319,9 +320,11 @@ const skills = {
 					},
 				},
 			},
+			red_backup: {},
 		},
 	},
 	dcgumai: {
+		audio: 2,
 		trigger: {
 			player: "damageBegin3",
 			source: "damageBegin1",
@@ -2690,18 +2693,13 @@ const skills = {
 						player.storage.dcshicao_record = cards.slice();
 						player.storage.dcshicao_aiRecord = cards.slice();
 						player.storage.dcshicao_bottom = !bottom;
-						const func = lib.skill.dctongguan.localMark,
-							skill = "dcshicao";
-						if (event.player.isUnderControl(true)) {
-							func(skill, player);
-						} else if (event.isOnline()) {
-							player.send(func, skill, player);
-						}
+						const skill = "dcshicao";
+						player.localMarkSkill(skill, player, event);
 						if (bottom) {
 							cards.reverse();
 						}
 						await game.cardsGotoPile(cards, bottom ? "insert" : null);
-						player.tempBanSkill("dcshicao");
+						player.tempBanSkill(skill);
 					},
 					ai: {
 						result: { player: 1 },
@@ -5156,7 +5154,7 @@ const skills = {
 				cards = [];
 			const len = get.cardNameLength(trigger.card) + (evt ? get.cardNameLength(evt.card) : 0);
 			while (cards.length < 2) {
-				const card = get.cardPile2(cardx => get.cardNameLength(cardx, false) === len && !cards.includes(cardx));
+				const card = get.cardPile(cardx => get.cardNameLength(cardx, false) === len && !cards.includes(cardx));
 				if (!card) {
 					break;
 				}
@@ -5167,7 +5165,7 @@ const skills = {
 					.chooseCardButton(`飞白：获得一张牌`, cards, true)
 					.set("ai", button => get.value(button.link, player))
 					.forResult();
-				if (result?.links) {
+				if (result?.links?.length) {
 					await player.gain(result.links, "gain");
 				}
 			} else {
@@ -6714,8 +6712,12 @@ const skills = {
 					},
 					position: "he",
 					filterTarget(card, player, target) {
+						if (_status.event.map?.[target.playerid]) {
+							target.prompt(`破锐${_status.event.map[target.playerid]}`);
+						}
 						return Object.keys(_status.event.map).includes(target.playerid);
 					},
+					complexTarget: true,
 					ai1(card) {
 						return 7 - get.value(card);
 					},

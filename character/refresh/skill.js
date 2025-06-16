@@ -10959,13 +10959,13 @@ const skills = {
 	},
 	reluoying: {
 		audio: 2,
-		audioname: ["dc_caozhi"],
+		audioname: ["dc_caozhi", "ol_caozhi"],
 		group: ["reluoying_discard", "reluoying_judge"],
 		subfrequent: ["judge"],
 		subSkill: {
 			discard: {
 				audio: "reluoying",
-				audioname: ["dc_caozhi"],
+				audioname: ["dc_caozhi", "ol_caozhi"],
 				trigger: { global: ["loseAfter", "loseAsyncAfter"] },
 				filter(event, player) {
 					if (event.type != "discard" || event.getlx === false) {
@@ -11015,7 +11015,7 @@ const skills = {
 			},
 			judge: {
 				audio: "reluoying",
-				audioname: ["dc_caozhi"],
+				audioname: ["dc_caozhi", "ol_caozhi"],
 				trigger: { global: "cardsDiscardAfter" },
 				direct: true,
 				filter(event, player) {
