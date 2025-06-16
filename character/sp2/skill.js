@@ -464,14 +464,8 @@ const skills = {
 	},
 	staranji: {
 		getUsed(player) {
-			let history = [],
+			let history = game.getRoundHistory("useCard"),
 				suits = lib.suit.slice();
-			for (let i = player.actionHistory.length - 1; i >= 0; i--) {
-				history.addArray(_status.globalHistory[i].everything.filter(evt => evt.name === "useCard"));
-				if (_status.globalHistory[i].isRound) {
-					break;
-				}
-			}
 			const map = history.reduce((map, evt) => {
 				const suit = get.suit(evt.card);
 				if (!map[suit]) {
@@ -2398,7 +2392,7 @@ const skills = {
 						var num = 0,
 							sgn = effect == "wangsheng" ? 1.05 : -1;
 						game.countPlayer(function (current) {
-							if (!(current == player && sgn == -1)) {
+							if (!(current == player && sgn == -1) && current.group == group) {
 								num += get.sgn(get.attitude(player, current)) * sgn;
 							}
 						});
@@ -4424,6 +4418,7 @@ const skills = {
 		},
 		subSkill: {
 			animate: {
+				audio: "dccuichuan",
 				skillAnimation: true,
 				animationColor: "wood",
 			},
@@ -11675,7 +11670,13 @@ const skills = {
 		mark: true,
 		intro: { content: "本回合内不能使用或打出牌" },
 		mod: {
-			cardEnabled2(card) {
+			cardEnabled(card) {
+				return false;
+			},
+			cardSavable(card) {
+				return false;
+			},
+			cardRespondable(card) {
 				return false;
 			},
 		},
