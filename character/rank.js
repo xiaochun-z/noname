@@ -387,6 +387,7 @@ window.noname_character_rank = {
 		"ps_caopi",
 		"ps2063_zhaoyun",
 		"shen_jiaxu",
+		"renwan",
 	],
 	am: [
 		"dc_zhaoxiang",
@@ -1811,8 +1812,8 @@ window.noname_character_rank = {
 		"old_majun",
 	],
 	bm: [
-		"std_zhangmeiren",
-		"std_wangmeiren",
+		"std_zhangyao",
+		"std_wangfuren",
 		"std_panglin",
 		"std_huangchong",
 		"std_caoxiong",
@@ -2728,6 +2729,7 @@ window.noname_character_rank = {
 			"diy_zhangfei",
 			"sxrm_caocao",
 			"wn_shen_machao",
+			"renwan",
 		],
 		epic: [
 			"pe_jun_liubei",
@@ -3244,8 +3246,8 @@ window.noname_character_rank = {
 			"sxrm_liubei",
 		],
 		rare: [
-			"std_zhangmeiren",
-			"std_wangmeiren",
+			"std_zhangyao",
+			"std_wangfuren",
 			"std_panglin",
 			"std_huangchong",
 			"std_caoxiong",

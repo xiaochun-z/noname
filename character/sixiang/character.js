@@ -1,12 +1,12 @@
 const characters = {
-	std_zhangmeiren: {
+	std_zhangyao: {
 		sex: "female",
 		group: "wu",
 		hp: 3,
 		skills: ["stdlianrong", "stdyuanzhuo"],
-		names: "张|null",
+		names: "张|媱",
 	},
-	std_wangmeiren: {
+	std_wangfuren: {
 		sex: "female",
 		group: "wu",
 		hp: 3,
@@ -39,7 +39,7 @@ const characters = {
 		names: "毛|null",
 	},
 	std_zhengcong: {
-		sex: "male",
+		sex: "female",
 		group: "qun",
 		hp: 4,
 		skills: ["stdqiyue", "stdjieji"],
