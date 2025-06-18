@@ -260,8 +260,8 @@ const skills = {
 					ai2(target) {
 						const card = ui.selected.cards[0],
 							att = get.attitude(get.player(), target),
-							range = target.getAttackRange();
-						cardrange = 1 - (get.info(card, false)?.distance?.attackFrom || 0);
+							range = target.getAttackRange(),
+							cardrange = 1 - (get.info(card, false)?.distance?.attackFrom || 0);
 						if (att <= 0 && cardrange > range) {
 							return get.effect(target, { name: "guohe_copy2" }, get.player(), get.player());
 						}
