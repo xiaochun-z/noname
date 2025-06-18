@@ -391,6 +391,110 @@ class Rule {
 
 /**
  * ```plain
+ * 将全局索引函数单独提取了出来
+ * 
+ * 解析全局索引集合
+ * 将类似于 "/Object/assign" 的索引解析为 [Object, "assign"] 的索引
+ * 支持以下几种情况:
+ * "/Object/assign" -> [[window.Object, "assign"]]
+ * "/Event/prototype/preventDefault" -> [[window.Event.prototype, "preventDefault"]]
+ * ["Event", "prototype", "preventDefault"] -> [[window.Event.prototype, "preventDefault"]]
+ * [/^\w*?Event$/, "prototype", "preventDefault"] -> [
+ *     [window.Event.prototype, "preventDefault"],
+ *     [window.UIEvent.prototype, "preventDefault"],
+ *     [window.MouseEvent.prototype, "preventDefault"],
+ *     [window.KeyEvent.prototype, "preventDefault"],
+ *     ...
+ * ]
+ * ```
+ * 
+ * @param {Window} window
+ * @param {string|Array<string|symbol|RegExp>} selector
+ * @returns {Array<[any, string|symbol]>}
+ */
+function buildGlobalIndexes(window, selector) {
+	/** @type {Array<string|symbol|RegExp>} */
+	const items = Array.isArray(selector) ? selector : selector.split("/").filter(Boolean);
+
+	items.unshift(window);
+
+	const pathes = [items];
+
+	/** @type {Array<[any, string|symbol]>} */
+	const indexes = [];
+
+	// 将所有路径转换为索引
+	// 如: /a/b/c => [window.a.b, "c"]
+	while (pathes.length) {
+		/** @type {Array} */
+		// @ts-expect-error Sandbox
+		const path = pathes.shift();
+
+		// 如果已经是长度为二了
+		if (path.length == 2) {
+			// 最后一项如果不是正则表达式直接添加为索引
+			if (!(path[1] instanceof RegExp)) {
+				if (path[1] in path[0]) {
+					// @ts-expect-error Sandbox
+					indexes.push(path);
+				}
+
+				continue;
+			}
+
+			// 否则需要遍历添加索引
+			const root = path[0];
+			const pattern = path[1];
+			indexes.push(
+				// @ts-expect-error Sandbox
+				...Reflect.ownKeys(root)
+					.filter(k => k in root && pattern.test(typeof k == "string" ? k : `@${k.description}`))
+					.map(k => [root, k])
+			);
+
+			continue;
+		}
+
+		// 如果下一个键不是正则表达式
+		if (!(path[1] instanceof RegExp)) {
+			const root = path.shift();
+
+			// 向下索引，并将 `__proto__` 改为原型获取
+			if (path[0] === "__proto__") {
+				path[0] = Reflect.getPrototypeOf(root);
+			} else {
+				path[0] = root[path[0]];
+			}
+
+			if (!path[0]) {
+				continue;
+			}
+
+			// 添加新的路径
+			pathes.push(path);
+			continue;
+		}
+
+		// 如果下一个键是正则表达式
+		// 此时需要遍历向下索引
+		const root = path.shift();
+		const pattern = path.shift();
+		const keys = Reflect.ownKeys(root)
+			.filter(k => k in root && pattern.test(typeof k == "string" ? k : `@${k.description}`));
+
+		if (!keys.length) {
+			continue;
+		}
+
+		// 添加新的路径
+		pathes.push(...keys.map(k => [root[k], ...path]));
+	}
+
+	return indexes;
+}
+
+/**
+ * ```plain
  * 全局变量映射表
  *
  * 在下表中标记的全局变量，
@@ -410,7 +514,7 @@ class Rule {
  * 因为只有内建对象才会在所有运行域同时都有
  * ```
  */
-const GLOBAL_PATHES = Object.freeze([
+const MAPPING_GLOBALS = Object.freeze([
 	"/Object",
 	"/Array",
 	"/Promise",
@@ -485,6 +589,12 @@ const GLOBAL_PATHES = Object.freeze([
  *
  * 这些函数的成功执行依赖于browser context
  * 必须要顶级域来提供给其他运行域
+ * 
+ * 补充:
+ * 对于需要异步执行函数的功能，沙盒本身的运行域因为被卸载了document，受限于浏览器规则不会被执行
+ * 这时候我们需要借助顶级域的对应功能，将它们包装（封送）到沙盒的运行域中，保证异步函数正常执行
+ * 
+ * 另外需要判断原型链的类也需要从顶级域给出，否则会导致检查失败的问题
  * ```
  */
 const MARSHALLED_LIST = Object.freeze([
@@ -506,6 +616,11 @@ const MARSHALLED_LIST = Object.freeze([
 	// 另外补充这两个可能的函数哦
 	"/alert",
 	"/confirm",
+	// 补充所有的事件喵
+	// 因为需要判断原型链，所以这里要让顶级域把它的事件类传过来喵
+	...Object.keys(globalThis)
+		.filter(key => /^\w*?Event$/.test(key))
+		.map(key => `/${key}`),
 ]);
 
 /**
@@ -635,7 +750,7 @@ class Globals {
 			}
 
 			// 构建全局变量映射
-			for (const path of GLOBAL_PATHES) {
+			for (const path of MAPPING_GLOBALS) {
 				const [key, obj] = Globals.parseFrom(path, window);
 
 				if (obj == null) {
@@ -704,9 +819,13 @@ class Globals {
  *
  * 根据HTML现有函数设置
  * 请不要改动下面的列表
+ * 
+ * 补充:
+ * 对于需要执行回调函数的功能，沙盒本身的运行域因为被卸载了document，受限于浏览器规则不会被执行
+ * 这时候我们需要借助顶级域的执行上下文，将回调函数包装（封送）到顶级的运行域中，保证回调函数正常执行
  * ```
  */
-const wrappingFunctions = [
+const WRAPPING_LIST = [
 	"/setTimeout",
 	"/setInterval",
 	"/setImmediate",
@@ -785,7 +904,7 @@ class NativeWrapper {
 		NativeWrapper.#currentFunction = global.Function;
 
 		// 封装所有函数
-		for (const selector of wrappingFunctions) {
+		for (const selector of WRAPPING_LIST) {
 			NativeWrapper.wrapFunctions(global, selector);
 		}
 
@@ -801,90 +920,16 @@ class NativeWrapper {
 	 * @param {string|Array<string|symbol|RegExp>} selector
 	 */
 	static wrapFunctions(global, selector) {
-		/** @type {Array} */
-		const items = Array.isArray(selector) ? selector : selector.split("/").filter(Boolean);
-
 		let flags = 2; // 默认装箱了喵
 
-		if (items[items.length - 1] === "*") {
+		if (selector.length > 2 && selector.slice(-2) === "/*") {
 			flags |= 1;
-			items.pop();
+			selector = selector.slice(0, -2);
 		}
 
-		items.unshift(global);
-
-		const pathes = [items];
-		const indexes = [];
-
-		// 将所有路径转换为索引
-		// 如: /a/b/c => [window.a.b, "c"]
-		while (pathes.length) {
-			/** @type {Array} */
-			// @ts-expect-error Sandbox
-			const path = pathes.shift();
-
-			// 如果已经是长度为二了
-			if (path.length == 2) {
-				// 最后一项如果不是正则表达式直接添加为索引
-				if (!(path[1] instanceof RegExp)) {
-					if (path[1] in path[0]) {
-						indexes.push(path);
-					}
-
-					continue;
-				}
-
-				// 否则需要遍历添加索引
-				const root = path[0];
-				const pattern = path[1];
-				indexes.push(
-					...Reflect.ownKeys(root)
-						.filter(k => pattern.test(typeof k == "string" ? k : `@${k.description}`))
-						.filter(k => k in root)
-						.map(k => [root, k])
-				);
-
-				continue;
-			}
-
-			// 如果下一个键不是正则表达式
-			if (!(path[1] instanceof RegExp)) {
-				const root = path.shift();
-
-				// 向下索引，并将 `__proto__` 改为原型获取
-				if (path[0] === "__proto__") {
-					path[0] = Reflect.getPrototypeOf(root);
-				} else {
-					path[0] = root[path[0]];
-				}
-
-				if (!path[0]) {
-					continue;
-				}
-
-				// 添加新的路径
-				pathes.push(path);
-				continue;
-			}
-
-			// 如果下一个键是正则表达式
-			// 此时需要遍历向下索引
-			const root = path.shift();
-			const pattern = path.shift();
-			const keys = Reflect.ownKeys(root)
-				.filter(k => pattern.test(typeof k == "string" ? k : `@${k.description}`))
-				.filter(k => root[k]);
-
-			if (!keys.length) {
-				continue;
-			}
-
-			// 添加新的路径
-			pathes.push(...keys.map(k => [root[k], ...path]));
-		}
+		const indexes = buildGlobalIndexes(global, selector);
 
 		// 根据索引进行封装
-		// @ts-expect-error Sandbox
 		for (const index of indexes) {
 			NativeWrapper.wrapFunction(global, ...index, flags);
 		}
@@ -1225,7 +1270,6 @@ class DomainMonitors {
 	 */
 	static #uninstallMonitor(thiz, monitor) {
 		// 解构 Monitor 相关条件
-		// @ts-expect-error Sandbox
 		const [actions, allowDomains, disallowDomains, targets] = Monitor[SandboxExposer2](SandboxSignal_ExposeInfo, monitor);
 
 		/**
@@ -1342,7 +1386,6 @@ class DomainMonitors {
 		let actionMap = thiz.#monitorsMap.get(domain);
 
 		// 遍历所有启用的 Monitor
-		// @ts-expect-error Sandbox
 		for (const monitor of Monitor[SandboxExposer2](SandboxSignal_ListMonitor)) {
 			if (monitor.domain === domain) {
 				continue;
@@ -2763,8 +2806,8 @@ class Marshal {
 
 						keys = dispatched.returnValue;
 					}
-					// @ts-expect-error Sandbox
 					else {
+						// @ts-expect-error Sandbox
 						keys = Reflect.ownKeys(...args);
 					}
 
@@ -3625,6 +3668,8 @@ class Sandbox {
 		/**
 		 * ```plain
 		 * 如果要扩充沙盒的内建函数或类，请在此增加喵
+		 * 
+		 * 沙盒中模拟window提供的全局变量全部在这里喵
 		 * ```
 		 */
 		const builtins = {
@@ -3677,11 +3722,28 @@ class Sandbox {
 			Domain: Domain,
 		};
 
+		// 将事件类型暴露到沙盒的模拟window里面喵
+		const patternBuiltins = [
+			/^\w*?Event$/, // 让模拟window里面可以访问上面封送过来的事件类型
+		];
+
 		const hardBuiltins = {
 			NaN: NaN,
 			Infinity: Infinity,
 			undefined: undefined,
 		};
+
+		// 先从沙盒运行域实际的window中得到所有的全局属性名
+		const globalKeys = Object.keys(this.#domainWindow);
+
+		// 我们遍历 `patternBuiltins` 并将符合条件的属性放到 `builtins` 中
+		for (const pattern of patternBuiltins) {
+			for (const key of globalKeys) {
+				if (pattern.test(key)) {
+					builtins[key] = this.#domainWindow[key];
+				}
+			}
+		}
 
 		// 放置内建函数或类
 		Marshal[SandboxExposer2](SandboxSignal_TrapDomain, this.#domain, () => {
@@ -4148,6 +4210,9 @@ if (SANDBOX_ENABLED) {
 			Sandbox,
 		} = SANDBOX_EXPORT);
 	} else {
+		// 这里是沙盒核心类初始化时所在的独立运行域
+		// 这里的全局对象不会直接暴露
+
 		// 防止被不信任代码更改
 		sealClass(AccessAction);
 		sealClass(Rule);
@@ -4186,7 +4251,6 @@ if (SANDBOX_ENABLED) {
 		Domain[SandboxExposer2](SandboxSignal_InitDomain);
 
 		// 获取顶级域的错误管理器
-		// @ts-expect-error Sandbox
 		({ CodeSnippet, ErrorReporter, ErrorManager } =
 			// @ts-expect-error Sandbox
 			window.replacedErrors);
