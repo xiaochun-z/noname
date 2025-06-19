@@ -414,9 +414,13 @@ const skills = {
 		async content(event, trigger, player) {
 			const list = [];
 			for (let positon of ["c", "d", "ej"]) {
-				const card = get.cardPile(card => {
-					return get.tag(card, "damage") && positon.includes(get.position(card, true));
-				}, "field", "random");
+				const card = get.cardPile(
+					card => {
+						return get.tag(card, "damage") && positon.includes(get.position(card, true));
+					},
+					"field",
+					"random"
+				);
 				if (card) {
 					if (positon == "ej") {
 						const owner = get.owner(card);
@@ -429,9 +433,11 @@ const skills = {
 					list.push(card);
 				}
 			}
-			const cards = Array.from(ui.ordering.childNodes).slice(0).filter(card => {
-				return card && get.tag(card, "damage") && get.position(card, true) == "o";
-			});
+			const cards = Array.from(ui.ordering.childNodes)
+				.slice(0)
+				.filter(card => {
+					return card && get.tag(card, "damage") && get.position(card, true) == "o";
+				});
 			if (cards.length) {
 				list.push(cards.randomGet());
 			}
@@ -629,8 +635,7 @@ const skills = {
 			const { result } = await next;
 			if (result?.suit == "spade") {
 				await target.damage(2, "thunder");
-			}
-			else if (target.countCards("h")){
+			} else if (target.countCards("h")) {
 				await player.gainPlayerCard(target, "h", true);
 			}
 		},
@@ -17890,21 +17895,30 @@ const skills = {
 				},
 				audio: "sbwusheng",
 				trigger: {
-					player: "useCardAfter",
+					player: ["useCardAfter", "useCard1"],
 				},
-				filter(event, player) {
-					if (event.card.name != "sha") {
+				filter(event, player, name) {
+					if (event.card.name != "sha" || (name == "useCard1" && event.addCount == false)) {
 						return false;
 					}
 					return event.targets.some(target => typeof player.storage.jdsbwusheng_effect[target.playerid] == "number" && player.storage.jdsbwusheng_effect[target.playerid] > 0);
 				},
 				forced: true,
 				async content(event, trigger, player) {
-					const targets = trigger.targets.filter(target => typeof player.storage.jdsbwusheng_effect[target.playerid] == "number" && player.storage.jdsbwusheng_effect[target.playerid] > 0);
-					player.line(targets);
-					await player.draw(targets.length);
-					for (const target of targets) {
-						player.storage.jdsbwusheng_effect[target.playerid]--;
+					if (event.triggername == "useCard1") {
+						trigger.addCount = false;
+						const stat = player.getStat().card,
+							name = trigger.card.name;
+						if (typeof stat[name] === "number") {
+							stat[name]--;
+						}
+					} else {
+						const targets = trigger.targets.filter(target => typeof player.storage.jdsbwusheng_effect[target.playerid] == "number" && player.storage.jdsbwusheng_effect[target.playerid] > 0);
+						player.line(targets);
+						await player.draw(targets.length);
+						for (const target of targets) {
+							player.storage.jdsbwusheng_effect[target.playerid]--;
+						}
 					}
 				},
 			},
