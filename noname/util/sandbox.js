@@ -922,7 +922,12 @@ class NativeWrapper {
 	static wrapFunctions(global, selector) {
 		let flags = 2; // 默认装箱了喵
 
-		if (selector.length > 2 && selector.slice(-2) === "/*") {
+		if(Array.isArray(selector)) {
+			if (selector.length > 1 && selector[selector.length - 1] === '*') {
+				flags |= 1;
+				selector.splice(selector.length - 1, 1);
+			}
+		} else if (selector.length > 2 && selector.slice(-2) === "/*") {
 			flags |= 1;
 			selector = selector.slice(0, -2);
 		}
@@ -3836,7 +3841,7 @@ class Sandbox {
 		let argumentList;
 		let wrappedEval;
 
-		const raw = new thiz.#domainFunction("_", `with(_){with(window){with(${contextName}){return(${applyName}(function(${parameters}){"use strict";\n// 沙盒代码起始\n${code}\n// 沙盒代码结束\n},${contextName}.this,${argsName}))}}}`);
+		const raw = new thiz.#domainFunction("_", `with(_){with(window){with(${contextName}){return(${applyName}(function(${parameters}){/*"use strict";*/ // 不再强制严格模式\n// 沙盒代码起始\n${code}\n// 沙盒代码结束\n},${contextName}.this,${argsName}))}}}`);
 		const snippet = new CodeSnippet(code, 5); // 错误信息的行号从 5 开始 (即错误信息的前 5 行是不属于 `code` 的范围)
 
 		const domain = thiz.#domain;
