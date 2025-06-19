@@ -136,7 +136,7 @@ const skills = {
 			result: {
 				target(player, target) {
 					const list = [];
-					const num = player.countCards("he");
+					const num = player.getDamagedHp();
 					const players = game.filterPlayer();
 					if (ui.selected.targets.length == 0) {
 						for (let i = 0; i < players.length; i++) {
