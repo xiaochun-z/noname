@@ -1339,7 +1339,7 @@ const skills = {
 					}
 					if (!target?.isIn()) {
 						if (target) {
-							player.unmarkAuto("oldici_effect",target);
+							player.unmarkAuto("oldici_effect", target);
 						}
 						return false;
 					}
@@ -1350,7 +1350,7 @@ const skills = {
 				async content(event, trigger, player) {
 					const target = event.targets[0],
 						str = get.translation(target);
-					player.unmarkAuto("oldici_effect",target);
+					player.unmarkAuto("oldici_effect", target);
 					const bool = await player
 						.chooseToGive(target, "h", "交给" + str + "一张手牌，或受到" + str + "对你造成的1点雷属性伤害")
 						.set("ai", card => {
@@ -4314,6 +4314,12 @@ const skills = {
 		filterTarget(card, player, target) {
 			return player != target;
 		},
+		prompt(event, player) {
+			if (event.spolzhubei_num) {
+				return `出牌阶段各限一次，你可以令一名其他角色将至少${get.cnNumber(event.spolzhubei_num)}张牌当作无距离和任何次数限制的【杀】或【决斗】对你使用。`;
+			}
+			return "出牌阶段各限一次，你可以令一名其他角色将至少X张牌当作无距离和任何次数限制的【杀】或【决斗】对你使用（X为本回合所有角色本回合使用基本牌的次数+1）。";
+		},
 		async content(event, trigger, player) {
 			const { target } = event,
 				num = event.getParent(2).spolzhubei_num;
@@ -5331,12 +5337,15 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					await player.draw(2);
-					let card = get
-						.discarded()
-						.filter(c => get.type(c) === "trick")
-						.randomGet();
-					if (card) {
-						await player.gain(card, "gain2");
+					let cards = get.discarded().filter(c => get.type(c) === "trick");
+					if (cards?.length) {
+						const result = await player
+							.chooseButton(["累卵：获得一张普通锦囊牌", cards], true)
+							.set("ai", button => get.buttonValue(button))
+							.forResult();
+						if (result?.bool && result?.links?.length) {
+							await player.gain(result.links, "gain2");
+						}
 					}
 					player.tempBanSkill("leiluan", { player: "damageEnd" });
 				},
@@ -11439,7 +11448,36 @@ const skills = {
 			player.draw();
 			player.addSkill("oltuishi_unlimit");
 		},
+		init(player) {
+			player.addSkill("oltuishi_count");
+			const history = player.getHistory("useCard", evt => evt.finished && get.tag(evt.card, "damage") > 0.5 && !player.hasHistory("sourceDamage", evt2 => evt2.card === evt.card));
+			history.length > 0 && player.addMark("oltuishi_count", history.length, false);
+		},
+		onremove(player) {
+			player.removeSkill("oltuishi_count");
+			player.clearMark("oltuishi_count", false);
+		},
 		subSkill: {
+			count: {
+				charlotte: true,
+				trigger: {
+					player: "useCardAfter",
+					global: ["phaseBefore", "phaseAfter"],
+				},
+				filter(event, player) {
+					if (event.name === "useCard") {
+						return get.tag(event.card, "damage") > 0.5 && !player.hasHistory("sourceDamage", evt2 => evt2.card === event.card);
+					}
+					return player.hasMark("oltuishi_count");
+				},
+				silent: true,
+				content() {
+					const list = trigger.name === "useCard" ? ["addMark", event.name, 1, false] : ["clearMark", event.name, false];
+					player[list[0]](...list.slice(1));
+				},
+				marktext: "失",
+				intro: { content: "本回合已有#张伤害牌未造成过伤害" },
+			},
 			unlimit: {
 				charlotte: true,
 				mod: {
@@ -11490,6 +11528,7 @@ const skills = {
 					}
 				},
 				mark: true,
+				marktext: "侻",
 				intro: { content: "对手牌数小于你的角色使用的下一张牌无距离次数限制" },
 			},
 		},

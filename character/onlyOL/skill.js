@@ -116,7 +116,7 @@ const skills = {
 		enable: "chooseToUse",
 		round: 1,
 		hiddenCard(player, name) {
-			return !player?.hasSkill("oljueyan_round") && player?.countCards("h", card => get.type(card, player) == "trick" || (get.type(card, player) == "basic" && get.suit(card, player) == "heart"));
+			return !player?.hasSkill("oljueyan_round") && player?.countCards("h", card => (get.type(card, player) == "trick" || (get.type(card, player) == "basic" && get.suit(card, player) == "heart")) && get.name(card, player) == name);
 		},
 		filter(event, player) {
 			return player.countCards("h", card => {
@@ -928,6 +928,7 @@ const skills = {
 	//闪刘宏
 	olchaozheng: {
 		audio: "jsrgchaozheng",
+		logAudio: index => (typeof index === "number" ? "jsrgchaozheng" + index + ".mp3" : ["jsrgchaozheng1.mp3", "jsrgchaozheng2.mp3"]),
 		inherit: "jsrgchaozheng",
 		filter(event, player) {
 			if (!player.countCards("h")) {
@@ -973,7 +974,7 @@ const skills = {
 		group: "olchaozheng_debate",
 		subSkill: {
 			debate: {
-				audio: [1, 2].map(num => "jsrgchaozheng" + num + ".mp3"),
+				audio: "olchaozheng",
 				trigger: { global: "debateShowOpinion" },
 				filter(event, player) {
 					return event.targets.includes(player) && event.opinions.some(i => event[i].flat().includes(player));
@@ -4024,15 +4025,19 @@ const skills = {
 					}
 					return event.filterCard({ name: "jiu", isCard: true }, player, event);
 				},
-				content() {
+				async content(event, trigger, player) {
 					if (_status.event.getParent(2).type == "dying") {
 						event.dying = player;
 						event.type = "dying";
 					}
-					player.turnOver();
-					player.useCard({ name: "jiu", isCard: true }, player);
+					await player.turnOver();
+					await player.useCard({ name: "jiu", isCard: true }, player);
 				},
 				ai: {
+					save: true,
+					skillTagFilter(player, tag, arg) {
+						return !player.isTurnedOver();
+					},
 					order: 5,
 					result: {
 						player(player) {
