@@ -7350,10 +7350,7 @@ const skills = {
 			}
 			const gainSkills = target.getStockSkills(true, true).filter(i => {
 				const info = get.info(i);
-				if (info && info.zhuSkill && !target.isZhu2()) {
-					return false;
-				}
-				return !info || !info.charlotte;
+				return info && !info.charlotte && (!info.zhuSkill || target.isZhu2());
 			});
 			if (gainSkills.length) {
 				//抽象
