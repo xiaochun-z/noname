@@ -6,12 +6,12 @@ const skills = {
 	pothaoshi: {
 		trigger: { player: "phaseJieshuBegin" },
 		filter(event, player) {
-			return game.hasPlayer(target => target != player); //target.hp<=player.hp&&
+			return game.hasPlayer(target => target.hp <= player.hp && target != player);
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
-					return target != player; //target.hp<=player.hp&&
+					return target.hp <= player.hp && target != player;
 				})
 				.set("ai", target => {
 					return get.attitude(get.player(), target);
