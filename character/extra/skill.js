@@ -3393,6 +3393,12 @@ const skills = {
 		},
 	},
 	tamo: {
+		available(mode) {
+			// 走另外的phaseLoop的模式/子模式/设置
+			if (["boss", "stone", "tafang"].includes(mode) || ["jiange", "standard", "three", "leader"].includes(_status.mode) || get.config("seat_order") === "指定") {
+				return false;
+			}
+		},
 		getTargets() {
 			return game.filterPlayer(current => {
 				if (get.mode() === "doudizhu") {
