@@ -16161,8 +16161,8 @@ export default {
 			if (event.num >= 3 && !(player.hasSkill("shelie") || player.hasSkill("jiahe_shelie"))) {
 				list.push("shelie");
 			}
-			if (event.num >= 4 && !(player.hasSkill("gzduoshi") || player.hasSkill("jiahe_duoshi"))) {
-				list.push("gzduoshi");
+			if (event.num >= 4 && !(player.hasSkill("gz_duoshi") || player.hasSkill("jiahe_duoshi"))) {
+				list.push("gz_duoshi");
 			}
 			if (!list.length) {
 				event.finish();
