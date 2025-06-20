@@ -1339,7 +1339,7 @@ const skills = {
 					}
 					if (!target?.isIn()) {
 						if (target) {
-							player.unmarkAuto("oldici_effect",target);
+							player.unmarkAuto("oldici_effect", target);
 						}
 						return false;
 					}
@@ -1350,7 +1350,7 @@ const skills = {
 				async content(event, trigger, player) {
 					const target = event.targets[0],
 						str = get.translation(target);
-					player.unmarkAuto("oldici_effect",target);
+					player.unmarkAuto("oldici_effect", target);
 					const bool = await player
 						.chooseToGive(target, "h", "交给" + str + "一张手牌，或受到" + str + "对你造成的1点雷属性伤害")
 						.set("ai", card => {
@@ -5337,9 +5337,7 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					await player.draw(2);
-					let cards = get
-						.discarded()
-						.filter(c => get.type(c) === "trick");
+					let cards = get.discarded().filter(c => get.type(c) === "trick");
 					if (cards?.length) {
 						const result = await player
 							.chooseButton(["累卵：获得一张普通锦囊牌", cards], true)
@@ -28270,6 +28268,20 @@ const skills = {
 		forced: true,
 		trigger: {
 			player: "useCard",
+		},
+		onChooseToUse(event) {
+			event.set("targetprompt2", target => {
+				if (!target.isIn()) {
+					return false;
+				}
+				const player = get.player(),
+					card = get.card();
+				if (get.type(card) == "trick" || (get.type(card) == "basic" && !["shan", "tao", "jiu", "du"].includes(card.name))) {
+					if (target !== player && get.distance(target, player) <= 1) {
+						return "不可响应";
+					}
+				}
+			});
 		},
 		filter(event, player) {
 			return (
