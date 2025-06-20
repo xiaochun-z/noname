@@ -768,7 +768,7 @@ export default {
 			if (player == target) {
 				return false;
 			}
-			if (target.hasSkill("reqiangxi_off")) {
+			if (target.hasSkill("gz_qiangxi_off")) {
 				return false;
 			}
 			return player.inRange(target);
