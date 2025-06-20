@@ -1927,8 +1927,8 @@ export default {
 					});
 				if (index == 0) {
 					await target.carryOutJunling(player, junling, targets);
-					if (num) {
-						await player.draw(num);
+					await player.draw(num);
+					if (player.getExpansions("fakequanji").length) {
 						const {
 							result: { bool, links },
 						} = await player.chooseButton(["排异：请移去一张“权”", player.getExpansions("fakequanji")], true);
@@ -1936,7 +1936,7 @@ export default {
 							await player.loseToDiscardpile(links);
 						}
 					}
-				} else if (num) {
+				} else {
 					const { result } = await player
 						.chooseTarget(
 							"排异：是否对至多" + cnNum + "名与" + get.translation(target) + "势力相同的角色各造成1点伤害并移去等量的“权”？",
@@ -1955,11 +1955,13 @@ export default {
 						for (const i of targetx) {
 							await i.damage();
 						}
-						const {
-							result: { bool, links },
-						} = await player.chooseButton(["排异：请移去" + get.cnNumber(targetx.length) + "张“权”", player.getExpansions("fakequanji")], targetx.length, true);
-						if (bool) {
-							await player.loseToDiscardpile(links);
+						if (player.getExpansions("fakequanji").length) {
+							const {
+								result: { bool, links },
+							} = await player.chooseButton(["排异：请移去" + get.cnNumber(targetx.length) + "张“权”", player.getExpansions("fakequanji")], targetx.length, true);
+							if (bool) {
+								await player.loseToDiscardpile(links);
+							}
 						}
 					}
 				}
