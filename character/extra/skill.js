@@ -3409,8 +3409,7 @@ const skills = {
 		filter(event, player) {
 			return (event.name != "phase" || game.phaseNumber == 0) && get.info("tamo").getTargets().length > 1;
 		},
-		changeSeat: true,
-		seatRelated: true,
+		seatRelated: "changeSeat",
 		derivation: "tamo_faq",
 		async cost(event, trigger, player) {
 			const toSortPlayers = get.info(event.skill).getTargets();
@@ -5019,8 +5018,7 @@ const skills = {
 		juexingji: true,
 		skillAnimation: true,
 		animationColor: "orange",
-		changeSeat: true,
-		seatRelated: true,
+		seatRelated: "changeSeat",
 		content() {
 			"step 0";
 			player.awakenSkill(event.name);

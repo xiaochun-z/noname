@@ -3800,8 +3800,7 @@ const skills = {
 		skillAnimation: true,
 		limited: true,
 		animationColor: "fire",
-		changeSeat: true,
-		seatRelated: true,
+		seatRelated: "changeSeat",
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			player.awakenSkill(event.name);

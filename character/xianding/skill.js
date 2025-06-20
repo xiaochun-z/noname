@@ -744,7 +744,7 @@ const skills = {
 						{ name: button.link[2] },
 						ui.selected.buttons.map(i => i.link)
 					);
-					return player.hasUseTarget(cardx, true, true) && ui.selected.buttons.length;
+					return get.player().hasUseTarget(cardx, true, true) && ui.selected.buttons.length;
 				})
 				.set("complexButton", true)
 				.set("ai", button => {
@@ -755,7 +755,7 @@ const skills = {
 						return 0;
 					}
 					const cardx = get.autoViewAs({ name: button.link[2] });
-					return player.getUseValue(cardx, true, true);
+					return get.player().getUseValue(cardx, true, true);
 				})
 				.forResult();
 			event.result = {
