@@ -17155,17 +17155,15 @@ export default {
 				if (player == event.player) {
 					return false;
 				}
-				if (event.card.name == "feilongduofeng" && event.player.getCards("e").includes(event.card)) {
+				if (event.cards.some(card => card.name == "feilongduofeng" && event.player.getCards("e").includes(card))) {
 					return true;
 				}
 				return event.player.hasHistory("lose", function (evt) {
 					if (evt.position != ui.discardPile || evt.getParent().name != "equip") {
 						return false;
 					}
-					for (var i of evt.cards) {
-						if (i.name == "feilongduofeng" && get.position(i, true) == "d") {
-							return true;
-						}
+					if (evt.cards.some(card => card.name == "feilongduofeng" && get.position(card, true) == "d")) {
+						return true;
 					}
 					return false;
 				});
@@ -17173,50 +17171,53 @@ export default {
 			if (event.name == "lose" && (event.position != ui.discardPile || event.getParent().name == "equip")) {
 				return false;
 			}
-			for (var i of event.cards) {
-				if (i.name == "feilongduofeng" && get.position(i, true) == "d") {
-					return true;
-				}
+			if (event.cards.some(card => card.name == "feilongduofeng" && get.position(card, true) == "d")) {
+				return true;
 			}
 			return false;
 		},
 		logTarget(event, player) {
-			if (event.name == "equip" && event.card.name == "feilongduofeng" && event.player.getCards("e").includes(event.card)) {
+			if (event.name == "equip" && event.cards.some(card => card.name == "feilongduofeng" && event.player.getCards("e").includes(card))) {
 				return event.player;
 			}
 			return [];
 		},
-		content() {
-			game.delayx();
-			var cards = [];
+		async content(event, trigger, player) {
+			await game.delayx();
+			let cards = [];
 			if (trigger.name == "equip") {
-				if (trigger.card.name == "feilongduofeng" && trigger.player.getCards("e").includes(trigger.card)) {
-					cards.push(trigger.card);
+				for (const card of trigger.cards) {
+					if (card.name == "feilongduofeng" && trigger.player.getCards("e").includes(card)) {
+						cards.push(card);
+					}
 				}
 				trigger.player.getHistory("lose", function (evt) {
 					if (evt.position != ui.discardPile || evt.getParent() != trigger) {
 						return false;
 					}
-					for (var i of evt.cards) {
-						if (i.name == "feilongduofeng" && get.position(i, true) == "d") {
-							cards.push(i);
+					for (const card of evt.cards) {
+						if (card.name == "feilongduofeng" && get.position(card, true) == "d") {
+							cards.push(card);
 						}
 					}
 					return false;
 				});
 			}
-			if (trigger.name == "lose") {
-				for (var i of trigger.cards) {
-					if (i.name == "feilongduofeng" && get.position(i, true) == "d") {
-						cards.push(i);
+			if (["lose", "cardsDiscard"].includes(trigger.name)) {
+				for (const card of trigger.cards) {
+					if (card.name == "feilongduofeng" && get.position(card, true) == "d") {
+						cards.push(card);
 					}
 				}
 			}
-			var owner = get.owner(cards[0]);
+			if (!cards.length) {
+				return;
+			}
+			let owner = get.owner(cards[0]);
 			if (owner) {
-				player.gain(cards, "give", owner, "bySelf");
+				await player.gain(cards, "give", owner, "bySelf");
 			} else {
-				player.gain(cards, "gain2");
+				await player.gain(cards, "gain2");
 			}
 		},
 		group: "zhangwu_draw",
