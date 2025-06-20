@@ -6314,7 +6314,7 @@ export default {
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
 			return game.hasPlayer(function (current) {
-				return !current.isFriendOf(player) && current.countDiscardableCards("hej", player) > 0;
+				return !current.isFriendOf(player) && current.countDiscardableCards(player, "hej") > 0;
 			});
 		},
 		direct: true,
