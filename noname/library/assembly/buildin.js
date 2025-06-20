@@ -35,13 +35,6 @@ export const checkBegin = {
 			node.dataset.nature = "soil";
 		});
 	},
-	preUseByOthers(event) {
-		if (!["chooseToUse", "chooseToRespond"].includes(event.name)) {
-			return;
-		}
-		event.fakeCards = event.fakeCards ?? {};
-		event.realCards = event.realCards ?? {};
-	},
 };
 
 /**
@@ -142,22 +135,6 @@ export const uncheckBegin = {
 				delete target.node.prompt2;
 			}
 		});
-	},
-	useByOthers(event) {
-		if (!["chooseToUse", "chooseToRespond"].includes(event.name) || !event.fakeCards) {
-			return;
-		}
-		const fakeCards = Object.values(event.fakeCards || {}).flat(),
-			realCards = Object.values(event.realCards || {}).flat(),
-			result = event.result?.cards;
-		if (!result?.length || !fakeCards.length || !realCards.length) {
-			return;
-		}
-		for (let i = 0; i < result.length; i++) {
-			const cardx = realCards.find(cardy => cardy.cardid == result[i]._cardid);
-			result[i] = cardx || result[i];
-		}
-		game.deleteFakeCards(fakeCards);
 	},
 };
 

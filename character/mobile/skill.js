@@ -1,4 +1,5 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
+import { LibInitPromises } from "../../noname/library/init/promises.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
@@ -6,12 +7,12 @@ const skills = {
 	pothaoshi: {
 		trigger: { player: "phaseJieshuBegin" },
 		filter(event, player) {
-			return game.hasPlayer(target => target.hp <= player.hp && target != player);
+			return game.hasPlayer(target => target.hp <= player.hp && target != player); //
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
-					return target.hp <= player.hp && target != player;
+					return target.hp <= player.hp && target != player; //
 				})
 				.set("ai", target => {
 					return get.attitude(get.player(), target);
@@ -20,10 +21,11 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			target.addTempSkill(event.name + "_use", { player: "dieAfter" });
 			target.markAuto(event.name + "_use", player);
-			player.addTempSkill(event.name + "_clear", { player: "phaseBeforeStart" });
+			target.addAdditionalSkill(`${event.name}_use_${player.playerid}`, event.name + "_use");
 			player.markAuto(event.name + "_clear", target);
+			player.addTempSkill(event.name + "_clear", { player: "phaseBeforeStart" });
+			player.addTempSkill(event.name + "_change", { player: "phaseBeforeStart" });
 		},
 		group: ["pothaoshi_draw"],
 		subSkill: {
@@ -33,7 +35,7 @@ const skills = {
 				forced: true,
 				locked: false,
 				filter(event, player) {
-					return event.getl(player)?.hs?.length && !player.countCards("h") && event.getParent(2).pothaoshi;
+					return event.getl(player)?.hs?.length && !player.countCards("h") && event.getParent().pothaoshi;
 				},
 				async content(event, trigger, player) {
 					await player.drawTo(player.maxHp);
@@ -43,46 +45,85 @@ const skills = {
 				charlotte: true,
 				onremove(player, skill) {
 					player.storage[skill].forEach(target => {
-						target.removeSkill("pothaoshi_use");
+						target.unmarkAuto("pothaoshi_use", [player]);
+						lib.skill.pothaoshi_use.init(target, "pothaoshi_use");
+						target.removeAdditionalSkill(`pothaoshi_use_${player.playerid}`);
 					});
 					delete player.storage[skill];
 				},
 			},
+			change: {
+				trigger: {
+					global: ["loseEnd", "loseAsyncEnd", "gainEnd", "addToExpansionEnd", "equipEnd", "addJudgeEnd"],
+				},
+				silent: true,
+				charlrotte: true,
+				filter(event, player) {
+					return event.getg?.(player)?.length || event.getl?.(player)?.hs?.length;
+				},
+				async content(event, trigger, player) {
+					const toAdd = trigger.getg?.(player) || [],
+						toRemove = trigger.getl?.(player)?.hs || [];
+					event.set("toAdd", toAdd);
+					event.set("toRemove", toRemove);
+					await event.trigger("pothaoshiChange");
+				},
+			},
 			use: {
-				onremove: true,
+				init(player, skill) {
+					const toRemove = player.getCards("s", card => card.hasGaintag("pothaoshi_tag"));
+					game.deleteFakeCards(toRemove);
+					const cards = player.getStorage(skill).reduce((cards, target) => {
+						const fake = target.isAlive() && target.countCards("h") ? game.createFakeCards(target.getCards("h")) : [];
+						return cards.addArray(fake);
+					}, []);
+					player.directgains(cards, null, "pothaoshi_tag");
+				},
+				onremove(player, skill) {
+					const toRemove = player.getCards("s", card => card.hasGaintag("pothaoshi_tag"));
+					game.deleteFakeCards(toRemove);
+				},
 				mark: true,
 				intro: {
 					content: "你可以如手牌般使用或打出<span class=thundertext>$</span>的手牌",
 				},
-				log: false,
+				forced: true,
+				popup: false,
+				delay: false,
 				charlotte: true,
-				enable: ["chooseToUse", "chooseToRespond"],
+				trigger: {
+					player: ["useCardBefore", "respondBefore"],
+					global: ["pothaoshiChange"],
+				},
 				filter(event, player) {
-					return player.getStorage("pothaoshi_use").some(target => target.isIn() && target.countCards("h"));
+					if (["useCard", "respond"].includes(event.name)) {
+						const cards = player.getCards("s", card => card.hasGaintag("pothaoshi_tag"));
+						return event.cards && event.cards.some(card => cards.includes(card));
+					}
+					return player.getStorage("pothaoshi_use").includes(event.player);
 				},
 				async content(event, trigger, player) {
-					const evt = event.getParent(2);
-					if (!evt.pothaoshi) {
-						evt.set("pothaoshi", true);
-						evt.fakeCards["pothaoshi"] = evt.fakeCards["pothaoshi"] ?? [];
-						evt.realCards["pothaoshi"] = evt.realCards["pothaoshi"] ?? [];
-						player.getStorage("pothaoshi_use").forEach(target => {
-							const cards = target.getCards("h"),
-								cardsx = game.createFakeCards(cards);
-							evt.realCards["pothaoshi"].addArray(cards);
-							evt.fakeCards["pothaoshi"].addArray(cardsx);
-							player.directgains(cardsx, null, "pothaoshi_tag");
-						});
-					} else {
-						const cards = evt.fakeCards.pothaoshi;
-						if (cards.length) {
-							game.deleteFakeCards(cards);
-							delete evt.fakeCards.pothaoshi;
-							delete evt.realCards.pothaoshi;
+					const tag = "pothaoshi_tag";
+					if (["useCard", "respond"].includes(trigger.name)) {
+						trigger.set("pothaoshi", true);
+						const real = player.getStorage(event.name).reduce((cards, target) => {
+							const hs = target.isAlive() && target.countCards("h") ? target.getCards("h") : [];
+							return cards.addArray(hs);
+						}, []);
+						for (let i = 0; i < trigger.cards.length; i++) {
+							const card = trigger.cards[i];
+							const cardx = real.find(cardx => cardx.cardid == card._cardid);
+							if (cardx) {
+								trigger.cards[i] = cardx;
+								trigger.card.cards[i] = cardx;
+								trigger.throw = false;
+								get.owner(cardx)?.$throw(cardx);
+							}
 						}
-						delete evt.pothaoshi;
+					} else {
+						game.deleteFakeCards(player.getCards("s", card => trigger.toRemove.find(cardx => cardx.cardid == card._cardid)));
+						player.directgains(game.createFakeCards(trigger.toAdd), null, tag);
 					}
-					evt.goto(0);
 				},
 			},
 		},
@@ -215,7 +256,7 @@ const skills = {
 						if (get.event().num > 2) {
 							return 0;
 						}
-						return 6 - value(card);
+						return 6 - get.value(card);
 					})
 					.set("num", num)
 					.forResult();
@@ -247,7 +288,7 @@ const skills = {
 				}
 				const cards = card.cards;
 				if (cards.length == 1) {
-					if (player.getCards("h").includes(cards[0]) && !player.getStorage("mbxianshuai_record").includes(get.suit(cards[0]))) {
+					if (player.getCards("h").includes(cards[0]) && !player.getStorage("mbxianshuai_record").includes(get.suit(cards[0], player))) {
 						return Infinity;
 					}
 				}
@@ -305,10 +346,7 @@ const skills = {
 						event.cards.length == 1 &&
 						!player.getStorage("mbxianshuai_record").includes(get.suit(event.card)) &&
 						player.hasHistory("lose", evt => {
-							if (evt.getParent() != event) {
-								return false;
-							}
-							return evt.hs?.length == 1;
+							return evt.getParent() == event && evt.hs?.length == 1;
 						})
 					);
 				},

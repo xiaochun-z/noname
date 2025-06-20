@@ -9924,11 +9924,11 @@ export class Game extends GameCompatible {
 	 * 用于玩家使用非自己手牌时生成的可以选择的假牌（其实就是复制一份出来）。
 	 *
 	 * @param { Card[] | Card } cards 需要被复制的真牌，允许传入单张卡牌或者卡牌数组
-	 * @param { Boolean } isBack 是否生成只有牌背没有其他牌面信息的牌
-	 * @param { string } tempname 生成的假牌的临时名字，只有isBack为true才会用到
+	 * @param { Boolean } isBlank 是否生成只有牌背没有其他牌面信息的牌
+	 * @param { string } tempname 生成的假牌的临时名字，只有isBlank为true才会用到
 	 * @returns { Card[] }
 	 */
-	createFakeCards(cards, isBack = false, tempname) {
+	createFakeCards(cards, isBlank = false, tempname) {
 		if (!Array.isArray(cards)) {
 			cards = [cards];
 		}
@@ -9936,7 +9936,7 @@ export class Game extends GameCompatible {
 			const cardx = ui.create.card();
 			cardx.isFake = true;
 			cardx._cardid = card.cardid;
-			if (isBack) {
+			if (isBlank) {
 				cardx.classList.add("infohidden");
 				cardx.classList.add("infoflip");
 				//没有tempname默认就是白板
@@ -9992,7 +9992,7 @@ export class Game extends GameCompatible {
 							ui.updatehl();
 						}
 					},
-					cards2,
+					cards,
 					target
 				);
 			}
