@@ -9085,7 +9085,12 @@ export default {
 					.set("choiceList", ["执行该军令", "不执行该军令并受到1点伤害"])
 					.set("ai", function () {
 						var evt = _status.event.getParent(2);
-						return get.junlingEffect(evt.player, evt.junling, evt.current, evt.targets, evt.current) > get.damageEffect(evt.current, evt.player, evt.current) / get.attitude(evt.current, evt.current) ? 0 : 1;
+						var junlingEff = get.junlingEffect(evt.player, evt.junling, evt.current, evt.targets, evt.current);
+    					var damageEff = get.damageEffect(evt.current, evt.player, evt.current);
+					    var attitudeSelf = get.attitude(evt.current, evt.current);
+						var drawEff = get.effect(evt.player, { name: "draw" }, evt.player, evt.current);
+
+    					return junlingEff > damageEff / attitudeSelf + drawEff ? 0 : 1;
 					});
 			} else {
 				event.goto(4);
