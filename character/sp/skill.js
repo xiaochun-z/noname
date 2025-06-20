@@ -28277,7 +28277,7 @@ const skills = {
 				const player = get.player(),
 					card = get.card();
 				if (get.type(card) == "trick" || (get.type(card) == "basic" && !["shan", "tao", "jiu", "du"].includes(card.name))) {
-					if (target !== player && get.distance(target, player) <= 1) {
+					if (target.isIn() && target !== player && get.distance(target, player) <= 1) {
 						return "不可响应";
 					}
 				}

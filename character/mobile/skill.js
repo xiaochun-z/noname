@@ -2892,111 +2892,99 @@ const skills = {
 			fake: {
 				charlotte: true,
 				trigger: {
-					player: ["chooseCardBegin", "chooseCardEnd"],
+					global: ["chooseCardOLBegin", "chooseCardOLEnd"],
 				},
 				filter(event, player) {
-					return event.type == "compare" && !event.directresult && event.getParent(2).mbjianji;
+					return event.type == "compare" && !event.directresult && event.getParent().mbjianji;
 				},
 				forced: true,
 				popup: false,
 				firstDo: true,
 				async content(event, trigger, player) {
-					const evt = trigger.getParent(3),
-						evtx = trigger.getParent(2);
+					const evt = trigger.getParent(2);
 					const card = evt.cards[0];
 					if (!card) {
 						return;
 					}
-					if (event.triggername == "chooseCardBegin") {
+					if (event.triggername == "chooseCardOLBegin") {
 						const cardx = game.createFakeCards(card, true, "mbjianji_card")[0];
 						player.directgains([cardx], null, "mbjianji");
-						trigger.position = "hs";
-						trigger.set("mbjianji_card", card);
+						trigger._set.push(["position", "hs"]);
 						//牌的检测也得重写，毕竟都选到s区域去了
 						const originalFilter = trigger.filterCard;
-						trigger.filterCard = function (card) {
-							if (typeof originalFilter === "function" && !originalFilter(card)) {
-								return false;
-							}
-							if (get.position(card) == "s") {
-								return card.hasGaintag("mbjianji");
-							}
-							return true;
-						};
+						trigger._set.push([
+							"filterCard",
+							function (card) {
+								if (typeof originalFilter === "function" && !originalFilter(card)) {
+									return false;
+								}
+								if (get.position(card) == "s") {
+									return card.hasGaintag("mbjianji");
+								}
+								return true;
+							},
+						]);
 						//修改一下chooseCard的ai，因为这张假牌是没有number属性的，没法用原先的ai让人机选
-						trigger.ai = function (card) {
-							if (typeof card == "string" && lib.skill[card]) {
-								var ais =
-									lib.skill[card].check ||
-									function () {
-										return 0;
-									};
-								return ais();
-							}
-							var addi = get.value(card) >= 8 && get.type(card) != "equip" ? -3 : 0;
-							if (card.name == "du") {
-								addi -= 3;
-							}
-							var source = _status.event.source;
-							var player = _status.event.player;
-							var event = _status.event.getParent();
-							var getn = function (card) {
-								//会赢吗？会赢的！
-								if (card._cardid === get.event().mbjianji_card.cardid) {
-									if (
-										!player.hasCard(function (card) {
-											var val = get.value(card);
-											//对秦宓天辩的ai做了点小修改
-											return val < 0 || (val <= 5 && get.number(card) >= 10);
-										}, "h")
-									) {
-										return 10 + Math.random() * 3;
+						trigger._set.push([
+							"ai",
+							function (card) {
+								if (typeof card == "string" && lib.skill[card]) {
+									var ais =
+										lib.skill[card].check ||
+										function () {
+											return 0;
+										};
+									return ais();
+								}
+								var addi = get.value(card) >= 8 && get.type(card) != "equip" ? -3 : 0;
+								if (card.name == "du") {
+									addi -= 3;
+								}
+								var source = _status.event.source;
+								var player = _status.event.player;
+								var event = _status.event.getParent();
+								var getn = function (card) {
+									//会赢吗？会赢的！
+									if (card._cardid === get.event().mbjianji_card.cardid) {
+										if (
+											!player.hasCard(function (card) {
+												var val = get.value(card);
+												//对秦宓天辩的ai做了点小修改
+												return val < 0 || (val <= 5 && get.number(card) >= 10);
+											}, "h")
+										) {
+											return 10 + Math.random() * 3;
+										}
 									}
-								}
-								if (player.hasSkillTag("forceWin", null, { card })) {
-									return 13 * (event.small ? -1 : 1);
-								}
-								return get.number(card) * (event.small ? -1 : 1);
-							};
-							if (source && source != player) {
-								if (get.attitude(player, source) > 1) {
+									if (player.hasSkillTag("forceWin", null, { card })) {
+										return 13 * (event.small ? -1 : 1);
+									}
+									return get.number(card) * (event.small ? -1 : 1);
+								};
+								if (source && source != player) {
+									if (get.attitude(player, source) > 1) {
+										if (event.small) {
+											return getn(card) - get.value(card) / 3 + addi;
+										}
+										return -getn(card) - get.value(card) / 3 + addi;
+									}
 									if (event.small) {
-										return getn(card) - get.value(card) / 3 + addi;
+										return -getn(card) - get.value(card) / 5 + addi;
 									}
-									return -getn(card) - get.value(card) / 3 + addi;
+									return getn(card) - get.value(card) / 5 + addi;
+								} else {
+									if (event.small) {
+										return -getn(card) - get.value(card) / 5 + addi;
+									}
+									return getn(card) - get.value(card) / 5 + addi;
 								}
-								if (event.small) {
-									return -getn(card) - get.value(card) / 5 + addi;
-								}
-								return getn(card) - get.value(card) / 5 + addi;
-							} else {
-								if (event.small) {
-									return -getn(card) - get.value(card) / 5 + addi;
-								}
-								return getn(card) - get.value(card) / 5 + addi;
-							}
-						};
+							},
+						]);
 					} else {
 						const cards = player.getCards("s", card => card.hasGaintag("mbjianji"));
 						game.deleteFakeCards(cards);
-						/*if (player.isOnline2()) {
-							player.send(
-								function (cards, player) {
-									cards.forEach(i => i.delete());
-									if (player == game.me) {
-										ui.updatehl();
-									}
-								},
-								cards,
-								player
-							);
-						}
-						cards.forEach(i => i.delete());
-						if (player == game.me) {
-							ui.updatehl();
-						}*/
-						if (trigger.result.cards[0]._cardid === card.cardid) {
-							trigger.result.cards = [card];
+						if (trigger.result[trigger.targets.indexOf(player)].cards[0]._cardid === card.cardid) {
+							trigger.result[trigger.targets.indexOf(player)].cards = [card];
 						}
 					}
 				},

@@ -9932,22 +9932,20 @@ export class Game extends GameCompatible {
 		if (!Array.isArray(cards)) {
 			cards = [cards];
 		}
-		const create = function (card) {
+		const cardsx = cards.map(card => {
 			const cardx = ui.create.card();
 			cardx.isFake = true;
 			cardx._cardid = card.cardid;
 			if (isBlank) {
-				cardx.classList.add("infohidden");
-				cardx.classList.add("infoflip");
 				//没有tempname默认就是白板
 				cardx.init([null, null, tempname || "猜猜看啊", null]);
+				game.broadcastAll(cardx => {
+					cardx.classList.add("infohidden");
+					cardx.classList.add("infoflip");
+				}, cardx);
 			} else {
 				cardx.init(get.cardInfo(card));
 			}
-			return cardx;
-		};
-		const cardsx = cards.map(card => {
-			const cardx = create(card);
 			return cardx;
 		});
 		return cardsx;
