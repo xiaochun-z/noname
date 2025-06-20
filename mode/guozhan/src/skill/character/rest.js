@@ -1860,31 +1860,26 @@ export default {
 				return evt.skill == "fakequanji" && evt.event.triggername == name;
 			});
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			const num = Math.max(1, Math.min(player.maxHp, player.getExpansions("fakequanji").length));
-			event.num = num;
-			player.draw(num);
-			"step 1";
-			var hs = player.getCards("he");
+			await player.draw(num);
+			const hs = player.getCards("he");
+			let result;
 			if (hs.length > 0) {
-				if (hs.length <= event.num) {
-					event._result = { bool: true, cards: hs };
+				if (hs.length <= num) {
+					result = { bool: true, cards: hs };
 				} else {
-					player.chooseCard("he", true, "选择" + get.cnNumber(event.num) + "张牌作为“权”", event.num);
+					result = await player.chooseCard("he", true, "选择" + get.cnNumber(num) + "张牌作为“权”", num).forResult();
 				}
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (result.bool) {
-				var cs = result.cards;
-				player.addToExpansion(cs, player, "give").gaintag.add("fakequanji");
+				if (result?.bool) {
+					const cs = result.cards;
+					await player.addToExpansion(cs, player, "give").gaintag.add("fakequanji");
+				}
 			}
 		},
 		mod: {
 			maxHandcard(player, num) {
-				return num + player.getExpansions("fakequanji").length;
+				return num + Math.max(1, Math.min(player.maxHp, player.getExpansions("fakequanji").length));
 			},
 		},
 		ai: {
@@ -1903,17 +1898,18 @@ export default {
 			} = await player.chooseJunlingFor(target);
 			if (junling) {
 				const str = get.translation(player),
-					num = get.cnNumber(player.getExpansions("fakequanji").length);
+					num = Math.max(1, Math.min(player.maxHp, player.getExpansions("fakequanji").length));
+				const cnNum = get.cnNumber(num);
 				const {
 					result: { index },
 				} = await target
 					.chooseJunlingControl(player, junling, targets)
 					.set("prompt", "排异")
-					.set("choiceList", ["执行此军令，然后" + str + "摸" + num + "张牌并将一张“权”置入弃牌堆", "不执行此军令，然后" + str + "可以对至多" + num + "名与你势力相同的角色各造成1点伤害并移去等量的“权”"])
+					.set("choiceList", ["执行此军令，然后" + str + "摸" + cnNum + "张牌并将一张“权”置入弃牌堆", "不执行此军令，然后" + str + "可以对至多" + cnNum + "名与你势力相同的角色各造成1点伤害并移去等量的“权”"])
 					.set("ai", () => {
-						const all = player.getExpansions("fakequanji").length;
+						const all = Math.max(1, Math.min(player.maxHp, player.getExpansions("fakequanji").length));
 						const effect = get.junlingEffect(player, junling, target, targets, target);
-						const eff1 = effect - get.effect(player, { name: "draw" }, player, target) * all;
+						const eff1 = effect + get.effect(player, { name: "draw" }, player, target) * all;
 						const eff2 = ((source, player, num) => {
 							let targets = game
 								.filterPlayer(current => {
@@ -1929,26 +1925,25 @@ export default {
 						})(player, target, all);
 						return Math.max(0, get.sgn(eff2 - eff1));
 					});
-				const cards = player.getExpansions("fakequanji");
 				if (index == 0) {
 					await target.carryOutJunling(player, junling, targets);
-					if (cards.length) {
-						await player.draw(cards.length);
+					if (num) {
+						await player.draw(num);
 						const {
 							result: { bool, links },
-						} = await player.chooseButton(["排异：请移去一张“权”", cards], true);
+						} = await player.chooseButton(["排异：请移去一张“权”", player.getExpansions("fakequanji")], true);
 						if (bool) {
 							await player.loseToDiscardpile(links);
 						}
 					}
-				} else if (cards.length) {
+				} else if (num) {
 					const { result } = await player
 						.chooseTarget(
-							"排异：是否对至多" + get.cnNumber(cards.length) + "名与" + get.translation(target) + "势力相同的角色各造成1点伤害并移去等量的“权”？",
+							"排异：是否对至多" + cnNum + "名与" + get.translation(target) + "势力相同的角色各造成1点伤害并移去等量的“权”？",
 							(card, player, target) => {
 								return target.isFriendOf(get.event("target"));
 							},
-							[1, cards.length]
+							[1, num]
 						)
 						.set("target", target)
 						.set("ai", target => {
@@ -1962,7 +1957,7 @@ export default {
 						}
 						const {
 							result: { bool, links },
-						} = await player.chooseButton(["排异：请移去" + get.cnNumber(targetx.length) + "张“权”", cards], targetx.length, true);
+						} = await player.chooseButton(["排异：请移去" + get.cnNumber(targetx.length) + "张“权”", player.getExpansions("fakequanji")], targetx.length, true);
 						if (bool) {
 							await player.loseToDiscardpile(links);
 						}
