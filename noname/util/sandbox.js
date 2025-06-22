@@ -4175,27 +4175,31 @@ class Sandbox {
 			.filter(key => key.startsWith(prefix));
 
 		Sandbox.#topWindow.addEventListener("storage", function(e) {
-			if (e.storageArea !== localStorage)
+			if (e.storageArea !== localStorage) {
 				return;
+			}
 
 			if (e.key == null) {
 				keys.length = 0;
 				return;
 			}
 			
-			if (!e.key.startsWith(prefix))
+			if (!e.key.startsWith(prefix)) {
 				return;
+			}
 
 			const adding = e.oldValue == null;
 			const removing = e.newValue == null;
 
-			if (adding === removing)
+			if (adding === removing) {
 				return;
+			}
 
-			if (adding)
+			if (adding) {
 				keys.push(e.key);
-			else
+			} else {
 				delete keys[keys.indexOf(e.key)];
+			}
 		});
 
 		prototype.clear = function() {
@@ -4242,32 +4246,38 @@ class Sandbox {
 	#createSandboxStorageProxy() {
 		const prototype = this.#proxyStorage;
 
-		if (prototype == null)
+		if (prototype == null) {
 			return null;
+		}
 
 		const storage = this.#domainObject.create(prototype);
 
 		return new Proxy(storage, {
 			get(target, p, receiver) {
-				if (typeof p != "string")
+				if (typeof p != "string") {
 					return undefined;
-				if (p in prototype)
+				}
+				if (p in prototype) {
 					return prototype[p];
+				}
 
 				return prototype.getItem(p);
 			},
 			set(target, p, newValue, receiver) {
-				if (typeof p != "string")
+				if (typeof p != "string") {
 					return true;
-				if (p in prototype)
+				}
+				if (p in prototype) {
 					return true;
+				}
 				
 				prototype.setItem(p, String(newValue));
 				return true;
 			},
 			deleteProperty(target, p) {
-				if (typeof p != "string")
+				if (typeof p != "string") {
 					return true;
+				}
 
 				prototype.removeItem(p);
 				return true;

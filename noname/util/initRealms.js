@@ -85,7 +85,10 @@ async function initializeSandboxRealms(enabled) {
 				throw new ReferenceError("顶级域已经被卸载");
 			}
 
-			if (!SANDBOX_DEBUG) iframe.remove();
+			if (!SANDBOX_DEBUG) {
+				iframe.remove();
+			}
+
 			return window;
 		},
 	});
@@ -127,7 +130,9 @@ async function initializeSandboxRealms(enabled) {
 
 	// @ts-expect-error ignore
 	Object.assign(SANDBOX_EXPORT, iframe.contentWindow.SANDBOX_EXPORT);
-	if (!SANDBOX_DEBUG) iframe.remove();
+	if (!SANDBOX_DEBUG) {
+		iframe.remove();
+	}
 }
 
 function isSandboxEnabled() {
