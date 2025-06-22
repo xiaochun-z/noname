@@ -4164,7 +4164,7 @@ class Sandbox {
 	 */
 	#createSandboxStorage() {
 		/** @type {Storage} */
-		// @ts-expect-error
+		// @ts-expect-error 因为必须要使用new创建对象而不是`{}`语法
 		const prototype = new this.#domainObject();
 		const prefix = `SANDBOX[${this.#persistId}]_`;
 
