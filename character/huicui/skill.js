@@ -605,7 +605,7 @@ const skills = {
 	},
 	dcyizheng: {
 		audio: 2,
-		trigger: { player: ["phaseBegin"] },//, "phaseEnd"
+		trigger: { player: ["phaseBegin"] }, //, "phaseEnd"
 		filter(event, player) {
 			return (
 				player.countCards("h") &&
@@ -745,7 +745,7 @@ const skills = {
 			if (event.name == "dying") {
 				return player.isDying();
 			}
-			return player.isDamaged();
+			return true;
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
@@ -753,7 +753,7 @@ const skills = {
 			await player.recover(num);
 			//await player.draw(num);
 			await player.removeSkills("dcyizheng");
-			if (player.hasSkill("dcboxuan")) {
+			if (player.hasSkill("dcboxuan", null, null, false)) {
 				player.storage.dcboxuan = true;
 			}
 			game.log(player, `修改了〖博玄〗`);
@@ -1963,9 +1963,6 @@ const skills = {
 		audio: 2,
 		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
-			if (!player.isPhaseUsing()) {
-				return false;
-			}
 			if (event.card.name != "sha" && get.type(event.card) != "trick") {
 				return false;
 			}
@@ -2633,18 +2630,18 @@ const skills = {
 		onremove: ["dcshicao_aiRecord"],
 		chooseButton: {
 			dialog(event, player) {
-				return ui.create.dialog("###识草###选择一种类型与要摸牌的来源", [["basic", "trick", "equip"].map(type => [type, get.translation(type)]), "tdnodes"], [["牌堆顶", "牌堆底"], "tdnodes"]);
+				return ui.create.dialog("###识草###选择一种类型与要摸牌的来源", [["basic", "trick", "equip"], "vcard"], [["牌堆顶", "牌堆底"], "tdnodes"]);
 			},
 			check(button) {
 				const player = get.player();
 				const bottom = player.storage.dcshicao_bottom,
 					aiStorage = player.getStorage("dcshicao_aiRecord");
 				if (bottom && aiStorage.length > 0 && ui.cardPile.lastChild && get.name(ui.cardPile.lastChild, false) === get.name(aiStorage.lastItem, false)) {
-					if (button.link === "牌堆底" || button.link === get.type2(aiStorage.lastItem, false)) {
+					if (button.link === "牌堆底" || button.link[2] === get.type2(aiStorage.lastItem, false)) {
 						return 20;
 					}
 				}
-				if (button.link === "牌堆顶" || button.link === "basic") {
+				if (button.link === "牌堆顶" || button.link[2] === "basic") {
 					return 10;
 				}
 				return 5 + Math.random();
@@ -2662,7 +2659,7 @@ const skills = {
 				}
 				return {
 					audio: "dcshicao",
-					type: links[0],
+					type: links[0][2],
 					pos: links[1],
 					filterCard: () => false,
 					selectCard: -1,
