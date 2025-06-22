@@ -461,7 +461,8 @@ async function initSecurity({ lib, game, ui, get, ai, _status, gnc }) {
 	exposedClassRule.setGranted(AccessAction.META, false); // 禁止不安全代码更改这些类的原型
 
 	// 为所有Event类型应用上面的规则
-	Object.keys(globalThis)
+	Reflect.ownKeys(globalThis)
+		.filter(key => typeof key == "string")
 		.filter(key => /^\w*?Event$/.test(key))
 		.map(key => globalThis[key])
 		.forEach(o => Marshal.setRule(o, exposedClassRule));
@@ -589,14 +590,15 @@ async function initSecurity({ lib, game, ui, get, ai, _status, gnc }) {
  * 创建一个新的沙盒
  * ```
  *
+ * @param {string} persistId 
  * @returns {Sandbox?}
  */
-function createSandbox() {
+function createSandbox(persistId) {
 	if (!SANDBOX_ENABLED) {
 		return null;
 	}
 
-	const box = new Sandbox();
+	const box = new Sandbox(persistId);
 	box.freeAccess = true;
 	box.domAccess = true;
 	box.initBuiltins();

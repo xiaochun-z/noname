@@ -618,7 +618,8 @@ const MARSHALLED_LIST = Object.freeze([
 	"/confirm",
 	// 补充所有的事件喵
 	// 因为需要判断原型链，所以这里要让顶级域把它的事件类传过来喵
-	...Object.keys(globalThis)
+	...Reflect.ownKeys(globalThis)
+		.filter(key => typeof key == "string")
 		.filter(key => /^\w*?Event$/.test(key))
 		.map(key => `/${key}`),
 ]);
@@ -2430,6 +2431,7 @@ class Marshal {
 
 		// 检查基本封送条件
 		if (Marshal.#strictMarshal(target) || sourceDomain.isUnsafe(target)) {
+			debugger
 			throw new TypeError("对象无法封送");
 		}
 		if (!Marshal.#shouldMarshal(target)) {
@@ -3341,6 +3343,11 @@ class Sandbox {
 	/** @type {WeakMap<Function, string>} */
 	static #functionRefCodes = new WeakMap();
 
+	/** @type {string?} */
+	#persistId;
+	/** @type {Storage?} */
+	#proxyStorage;
+
 	/** @type {Object} */
 	#scope;
 	/** @type {Array<Object>} */
@@ -3387,9 +3394,18 @@ class Sandbox {
 	#domAccess = false;
 
 	/**
+	 * ```plain
 	 * 创建一个新的沙盒
+	 * 
+	 * 并指定沙盒使用的持久化ID
+	 * 当服务器需要使用`localStorage`时必须指定持久化ID来确保每次访问的持久化数据的一致性
+	 * ```
+	 * 
+	 * @param {string} persistId 
 	 */
-	constructor() {
+	constructor(persistId) {
+		this.#persistId = typeof persistId == "string" && persistId.length > 0 ? persistId : null;
+
 		this.#sourceDomain = Domain.current;
 		this.#domain = new Domain();
 		this.#domainWindow = this.#domain[SandboxExposer](SandboxSignal_GetWindow);
@@ -3398,6 +3414,9 @@ class Sandbox {
 		this.#domainFunction = this.#domainWindow.Function;
 		// this.#domainEval = this.#domainWindow.eval;
 		Sandbox.#domainMap.set(this.#domain, this);
+		
+		this.#proxyStorage = persistId ? this.#createSandboxStorage() : null;
+		
 		Sandbox.#initDomainFunctions(this, this.#domainWindow);
 		Sandbox.#createScope(this);
 	}
@@ -3724,6 +3743,11 @@ class Sandbox {
 			parseFloat: this.#domainWindow.parseFloat,
 			isFinite: this.#domainWindow.isFinite,
 			isNaN: this.#domainWindow.isNaN,
+
+			ArrayBuffer: this.#domainWindow.ArrayBuffer,
+			performance: this.#domainWindow.performance,
+			localStorage: this.#createSandboxStorageProxy(),
+
 			Domain: Domain,
 		};
 
@@ -3739,13 +3763,15 @@ class Sandbox {
 		};
 
 		// 先从沙盒运行域实际的window中得到所有的全局属性名
-		const globalKeys = Object.keys(this.#domainWindow);
+		const globalKeys = Reflect.ownKeys(this.#domainWindow)
+			.filter(key => typeof key == "string");
 
 		// 我们遍历 `patternBuiltins` 并将符合条件的属性放到 `builtins` 中
-		for (const pattern of patternBuiltins) {
-			for (const key of globalKeys) {
+		for (const key of globalKeys) {
+			for (const pattern of patternBuiltins) {
 				if (pattern.test(key)) {
 					builtins[key] = this.#domainWindow[key];
+					break;
 				}
 			}
 		}
@@ -3763,6 +3789,10 @@ class Sandbox {
 				}
 			}
 		});
+
+		// 防止MD5报错
+		builtins.exports = undefined; 
+		builtins.define = undefined;
 
 		Object.assign(this.#scope, builtins);
 
@@ -3841,7 +3871,8 @@ class Sandbox {
 		let argumentList;
 		let wrappedEval;
 
-		const raw = new thiz.#domainFunction("_", `with(_){with(window){with(${contextName}){return(${applyName}(function(${parameters}){/*"use strict";*/ // 不再强制严格模式\n// 沙盒代码起始\n${code}\n// 沙盒代码结束\n},${contextName}.this,${argsName}))}}}`);
+		// 必须使用严格模式否则会导致this逃逸
+		const raw = new thiz.#domainFunction("_", `with(_){with(window){with(${contextName}){return(${applyName}(function(${parameters}){"use strict";// 沙盒代码起始\n${code}\n// 沙盒代码结束\n},${contextName}.this,${argsName}))}}}`);
 		const snippet = new CodeSnippet(code, 5); // 错误信息的行号从 5 开始 (即错误信息的前 5 行是不属于 `code` 的范围)
 
 		const domain = thiz.#domain;
@@ -4126,6 +4157,124 @@ class Sandbox {
 
 		return builtName;
 	};
+
+	/**
+	 * 创建沙盒的`localStorage`原型
+	 * 
+	 * @returns {Storage}
+	 */
+	#createSandboxStorage() {
+		/** @type {Storage} */
+		// @ts-ignore
+		const prototype = new this.#domainObject();
+		const prefix = `SANDBOX[${this.#persistId}]_`;
+
+		/** @type {Storage} */
+		const localStorage = Sandbox.#topWindow.localStorage;
+		/** @type {Array<string>} */
+		const keys = Object.keys(localStorage)
+			.filter(key => key.startsWith(prefix));
+
+		Sandbox.#topWindow.addEventListener("storage", function(e) {
+			if (e.storageArea !== localStorage)
+				return;
+
+			if (e.key == null) {
+				keys.length = 0;
+				return;
+			}
+			
+			if (!e.key.startsWith(prefix))
+				return;
+
+			const adding = e.oldValue == null;
+			const removing = e.newValue == null;
+
+			if (adding === removing)
+				return;
+
+			if (adding)
+				keys.push(e.key);
+			else
+				delete keys[keys.indexOf(e.key)];
+		});
+
+		prototype.clear = function() {
+			const removingKeys = Object.assign([], keys);
+			keys.length = 0;
+
+			for (const key of removingKeys) {
+				delete localStorage[key];
+			}
+		};
+
+		prototype.getItem = function(key) {
+			return localStorage[prefix + key];
+		};
+
+		prototype.key = function(index) {
+			return keys[index] || null;
+		};
+
+		prototype.removeItem = function(key) {
+			delete localStorage[prefix + key];
+		};
+
+		prototype.setItem = function(key, value) {
+			localStorage[prefix + key] = value;
+		};
+
+		Object.defineProperty(prototype, "length", {
+			get() {
+				return keys.length;
+			},
+			enumerable: false,
+		});
+
+		Object.freeze(prototype);
+		return prototype;
+	}
+
+	/**
+	 * 创建`localStorage`实例 (简单模拟了一下`localStorage`)
+	 * 
+	 * @returns {Storage?}
+	 */
+	#createSandboxStorageProxy() {
+		const prototype = this.#proxyStorage;
+
+		if (prototype == null)
+			return null;
+
+		const storage = this.#domainObject.create(prototype);
+
+		return new Proxy(storage, {
+			get(target, p, receiver) {
+				if (typeof p != "string")
+					return undefined;
+				if (p in prototype)
+					return prototype[p];
+
+				return prototype.getItem(p);
+			},
+			set(target, p, newValue, receiver) {
+				if (typeof p != "string")
+					return true;
+				if (p in prototype)
+					return true;
+				
+				prototype.setItem(p, String(newValue));
+				return true;
+			},
+			deleteProperty(target, p) {
+				if (typeof p != "string")
+					return true;
+
+				prototype.removeItem(p);
+				return true;
+			}
+		});
+	}
 
 	/**
 	 * @param {Symbol} signal
