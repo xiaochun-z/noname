@@ -2431,7 +2431,6 @@ class Marshal {
 
 		// 检查基本封送条件
 		if (Marshal.#strictMarshal(target) || sourceDomain.isUnsafe(target)) {
-			debugger
 			throw new TypeError("对象无法封送");
 		}
 		if (!Marshal.#shouldMarshal(target)) {
@@ -3416,7 +3415,7 @@ class Sandbox {
 		Sandbox.#domainMap.set(this.#domain, this);
 		
 		this.#proxyStorage = persistId ? this.#createSandboxStorage() : null;
-		
+
 		Sandbox.#initDomainFunctions(this, this.#domainWindow);
 		Sandbox.#createScope(this);
 	}
@@ -4165,7 +4164,7 @@ class Sandbox {
 	 */
 	#createSandboxStorage() {
 		/** @type {Storage} */
-		// @ts-ignore
+		// @ts-expect-error
 		const prototype = new this.#domainObject();
 		const prefix = `SANDBOX[${this.#persistId}]_`;
 
