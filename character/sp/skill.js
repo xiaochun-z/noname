@@ -166,9 +166,9 @@ const skills = {
 				.set("prompt", "###狂信###你失去任意点体力，摸等量的牌并展示已损失体力值+1张手牌。")
 				.set("ai", () => {
 					if (get.player().hp < 3) {
-						return 1;
+						return 0;
 					}
-					return get.player().hp - 1;
+					return get.player().hp - 2;
 				})
 				.forResult();
 			if (!result?.control) {
@@ -28299,6 +28299,20 @@ const skills = {
 		trigger: {
 			player: "useCard",
 		},
+		onChooseToUse(event) {
+			event.set("targetprompt2", target => {
+				if (!target.isIn()) {
+					return false;
+				}
+				const player = get.player(),
+					card = get.card();
+				if (get.type(card) == "trick" || (get.type(card) == "basic" && !["shan", "tao", "jiu", "du"].includes(card.name))) {
+					if (target.isIn() && target !== player && get.distance(target, player) <= 1) {
+						return "不可响应";
+					}
+				}
+			});
+		},
 		filter(event, player) {
 			return (
 				event.card &&
@@ -31789,7 +31803,7 @@ const skills = {
 		audio: "shefu",
 		sourceSkill: "shefu",
 		filter(event, player) {
-			if (_status.currentPhase == player || event.player == player) {
+			if (_status.currentPhase == player || event.player == player || event.all_excluded) {
 				return false;
 			}
 			return (

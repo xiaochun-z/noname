@@ -3248,9 +3248,17 @@ const skills = {
 		},
 		onuse(result, player) {
 			player.tempBanSkill("jsrgzhaotu", null, false);
-			result.targets[0].insertPhase();
-			result.targets[0].addTempSkill("jsrgzhaotu_handcard", { player: "phaseAfter" });
-			result.targets[0].addMark("jsrgzhaotu_handcard", 2, false);
+			const next = result.targets[0].insertPhase();
+			next.skill = "jsrgzhaotu";
+			result.targets[0]
+				.when({
+					player: "phaseBegin",
+				})
+				.filter(evt => evt.skill == "jsrgzhaotu")
+				.step(async (event, trigger, player) => {
+					player.addTempSkill("jsrgzhaotu_handcard");
+					player.addMark("jsrgzhaotu_handcard", 2, false);
+				});
 		},
 		subSkill: {
 			handcard: {
@@ -8717,7 +8725,7 @@ const skills = {
 					return event.hasNature("fire");
 				},
 				content() {
-					player.tempBanSkill("jsrgshishou", { player: "phaseEnd" });
+					player.tempBanSkill("jsrgcangchu", { player: "phaseEnd" });
 					player.addTempSkill("jsrgshishou_blocker", { player: "phaseEnd" });
 				},
 			},
