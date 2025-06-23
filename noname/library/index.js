@@ -7146,6 +7146,23 @@ export class Library {
 					},
 					clear: true,
 				},
+				reset_grantedServers: {
+					name: "重置受信任的服务器列表",
+					onclick() {
+						if (this.firstChild.innerHTML != "已重置") {
+							this.firstChild.innerHTML = "已重置";
+							security.resetGrantedServers();
+							setTimeout(() => {
+								if (confirm("是否重置游戏让改变的列表生效?")) {
+									game.reload();
+									return;
+								}
+								this.firstChild.innerHTML = "重置受信任的服务器列表";
+							}, 0);
+						}
+					},
+					clear: true,
+				},
 			},
 		},
 		boss: {
