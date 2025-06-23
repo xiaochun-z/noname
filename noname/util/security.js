@@ -260,8 +260,9 @@ function alertForServer(ip) {
 	const grantedList = readStorage(GRANTED_LIST_KEY);
 	const granted = grantedList[ip];
 
-	if (granted != null)
+	if (granted != null) {
 		return !!granted;
+	}
 
 	const newResult = alertForNewServer();
 	grantedList[ip] = newResult;
