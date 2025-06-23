@@ -3727,6 +3727,9 @@ div:not(.handcards) > .card > .info > span,
 .turnedover > .judges {
 	opacity: 0.7;
 }
+.turnedover > .timerbar {
+	opacity: 1;
+}
 .intro:not(.showintro) {
 	opacity: 0;
 	display: none !important;
