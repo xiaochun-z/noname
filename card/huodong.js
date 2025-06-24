@@ -1,7 +1,7 @@
 import { lib, game, ui, get, ai, _status } from "../noname.js";
 game.import("card", function () {
 	return {
-		name: "kaiheiji",
+		name: "huodong",
 		connect: true,
 		card: {
 			//烈火
@@ -289,16 +289,17 @@ game.import("card", function () {
 					const { target } = event;
 					for (const phase of lib.phaseName) {
 						const evt = event.getParent(phase);
-						if (evt?.name === phase && !evt.skipped) {
-							const name = get.translation(phase);
-							game.log(player, "结束了" + name);
-							evt.skipped = true;
+						if (evt?.name === phase && !evt.finished) {
+							//不触发cancelled时机
+							evt.cancel(true, null, true);
+							break;
 						}
 					}
-					const evt = event.getParent("phase");
-					if (!evt.finished) {
-						game.log(player, "结束了回合");
-						evt.finish();
+					const evt = event.getParent("phase", true);
+					if (evt) {
+						game.log(evt.player, "结束了回合");
+						evt.num = evt.phaseList.length;
+						evt.goto(11);
 					}
 					await player.turnOver();
 					if (player == game.me && !_status.auto) {
