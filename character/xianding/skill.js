@@ -12125,9 +12125,7 @@ const skills = {
 				})
 				.then(() => {
 					if (result.bool) {
-						const num = trigger.targets.length;
 						trigger.targets.length = 0;
-						console.log(num);
 						trigger.getParent().triggeredTargets1.length = 0;
 						trigger.untrigger();
 						var targets = game.filterPlayer(current => {
