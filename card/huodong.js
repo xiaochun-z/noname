@@ -575,7 +575,7 @@ game.import("card", function () {
 						if (num >= targets.length) {
 							num = 0;
 						}
-						if (!target.isAlive()) {
+						if (!target?.isIn()) {
 							continue;
 						}
 						const { result } = await target
