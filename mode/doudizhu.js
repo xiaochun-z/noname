@@ -2786,20 +2786,7 @@ export default () => {
 				forced: true,
 				async content(event, trigger, player) {
 					await player.recover();
-				},
-				group: "yinfu_remove",
-				subSkill: {
-					remove: {
-						charlotte: true,
-						trigger: { player: "logSkill" },
-						filter(event, player) {
-							return event.skill == "yinfu" && player.getAllHistory("useSkill", evt => evt.skill == "yinfu").length > 2;
-						},
-						forced: true,
-						async content(event, trigger, player) {
-							await player.removeSkills("yinfu");
-						},
-					},
+					if (player.getAllHistory("useSkill", evt => evt.skill == event.name).length > 2) await player.removeSkills(event.name);
 				},
 			},
 			diqi_skill: {

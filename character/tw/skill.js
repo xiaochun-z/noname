@@ -20989,7 +20989,7 @@ const skills = {
 				}
 			}
 			await game.delayx();
-			if (!target.isIn() || player.countCards("h") !== target.countCards("h")) {
+			if (player.countCards("h") !== target.countCards("h")) {
 				return;
 			}
 			const num = player.storage.counttrigger?.[event.name];
