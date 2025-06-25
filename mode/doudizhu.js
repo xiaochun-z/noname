@@ -2786,7 +2786,9 @@ export default () => {
 				forced: true,
 				async content(event, trigger, player) {
 					await player.recover();
-					if (player.getAllHistory("useSkill", evt => evt.skill == event.name).length > 2) await player.removeSkills(event.name);
+					if (player.getAllHistory("useSkill", evt => evt.skill == event.name).length > 2) {
+						await player.removeSkills(event.name);
+					}
 				},
 			},
 			diqi_skill: {
