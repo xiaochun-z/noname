@@ -25,6 +25,7 @@ game.import("card", function () {
         		chooseBool(sons, current) {
         			const next = current.chooseBool();
         			next.set("prompt", "孩子，你是否想成为" + get.translation(sons.find(son => son != current)) + "的义父😈");
+        			next.set("choice", true);
         			next.set("_global_waiting", true);
         			return next;
         		},
