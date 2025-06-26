@@ -4,6 +4,245 @@ game.import("card", function () {
 		name: "kaiheiji",
 		connect: true,
 		card: {
+			//义父
+			//时光时光曼些巴，不要再让你变牢了😭😭😭
+			yifu: {
+				audio: true,
+				fullskin: true,
+				type: "trick",
+				enable: true,
+				allowMultiple: false,
+				filterTarget(card, player, target) {
+					if (get.mode() == "versus" && _status.mode == "two") {
+						return player.isFriendOf(target) && player != target;
+					}
+					return player != target;
+				},
+				modTarget(card, player, target) {
+					return player != target;
+				},
+				//爆改自 谋陈琳【邀作】
+        		chooseBool(sons, current) {
+        			const next = current.chooseBool();
+        			next.set("prompt", "孩子，你是否想成为" + get.translation(sons.find(son => son != current)) + "的义父😈");
+        			next.set("_global_waiting", true);
+        			return next;
+        		},
+				async content(event, trigger, player) {
+		            const targets = [player, event.target];
+        			let humans = targets.filter(current => current === game.me || current.isOnline());
+        			let locals = targets.slice(0).randomSort();
+        			locals.removeArray(humans);
+        			const eventId = get.id();
+        			const send = (sons, current, eventId) => {
+        				lib.card.yifu.chooseBool(sons, current, eventId);
+        				game.resume();
+        			};
+        			event._global_waiting = true;
+        			let time = 10000;
+        			let fathers = [];
+        			if (lib.configOL && lib.configOL.choose_timeout) {
+        				time = parseInt(lib.configOL.choose_timeout) * 1000;
+        			}
+        			targets.forEach(current => current.showTimer(time));
+        			if (humans.length > 0) {
+        				const solve = (result, chooser) => {
+        					if (result && result.bool) {
+        						fathers.add(chooser);
+        					}
+        				};
+        				await Promise.all(
+        					humans.map(current => {
+        						return new Promise((resolve, reject) => {
+        							if (current.isOnline()) {
+        								current.send(send, targets, current);
+        								current.wait((result, player) => {
+        									solve(result, player);
+        									resolve(void 0);
+        								});
+        							} else if (current == game.me) {
+        								const next = lib.card.yifu.chooseBool(targets, current);
+        								const solver = (result, player) => {
+        									solve(result, player);
+        									resolve(void 0);
+        								};
+        								if (_status.connectMode) {
+        									game.me.wait(solver);
+        								}
+        								return next.forResult().then(result => {
+        									if (_status.connectMode) {
+        										game.me.unwait(result, current);
+        									} else {
+        										solver(result, current);
+        									}
+        								});
+        							}
+        						});
+        					})
+        				);
+        			}
+        			if (locals.length > 0) {
+        				for (const current of locals) {
+        					const result = await lib.card.yifu.chooseBool(targets, current).forResult();
+        					if (result && result.bool) {
+        						fathers.add(current);
+        					}
+        				}
+        			}
+        			delete event._global_waiting;
+        			for (const i of targets) {
+        				i.hideTimer();
+        				if (fathers.some(key => i == key)) {
+        					i.popup("抢义父", "fire");
+        				} else {
+        					i.popup("不抢", "wood");
+        				}
+        			}
+        			await game.asyncDelay();
+        			if (!fathers.length) {
+        				return;
+        			}
+        			const first = fathers[0];
+        			if (first && first.isIn()) {
+        				game.log(first, "第一个抢到了“义父”标记");
+        				const son = targets.find(targetx => targetx != first);
+        				await game.asyncDelay();
+        				game.log(first, "成为了", son, "的义父");
+        				game.log(son, "成为了", first, "的义子");
+    					first.chat("儿啊！");
+    					first.throwEmotion(son, ["flower", "wine"].randomGet(), false);
+    					first.addSkill("yifu_skill");
+    					first.markAuto("yifu_skill", son);
+    					son.chat("我吃柠檬");
+    					son.throwEmotion(first, ["egg", "shoe"].randomGet(), false);
+    					son.markAuto("yifu_skill_son", first);
+        			}
+				},
+				//ai照搬富贵
+				ai: {
+					wuxie() {
+						return Math.random() > 0.5;
+					},
+					order: 7,
+					useful: 6.5,
+					value: 6.5,
+					result: {
+						player: 1,
+					},
+				},
+			},
+			//两肋插刀
+			//营养师神器了😆
+			chadaox: {
+				audio: true,
+				fullskin: true,
+				derivation: "chadaox_skill",
+				type: "trick",
+				enable: true,
+				notarget: true,
+				async content(event, trigger, player) {
+		            player.$fullscreenpop("兄弟抱一下！", "fire");
+		            game.addGlobalSkill("chadaox_skill");
+				},
+				//ai照搬你死我活
+				ai: {
+					order: 1,
+					useful: 9.5,
+					value: 10,
+					result: {
+						player: 1,
+					},
+					tag: {
+						multitarget: 1,
+						multineg: 1,
+					},
+				},
+			},
+			//天雷
+			//妙脆角快乐牌😎
+			tianlei: {
+				audio: true,
+				fullskin: true,
+				type: "trick",
+				enable: true,
+				selectTarget: -1,
+				filterTarget: true,
+				multitarget: true,
+				multiline: true,
+				async content(event, trigger, player) {
+					let { targets } = event;
+					targets = targets.filter(target => target.canAddJudge({ name: "shandian" })).sortBySeat();
+					let str;
+					if (targets.length) {
+					    str = "闪电滞销，帮帮我们😭";
+					    player.say(str);
+		                game.broadcast(
+			                function (id, str) {
+				                if (lib.playerOL[id]) {
+					                lib.playerOL[id].say(str);
+				                } else if (game.connectPlayers) {
+					                for (var i = 0; i < game.connectPlayers.length; i++) {
+						                if (game.connectPlayers[i].playerid == id) {
+							                game.connectPlayers[i].say(str);
+							                return;
+						                }
+					                }
+				                }
+			                },
+			                player.playerid,
+			                str
+		                );
+						for (const target of targets) {
+							const card = game.createCard("shandian", "heart", 7);
+							const cards = [card];
+							target.$draw(card);
+							await game.asyncDelayx();
+							//await target.addJudge(card);
+							await target.addJudge(get.autoViewAs(card, cards), cards);
+						}
+					} else {
+					    str = "闪电⚡️哦闪电⚡哦闪电⚡️～～️";
+					    player.say(str);
+		                game.broadcast(
+			                function (id, str) {
+				                if (lib.playerOL[id]) {
+					                lib.playerOL[id].say(str);
+				                } else if (game.connectPlayers) {
+					                for (var i = 0; i < game.connectPlayers.length; i++) {
+						                if (game.connectPlayers[i].playerid == id) {
+							                game.connectPlayers[i].say(str);
+							                return;
+						                }
+					                }
+				                }
+			                },
+			                player.playerid,
+			                str
+		                );
+					}
+				},
+				//ai缝合浮雷和烈火
+				ai: {
+					wuxie() {
+						return Math.random() > 0.75;
+					},
+					basic: {
+						order: 1,
+						useful: 0,
+						value: 0,
+					},
+					result: {
+						target(player, target) {
+							return lib.card.shandian.ai.result.target(player, target);
+						},
+					},
+					tag: {
+						damage: 0.25,
+						natureDamage: 0.25,
+						thunderDamage: 0.25,
+					},
+				},
+			},
 			//烈火
 			liehuo: {
 				audio: true,
@@ -1370,6 +1609,114 @@ game.import("card", function () {
 					}
 				},
 			},
+			chadaox_skill: {
+				charlotte: true,
+				popup: false,
+				trigger: { player: ["damageBegin4", "loseHpBegin"] },
+				filter(event, player) {
+					return game.hasPlayer(target => {
+						if (target == player || !target.isFriendOf(player)) {
+							return false;
+						}
+						return !(event._chadaox_skill_players || []).includes(target);
+					});
+				},
+        		async cost(event, trigger, player) {
+        			const targets = game.filterPlayer(target => {
+						if (target == player || !target.isFriendOf(player)) {
+							return false;
+						}
+						return !(trigger._chadaox_skill_players || []).includes(target);
+					});
+        			event.result = targets.length > 1 ? await player
+    				    .chooseTarget(`两肋插刀：你须选择一名队友替你承受此${trigger.name == "damage" ? "受到伤害" : "失去体力"}的效果`, (card, player, target) => {
+    					    const trigger = get.event().getTrigger();
+    					    if (target == player) {
+    						    return false;
+    					    }
+    					    if (!target.isFriendOf(player)) {
+    						    target.prompt("不是队友", "fire");
+    						    return false;
+    					    }
+    					    if ((trigger._chadaox_skill_players || []).includes(target)) {
+    						    target.prompt("已转移过", "orange");
+    						    return false;
+    					    }
+    					    return true;
+    				    }, true, 1)
+    				    .set("ai", target => get.damageEffect(target, get.event().getTrigger().source, target, get.event().getTrigger().nature))
+        				.forResult() : {
+    				    bool: true,
+    				    targets: targets,
+    			    };
+        		},
+				async content(event, trigger, player) {
+        			const target = event.targets[0];
+        			player.logSkill(event.name, target);
+        			game.log(target, "替", player, `承受了${trigger.name == "damage" ? "受到" : "失去"}的${get.cnNumber(trigger.num)}点${trigger.nature ? get.translation(trigger.nature) + "属性" : ""}${trigger.name == "damage" ? "伤害" : "体力"}`);
+        			if (!trigger._chadaox_skill_players) trigger._chadaox_skill_players = [];
+        			trigger._chadaox_skill_players.add(player);
+        			trigger.player = target;
+		            const dbi = [
+    		            ["皇帝的新文案", "皇帝的新文案"],
+    		            ["兄啊，有个事情你能不能帮我一下", "死叛恶艹"],
+    		            ["替我挡着！", "你咋这么自私呢，呸！"],
+    		            ["不好意思了兄弟，没注意，抱歉了", "你都叫兄弟了，那还说啥了，我自己受着得了！"],
+    		            ["这扯不扯，你这太性情了哥们", "没事啊，咱们都是弗雷尔卓德队友，没毛病啊"],
+    		            ["两角尖尖犹如利剑！", "孩子我啊米诺斯，一德格拉米"],
+		            ];
+		            const str = dbi.randomGet();
+		            if (str[1] != "皇帝的新文案") {
+    		            if (str[0] == "替我挡着！") {
+        		            game.playAudio("skill/tianxiang2.mp3");
+    		            }
+                        player.throwEmotion(target, ["flower", "wine"].randomGet(), false);
+    		            player.chat(str[0]);
+    		            await game.asyncDelayx();
+    		            target.throwEmotion(player, ["egg", "shoe"].randomGet(), false);
+    		            target.chat(str[1]);
+		            }
+				},
+			},
+			yifu_skill: {
+				charlotte: true,
+				forced: true,
+				intro: {
+					content: "你是$的义父",
+				},
+				marktext: "父",
+				mark: true,
+				trigger: { global: "phaseZhunbeiBegin" },
+				filter(event, player) {
+					return player.getStorage("yifu_skill").includes(event.player);
+				},
+				logTarget: "player",
+				async content(event, trigger, player) {
+    			    const target = trigger.player;
+    			    if (!target.countCards("he")) {
+        			    player.chat("你这个不孝子！");
+        			    player.throwEmotion(target, ["egg", "shoe"].randomGet(), false);
+        			    return;
+    			    }
+    			    const result = await target
+    				    .chooseToGive(true, "he", player)
+    				    .set("prompt", "义父：选择一张牌孝敬给" + get.translation(player))
+    				    .forResult();
+    			    if (!result.bool) {
+    				    return;
+    			    }
+    			    player.chat(`不愧是我的好孩子${target.nickname || get.translation(target)}，真是孝顺啊！`);
+				},
+        		subSkill: {
+        			son: {
+        				intro: {
+        					content: "你是$的义子",
+        				},
+        				marktext: "子",
+        				mark: true,
+        			},
+        		},
+			},
 		},
 		translate: {
 			liehuo: "烈火",
@@ -1456,6 +1803,23 @@ game.import("card", function () {
 			leigong_skill: "雷公助我",
 			leigong_bg: "雷",
 			leigong_info: "出牌阶段，对所有角色使用，令目标依次进行一次【闪电】判定，然后每有一名角色因此受到非传导伤害，你摸一张牌。",
+			tianlei: "天雷",
+			tianlei_bg: "雷",
+			tianlei_info: "出牌阶段，对所有角色使用，目标角色将一张来自游戏外的【闪电】放置于其判定区。",
+			chadaox: "两肋插刀",
+			chadaox_bg: "插",
+			//致敬传奇啥比光环描述
+			chadaox_info: "出牌阶段，令场上获得“两肋插刀”光环效果。",
+			chadaox_skill: "两肋插刀",
+			chadaox_skill_info: "当你受到伤害或失去体力时，将此效果转移给你一名未以此法转移过伤害的队友（没有则不转移）。",
+			yifu: "义父",
+			yifu_bg: "父",
+			get yifu_info() {
+				const str = get.mode() == "versus" && _status.mode == "two" ? "一名队友" : "一名其他角色";
+				return `出牌阶段，对${str}使用，你和目标同时选择是否成为对方“义父”并获得如下效果：义子的准备阶段开始时，你令其交给你一张牌。（若均选择是则先确定的角色成为“义父”，若均选择否则无事发生）。`;
+			},
+			yifu_skill: "义父",
+			yifu_skill_info: "你的“义子”于准备阶段须交给你一张牌。",
 		},
 		list: [
 			[lib.suit.randomGet(), get.rand(1, 13), "liehuo"],
