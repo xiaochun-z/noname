@@ -1583,24 +1583,23 @@ export default {
 				trigger: {
 					player: "shaMiss",
 				},
-				direct: true,
 				filter(event, player) {
 					return event.skill == "gz_longdan_sha";
 				},
-				logTarget: "targets",
-				async content(event, trigger, player) {
-					let result = await player
+				async cost(event, trigger, player) {
+					event.result = await player
 						.chooseTarget("是否发动【龙胆】对一名其他角色造成1点伤害？", function (card, player, target) {
-							return target != trigger.target && target != player;
+							return target != _status.event?.target && target != player;
 						})
 						.set("ai", function (target) {
-							return -get.attitude(player, target);
+							return -get.attitude(_status.event?.player, target);
 						})
 						.set("target", trigger.target)
 						.forResult();
-					if (result.bool) {
-						await result.targets[0].damage();
-					}
+				},
+				logTarget: "targets",
+				async content(event, _trigger, _player) {
+					await event.targets[0].damage();
 				},
 			},
 			draw: {
