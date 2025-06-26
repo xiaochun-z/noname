@@ -2585,12 +2585,10 @@ export default {
 		audioname2: {
 			gz_lvlingqi: "wushuang_lvlingqi",
 		},
-		forced: true,
 		locked: true,
 		group: ["wushuang1", "wushuang2"],
 		preHidden: ["wushuang1", "wushuang2", "gz_wushuang"],
 		trigger: { player: "useCard1" },
-		direct: true,
 		filter(event, player) {
 			if (event.card.name != "juedou" || !event.card.isCard) {
 				return false;
