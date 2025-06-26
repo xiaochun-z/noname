@@ -13,7 +13,7 @@ game.import("card", function () {
 				enable: true,
 				allowMultiple: false,
 				filterTarget(card, player, target) {
-					if (get.mode() == "versus" && _status.mode == "two") {
+					if ((get.mode() == "versus" && _status.mode == "two") || get.mode() == "doudizhu") {
 						return player.isFriendOf(target) && player != target;
 					}
 					return player != target;
@@ -1655,8 +1655,8 @@ game.import("card", function () {
         			player.logSkill(event.name, target);
         			game.log(target, "替", player, `承受了${trigger.name == "damage" ? "受到" : "失去"}的${get.cnNumber(trigger.num)}点${trigger.nature ? get.translation(trigger.nature) + "属性" : ""}${trigger.name == "damage" ? "伤害" : "体力"}`);
         			if (!trigger._chadaox_skill_players) {
-						trigger._chadaox_skill_players = [];
-					}
+            			trigger._chadaox_skill_players = [];
+        			}
         			trigger._chadaox_skill_players.add(player);
         			trigger.player = target;
 		            const dbi = [
@@ -1817,7 +1817,7 @@ game.import("card", function () {
 			yifu: "义父",
 			yifu_bg: "父",
 			get yifu_info() {
-				const str = get.mode() == "versus" && _status.mode == "two" ? "一名队友" : "一名其他角色";
+				const str = ((get.mode() == "versus" && _status.mode == "two") || get.mode() == "doudizhu") ? "一名队友" : "一名其他角色";
 				return `出牌阶段，对${str}使用，你和目标同时选择是否成为对方“义父”并获得如下效果：义子的准备阶段开始时，你令其交给你一张牌。（若均选择是则先确定的角色成为“义父”，若均选择否则无事发生）。`;
 			},
 			yifu_skill: "义父",
