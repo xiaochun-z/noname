@@ -1654,7 +1654,9 @@ game.import("card", function () {
         			const target = event.targets[0];
         			player.logSkill(event.name, target);
         			game.log(target, "替", player, `承受了${trigger.name == "damage" ? "受到" : "失去"}的${get.cnNumber(trigger.num)}点${trigger.nature ? get.translation(trigger.nature) + "属性" : ""}${trigger.name == "damage" ? "伤害" : "体力"}`);
-        			if (!trigger._chadaox_skill_players) trigger._chadaox_skill_players = [];
+        			if (!trigger._chadaox_skill_players) {
+						trigger._chadaox_skill_players = [];
+					}
         			trigger._chadaox_skill_players.add(player);
         			trigger.player = target;
 		            const dbi = [
