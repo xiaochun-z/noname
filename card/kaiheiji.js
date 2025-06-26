@@ -1892,6 +1892,21 @@ game.import("card", function () {
 			["diamond", 6, "younan"],
 			["heart", 6, "younan"],
 			["club", 6, "younan"],
+
+			["spade", 13, "tianlei"],
+			["diamond", 13, "tianlei"],
+			["heart", 13, "tianlei"],
+			["club", 13, "tianlei"],
+
+			["spade", 13, "chadaox"],
+			["diamond", 13, "chadaox"],
+			["heart", 13, "chadaox"],
+			["club", 13, "chadaox"],
+
+			["spade", 13, "yifu"],
+			["diamond", 13, "yifu"],
+			["heart", 13, "yifu"],
+			["club", 13, "yifu"],
 		],
 	};
 });
