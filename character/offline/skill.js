@@ -1779,7 +1779,7 @@ const skills = {
 							suits.add(get.suit(evt.card));
 						}
 					});
-					if (suits.includes(get.suit(trigger.card)) && player.hasSkill("pedaojue")) {
+					if (suits.includes(get.suit(trigger.card)) && player.hasSkill("yjdaojue")) {
 						bool = true;
 					}
 					let list = lib.linked.slice(0).remove("kami");
@@ -1953,6 +1953,7 @@ const skills = {
 					player.awakenSkill("yjdaojue");
 					player.removeTip("yjdaojue");
 					player.popup("袁绍");
+					game.log(player, "使命失败");
 					await player.removeSkills("yjjiechu");
 					await player.changeGroup("qun");
 					await player.addSkills(["olsbshenli", "yjzhuni", "olsbshishou"]);
@@ -1979,6 +1980,7 @@ const skills = {
 					player.awakenSkill("yjdaojue");
 					player.removeTip("yjdaojue");
 					player.popup("曹操");
+					game.log(player, "成功完成使命");
 					await player.removeSkills("yjjiechu");
 					await player.changeGroup("wei");
 					await player.addSkills(["yjzhian", "yjqingzheng", "rehujia"]);
@@ -17558,7 +17560,12 @@ const skills = {
 							.set("att", get.attitude(target, player))
 							.forResultBool();
 				target.line(player);
-				await player[bool ? "recover" : "draw"]();
+				if (bool) {
+					await player.recover(target);
+				}
+				else {
+					await player.draw();
+				}
 			}
 		},
 	},
@@ -18553,14 +18560,14 @@ const skills = {
 				.set("choice", eff > 0)
 				.forResult();
 			if (result.bool) {
-				for (const current of game.players) {
+				for (const current of game.players.sortBySeat(player)) {
 					if (current.isIn()) {
 						await current.turnOver();
 						await current.draw(3);
 					}
 				}
 				const lose_list = [];
-				for (const current of game.players) {
+				for (const current of game.players.sortBySeat(player)) {
 					if (current.countCards("e") && current.isIn()) {
 						lose_list.push([current, current.getCards("e")]);
 					}
