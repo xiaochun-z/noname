@@ -9841,13 +9841,10 @@ const skills = {
 			}
 			return true;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			player.recoverTo(game.countGroup());
-			"step 1";
-			player.turnOver();
-			player.storage.fuli = true;
+			await player.recoverTo(game.countGroup());
+			await player.turnOver();
 		},
 		ai: {
 			save: true,

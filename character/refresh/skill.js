@@ -6953,7 +6953,7 @@ const skills = {
 			if (result.bool) {
 				var target = result.targets[0];
 				event.target = target;
-				var num = Math.max(target.countDiscardableCards(player, "h") - target.hp, 1);
+				var num = Math.min(Math.max(target.countCards("h") - target.hp, 1), target.countDiscardableCards(player, "he"));
 				player.logSkill("decadezhenjun", target);
 				player.discardPlayerCard(num, target, true);
 			}
