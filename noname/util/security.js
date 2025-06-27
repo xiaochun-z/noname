@@ -19,8 +19,7 @@ const WSURL_FOR_IP = /ws:\/\/(\d+.\d+.\d+.\d+):\d+\//;
 const TRUSTED_IPS = Object.freeze([]); // 标记哪些服务器IP是可信任的
 /** @type {readonly string[]} */
 const TRUSTED_IP_MD5 = Object.freeze([
-	"45b55bb446a0891011555026cb854233",
-	"eb3f028e9c7bd917f2a706d011675b6b",
+	// 被拷打了喵 > <
 ]); // 标记哪些服务器IP的MD5是可信任的，MD5计算方式是`md5("noname_server" + ip)`
 
 // 声明导入类
