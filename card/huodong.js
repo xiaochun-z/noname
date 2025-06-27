@@ -1,7 +1,7 @@
 import { lib, game, ui, get, ai, _status } from "../noname.js";
 game.import("card", function () {
 	return {
-		name: "kaiheiji",
+		name: "huodong",
 		connect: true,
 		card: {
 			//义父
