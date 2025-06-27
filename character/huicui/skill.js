@@ -4034,10 +4034,6 @@ const skills = {
 		},
 	},
 	//蒋琬费祎
-	dcshengxi: {
-		inherit: "reshengxi",
-		trigger: { player: "phaseDiscardEnd" },
-	},
 	dcshoucheng: {
 		audio: "shoucheng",
 		global: "dcshoucheng_ai",
