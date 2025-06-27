@@ -2925,7 +2925,9 @@ const skills = {
 				const st2 = player.getStorage("twhuangzhu_equip").slice().map(equip => equip[2]);
 				let virtualList = {};
 				let disabled = [1, 2, 3, 4, 5].filter(num => player.countDisabledSlot(num)).map(num => "equip" + num);
-				for (let i of disabled) virtualList[i] = [];
+				for (let i of disabled) {
+					virtualList[i] = [];
+				}
 				console.log(disabled);
 				if (st2?.length) {
 					for (let i of st2) {
