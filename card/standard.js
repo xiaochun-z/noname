@@ -2126,10 +2126,7 @@ game.import("card", function () {
 							let event = _status.event,
 								player = event.splayer,
 								target = event.starget;
-							if (player.hasSkillTag("notricksource") || target.hasSkillTag("notrick")) {
-								return 0;
-							}
-							if (event.shaRequired > 1 && player.countCards("h", "sha") < event.shaRequired) {
+							if (event.notsha || player.hasSkillTag("notricksource") || target.hasSkillTag("notrick")) {
 								return 0;
 							}
 							if (event.player === target) {
@@ -2155,6 +2152,7 @@ game.import("card", function () {
 						next.set("pdamage", get.damageEffect(player, target, event.turn));
 						next.set("tdamage", get.damageEffect(target, player, event.turn));
 						next.set("shaRequired", event.shaRequired);
+						next.set("notsha", event.shaRequired > 1 && event.shaRequired > event.turn.mayHaveSha(event.turn, "respond", null, "count"));
 						next.set("respondTo", [player, card]);
 						next.autochoose = lib.filter.autoRespondSha;
 						if (event.turn == target) {
