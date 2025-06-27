@@ -529,16 +529,17 @@ game.import("card", function () {
 					const { target } = event;
 					for (const phase of lib.phaseName) {
 						const evt = event.getParent(phase);
-						if (evt?.name === phase && !evt.skipped) {
-							const name = get.translation(phase);
-							game.log(player, "结束了" + name);
-							evt.skipped = true;
+						if (evt?.name === phase && !evt.finished) {
+							//不触发cancelled时机
+							evt.cancel(true, null, true);
+							break;
 						}
 					}
-					const evt = event.getParent("phase");
-					if (!evt.finished) {
-						game.log(player, "结束了回合");
-						evt.finish();
+					const evt = event.getParent("phase", true);
+					if (evt) {
+						game.log(evt.player, "结束了回合");
+						evt.num = evt.phaseList.length;
+						evt.goto(11);
 					}
 					await player.turnOver();
 					if (player == game.me && !_status.auto) {
@@ -680,6 +681,9 @@ game.import("card", function () {
 				},
 				async content(event, trigger, player) {
 					const { target } = event;
+					if (!target.isDead()) {
+						return;
+					}
 					await target.reviveEvent();
 					await target.draw(3);
 				},
@@ -814,7 +818,7 @@ game.import("card", function () {
 						if (num >= targets.length) {
 							num = 0;
 						}
-						if (!target.isAlive()) {
+						if (!target?.isIn()) {
 							continue;
 						}
 						const { result } = await target
@@ -1238,8 +1242,16 @@ game.import("card", function () {
 				filterTarget: true,
 				reverseOrder: true,
 				async content(event, trigger, player) {
-					const target = event.target,
-						cardname = "shandian";
+					//摩斯码全责
+					const target = event.target;
+					target
+						.when("damageBefore")
+						.filter(evt => evt.getParent(event.name) == event && evt.card?.name == "shandian")
+						.step(async (evt, trigger, player) => {
+							trigger.card = event.card;
+						});
+					await target.executeDelayCardEffect("shandian");
+					/*	cardname = "shandian";
 					const VCard = ui.create.card();
 					VCard._destroy = true;
 					VCard.expired = true;
@@ -1252,7 +1264,7 @@ game.import("card", function () {
 					VCard.delete();
 					if (result.bool == false) {
 						await target.damage(3, "thunder", "nosource");
-					}
+					}*/
 				},
 				ai: {
 					wuxie(target, card, player, viewer, status) {
@@ -1432,6 +1444,19 @@ game.import("card", function () {
 				async content(event, trigger, player) {
 					await player.gainPlayerCard(trigger.target, "he", true);
 				},
+				ai: {
+					effect: {
+						player_use(card, player, target) {
+							if (!target || target.countCards("h") || !target.countCards("e")) {
+								return;
+							}
+							const filter = card => get.type(card) == "equip" && get.info(card)?.toself === false;
+							if (filter(card) && target.getCards("e").every(cardx => filter(cardx))) {
+								return "zeroplayertarget";
+							}
+						},
+					},
+				},
 			},
 			youfu_skill: {
 				popup: false,
@@ -1465,13 +1490,18 @@ game.import("card", function () {
 						event.result = { bool: bool, targets: targets };
 					} else {
 						event.result = await player
-							.chooseTarget(get.prompt(event.skill), "令任意名【有福同享】的目标角色也成为" + get.translation(trigger.card) + "的目标", (card, player, target) => {
-								const trigger = get.event().getTrigger();
-								if (!player.getStorage("youfu_skill").includes(target)) {
-									return false;
-								}
-								return !trigger.targets.includes(target) && lib.filter.targetEnabled2(trigger.card, player, target);
-							})
+							.chooseTarget(
+								get.prompt(event.skill),
+								"令任意名【有福同享】的目标角色也成为" + get.translation(trigger.card) + "的目标",
+								(card, player, target) => {
+									const trigger = get.event().getTrigger();
+									if (!player.getStorage("youfu_skill").includes(target)) {
+										return false;
+									}
+									return !trigger.targets.includes(target) && lib.filter.targetEnabled2(trigger.card, player, target);
+								},
+								[1, targets.length]
+							)
 							.set("ai", target => {
 								const player = get.player(),
 									trigger = get.event().getTrigger();

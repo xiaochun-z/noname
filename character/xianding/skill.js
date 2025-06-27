@@ -214,7 +214,7 @@ const skills = {
 					target = event.targets[1];
 				player.line2([source, target], "green");
 				await source.discardPlayerCard(target, "he", true);
-				source.damage(target);
+				await source.damage(target);
 			}
 		},
 		ai: {
@@ -3432,13 +3432,10 @@ const skills = {
 			await next;
 		},
 		init(player, skill) {
-			const evt = lib.skill.dcbaguan.getUsed(player, true);
-			if (evt && !evt.dcbaguan) {
-				player.addTip(skill, "霸关 可连击");
-			}
+			player.addSkill(skill + "_mark");
 		},
 		onremove(player, skill) {
-			player.removeTip(skill);
+			player.removeSkill(skill + "_mark");
 		},
 		getUsed(player, first) {
 			let history;
@@ -3479,9 +3476,18 @@ const skills = {
 				}
 			},
 		},
-		group: "dcbaguan_mark",
+		//group: "dcbaguan_mark",
 		subSkill: {
 			mark: {
+				init(player, skill) {
+					const evt = lib.skill.dcbaguan.getUsed(player, true);
+					if (evt && !evt.dcbaguan) {
+						player.addTip(skill, "霸关 可连击");
+					}
+				},
+				onremove(player, skill) {
+					player.removeTip(skill);
+				},
 				charlotte: true,
 				trigger: { player: "useCard" },
 				forced: true,
@@ -5025,13 +5031,10 @@ const skills = {
 			trigger.effectCount++;
 		},
 		init(player, skill) {
-			const evt = lib.skill.dcjianying.getLastUsed(player);
-			if (evt?.card && get.tag(evt.card, "damage") > 0.5 && !evt[skill]) {
-				player.addTip(skill, "破戎 可连击");
-			}
+			player.addSkill(skill + "_mark");
 		},
 		onremove(player, skill) {
-			player.removeTip(skill);
+			player.removeSkill(skill + "_mark");
 		},
 		ai: {
 			directHit_ai: true,
@@ -5043,9 +5046,18 @@ const skills = {
 				return evt?.card && get.tag(evt.card, "damage") > 0.5 && !evt.dcporong;
 			},
 		},
-		group: "dcporong_mark",
+		//group: "dcporong_mark",
 		subSkill: {
 			mark: {
+				init(player, skill) {
+					const evt = lib.skill.dcjianying.getLastUsed(player);
+					if (evt?.card && get.tag(evt.card, "damage") > 0.5 && !evt[skill]) {
+						player.addTip(skill, "破戎 可连击");
+					}
+				},
+				onremove(player, skill) {
+					player.removeTip(skill);
+				},
 				charlotte: true,
 				trigger: { player: ["useCard1", "useCardAfter"] },
 				forced: true,
@@ -17566,61 +17578,43 @@ const skills = {
 			}
 			return false;
 		},
-		contentBefore() {
-			event.getParent()._dcjianji_discarded = [];
-		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const { target } = event;
 			if (target.countCards("he") > 0) {
-				target.chooseToDiscard(true, "he");
-			} else {
-				event.finish();
-			}
-			"step 1";
-			if (result.bool) {
-				event.getParent()._dcjianji_discarded.push(target);
+				await target.chooseToDiscard(true, "he");
 			}
 		},
-		contentAfter() {
-			"step 0";
-			var list = targets.filter(target => {
-				var num = target.countCards("h");
+		async contentAfter(event, trigger, player) {
+			const { targets } = event;
+			let list = targets.filter(target => {
+				let num = target.countCards("h");
 				return targets.every(targetx => {
 					return targetx.countCards("h") <= num;
 				});
 			});
-			if (list.length) {
-				event.list = list;
-				event.current = event.list.shift();
-				event.getParent()._dcjianji_discarded.remove(player);
-				event.targets = event.getParent()._dcjianji_discarded;
-			} else {
-				event.finish();
+			if (!list.length) {
+				return;
 			}
-			"step 1";
-			var targets = event.targets.slice();
-			targets.remove(event.current);
-			if (!targets.length) {
-				event._result = { bool: false };
-			} else {
-				event.current
-					.chooseTarget("间计：是否视为对除" + get.translation(player) + "外的弃置过牌的一名角色使用一张杀？", (card, player, target) => {
-						return _status.event.targets.includes(target) && player.canUse("sha", target, false);
+			for (let current of list) {
+				const result = await current
+					.chooseTarget("间计：是否视为对" + get.translation(player) + "以外被选择的一名角色使用一张杀？", (card, player, target) => {
+						const { owner, targets } = get.event();
+						if (target == player || target == owner) {
+							return false;
+						}
+						return targets.includes(target) && player.canUse("sha", target, false);
 					})
-					.set("targets", event.targets)
+					.set("owner", player)
+					.set("targets", targets)
 					.set("ai", target => {
-						var player = _status.event.player;
+						let player = _status.event.player;
 						return get.effect(target, { name: "sha" }, player, player);
-					});
-			}
-			"step 2";
-			if (result.bool) {
-				event.current.useCard({ name: "sha", isCard: true }, result.targets, false);
-			}
-			"step 3";
-			if (event.list.length) {
-				event.current = event.list.shift();
-				event.goto(1);
+					})
+					.forResult();
+				if (result.bool) {
+					const card = new lib.element.VCard({ name: "sha" });
+					await current.useCard(card, result.targets, false);
+				}
 			}
 		},
 		ai: {

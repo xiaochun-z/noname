@@ -597,7 +597,7 @@ const skills = {
 						damages.push(event.current);
 						current.line(player, "green");
 						game.log(current, "令", player, "回复1点体力");
-						await player.recover();
+						await player.recover(current);
 					}
 				}
 			}
@@ -1384,7 +1384,7 @@ const skills = {
 				ai: {
 					save: true,
 					skillTagFilter(player, tag, arg) {
-						return !player.isTurnedOver();
+						return !player.isTurnedOver() && _status.event?.dying == player;
 					},
 					order: 5,
 					result: {
@@ -6935,7 +6935,7 @@ const skills = {
 		},
 		filter(event, player) {
 			return game.hasPlayer(function (current) {
-				return current.countCards("he") > 0;
+				return current.countDiscardableCards(player, "he") > 0;
 			});
 		},
 		direct: true,
@@ -6943,16 +6943,17 @@ const skills = {
 			"step 0";
 			player
 				.chooseTarget(get.prompt2("decadezhenjun"), function (card, player, target) {
-					return target.countCards("he") > 0;
+					return target.countDiscardableCards(player, "he") > 0;
 				})
 				.set("ai", function (target) {
-					return -get.attitude(_status.event.player, target) * (target.countCards("e") + 1);
+					const player = get.player();
+					return -get.attitude(player, target) * (target.countDiscardableCards(player, "e") + 1);
 				});
 			"step 1";
 			if (result.bool) {
 				var target = result.targets[0];
 				event.target = target;
-				var num = Math.max(target.countCards("h") - target.hp, 1);
+				var num = Math.max(target.countDiscardableCards(player, "h") - target.hp, 1);
 				player.logSkill("decadezhenjun", target);
 				player.discardPlayerCard(num, target, true);
 			}
@@ -11128,7 +11129,7 @@ const skills = {
 		ai: {
 			save: true,
 			skillTagFilter(player, tag, arg) {
-				return !player.isTurnedOver();
+				return !player.isTurnedOver() && _status.event?.dying == player;
 			},
 			order: 5,
 			result: {
@@ -15059,7 +15060,7 @@ const skills = {
 				player.logSkill("rejiuyuan");
 				trigger.player.line(player, "green");
 				trigger.cancel();
-				player.recover();
+				player.recover(trigger.player);
 				trigger.player.draw();
 			}
 		},
@@ -17561,7 +17562,7 @@ const skills = {
 			"step 3";
 			if (result.index == 1) {
 				event.current.line(player);
-				player.recover();
+				player.recover(event.current);
 			} else {
 				event.current.draw();
 			}

@@ -1019,7 +1019,7 @@ const skills = {
 			player.addTempSkill(event.name + "_check", "phaseUseAfter");
 			await player.showCards(cards, `${get.translation(player)}对${get.translation(target)}发动了【评骘】`);
 			if (player.storage[event.name]) {
-				await target.discard(cards).set("discarder", player);
+				await target.modedDiscard(cards).set("discarder", player);
 				const huogong = get.autoViewAs({ name: "huogong", isCard: true });
 				if (target.canUse(huogong, player, false)) {
 					await target.useCard(huogong, player, false);
@@ -1977,7 +1977,7 @@ const skills = {
 			}
 			await player.showCards(cards, get.translation(player) + "发动了【乘烟】");
 			const card = cards[0];
-			if (card.name == "sha" || (get.type(card) == "trick" && get.info(card).filterTarget)) {
+			if (card.name == "sha" || (get.type(card, false) == "trick" && get.info(card, false).filterTarget)) {
 				player.addTempSkill("dcchengyan_effect");
 				player.markAuto("dcchengyan_effect", [[trigger.card, card, target]]);
 			} else {
@@ -4556,7 +4556,7 @@ const skills = {
 			return card.hasGaintag("eternal_dcqiqin_tag") && lib.filter.cardDiscardable(card, player);
 		},
 		filterTarget: (card, player, target) => {
-			return target != player && target.countCards("he");
+			return target != player && target.countCards("hej");
 		},
 		position: "h",
 		check: card => {
@@ -18413,21 +18413,23 @@ const skills = {
 			}
 		},
 		group: "xuxie_add",
-	},
-	xuxie_add: {
-		audio: "xuxie",
-		trigger: { player: "phaseUseEnd" },
-		forced: true,
-		locked: false,
-		sourceSkill: "xuxie",
-		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return current.maxHp > player.maxHp;
-			});
-		},
-		content() {
-			player.gainMaxHp();
-			player.chooseDrawRecover(2, true);
+		subSkill: {
+			add: {
+				audio: "xuxie",
+				trigger: { player: "phaseUseEnd" },
+				forced: true,
+				locked: false,
+				filter(event, player) {
+					return game.hasPlayer(function (current) {
+						return current.maxHp > player.maxHp;
+					});
+				},
+				content() {
+					player.gainMaxHp();
+					player.chooseDrawRecover(2, true);
+				},
+
+			},
 		},
 	},
 	//新潘凤
