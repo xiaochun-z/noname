@@ -2922,15 +2922,14 @@ const skills = {
 				};
 			} else {
 				const storag = player.getStorage("twhuangzhu_effect");
-				const st2 = player.getStorage("twhuangzhu_equip").slice().map(equip => equip[2]);
+				const storage2 = player.getStorage("twhuangzhu_equip").slice().map(equip => equip[2]);
 				let virtualList = {};
 				let disabled = [1, 2, 3, 4, 5].filter(num => player.countDisabledSlot(num)).map(num => "equip" + num);
 				for (let i of disabled) {
 					virtualList[i] = [];
 				}
-				console.log(disabled);
-				if (st2?.length) {
-					for (let i of st2) {
+				if (storage2?.length) {
+					for (let i of storage2) {
 						if (disabled.includes(get.subtype(i))) {
 							virtualList[get.subtype(i)].add(i);
 						}
@@ -2952,13 +2951,12 @@ const skills = {
 						chooseList.push(list);
 					}
 				}
-				console.log(chooseList);
 				const {
 					result: { bool, links },
 				} = await player.chooseButton(chooseList, [1, 2])
 					.set("filterButton", button => {
-						let st2 = get.event("st2");
-						if (st2.includes(button.link[2])) {
+						let storage2 = get.event("storage2");
+						if (storage2.includes(button.link[2])) {
 							return false;
 						}
 						if (ui.selected.buttons.length) {
@@ -2968,7 +2966,7 @@ const skills = {
 						}
 						return true;
 					})
-					.set("st2", st2)
+					.set("storage2", storage2)
 					.set("ai", button => get.equipValue({ name: button.link[2] }, get.player()));
 				event.result = {
 					bool: bool,
