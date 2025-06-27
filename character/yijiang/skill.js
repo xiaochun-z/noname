@@ -9844,7 +9844,7 @@ const skills = {
 		content() {
 			"step 0";
 			player.awakenSkill(event.name);
-			player.recover(game.countGroup() - player.hp);
+			player.recoverTo(game.countGroup());
 			"step 1";
 			player.turnOver();
 			player.storage.fuli = true;
