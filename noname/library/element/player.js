@@ -9745,7 +9745,7 @@ export class Player extends HTMLDivElement {
 					continue;
 				}
 				this.initedSkills.push(skill);
-				if (info.init && !_status.video) {
+				if (info.init /* && !_status.video */) {
 					info.init(this, skill);
 				}
 			}
@@ -9924,7 +9924,7 @@ export class Player extends HTMLDivElement {
 				this.awakenSkill(skill);
 				return;
 			}
-			if (info.init2 && !_status.video) {
+			if (info.init2 /** && !_status.video */) {
 				info.init2(this, skill);
 			}
 			if (info.mark) {
