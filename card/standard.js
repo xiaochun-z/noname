@@ -195,7 +195,7 @@ game.import("card", function () {
 								if (!game.hasNature(event.card, "ice") && get.damageEffect(target, player, target, get.nature(event.card)) >= 0) {
 									return false;
 								}
-								if (event.shanRequired > 1 && target.mayHaveShan(target, "use", null, "count") < event.shanRequired - (event.shanIgnored || 0)) {
+								if (event.shanRequired > 1 && target.mayHaveShan(target, "use", true, "count") < event.shanRequired - (event.shanIgnored || 0)) {
 									return false;
 								}
 								return true;
@@ -275,17 +275,7 @@ game.import("card", function () {
 							hit = true;
 							if (
 								targets.some(target => {
-									return (
-										target.mayHaveShan(
-											viewer,
-											"use",
-											target.getCards("h", i => {
-												return i.hasGaintag("sha_notshan");
-											})
-										) &&
-										get.attitude(viewer, target) < 0 &&
-										get.damageEffect(target, player, viewer, get.natureList(card)) > 0
-									);
+									return target.mayHaveShan(viewer, "use") && get.attitude(viewer, target) < 0 && get.damageEffect(target, player, viewer, get.natureList(card)) > 0;
 								})
 							) {
 								base += 5;
@@ -306,13 +296,7 @@ game.import("card", function () {
 									return (
 										get.attitude(player, target) < 0 &&
 										(hit ||
-											!target.mayHaveShan(
-												viewer,
-												"use",
-												target.getCards("h", i => {
-													return i.hasGaintag("sha_notshan");
-												})
-											) ||
+											!target.mayHaveShan(viewer, "use") ||
 											player.hasSkillTag(
 												"directHit_ai",
 												true,
@@ -363,16 +347,7 @@ game.import("card", function () {
 							}
 						}
 						if (!obj.odds) {
-							obj.odds =
-								1 -
-								target.mayHaveShan(
-									player,
-									"use",
-									target.getCards("h", i => {
-										return i.hasGaintag("sha_notshan");
-									}),
-									"odds"
-								);
+							obj.odds = 1 - target.mayHaveShan(player, "use", true, "odds");
 						}
 						return obj;
 					},
@@ -458,16 +433,7 @@ game.import("card", function () {
 									true
 								)
 							) {
-								odds -=
-									0.7 *
-									target.mayHaveShan(
-										player,
-										"use",
-										target.getCards("h", i => {
-											return i.hasGaintag("sha_notshan");
-										}),
-										"odds"
-									);
+								odds -= 0.7 * target.mayHaveShan(player, "use", true, "odds");
 							}
 							_status.event.putTempCache("sha_result", "eff", {
 								bool: target.hp > num && get.attitude(player, target) > 0,
@@ -3683,7 +3649,7 @@ game.import("card", function () {
 									) {
 										return 0;
 									}
-									const shans = trigger.target.mayHaveShan(trigger.target, "use", null, "count");
+									const shans = trigger.target.mayHaveShan(trigger.target, "use", true, "count");
 									if (shans === 0 || shans > 2) {
 										return 1;
 									}

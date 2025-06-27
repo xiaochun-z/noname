@@ -13229,15 +13229,7 @@ const skills = {
 							return 1;
 						}
 						if (name === "sha") {
-							if (
-								!target.mayHaveShan(
-									player,
-									"use",
-									target.getCards("h", i => {
-										return i.hasGaintag("sha_notshan");
-									})
-								)
-							) {
+							if (!target.mayHaveShan(player, "use")) {
 								return;
 							}
 						} else if (!target.mayHaveShan(player)) {

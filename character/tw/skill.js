@@ -7759,13 +7759,7 @@ const skills = {
 					(function () {
 						var d1 = false;
 						if (
-							!target.mayHaveShan(
-								player,
-								"use",
-								target.getCards("h", i => {
-									return i.hasGaintag("sha_notshan");
-								})
-							) ||
+							!target.mayHaveShan(player, "use") ||
 							player.hasSkillTag(
 								"directHit_ai",
 								true,
@@ -11123,17 +11117,7 @@ const skills = {
 			expose: 0.2,
 			result: {
 				target(player, target) {
-					if (
-						target.countCards("h") <= target.hp &&
-						!target.mayHaveShan(
-							player,
-							"use",
-							target.getCards("h", i => {
-								return i.hasGaintag("sha_notshan");
-							})
-						) &&
-						get.effect(target, { name: "sha", isCard: true }, player, player) > 0
-					) {
+					if (target.countCards("h") <= target.hp && !target.mayHaveShan(player, "use") && get.effect(target, { name: "sha", isCard: true }, player, player) > 0) {
 						return -1;
 					} else if (target.countCards("h") > target.hp && target.hp > 2 && target.hasShan()) {
 						return 1;
@@ -15752,13 +15736,7 @@ const skills = {
 					}
 					var num = 1;
 					if (
-						(!target.mayHaveShan(
-							player,
-							"use",
-							target.getCards("h", i => {
-								return i.hasGaintag("sha_notshan");
-							})
-						) ||
+						(!target.mayHaveShan(player, "use") ||
 							player.hasSkillTag(
 								"directHit_ai",
 								true,
@@ -21462,13 +21440,7 @@ const skills = {
 								}
 								for (var target of trigger.targets) {
 									if (
-										!target.mayHaveShan(
-											player,
-											"use",
-											target.getCards("h", i => {
-												return i.hasGaintag("sha_notshan");
-											})
-										) ||
+										!target.mayHaveShan(player, "use") ||
 										trigger.player.hasSkillTag(
 											"directHit_ai",
 											true,
@@ -24234,14 +24206,7 @@ const skills = {
 				) {
 					continue;
 				}
-				const hitOdds =
-					1 -
-					tar.mayHaveShan(
-						player,
-						"use",
-						tar.getCards("h", i => i.hasGaintag("sha_notshan")),
-						"odds"
-					);
+				const hitOdds = 1 - tar.mayHaveShan(player, "use", true, "odds");
 				if (
 					hitOdds >= 1 ||
 					event.player.hasSkillTag(

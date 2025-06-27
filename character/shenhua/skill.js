@@ -4204,17 +4204,7 @@ const skills = {
 		ai: {
 			effect: {
 				target(card, player, target, current) {
-					if (
-						typeof card === "object" &&
-						get.name(card) === "sha" &&
-						target.mayHaveShan(
-							player,
-							"use",
-							target.getCards("h", i => {
-								return i.hasGaintag("sha_notshan");
-							})
-						)
-					) {
+					if (typeof card === "object" && get.name(card) === "sha" && target.mayHaveShan(player, "use")) {
 						return [0.6, 0.75];
 					}
 					if (!target.hasFriend() && !player.hasUnknown()) {
@@ -7438,15 +7428,7 @@ const skills = {
 							return 1;
 						}
 						if (card.name === "sha") {
-							if (
-								!target.mayHaveShan(
-									player,
-									"use",
-									target.getCards("h", i => {
-										return i.hasGaintag("sha_notshan");
-									})
-								)
-							) {
+							if (!target.mayHaveShan(player, "use")) {
 								return;
 							}
 						} else if (!target.mayHaveShan(player)) {
@@ -8564,15 +8546,7 @@ const skills = {
 						})
 					) {
 						if (card.name === "sha") {
-							if (
-								!target.mayHaveShan(
-									player,
-									"use",
-									target.getCards("h", i => {
-										return i.hasGaintag("sha_notshan");
-									})
-								)
-							) {
+							if (!target.mayHaveShan(player, "use")) {
 								return;
 							}
 						} else if (!target.mayHaveShan(player)) {

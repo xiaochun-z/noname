@@ -10633,14 +10633,7 @@ const skills = {
 					) {
 						continue;
 					}
-					const hitOdds =
-						1 -
-						tar.mayHaveShan(
-							player,
-							"use",
-							tar.getCards("h", i => i.hasGaintag("sha_notshan")),
-							"odds"
-						);
+					const hitOdds = 1 - tar.mayHaveShan(player, "use", true, "odds");
 					if (
 						hitOdds >= 1 ||
 						event.player.hasSkillTag(
@@ -18428,7 +18421,6 @@ const skills = {
 					player.gainMaxHp();
 					player.chooseDrawRecover(2, true);
 				},
-
 			},
 		},
 	},
@@ -18469,7 +18461,7 @@ const skills = {
 				if (eff2 < eff) {
 					return;
 				}
-				let directHit = 1 - cur.mayHaveShan(player, "use", null, "odds");
+				let directHit = 1 - cur.mayHaveShan(player, "use", true, "odds");
 				if (get.attitude(player, cur) > 0) {
 					directHit = 1;
 				} else {

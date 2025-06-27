@@ -660,15 +660,7 @@ const skills = {
 						})
 					) {
 						if (card.name === "sha") {
-							if (
-								!target.mayHaveShan(
-									player,
-									"use",
-									target.getCards("h", i => {
-										return i.hasGaintag("sha_notshan");
-									})
-								)
-							) {
+							if (!target.mayHaveShan(player, "use")) {
 								return;
 							}
 						} else if (!target.mayHaveShan(player)) {
@@ -17562,8 +17554,7 @@ const skills = {
 				target.line(player);
 				if (bool) {
 					await player.recover(target);
-				}
-				else {
+				} else {
 					await player.draw();
 				}
 			}
@@ -20058,13 +20049,7 @@ const skills = {
 			if (get.attitude(player, trigger.player) > 0) {
 				for (var target of trigger.targets) {
 					if (
-						!target.mayHaveShan(
-							player,
-							"use",
-							target.getCards("h", i => {
-								return i.hasGaintag("sha_notshan");
-							})
-						) ||
+						!target.mayHaveShan(player, "use") ||
 						trigger.player.hasSkillTag(
 							"directHit_ai",
 							true,
@@ -20219,13 +20204,7 @@ const skills = {
 						for (var target of trigger.targets) {
 							var eff = get.effect(target, trigger.card, trigger.player, player);
 							if (
-								!target.mayHaveShan(
-									player,
-									"use",
-									target.getCards("h", i => {
-										return i.hasGaintag("sha_notshan");
-									})
-								) ||
+								!target.mayHaveShan(player, "use") ||
 								trigger.player.hasSkillTag(
 									"directHit_ai",
 									true,
