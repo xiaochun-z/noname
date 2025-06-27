@@ -2921,7 +2921,7 @@ const skills = {
 					cost_data: control,
 				};
 			} else {
-				const storag = player.getStorage("twhuangzhu_effect");
+				const storage = player.getStorage("twhuangzhu_effect");
 				const storage2 = player.getStorage("twhuangzhu_equip").slice().map(equip => equip[2]);
 				let virtualList = {};
 				let disabled = [1, 2, 3, 4, 5].filter(num => player.countDisabledSlot(num)).map(num => "equip" + num);
@@ -2945,7 +2945,7 @@ const skills = {
 						str += "未视为装备任何牌";
 					}
 					chooseList.push(str);
-					let equips = storag.slice().filter(name => get.subtypes(name).includes(i));
+					let equips = storage.slice().filter(name => get.subtypes(name).includes(i));
 					let list = [equips, "vcard"]
 					if (equips.length) {
 						chooseList.push(list);
