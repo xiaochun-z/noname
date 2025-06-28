@@ -1204,7 +1204,7 @@ export class Library {
 				max_loadtime: {
 					name: "最长载入时间",
 					intro: "设置游戏从启动到完成载入所需的最长时间，超过此时间未完成载入会报错，若设备较慢或安装了较多扩展可适当延长此时间",
-					init: "20000",
+					init: "5000",
 					unfrequent: true,
 					item: {
 						5000: "5秒",
@@ -1214,7 +1214,7 @@ export class Library {
 					},
 					onclick(item) {
 						game.saveConfig("max_loadtime", item);
-						if (item === "20000") {
+						if (item === "5000") {
 							localStorage.removeItem(lib.configprefix + "loadtime");
 						} else {
 							localStorage.setItem(lib.configprefix + "loadtime", item);
@@ -1525,7 +1525,7 @@ export class Library {
 			config: {
 				theme: {
 					name: "主题",
-					init: "simple",
+					init: "woodden",
 					item: {},
 					visualMenu: function (node, link) {
 						if (!node.menu) {
@@ -1559,7 +1559,7 @@ export class Library {
 				},
 				layout: {
 					name: "布局",
-					init: "long2",
+					init: "mobile",
 					item: {
 						//default:'旧版',
 						newlayout: "对称",
@@ -1744,7 +1744,7 @@ export class Library {
 				// },
 				player_height: {
 					name: "角色高度",
-					init: "long",
+					init: "default",
 					// unfrequent:true,
 					item: {
 						short: "矮",
@@ -2386,7 +2386,7 @@ export class Library {
 				},
 				hp_style: {
 					name: "体力条样式",
-					init: "glass",
+					init: "default",
 					item: {
 						default: "默认",
 						// official:'勾玉',
@@ -2943,7 +2943,7 @@ export class Library {
 				},
 				menu_style: {
 					name: "菜单背景",
-					init: "music",
+					init: "default",
 					item: {
 						wood: "木纹",
 						music: "音乐",
@@ -3532,7 +3532,7 @@ export class Library {
 				cardshape: {
 					name: "手牌显示",
 					intro: "将手牌设置为正方形或长方形",
-					init: "oblong",
+					init: "default",
 					unfrequent: true,
 					item: {
 						default: "默认",
@@ -4268,7 +4268,7 @@ export class Library {
 				show_ban_menu: {
 					name: "显示禁将菜单",
 					intro: "在选项-武将中显示禁将一栏",
-					init: true,
+					init: false,
 					unfrequent: true,
 				},
 				right_range: {
@@ -4402,7 +4402,7 @@ export class Library {
 				},
 				show_cardpile_number: {
 					name: "显示剩余牌数",
-					init: false,
+					init: true,
 					unfrequent: true,
 					onclick(bool) {
 						game.saveConfig("show_cardpile_number", bool);
