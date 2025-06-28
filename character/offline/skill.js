@@ -18725,14 +18725,25 @@ const skills = {
 	//神刘表
 	jxxiongju: {
 		trigger: {
-			global: "phaseBefore",
+			global: ["phaseBefore", "gameDrawBegin"],
 			player: "enterGame",
 		},
 		forced: true,
 		filter(event, player) {
+			if (event.name == "gameDraw") {
+				return true;
+			}
 			return event.name != "phase" || game.phaseNumber == 0;
 		},
 		async content(event, trigger, player) {
+			if (trigger.name == "gameDraw") {
+				const me = player;
+				const numx = trigger.num;
+				trigger.num = function (player) {
+					return (player == me ? game.countGroup() : 0) + (typeof numx == "function" ? numx(player) : numx);
+				};
+				return;
+			}
 			let cards = [];
 			while (cards.length < 2) {
 				const card = game.createCard2("jingxiangshengshi", "heart", 5);
@@ -18742,7 +18753,6 @@ const skills = {
 				await player.gain(cards, "gain2");
 			}
 			const num = game.countGroup();
-			await player.draw(num);
 			await player.gainMaxHp(num);
 			await player.recover(num);
 		},

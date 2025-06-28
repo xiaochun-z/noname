@@ -2154,7 +2154,7 @@ export default {
 			const groups = get.info("fakeshilu").getGroups(player);
 			const goon = event.card && event.card.name == "sha";
 			if (num != 4) {
-				return goon && groups.includes(event.source.identity);
+				return goon && (groups.includes(event.source.identity) || groups.includes(event.player.identity));
 			}
 			return !goon && groups.includes(event.source.identity);
 		},
@@ -3585,7 +3585,12 @@ export default {
 				charlotte: true,
 				trigger: { player: ["hideCharacterBegin", "showCharacterEnd"] },
 				filter(event, player) {
-					return get.character(event[event.name == "hideCharacter" ? "toHide" : "toShow"], 3).includes("fakejuzhan");
+					if (event.name == "hideCharacter") {
+						return get.character(event.toHide, 3).includes("fakejuzhan");
+					}
+					return event.toShow?.some(name => {
+						return get.character(name, 3).includes("fakejuzhan");
+					});
 				},
 				forced: true,
 				popup: false,
@@ -6334,7 +6339,7 @@ export default {
 			target
 				.chooseBool("是否受到" + get.translation(player) + "造成的1点火焰伤害，令其跳过一个阶段？")
 				.set("ai", () => _status.event.choice)
-				.set("choice", get.damageEffect(target, player, target) >= -5);
+				.set("choice", get.damageEffect(target, player, target, "fire") >= -5);
 			"step 3";
 			if (result.bool) {
 				player.line(target);
@@ -7150,7 +7155,7 @@ export default {
 			return get.type2(card, player) == "trick";
 		},
 		content() {
-			player.addTempSkill("gz_wushuang", "phaseUseEnd");
+			player.addTempSkills("gz_wushuang", "phaseUseEnd");
 		},
 		derivation: "gz_wushuang",
 	},
