@@ -1204,7 +1204,7 @@ export class Library {
 				max_loadtime: {
 					name: "最长载入时间",
 					intro: "设置游戏从启动到完成载入所需的最长时间，超过此时间未完成载入会报错，若设备较慢或安装了较多扩展可适当延长此时间",
-					init: "5000",
+					init: "20000",
 					unfrequent: true,
 					item: {
 						5000: "5秒",
@@ -1214,7 +1214,7 @@ export class Library {
 					},
 					onclick(item) {
 						game.saveConfig("max_loadtime", item);
-						if (item == "5000") {
+						if (item === "20000") {
 							localStorage.removeItem(lib.configprefix + "loadtime");
 						} else {
 							localStorage.setItem(lib.configprefix + "loadtime", item);
@@ -1525,7 +1525,7 @@ export class Library {
 			config: {
 				theme: {
 					name: "主题",
-					init: "woodden",
+					init: "simple",
 					item: {},
 					visualMenu: function (node, link) {
 						if (!node.menu) {
@@ -1559,7 +1559,7 @@ export class Library {
 				},
 				layout: {
 					name: "布局",
-					init: "mobile",
+					init: "long2",
 					item: {
 						//default:'旧版',
 						newlayout: "对称",
@@ -2386,7 +2386,7 @@ export class Library {
 				},
 				hp_style: {
 					name: "体力条样式",
-					init: "ol",
+					init: "glass",
 					item: {
 						default: "默认",
 						// official:'勾玉',
@@ -2943,7 +2943,7 @@ export class Library {
 				},
 				menu_style: {
 					name: "菜单背景",
-					init: "default",
+					init: "music",
 					item: {
 						wood: "木纹",
 						music: "音乐",
@@ -3350,7 +3350,7 @@ export class Library {
 				glow_phase: {
 					name: "当前回合角色高亮",
 					unfrequent: true,
-					init: "yellow",
+					init: "green",
 					intro: "设置当前回合角色的边框颜色",
 					item: {
 						none: "无",
@@ -3532,7 +3532,7 @@ export class Library {
 				cardshape: {
 					name: "手牌显示",
 					intro: "将手牌设置为正方形或长方形",
-					init: "default",
+					init: "oblong",
 					unfrequent: true,
 					item: {
 						default: "默认",
@@ -4515,7 +4515,7 @@ export class Library {
 				show_characternamepinyin: {
 					name: "显示武将名注解",
 					intro: "在武将资料卡显示武将名及其注解、性别、势力、体力等信息",
-					init: "showPinyin",
+					init: "showCodeIdentifier",
 					unfrequent: true,
 					item: {
 						doNotShow: "不显示",
@@ -5523,7 +5523,7 @@ export class Library {
 				},
 				connect_enhance_zhu: {
 					name: "加强主公",
-					init: "sixiang",
+					init: "off",
 					item: {
 						sixiang: "四象标记",
 						specific: "专属技能",
@@ -5815,16 +5815,16 @@ export class Library {
 				},
 				auto_mark_identity: {
 					name: "自动标记身份",
-					init: true,
+					init: false,
 					intro: "根据角色的出牌行为自动标记可能的身份",
 				},
 				enhance_zhu: {
 					name: "加强主公",
-					init: "sixiang",
+					init: "off",
 					item: {
+						off: "关闭",
 						sixiang: "四象标记",
 						specific: "专属技能",
-						off: "关闭",
 					},
 					restart: true,
 					intro: "为主公增加一个额外技能。<br><li>四象标记：主公随机获得一个四象标记（限发动一次）；每个回合结束时，若场上没有反贼，主公失去此标记。<br><li>专属技能：至少三名反贼的身份场，主公获得一个专属技能（无则改为〖天命〗）；一名角色阵亡后，若存活反贼数小于3，主公失去此技能。",
@@ -6664,7 +6664,7 @@ export class Library {
 				},
 				versus_mode: {
 					name: "游戏模式",
-					init: "four",
+					init: "two",
 					item: {
 						four: "对抗",
 						three: "统率",
@@ -7112,18 +7112,23 @@ export class Library {
 				wss_mode: {
 					name: "使用WSS协议",
 					init: false,
-					frequent: true,
 					intro: "在用户填写的IP地址没有直接指定使用WS/WSS协议的情况下，默认使用WSS协议，而非WS协议来连接到联机服务器。<br>请不要轻易勾选此项！",
+					onclick(bool) {
+						if (bool && !confirm("此为开发者选项，开启后将无法直接联机。您确定要开启WSS模式吗？")) {
+							return;
+						}
+						game.saveConfig("wss_mode", bool, "connect");
+					},
 				},
 				read_clipboard: {
 					name: "读取邀请链接",
-					init: false,
+					init: true,
 					frequent: true,
 					intro: "读取剪贴板以解析邀请链接自动加入联机房间",
 				},
 				check_versionLocal: {
 					name: "禁止不同版本玩家进房",
-					init: false,
+					init: true,
 					intro: "禁止与自己版本不同的玩家进入房间",
 				},
 				check_extension: {
