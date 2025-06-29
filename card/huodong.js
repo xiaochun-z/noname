@@ -137,7 +137,6 @@ game.import("card", function () {
 			chadaox: {
 				audio: true,
 				fullskin: true,
-				derivation: "chadaox_skill",
 				type: "trick",
 				enable: true,
 				notarget: true,

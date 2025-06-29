@@ -2049,8 +2049,9 @@ const skills = {
 						await player.gain(card, "gain2");
 						const skill = "dcjiesi_used";
 						player.addTempSkill(skill, "phaseUseAfter");
+						const bool = !player.getStorage(skill).some(cardx => cardx.name == card.name);
 						player.markAuto(skill, card);
-						if (!player.getStorage(skill).some(cardx => card != cardx && cardx.name == card.name)) {
+						if (bool) {
 							const result = await player
 								.chooseToDiscard(`捷思：是否弃置${len}张牌，然后重置此技能？`, len, "he")
 								.set("ai", card => (get.event().goon ? 6.5 - get.value(card) : 0))
