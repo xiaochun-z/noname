@@ -4250,6 +4250,15 @@ const skills = {
 		inherit: "jsrgdangyi",
 		init(player, skill) {
 			player.setMark(skill, 2, false);
+			game.broadcastAll(
+				function (player) {
+					if (!player.node.jiu_dangyi) {
+    					player.node.jiu_dangyi = ui.create.div(".playerjiu", player.node.avatar);
+    					player.node.jiu_dangyi2 = ui.create.div(".playerjiu", player.node.avatar2);
+					}
+				},
+				player
+			);
 		},
 		filter(event, player) {
 			return player.countMark("mbdangyi_used") < player.countMark("mbdangyi");
