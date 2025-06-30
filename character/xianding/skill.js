@@ -418,7 +418,6 @@ const skills = {
 				list = list.slice(-3);
 			}
 			player.setStorage(event.name, list, true);
-			player.storage[event.name].sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a));
 			const tip = player
 				.getStorage(event.name)
 				.map(i => get.translation(i))
