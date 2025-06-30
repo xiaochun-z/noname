@@ -7234,12 +7234,21 @@ export class Library {
 					} else {
 						map.connect_change_card.show();
 					}
-					if (config.connect_doudizhu_mode != "normal") {
+					if (config.connect_doudizhu_mode !== "normal") {
 						map.connect_double_character.hide();
+						if (config.connect_doudizhu_mode !== "kaihei") {
+							map.connect_choice_zhu.hide();
+							map.connect_choice_fan.hide();
+						} else {
+							map.connect_choice_zhu.show();
+							map.connect_choice_fan.show();
+						}
 						map.connect_enhance_dizhu.hide();
 						map.connect_feiyang_version.hide();
 					} else {
 						map.connect_double_character.show();
+						map.connect_choice_zhu.show();
+						map.connect_choice_fan.show();
 						map.connect_enhance_dizhu.show();
 						map.connect_feiyang_version.show();
 					}
@@ -7262,6 +7271,40 @@ export class Library {
 					init: false,
 					frequent: true,
 					restart: true,
+				},
+				connect_choice_zhu: {
+					name: "地主候选武将数",
+					init: 5,
+					input: true,
+					restart: true,
+					onblur(e) {
+						let text = e.target,
+							num = Number(text.innerText);
+						if (isNaN(num) || num < 2) {
+							num = 5;
+						} else if (!Number.isInteger(num)) {
+							num = Math.round(num);
+						}
+						text.innerText = num;
+						game.saveConfig("connect_choice_zhu", num, "doudizhu");
+					},
+				},
+				connect_choice_fan: {
+					name: "农民候选武将数",
+					init: 3,
+					input: true,
+					restart: true,
+					onblur(e) {
+						let text = e.target,
+							num = Number(text.innerText);
+						if (isNaN(num) || num < 2) {
+							num = 3;
+						} else if (!Number.isInteger(num)) {
+							num = Math.round(num);
+						}
+						text.innerText = num;
+						game.saveConfig("connect_choice_fan", num, "doudizhu");
+					},
 				},
 				connect_change_card: {
 					name: "启用手气卡",
@@ -7301,27 +7344,32 @@ export class Library {
 						map.edit_character.hide();
 						map.reset_character.hide();
 					}
-					if (config.doudizhu_mode != "normal") {
+					if (config.doudizhu_mode !== "normal") {
+						if (config.doudizhu_mode === "kaihei") {
+							map.choice_zhu.show();
+							map.choice_fan.show();
+						} else {
+							map.choice_zhu.hide();
+							map.choice_fan.hide();
+						}
 						map.double_character.hide();
 						map.free_choose.hide();
 						map.change_identity.hide();
 						map.change_choice.hide();
 						map.continue_game.hide();
 						map.dierestart.hide();
-						map.choice_zhu.hide();
-						map.choice_fan.hide();
 						map.revive.hide();
 						map.enhance_dizhu.hide();
 						map.feiyang_version.hide();
 					} else {
 						map.double_character.show();
+						map.choice_zhu.show();
+						map.choice_fan.show();
 						map.free_choose.show();
 						map.change_identity.show();
 						map.change_choice.show();
 						map.continue_game.show();
 						map.dierestart.show();
-						map.choice_zhu.show();
-						map.choice_fan.show();
 						map.revive.show();
 						map.enhance_dizhu.show();
 						map.feiyang_version.show();
@@ -7362,6 +7410,40 @@ export class Library {
 						zonghe: "相加",
 					},
 					restart: true,
+				},
+				choice_zhu: {
+					name: "地主候选武将数",
+					init: 5,
+					input: true,
+					restart: true,
+					onblur(e) {
+						let text = e.target,
+							num = Number(text.innerText);
+						if (isNaN(num) || num < 2) {
+							num = 5;
+						} else if (!Number.isInteger(num)) {
+							num = Math.round(num);
+						}
+						text.innerText = num;
+						game.saveConfig("choice_zhu", num, "doudizhu");
+					},
+				},
+				choice_fan: {
+					name: "农民候选武将数",
+					init: 3,
+					input: true,
+					restart: true,
+					onblur(e) {
+						let text = e.target,
+							num = Number(text.innerText);
+						if (isNaN(num) || num < 2) {
+							num = 3;
+						} else if (!Number.isInteger(num)) {
+							num = Math.round(num);
+						}
+						text.innerText = num;
+						game.saveConfig("choice_fan", num, "doudizhu");
+					},
 				},
 				free_choose: {
 					name: "自由选将",
@@ -7493,32 +7575,6 @@ export class Library {
 						online: "OL版本",
 						mobile: "手杀版本",
 						decade: "十周年版本",
-					},
-				},
-				choice_zhu: {
-					name: "地主候选武将数",
-					init: "3",
-					restart: true,
-					item: {
-						3: "三",
-						4: "四",
-						5: "五",
-						6: "六",
-						8: "八",
-						10: "十",
-					},
-				},
-				choice_fan: {
-					name: "农民候选武将数",
-					init: "3",
-					restart: true,
-					item: {
-						3: "三",
-						4: "四",
-						5: "五",
-						6: "六",
-						8: "八",
-						10: "十",
 					},
 				},
 				edit_character: {
