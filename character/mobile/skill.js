@@ -9971,6 +9971,10 @@ const skills = {
 		selectTarget: -1,
 		multiline: true,
 		async contentBefore(event, trigger, player) {
+			game.broadcastAll(() => {
+				_status.tempMusic = "effect_caomaoBJM";
+				game.playBackgroundMusic();
+			});
 			player.changeSkin({ characterName: "mb_caomao" }, "mb_caomao_shadow");
 			player.awakenSkill(event.skill);
 		},
