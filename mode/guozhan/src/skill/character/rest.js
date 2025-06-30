@@ -1873,7 +1873,9 @@ export default {
 				}
 				if (result?.bool) {
 					const cards = result.cards;
-					await player.addToExpansion(cards, player, "give").set("gaintag", ["fakequanji"]);
+					const next = player.addToExpansion(cards, player, "give");
+					next.gaintag.add("fakequanji");
+					await next;
 				}
 			}
 		},
