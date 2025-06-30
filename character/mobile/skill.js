@@ -374,9 +374,12 @@ const skills = {
 			if (evt.player != player || !card || evt.card != card) {
 				return false;
 			}
-			return list?.includes(get.color(card, player)) && player.hasHistory("lose", evtx => {
-				return evtx.hs?.length && evtx.getParent() == evt;
-			});
+			return (
+				list?.includes(get.color(card, player)) &&
+				player.hasHistory("lose", evtx => {
+					return evtx.hs?.length && evtx.getParent() == evt;
+				})
+			);
 		},
 		async content(event, trigger, player) {
 			trigger.num++;
@@ -457,6 +460,7 @@ const skills = {
 				filter(event, player) {
 					return event.getg?.(player)?.length || event.getl?.(player)?.hs?.length;
 				},
+				forceDie: true,
 				async content(event, trigger, player) {
 					const toAdd = trigger.getg?.(player) || [],
 						toRemove = trigger.getl?.(player)?.hs || [];
@@ -3870,7 +3874,7 @@ const skills = {
 		check(event, player) {
 			return get.attitude(player, event.player) > 0;
 		},
-		logAudio: index => ("mbxuye" + (typeof index === "number" ? index : [1, 3].randomGet()) + ".mp3" ),
+		logAudio: index => "mbxuye" + (typeof index === "number" ? index : [1, 3].randomGet()) + ".mp3",
 		async content(event, trigger, player) {
 			const target = event.targets[0]; //兼容匡襄后续效果才这么写的
 			const isMax = target.isMaxHandcard();
@@ -3900,7 +3904,7 @@ const skills = {
 			return target != player && target.countCards("h") < player.countCards("h");
 		},
 		usable: 1,
-		logAudio: index => ("mbkuangxiang" + [1, 3].randomGet() + ".mp3" ),
+		logAudio: index => "mbkuangxiang" + [1, 3].randomGet() + ".mp3",
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			player.addTempSkill("mbkuangxiang_effect", { player: "phaseUseBegin" });
@@ -4066,6 +4070,7 @@ const skills = {
 	},
 	mbqiantun: {
 		audio: "jsrgqiantun",
+		logAudio: index => `jsrgqiantun${typeof index == "number" ? index : get.rand(1, 2)}.mp3`,
 		inherit: "jsrgqiantun",
 		filter(event, player) {
 			return player.group === "wei" && game.hasPlayer(target => get.info("mbqiantun").filterTarget(null, player, target));
@@ -4183,6 +4188,7 @@ const skills = {
 	},
 	mbweisi: {
 		audio: "jsrgweisi",
+		logAudio: index => `jsrgweisi${typeof index == "number" ? index : get.rand(1, 2)}.mp3`,
 		inherit: "jsrgweisi",
 		filter(event, player) {
 			return player.group === "qun" && game.hasPlayer(target => get.info("mbweisi").filterTarget(null, player, target));
@@ -4250,15 +4256,12 @@ const skills = {
 		inherit: "jsrgdangyi",
 		init(player, skill) {
 			player.setMark(skill, 2, false);
-			game.broadcastAll(
-				function (player) {
-					if (!player.node.jiu_dangyi) {
-    					player.node.jiu_dangyi = ui.create.div(".playerjiu", player.node.avatar);
-    					player.node.jiu_dangyi2 = ui.create.div(".playerjiu", player.node.avatar2);
-					}
-				},
-				player
-			);
+			game.broadcastAll(function (player) {
+				if (!player.node.jiu_dangyi) {
+					player.node.jiu_dangyi = ui.create.div(".playerjiu", player.node.avatar);
+					player.node.jiu_dangyi2 = ui.create.div(".playerjiu", player.node.avatar2);
+				}
+			}, player);
 		},
 		filter(event, player) {
 			return player.countMark("mbdangyi_used") < player.countMark("mbdangyi");
@@ -4710,7 +4713,7 @@ const skills = {
 				.getCards("h", i => target.hasCard({ name: get.name(i) }, "h"))
 				.map(i => get.name(i))
 				.unique();
-			const goon = get.inpileVCardList(info => names.includes(info[2]) && !target.hasCard({ name: info[2] }, "h")).some(info => player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3] }), false, false));
+			const goon = get.inpileVCardList(info => names.includes(info[2]) && !target.hasCard({ name: info[2] }, "h")).some(info => player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3] }), true, false));
 			if (!goon && !allNames.length) {
 				return;
 			}
@@ -4729,7 +4732,7 @@ const skills = {
 								.map(i => "【" + get.translation(i) + "】")
 								.join("、") +
 							(names.filter(i => !target.hasCard({ name: i }, "h")).length > 1 ? "中的牌" : "") +
-							"（无距离和次数限制）",
+							"（不计入次数且无次数限制）",
 						"将你与其手牌中的" + allNames.map(i => "【" + get.translation(i) + "】").join("、") + "替换为牌堆中等量的【杀】且这些牌不计入各自手牌上限直到各自结束阶段",
 					])
 					.set("ai", () => {
@@ -4737,7 +4740,7 @@ const skills = {
 							player,
 							list: [target, names, allNames],
 						} = get.event();
-						const list = get.inpileVCardList(info => names.includes(info[2]) && !target.hasCard({ name: info[2] }, "h")).filter(info => player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3] }), false, false));
+						const list = get.inpileVCardList(info => names.includes(info[2]) && !target.hasCard({ name: info[2] }, "h")).filter(info => player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3] }), true, false));
 						return Math.max(...list.map(info => player.getUseValue(new lib.element.VCard({ name: info[2], nature: info[3] }), false))) >
 							(() => {
 								let sum = 0;
@@ -4753,8 +4756,9 @@ const skills = {
 					.forResult();
 			}
 			if (result.index === 0) {
+				const used = [];
 				for (let i = 0; i < 2; i++) {
-					let list = get.inpileVCardList(info => names.includes(info[2]) && !target.hasCard({ name: info[2] }, "h")).filter(info => player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3] }), false, false));
+					let list = get.inpileVCardList(info => !used.includes(info[2]) && names.includes(info[2]) && !target.hasCard({ name: info[2] }, "h")).filter(info => player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3] }), true, false));
 					if (!list.length) {
 						break;
 					}
@@ -4766,7 +4770,8 @@ const skills = {
 									.forResult("links")
 							: list;
 					if (choice) {
-						await player.chooseUseTarget(new lib.element.VCard({ name: choice[2], nature: choice[3] }), true, false, "nodistance");
+						used.add(choice[2]);
+						await player.chooseUseTarget(new lib.element.VCard({ name: choice[2], nature: choice[3] }), true, false);
 					}
 				}
 			} else {
@@ -4814,7 +4819,7 @@ const skills = {
 					}
 				}
 			}
-			if (names.length && target.isIn()) {
+			if (names.length && target.isIn() && !Object.values(target.storage["mbzengou_debuff"] || {}).some(num => num > 0)) {
 				const choose =
 					names.length > 1
 						? await player
