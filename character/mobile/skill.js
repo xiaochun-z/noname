@@ -3315,6 +3315,7 @@ const skills = {
 					if (event.triggername == "chooseCardOLBegin") {
 						const cardx = game.createFakeCards(card, true, "mbjianji_card")[0];
 						player.directgains([cardx], null, "mbjianji");
+						trigger._set.push(["mbjianji_card", card]);
 						trigger._set.push(["position", "hs"]);
 						//牌的检测也得重写，毕竟都选到s区域去了
 						const originalFilter = trigger.filterCard;
@@ -5518,7 +5519,7 @@ const skills = {
 								}
 								return Object.values(evt.gaintag_map).flat().includes("potfuji");
 							})[0],
-							cards = history.getl(player).cards2.filter(card => history.gaintag_map[card.cardid].includes("potfuji"));
+							cards = history.getl(player).cards2.filter(card => history.gaintag_map[card.cardid]?.includes("potfuji"));
 						let gains = [];
 						for (const card of cards) {
 							const gain = get.cardPile2(gain => !gains.includes(gain) && get.suit(gain) === get.suit(card, false));
