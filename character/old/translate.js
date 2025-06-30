@@ -147,8 +147,8 @@ const translates = {
 	new_simayi_prefix: "牢|神",
 	junk_sunquan: "牢神孙权",
 	junk_sunquan_prefix: "牢|神",
-	ol_baosanniang: "OL鲍三娘",
-	ol_baosanniang_prefix: "OL",
+	ol_baosanniang: "牢鲍三娘",
+	ol_baosanniang_prefix: "牢",
 };
 
 export default translates;
