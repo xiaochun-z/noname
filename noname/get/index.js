@@ -6416,9 +6416,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		} else {
 			result2 += temp02;
 			result1 += temp01;
-			// if (typeof card === "object" && !get.info(card)?.notarget) {
+			if (typeof card === "object" && !get.info(card)?.notarget) {
 				console.warn("计算get.effect_use(", target, card, player, player2, isLink, ")时缺少target参数");
-			// }
+			}
 		}
 		if (zeroplayer) {
 			result1 = 0;
