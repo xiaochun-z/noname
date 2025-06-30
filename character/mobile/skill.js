@@ -213,7 +213,7 @@ const skills = {
 			order: 3,
 			result: {
 				player(player) {
-					const count = (color = player.countCards("x", card => card.hasGaintag("mbfutu") && get.color(card) == color));
+					const count = color => player.countCards("x", card => card.hasGaintag("mbfutu") && get.color(card) == color);
 					if (count("red") > 1 && count("red") == count("black")) {
 						return 1;
 					}
@@ -365,17 +365,18 @@ const skills = {
 		forced: true,
 		onremove: true,
 		trigger: {
-			source: "damageBegin1",
-			player: "recoverBegin",
+			global: ["damageBegin1", "recoverBegin"],
 		},
 		filter(event, player) {
 			const list = player.getStorage("mbfozong");
-			let evt = event.getParent(),
+			let evt = event.getParent("useCard", true),
 				card = event.card;
-			if (evt.player != player || !card) {
+			if (evt.player != player || !card || evt.card != card) {
 				return false;
 			}
-			return list?.includes(get.color(card, player));
+			return list?.includes(get.color(card, player)) && player.hasHistory("lose", evtx => {
+				return evtx.hs?.length && evtx.getParent() == evt;
+			});
 		},
 		async content(event, trigger, player) {
 			trigger.num++;
@@ -3993,6 +3994,9 @@ const skills = {
 	//若为？若为！若为~
 	mbxiezheng: {
 		audio: "jsrgxiezheng",
+		audioname2: {
+			mb_simazhao_shadow: [1, 2].map(i => `jsrgxiezheng_jin_jsrg_simazhao${i}.mp3`),
+		},
 		inherit: "jsrgxiezheng",
 		async cost(event, trigger, player) {
 			const mode = get.mode();
@@ -4169,7 +4173,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			player.changeSkin({ characterName: "mb_simazhao" }, "jin_jsrg_simazhao");
+			player.changeSkin({ characterName: "mb_simazhao" }, "mb_simazhao_shadow");
 			await player.changeGroup("qun");
 			//player.node.name.dataset.nature = get.groupnature("jin");
 			await player.addSkills("mbdangyi");

@@ -249,7 +249,9 @@ const skills = {
 						})
 						.forResult();
 					if (result.bool && result.targets) {
-						trigger[type == "A" ? "targets" : "excluded"].addArray(result.targets);
+						player.line(result.targets, "green");
+						game.log(player, "令", result.targets, type == "A" ? "成为了" : "移出了", trigger.card, "的目标");
+						trigger.targets[type == "A" ? "addArray" : "removeArray"](result.targets);
 					}
 					break;
 				}
@@ -267,11 +269,14 @@ const skills = {
 							map[id].extraDamage += type == "A" ? 1 : -1;
 						}
 					}
+					game.log(player, "令", trigger.card, "造成的伤害", type == "A" ? "+1" : "-1");
 					break;
 				}
 				case "spade": {
 					trigger.player.addTempSkill(`x_dc_zhenyi_${type}`);
-					trigger.player.markAuto(`x_dc_zhenyi_${type}`, get.suit(trigger.card));
+					const suit = get.suit(trigger.card);
+					trigger.player.markAuto(`x_dc_zhenyi_${type}`, suit);
+					game.log(player, "令", trigger.player, type == "A" ? "使用" : "无法使用", suit, type == "A" ? "牌时摸一张牌" : "牌");
 					break;
 				}
 				case "club": {
@@ -281,9 +286,13 @@ const skills = {
 						trigger.targets.length = 0;
 						trigger.all_excluded = true;
 					}
+					game.log(player, "令", trigger.card, type == "A" ? "额外结算一次" : "无效");
 					break;
 				}
 			}
+		},
+		ai: {
+			combo: "x_dc_falu",
 		},
 		subSkill: {
 			A: {
@@ -559,6 +568,9 @@ const skills = {
 				player.markAuto("y_dc_zhenyi_record", trigger.suit);
 				player.markSkill(event.name);
 			}
+		},
+		ai: {
+			combo: "y_dc_falu",
 		},
 		mod: {
 			targetInRange(card, player) {
@@ -27203,7 +27215,16 @@ const skills = {
 		},
 		usable: 1,
 		async cost(event, trigger, player) {
-			event.result = await player.chooseToDiscard(get.prompt(event.skill, trigger.source), `是否弃置一张牌，令${get.translation(trigger.source)}对${get.translation(trigger.player)}的伤害+1，且你与其各摸两张牌？`, "he", "chooseonly").forResult();
+			event.result = await player
+				.chooseToDiscard(get.prompt(event.skill, trigger.source), `是否弃置一张牌，令${get.translation(trigger.source)}对${get.translation(trigger.player)}的伤害+1，且你与其各摸两张牌？`, "he", "chooseonly")
+				.set("ai", card => {
+					if (get.event("eff") > 0) {
+						return 7 - get.value(card);
+					}
+					return 0;
+				})
+				.set("eff", get.damageEffect(trigger.player, trigger.source, player) + 0.2 * get.attitude(player, trigger.source))
+				.forResult();
 		},
 		logTarget: "source",
 		async content(event, trigger, player) {
