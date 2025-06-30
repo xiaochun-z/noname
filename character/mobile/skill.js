@@ -4110,7 +4110,7 @@ const skills = {
 			target.removeGaintag("mbqiantun_tag");
 			const mode = get.mode();
 			if (result3.winner == player) {
-				player.logSkill("jsrgqiantun", [target], null, null, [3]);
+				player.logSkill("mbqiantun", [target], null, null, [3]);
 				const cards = target.getCards("h", card => result.cards.includes(card));
 				if (cards.length) {
 					if (mode !== "doudizhu") {
@@ -4129,7 +4129,7 @@ const skills = {
 					}
 				}
 			} else {
-				player.logSkill("jsrgqiantun", [target], null, null, [4]);
+				player.logSkill("mbqiantun", [target], null, null, [4]);
 				const cards = target.getCards("h", card => !result.cards.includes(card));
 				if (cards.length) {
 					if (mode !== "doudizhu") {
@@ -4229,7 +4229,7 @@ const skills = {
 				.then(() => {
 					const cards = trigger.player.getCards("h");
 					if (cards.length) {
-						player.logSkill("jsrgweisi", [trigger.player], null, null, [3]);
+						player.logSkill("mbweisi", [trigger.player], null, null, [3]);
 						const mode = get.mode();
 						if (mode !== "doudizhu") {
 							trigger.player.give(cards, player);
