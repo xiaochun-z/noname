@@ -207,7 +207,7 @@ const skills = {
 					.set("ai", () => {
 						const player = get.player();
 						const ranks = player.getSkills(null, false, false).reduce((sum, name) => {
-							return sum + get.skillRank(name, true);
+							return sum + get.skillRank(name, "inout");
 						}, 1);
 						return ranks > get.skillRank("zhengnan") ? 1 : 0;
 					})
