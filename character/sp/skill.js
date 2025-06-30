@@ -28280,7 +28280,7 @@ const skills = {
 			player: "useCard",
 		},
 		onChooseToUse(event) {
-			event.set("targetprompt2", target => {
+			event.targetprompt2.add(target => {
 				if (!target.isIn()) {
 					return false;
 				}
