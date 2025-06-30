@@ -117,7 +117,9 @@ const skills = {
 					const player = get.player(),
 						nanman = new lib.element.VCard({ name: "nanman" });
 					const targets = game.filterPlayer(target => player.canUse(nanman, target) && get.effect(target, nanman, player, player) > 0).sort((a, b) => get.effect(b, nanman, player, player) - get.effect(a, nanman, player, player));
-					if (!targets.length) return 0;
+					if (!targets.length) {
+						return 0;
+					}
 					return (
 						(7 - get.value(card)) *
 						targets.slice(0, Math.max(1, get.info(card, false).filterTarget ? get.info("jsrgchengxian").getNumber(card, player)[1] : 0)).reduce((sum, target) => {
@@ -213,7 +215,9 @@ const skills = {
 			}
 			if (result.index === 0) {
 				await target.changeSkills(["zhengnan"], target.getSkills(null, false, false));
-			} else await target.addSkills("newzhennan");
+			} else {
+				await target.addSkills("newzhennan");
+			}
 			await player.recoverTo(1);
 		},
 	},
