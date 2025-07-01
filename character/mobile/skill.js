@@ -405,6 +405,10 @@ const skills = {
 				}
 			}
 		},
+		ai: {
+			order:10,
+			result: { target: -1 },
+		},
 		subSkill: {
 			zhixi: {
 				charlotte: true,
