@@ -21138,29 +21138,27 @@ const skills = {
 			}
 			return 5 - get.value(card);
 		},
-		content() {
-			"step 0";
-			player.gainPlayerCard(target, "e", true).set("ai", function (button) {
-				var card = button.link;
-				var player = _status.event.player;
-				if (get.subtype(card) == "equip1" && get.damageEffect(_status.event.target, player, player) > 0) {
-					return 6 + get.value(card);
-				}
-				return get.value(card);
-			});
-			"step 1";
-			if (!result || !result.bool || !result.cards || !result.cards.length) {
-				event.finish();
+		async content(event, trigger, player) {
+			const result = await player
+				.gainPlayerCard(target, "e", true)
+				.set("ai", function (button) {
+					const card = button.link;
+					const player = _status.event.player;
+					if (get.subtype(card) == "equip1" && get.damageEffect(_status.event.target, player, player) > 0) {
+						return 6 + get.value(card);
+					}
+					return get.value(card);
+				})
+				.forResult();
+			if (!result?.bool || !result.cards?.length) {
 				return;
 			}
-			var card = result.cards[0];
-			event.card = card;
+			const card = result.cards[0];
 			if (player.getCards("h").includes(card) && get.type(card) == "equip") {
-				player.chooseUseTarget(card, true).nopopup = true;
+				await player.chooseUseTarget(card, true, "nopopup");
 			}
-			"step 2";
 			if (get.subtype(card, false) == "equip1") {
-				target.damage();
+				await target.damage();
 			}
 		},
 		ai: {
