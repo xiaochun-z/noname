@@ -4152,12 +4152,12 @@ const skills = {
 		trigger: { player: "phaseZhunbeiBegin" },
 		async cost(event, trigger, player) {
 			const list = lib.skill[event.skill].effectList.slice(),
-				controls = [1, 2, 3].map(num => "选项" + (num == 2 ? "二" : get.cnNumber(num)));
+				controls = [1, 2, 3].map(num => "选项" + get.cnNumber(num, true));
 			const result = await player
-				.chooseControl(controls, "cancel")
+				.chooseControl(controls, "cancel2")
 				.set("choiceList", list)
 				.set("prompt", `###${get.prompt(event.skill)}###选择一项令本回合下次拼点结束后没赢的角色执行`)
-				.set("ai", () => Math.random())
+				.set("ai", () => get.rand(2))
 				.forResult();
 			if (result?.control != "cancel2") {
 				event.result = {
