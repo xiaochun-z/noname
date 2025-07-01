@@ -30,8 +30,7 @@ const skills = {
 							return sum + cards.reduce((sum2, card) => sum2 + (get.tag(card, "recover") || 0), 0);
 						}, 0);
 					const minHp = player.getHp() + num;
-					if (minHp <= 1) return "cancel2";
-					return Math.min(2, Math.max(0, minHp - 1));
+					return minHp <= 1 ? "cancel2" : Math.min(2, Math.max(0, minHp - 1));
 				})
 				.set("prompt", lib.translate[event.name])
 				.set("prompt2", lib.translate[event.name + "_info"])
@@ -47,7 +46,7 @@ const skills = {
 			}
 		},
 		ai: {
-			result: 10,
+			order: 10,
 			result: {
 				player(player) {
 					if (player.hasUnknown() || player.getHp() > 3) {
@@ -233,8 +232,7 @@ const skills = {
 		},
 		ai: {
 			order(item, player) {
-				if (get.event().type !== "phase") return 1;
-				return get.order({ name: "sha" }, player) + 0.1;
+				return get.event().type === "phase" ? (get.order({ name: "sha" }, player) + 0.1) : 1;
 			},
 			respondSha: true,
 			respondShan: true,
@@ -288,7 +286,7 @@ const skills = {
 							return;
 						}
 						switch (guess) {
-							case 0:
+							case 0: {
 								const targets = game.filterPlayer(i => i.hasHistory("damage", evt => evt.card === card)).sortBySeat();
 								if (targets.length) {
 									player.line(targets);
@@ -297,12 +295,14 @@ const skills = {
 									}
 								}
 								break;
-							case 1:
+							}
+							case 1: {
 								if (target?.isIn()) {
 									player.line(target);
 									await target.draw(2);
 								}
 								break;
+							}
 						}
 					}
 				},
