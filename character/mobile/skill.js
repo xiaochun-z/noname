@@ -24494,6 +24494,9 @@ const skills = {
 			if (_status.currentPhase && get.damageEffect(_status.currentPhase, player, player) < 0) {
 				return false;
 			}
+			if (get.recoverEffect(event.player, player, player) <= 0) {
+				return false;
+			}
 			return !player.hasUnknown();
 		},
 		limited: true,

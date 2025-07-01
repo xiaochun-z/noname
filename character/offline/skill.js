@@ -8977,36 +8977,47 @@ const skills = {
 			player: "phaseUseBegin",
 		},
 		filter(event, player) {
-			return player.isDamaged();
+			return player.isDamaged() && player.countCards("h");
 		},
-		direct: true,
+		check(event, player) {
+			const card = get.autoViewAs({ name: "sha" }, player.getCards("h"));
+			return player.hasValueTarget(card, false, false);
+		},
 		async content(event, trigger, player) {
-			const next = player.chooseToUse();
-			next.set("openskilldialog", "【地道】:将所有手牌当一张【杀】使用");
-			next.set("_backupevent", "hm_didao_backup");
-			next.set("oncard", () => {
-				const evt = get.event();
-				evt.baseDamage = evt.cards.length;
-			});
-			next.backup("hm_didao_backup");
-			await next;
+			await player
+				.chooseToUse()
+				.set("openskilldialog", "地道：将所有手牌当一张无距离限制的伤害为X的【杀】使用(X为此【杀】的实体牌数）")
+				.set("norestore", true)
+				.set("_backupevent", `${event.name}_backup`)
+				.set("custom", {
+					add: {},
+					replace: { window() {} },
+				})
+				.backup(`${event.name}_backup`)
+				.set("oncard", () => {
+					const evt = get.event();
+					evt.baseDamage = evt.cards.length;
+				})
+				.set("addCount", false);
 		},
 		subSkill: {
 			backup: {
 				filterCard(card) {
 					return get.itemtype(card) === "card";
 				},
+				filterTarget(card, player, target) {
+					return lib.filter.targetEnabled.apply(this, arguments);
+				},
 				selectCard: -1,
 				position: "h",
-				filterTarget: lib.filter.targetEnabledx,
 				viewAs: {
 					name: "sha",
-					nature: "thunder",
 				},
 				prompt: "将所有手牌当一张【杀】使用",
 				check(card) {
 					return 7 - get.value(card);
 				},
+				log: false,
 			},
 		},
 	},
@@ -13190,7 +13201,7 @@ const skills = {
 		prompt: "选择一名其他角色进行地狱审判",
 		content() {
 			player.addMark("tyshencai", 1, false);
-			player.addTempSkill("tyshencai_clear", "phaseUseEnd");
+			player.addTempSkill("tyshencai_used", "phaseChange");
 			var next = target.judge();
 			next.callback = lib.skill.shencai.contentx;
 		},
@@ -13200,7 +13211,7 @@ const skills = {
 		},
 		group: "tyshencai_wusheng",
 		subSkill: {
-			clear: {
+			used: {
 				onremove: ["tyshencai"],
 				charlotte: true,
 			},

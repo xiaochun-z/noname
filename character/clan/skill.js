@@ -335,6 +335,18 @@ const skills = {
 			player
 				.when({ player: "useCardAfter" })
 				.filter(evt => evt.getParent() == event.getParent())
+				.assign({
+					ai: {
+						unequip: true,
+						unequip_ai: true,
+						skillTagFilter(player, tag, arg) {
+							const card = tag == "unequip_ai" ? arg : arg?.card;
+							if (!card?.storage?.tanfeng) {
+								return false;
+							}
+						},
+					},
+				})
 				.step(async (event, trigger, player) => {
 					if (player.getHistory("sourceDamage", evt => evt.card == trigger.card).length) {
 						const num = Math.abs(player.countCards("e") - target.countCards("e"));
@@ -365,14 +377,6 @@ const skills = {
 		ai: {
 			order() {
 				return get.order({ name: "sha" }) + 0.1;
-			},
-			unequip: true,
-			unequip_ai: true,
-			skillTagFilter(player, tag, arg) {
-				const card = tag == "unequip_ai" ? arg : arg?.card;
-				if (!card?.storage?.tanfeng) {
-					return false;
-				}
 			},
 		},
 	},
@@ -940,7 +944,7 @@ const skills = {
 					let items = target.getCards("h");
 					let count = [...new Set(items.map(item => get.suit(item, target)))].length;
 					const player = get.player();
-					return get.effect(target, { name: "draw" }, target, player) * items / (count + 1);
+					return (get.effect(target, { name: "draw" }, target, player) * items) / (count + 1);
 				})
 				.forResult();
 		},

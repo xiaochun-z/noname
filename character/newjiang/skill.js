@@ -4834,10 +4834,8 @@ const skills = {
 		filterCard: true,
 		selectCard: -1,
 		position: "h",
+		usable: 1,
 		filter(event, player) {
-			if (player.hasSkill("mbguli_used")) {
-				return false;
-			}
 			var hs = player.getCards("h");
 			if (!hs.length) {
 				return false;
@@ -4855,7 +4853,7 @@ const skills = {
 			storage: { mbguli: true },
 		},
 		onuse(links, player) {
-			player.addTempSkill("mbguli_used", "phaseUseAfter");
+			player.addTempSkill("mbguli_effect", "phaseUseAfter");
 		},
 		ai: {
 			order: 1,
@@ -4869,7 +4867,7 @@ const skills = {
 			},
 		},
 		subSkill: {
-			used: {
+			effect: {
 				audio: "mbguli",
 				trigger: { global: "useCardAfter" },
 				charlotte: true,
@@ -4887,11 +4885,9 @@ const skills = {
 						})
 					);
 				},
-				content() {
-					"step 0";
-					player.loseHp();
-					"step 1";
-					player.drawTo(player.maxHp);
+				async content(event,trigger,player) {
+					await player.loseHp();
+					await player.drawTo(player.maxHp);
 				},
 				group: "mbguli_unequip",
 			},
@@ -4905,7 +4901,7 @@ const skills = {
 				forced: true,
 				popup: false,
 				logTarget: "target",
-				content() {
+				async content(event,trigger,player) {
 					trigger.target.addTempSkill("qinggang2");
 					trigger.target.storage.qinggang2.add(trigger.card);
 					trigger.target.markSkill("qinggang2");

@@ -2132,6 +2132,7 @@ const skills = {
 			},
 			backup(links, player) {
 				return {
+					filterTarget: lib.filter.notMe,
 					filterCard: true,
 					selectCard() {
 						const count = Math.min(3, game.roundNumber);
@@ -2140,6 +2141,8 @@ const skills = {
 					lose: false,
 					discard: false,
 					visible: false,
+					popname: true,
+					ignoreMod: true,
 					viewAs: {
 						name: links[0][2],
 						suit: "none",
@@ -2147,35 +2150,60 @@ const skills = {
 						isCard: true,
 					},
 					log: false,
+					ai1(card) {
+						return 1 / (1.1 + Math.max(-1, get.value(card)));
+					},
+					ai2(target) {
+						const att = get.attitude(get.player(), target);
+						if (att <= 0) {
+							return false;
+						}
+						if (target.hasSkillTag("nogain")) {
+							return 0;
+						}
+						if (ui.selected.cards.length && ui.selected.cards[0].name == "du") {
+							return target.hasSkillTag("nodu") ? 0 : -10;
+						}
+						if (target.hasJudge("lebu")) {
+							return 0;
+						}
+						const nh = target.countCards("h");
+						return Math.max(1, 5 - nh);
+					},
 					async precontent(event, trigger, player) {
-						const {
-							result: { cards },
-						} = event;
-						delete event.result.cards;
-						const { result } = await player
-							.chooseTarget(`将${get.translation(cards)}交给一名其他角色`, true)
-							.set("filterTarget", lib.filter.notMe)
-							.set("ai", function (target) {
-								if (target.hasSkillTag("nogain")) {
-									return 0;
-								}
-								if (ui.selected.cards.length && ui.selected.cards[0].name == "du") {
-									return target.hasSkillTag("nodu") ? 0 : -10;
-								}
-								if (target.hasJudge("lebu")) {
-									return 0;
-								}
-								const nh = target.countCards("h");
-								return Math.max(1, 5 - nh);
-							});
-						player.logSkill("olzonghu");
-						await player.give(cards, result.targets[0], false);
 						player.addTempSkill("olzonghu_used");
+						const skill = "olzonghu";
+						const cards = event.result.cards.slice(0);
+						const target = event.result.targets[0];
+						delete event.result.cards;
+						player.logSkill(skill);
+						await player.give(cards, target, false);
+						const viewAs = get.autoViewAs({
+							name: event.result.card.name,
+							isCard: true,
+						});
+						game.broadcastAll(
+							(viewAs, skill) => {
+								lib.skill[`${skill}_backup2`].viewAs = viewAs;
+							},
+							viewAs,
+							skill
+						);
+						const evt = event.getParent();
+						evt.set("_backupevent", `${skill}_backup2`);
+						evt.set("openskilldialog", `请选择${get.translation(event.result.card.name)}的目标`);
+						evt.backup(`${skill}_backup2`);
+						evt.set("norestore", true);
+						evt.set("custom", {
+							add: {},
+							replace: { window() {} },
+						});
+						evt.goto(0);
 					},
 				};
 			},
 			prompt(links, player) {
-				return "宗护：视为使用一张【" + get.translation(links[0][2]) + "】";
+				return `宗护：将${Math.min(3, game.roundNumber)}张牌交给一名其他角色，视为使用一张【${get.translation(links[0][2])}】`;
 			},
 		},
 		ai: {
@@ -2209,6 +2237,11 @@ const skills = {
 			},
 		},
 		subSkill: {
+			backup2: {
+				filterCard: () => false,
+				selectCard: -1,
+				log: false,
+			},
 			used: {
 				charlotte: true,
 				mark: true,
@@ -5347,7 +5380,9 @@ const skills = {
 		audio: 2,
 		mod: {
 			inRange(from, to) {
-				return !to.isDamaged();
+				if (!to.isDamaged()) {
+					return true;
+				}
 			},
 		},
 		trigger: { global: "useCardToTargeted" },
