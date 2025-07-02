@@ -500,7 +500,7 @@ const skills = {
 			const next = player.draw(2);
 			next.gaintag = [event.name];
 			await next;
-			player.addTempSkill("clanjiannan_effect", "phaseUseEnd");
+			player.addTempSkill("clanjiannan_effect", "phaseChange");
 		},
 		subSkill: {
 			used: {
@@ -546,50 +546,107 @@ const skills = {
 				},
 				async cost(event, trigger, player) {
 					event.result = await player
-						.chooseTarget("间难：令一名角色执行本回合未执行过的一项", true)
-						.set("ai", target => {
-							const player = get.player(),
-								list = player.getStorage("clanjiannan_used"),
-								att = get.attitude(player, target);
-							if (list.includes("选项二") && list.includes("选项三")) {
+						.chooseButtonTarget({
+							createDialog: [
+								"间难：令一名角色执行本回合未执行过的一项",
+								[
+									[
+										["discard", "弃置两张牌"],
+										["draw", "摸两张牌"],
+										["recast", "重铸所有装备牌"],
+										["put", "将一张锦囊牌置于牌堆顶或失去1点体力"],
+									],
+									"textbutton",
+								],
+							],
+							forced: true,
+							chooseds: player.getStorage("clanjiannan_used"),
+							filterButton: button => {
+								const link = button.link;
+								if (get.event("chooseds").includes(link)) return false;
+								return true;
+							},
+							filterTarget: target => {
+								if (ui.selected.buttons[0]?.link == "discard") {
+									return target.countDiscardableCards(target, "he");
+								}
+								if (ui.selected.buttons[0]?.link == "recast") {
+									return target.countCards("he", card => target.canRecast(card));
+								}
+							},
+							ai1: button => {
+								const player = get.player();
+								switch (button.link) {
+									case "discard": {
+										if (
+											game.hasPlayer(target => {
+												const att = get.attitude(player, target);
+												return att < 0 && target.countCards("he");
+											})
+										) {
+											return 2;
+										}
+										break;
+									}
+									case "draw": {
+										return 4;
+									}
+									case "recast": {
+										if (player.hasCard(card => get.type(card) == "equip", "he")) {
+											return 3;
+										}
+										break;
+									}
+									case "put": {
+										if (
+											game.hasPlayer(target => {
+												const att = get.attitude(player, target);
+												return att < 0 && target.hp <= 1 && target.countCards("h") <= 3;
+											})
+										) {
+											return 5;
+										}
+										break;
+									}
+								}
+								return 1;
+							},
+							ai2: target => {
+								const link = ui?.selected?.buttons[0]?.link,
+									player = get.player(),
+									att = get.attitude(player, target);
+								if (!link) return 0;
+								if (["draw", "recast"].includes(link)) {
+									if (target == player) return att * 3;
+									return att;
+								}
 								return -att;
-							}
-							return att;
+							},
 						})
 						.forResult();
+					if (event.result.bool) {
+						event.result.cost_data = { link: event.result.links[0] };
+					}
 				},
 				async content(event, trigger, player) {
-					const list = ["选项一", "选项二", "选项三", "选项四"].filter(key => !player.getStorage("clanjiannan_used").includes(key)),
-						target = event.targets[0],
-						result = await player
-							.chooseControl(list)
-							.set("prompt", `间难：令${get.translation(target)}执行一项`)
-							.set("choiceList", ["弃置两张牌", "摸两张牌", "重铸所有装备牌", "将一张锦囊牌置于牌堆顶或失去1点体力"])
-							.set("target", target)
-							.set("List", list)
-							.set("ai", () => {
-								const { player, target, List } = get.event(),
-									att = get.attitude(player, target),
-									check = c => (["选项一", "选项四"].includes(c) ? -att : att);
-								return List.randomSort().sort((a, b) => check(b) - check(a))[0];
-							})
-							.forResult();
+					const target = event.targets[0];
 					player.addTempSkill("clanjiannan_used");
-					player.markAuto("clanjiannan_used", result.control);
-					switch (result.control) {
-						case "选项一": {
+					const link = event.cost_data.link;
+					player.markAuto("clanjiannan_used", link);
+					switch (link) {
+						case "discard": {
 							if (target.countDiscardableCards(target, "he")) {
 								await target.chooseToDiscard("he", 2, true);
 							}
 							break;
 						}
-						case "选项二": {
+						case "draw": {
 							const next = target.draw(2);
 							next.gaintag = ["clanjiannan"];
 							await next;
 							break;
 						}
-						case "选项三": {
+						case "recast": {
 							await target.recast(
 								target.getCards("he", card => target.canRecast(card) && get.type(card, player) == "equip"),
 								null,
@@ -601,7 +658,7 @@ const skills = {
 							);
 							break;
 						}
-						case "选项四": {
+						case "put": {
 							const result2 = await target
 								.chooseCard(
 									"将一张锦囊牌置于牌堆顶，或失去1点体力",
@@ -615,10 +672,9 @@ const skills = {
 								})
 								.forResult();
 							if (result2.bool) {
-								await target.lose(result2.cards, ui.cardPile, "insert");
 								target.$throw(result2.cards.length);
-								game.updateRoundNumber();
 								game.log(target, "将", result2.cards, "置于牌堆顶");
+								await target.lose(result2.cards, ui.cardPile, "insert");
 							} else {
 								await target.loseHp();
 							}
