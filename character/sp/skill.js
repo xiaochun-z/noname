@@ -4250,7 +4250,7 @@ const skills = {
 				popup: false,
 				silent: true,
 				firstDo: true,
-				content() {
+				async content(event, trigger, player) {
 					trigger.addCount = false;
 					player.getStat("card")[trigger.card.name]--;
 				},
