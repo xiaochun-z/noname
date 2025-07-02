@@ -3186,7 +3186,7 @@ const skills = {
 				fromIndex: 2,
 				name: "当你使用或打出【闪】时",
 				effect: {
-					trigger: { player: "useCard" },
+					trigger: { player: ["useCard", "respond"] },
 					filter(event, player) {
 						return event.card.name === "shan";
 					},

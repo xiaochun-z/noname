@@ -564,7 +564,7 @@ const skills = {
 						result = await player
 							.chooseControl(list)
 							.set("prompt", `间难：令${get.translation(target)}执行一项`)
-							.set("choiceList", ["弃置两张牌", "摸两张牌", "重铸装备区里的所有牌", "将一张锦囊牌置于牌堆顶或失去1点体力"])
+							.set("choiceList", ["弃置两张牌", "摸两张牌", "重铸所有装备牌", "将一张锦囊牌置于牌堆顶或失去1点体力"])
 							.set("target", target)
 							.set("List", list)
 							.set("ai", () => {
