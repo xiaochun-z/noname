@@ -2218,7 +2218,7 @@ const skills = {
 				},
 				async cost(event, trigger, player) {
 					const target = event.indexedData;
-					const list = [event.name.slice(0, -"_cost".length), target];
+					const list = [event.skill, target];
 					event.result = await player
 						.chooseToDiscard("he")
 						.set("prompt", get.prompt2(...list))
