@@ -4240,7 +4240,19 @@ const skills = {
 				},
 				intro: {
 					name: "天书",
-					content: "对$使用牌无距离和次数限制",
+					content: "对$使用牌无距离和任何次数限制",
+				},
+				trigger: { player: "useCard1" },
+				filter(event, player) {
+					return event.addCount !== false && Array.isArray(event.targets) && event.targets.some(target => player.getStorage("olhedao_effect").includes(target));
+				},
+				forced: true,
+				popup: false,
+				silent: true,
+				firstDo: true,
+				content() {
+					trigger.addCount = false;
+					player.getStat("card")[trigger.card.name]--;
 				},
 			},
 		},
@@ -4306,9 +4318,11 @@ const skills = {
 			}
 			game.broadcastAll(
 				(skill, from, to) => {
-					lib.skill[skill] = { nopop: true, olhedao: true, charlotte: true, onremove: true, ...from.effect, ...to.effect };
+					const { filter: filterFrom, ...otherFrom } = from.effect;
+					const { filter: filterTo, ...otherTo } = to.effect;
+					lib.skill[skill] = { nopop: true, olhedao: true, charlotte: true, onremove: true, ...otherFrom, ...otherTo };
 					lib.skill[skill].filter = function (...args) {
-						return (from.filter ? from.filter(...args) : true) && (to.filter ? to.filter(...args) : true);
+						return (filterFrom ? filterFrom(...args) : true) && (filterTo ? filterTo(...args) : true);
 					};
 					lib.skill[skill].init = (player, skill) => (player.storage[skill] = player.storage[skill] || [0, skill]);
 					lib.skill[skill].intro = {
