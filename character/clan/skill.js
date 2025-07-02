@@ -563,10 +563,12 @@ const skills = {
 							chooseds: player.getStorage("clanjiannan_used"),
 							filterButton: button => {
 								const link = button.link;
-								if (get.event("chooseds").includes(link)) return false;
+								if (get.event("chooseds").includes(link)) {
+									return false;
+								}
 								return true;
 							},
-							filterTarget: target => {
+							filterTarget: (card, player, target) => {
 								if (ui.selected.buttons[0]?.link == "discard") {
 									return target.countDiscardableCards(target, "he");
 								}
@@ -612,12 +614,16 @@ const skills = {
 								return 1;
 							},
 							ai2: target => {
-								const link = ui?.selected?.buttons[0]?.link,
+								const link = ui.selected.buttons[0]?.link,
 									player = get.player(),
 									att = get.attitude(player, target);
-								if (!link) return 0;
+								if (!link) {
+									return 0;
+								}
 								if (["draw", "recast"].includes(link)) {
-									if (target == player) return att * 3;
+									if (target == player) {
+										return att * 3;
+									}
 									return att;
 								}
 								return -att;
