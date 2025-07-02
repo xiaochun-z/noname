@@ -371,7 +371,7 @@ const skills = {
 			const list = player.getStorage("mbfozong");
 			let evt = event.getParent("useCard", true),
 				card = event.card;
-			if (evt.player != player || !card || evt.card != card) {
+			if (evt?.player != player || !card || evt.card != card) {
 				return false;
 			}
 			return (
