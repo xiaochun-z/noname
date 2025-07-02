@@ -2285,35 +2285,60 @@ const skills = {
 			check(button) {
 				const player = get.player(),
 					link = button.link,
-					nums = [link],
-					values = [];
+					hs = player.countCards("h"),
+					nums = [],
+					effs = [];
+				let mine = [];
 				if (link < 0) {
-					nums.addArray([-2, -3]);
+					// 考虑人机可能弃装备牌
+					let discard = player
+						.getCards("he")
+						.sort((a, b) => get.value(a, player) - get.value(b, player))
+						.slice(0, 3);
+					let num = -discard.length;
+					for (let card of discard) {
+						if (get.position(card) === "e") {
+							num++;
+						} else {
+							// 计算弃牌收益
+							mine.push((mine.at(-1) || 0) - get.value(card, player));
+						}
+					}
+					if (!num) {
+						return 0;
+					}
+					while (num < 0) {
+						// 枚举可能弃牌情况
+						nums.push(hs + num);
+						num++;
+					}
+				} else {
+					nums.push(hs + link);
+					mine.push(link * get.effect(player, { name: "draw" }, player, player));
 				}
-				for (let num of nums) {
-					const value = game
-						.filterPlayer(targetx => targetx != player)
+				for (const num of nums) {
+					// 自己的摸弃牌收益+其他人的
+					let eff = mine.pop();
+					eff += game
+						.filterPlayer(targetx => targetx !== player)
 						.reduce((sum, targetx) => {
-							num = player.countCards("h") + num;
-							const numx = num - targetx.countCards("h"),
-								att = get.sgnAttitude(player, targetx);
+							const numx = num - targetx.countCards("h");
 							let val;
 							if (numx > 0) {
-								val = numx - 3;
+								val = (numx - 3) * get.effect(targetx, { name: "draw" }, player, player);
 							} else if (numx < 0) {
-								val = numx + 3;
+								val = (numx + 3) * get.effect(targetx, { name: "draw" }, player, player);
 							} else {
-								val = -2;
+								val = get.damageEffect(targetx, player, player);
 							}
-							val = val == 0 ? 0.5 : val;
-							if (player.hasZhuSkill("dcsbtiancheng", targetx) && val * att < 0) {
+							if (val < 0 && player.hasZhuSkill("dcsbtiancheng", targetx)) {
 								return sum;
 							}
-							return sum + val * att;
+							return sum + val;
 						}, 0);
-					values.push(value);
+					effs.push(eff);
 				}
-				return values.sort((a, b) => b - a)[0];
+				return Math.max(...effs);
 			},
 			backup(links) {
 				return {
