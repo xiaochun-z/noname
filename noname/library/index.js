@@ -467,11 +467,11 @@ export class Library {
 								_status.event._resultid = id;
 								game.resume();
 							};
-							("step 1");
+							"step 1";
 							var type = get.type2(card);
 							event.list = game.filterPlayer(current => current != player && current.countCards("h") && (_status.connectMode || current.hasCard(cardx => get.type2(cardx) == type, "h"))).sortBySeat(_status.currentPhase || player);
 							event.id = get.id();
-							("step 2");
+							"step 2";
 							if (!event.list.length) {
 								event.finish();
 							} else if (_status.connectMode && (event.list[0].isOnline() || event.list[0] == game.me)) {
@@ -479,7 +479,7 @@ export class Library {
 							} else {
 								event.send((event.current = event.list.shift()), event.card, player, trigger.targets, event.id, trigger.parent.id, trigger.yingbianZhuzhanAI);
 							}
-							("step 3");
+							"step 3";
 							if (result.bool) {
 								event.zhuzhanresult = event.current;
 								event.zhuzhanresult2 = result;
@@ -490,7 +490,7 @@ export class Library {
 							} else {
 								event.goto(2);
 							}
-							("step 4");
+							"step 4";
 							var id = event.id,
 								sendback = (result, player) => {
 									if (result && result.id == id && !event.zhuzhanresult && result.bool) {
@@ -537,20 +537,20 @@ export class Library {
 								});
 							}
 							event.withol = withol;
-							("step 5");
+							"step 5";
 							if (!result || !result.bool || event.zhuzhanresult) {
 								return;
 							}
 							game.broadcast("cancel", event.id);
 							event.zhuzhanresult = game.me;
 							event.zhuzhanresult2 = result;
-							("step 6");
+							"step 6";
 							if (event.withol && !event.resultOL) {
 								game.pause();
 							}
-							("step 7");
+							"step 7";
 							game.players.forEach(value => value.hideTimer());
-							("step 8");
+							"step 8";
 							if (event.zhuzhanresult) {
 								var target = event.zhuzhanresult;
 								target.line(player, "green");
@@ -1305,6 +1305,7 @@ export class Library {
 					},
 					unfrequent: true,
 				},
+
 				extension_auto_removeConfig: {
 					name: "自动删除配置",
 					intro: dedent`
@@ -12905,7 +12906,7 @@ export class Library {
 				"step 0";
 				player._groupChosen = "double";
 				player.chooseControl(get.is.double(player.name1, true)).set("prompt", "请选择你的势力");
-				("step 1");
+				"step 1";
 				player.changeGroup(result.control);
 			},
 		},
@@ -13482,7 +13483,7 @@ export class Library {
 			content: function () {
 				"step 0";
 				event.logvid = trigger.getLogv();
-				("step 1");
+				"step 1";
 				event.targets = game.filterPlayer(function (current) {
 					return current != event.player && current.isLinked();
 				});
@@ -13495,7 +13496,7 @@ export class Library {
 				} else {
 					event._args.push("nosource");
 				}
-				("step 2");
+				"step 2";
 				if (event.targets.length) {
 					var target = event.targets.shift();
 					if (target.isLinked()) {
