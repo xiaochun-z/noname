@@ -4907,9 +4907,9 @@ export class Library {
 								}
 							}
 							this.firstChild.innerHTML = "已重置";
-							var that = this;
+							const that = this;
 							setTimeout(function () {
-								that.firstChild.innerHTML = "重置隐藏内容";
+								that.firstChild.innerHTML = "重置无效扩展";
 								setTimeout(function () {
 									let ret = confirm(`检测完成，已为你清除无效配置，是否重启？`);
 									if (ret) {
