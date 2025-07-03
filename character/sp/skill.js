@@ -430,19 +430,17 @@ const skills = {
 				},
 			},
 			recover: {
+				audio: "olkuangxin",
 				trigger: { player: "phaseJieshuBegin" },
 				filter(event, player) {
-					return _status.olkuangxin[player.playerid] > 0;
+					const number = _status.olkuangxin?.[player.playerid];
+					return typeof number === "number" && number !== player.hp;
 				},
 				forced: true,
 				locked: false,
 				async content(event, trigger, player) {
 					const num = _status.olkuangxin[player.playerid] - player.hp;
-					if (num > 0) {
-						await player.recover(num);
-					} else if (num < 0) {
-						await player.loseHp(-num);
-					}
+					await player[num > 0 ? "recover" : "loseHp"](Math.abs(num));
 				},
 			},
 		},
@@ -1072,7 +1070,6 @@ const skills = {
 								animate: "gain2",
 							})
 							.setContent("gaincardMultiple");
-						await player.draw();
 					}
 				},
 			},
@@ -4035,12 +4032,14 @@ const skills = {
 				name: "你可以弃置两张牌，令你与一名其他角色各回复1点体力",
 				effect: {
 					filter(event, player) {
-						return player.countCards("he", card => {
-							if (get.position(card) === "h" && _status.connectMode) {
-								return true;
-							}
-							return lib.filter.cardDiscardable(card, player);
-						}) >= 2 && game.hasPlayer(target => target != player);
+						return (
+							player.countCards("he", card => {
+								if (get.position(card) === "h" && _status.connectMode) {
+									return true;
+								}
+								return lib.filter.cardDiscardable(card, player);
+							}) >= 2 && game.hasPlayer(target => target != player)
+						);
 					},
 					async cost(event, trigger, player) {
 						event.result = await player
