@@ -1325,7 +1325,7 @@ export class Library {
 									game.removeExtension(name);
 								} else {
 									let all = await game.promises.getFileList(`extension/${name}`);
-									if (Boolean(all?.[1].length)) {
+									if (all?.[1].length) {
 										const hasExtensionJs = all[1].includes("extension.js");
 										const hasInfoJson = all[1].includes("info.json");
 
