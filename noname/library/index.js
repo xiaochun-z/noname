@@ -1305,7 +1305,6 @@ export class Library {
 					},
 					unfrequent: true,
 				},
-
 				extension_auto_removeConfig: {
 					name: "自动删除配置",
 					intro: dedent`
