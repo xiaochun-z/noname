@@ -5386,6 +5386,7 @@ const skills = {
 			if (cards.length) {
 				player.loseToDiscardpile(cards);
 			}
+			player.removeTip(skill);
 		},
 		group: "dczhengyue_useCard",
 		subSkill: {

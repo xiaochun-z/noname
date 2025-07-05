@@ -686,6 +686,9 @@ window.noname_character_rank = {
 		"yj_zhenji",
 	],
 	bp: [
+		"ol_qiaogong",
+		"yj_zhangyan",
+		"yj_zhanghuan",
 		"cuilingyi",
 		"jimiaojimu",
 		"clan_yangzhong",
@@ -2741,6 +2744,8 @@ window.noname_character_rank = {
 			"renwan",
 		],
 		epic: [
+			"yj_zhangyan",
+			"yj_zhanghuan",
 			"pot_lusu",
 			"mb_sunjun",
 			"pe_jun_liubei",
@@ -3262,6 +3267,7 @@ window.noname_character_rank = {
 			"ren_dengai",
 		],
 		rare: [
+			"ol_qiaogong",
 			"std_zhangyao",
 			"std_wangfuren",
 			"std_panglin",
