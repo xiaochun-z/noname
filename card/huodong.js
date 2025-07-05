@@ -48,7 +48,14 @@ game.import("card", function () {
 						const { result } = await target
 							.chooseControl(choices)
 							.set("prompt", "见好就收：猜测下一张牌的点数大于或小于，或者取消获得所有展示过的牌")
-							.set("ai", () => (get.event().getParent().num < 7 ? 0 : 1));
+							.set("ai", () => {
+								if (get.event().gain.length > 2) {
+									return "cancel2";
+								}
+								return get.event().num < 7 ? 0 : 1;
+							})
+							.set("gain", gain)
+							.set("num", numx);
 						if (result.control == "cancel2") {
 							await target.gain(gain, "gain2");
 							break;
@@ -845,7 +852,10 @@ game.import("card", function () {
 						const result = await player
 							.chooseControl("摸牌阶段", "出牌阶段")
 							.set("prompt", "躺赢：选择要执行的额外阶段")
-							.set("ai", () => (Math.random() > 0.5 ? "摸牌阶段" : "出牌阶段"))
+							.set("ai", () => {
+								const player = get.player();
+								return player.countCards("hs", card => player.hasValueTarget(card)) < 2 ? "摸牌阶段" : "出牌阶段";
+							})
 							.forResult();
 						if (result?.control) {
 							const name = result.control == "摸牌阶段" ? "phaseDraw" : "phaseUse";
