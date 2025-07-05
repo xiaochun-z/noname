@@ -42,7 +42,7 @@ const defaultResponse = async (/** @type {Response} */ response) => {
 	const reset = response.headers.get("X-RateLimit-Reset");
 	console.log(`请求总量限制`, limit);
 	console.log(`剩余请求次数`, remaining);
-	// @ts-ignore
+	// @ts-expect-error ignore
 	console.log(`限制重置时间`, new Date(reset * 1000).toLocaleString());
 	if ((Number(remaining) === 0 && !sessionStorage.getItem("noname_authorization") && confirm(`您达到了每小时${limit}次的访问限制，是否输入您github账号的token以获取更高的请求总量限制`)) || (response.status === 401 && (localStorage.removeItem("noname_authorization"), true) && (alert(`身份验证凭证错误，是否重新输入您github账号的token以获取更高的请求总量限制`), true))) {
 		return gainAuthorization();
@@ -90,12 +90,12 @@ export function parseSize(limit) {
  * @throws {Error}
  */
 export function checkVersion(ver1, ver2) {
-	if (typeof ver1 !== "string") ver1 = String(ver1);
-	if (typeof ver2 !== "string") ver2 = String(ver2);
+	if (typeof ver1 !== "string") {ver1 = String(ver1);}
+	if (typeof ver2 !== "string") {ver2 = String(ver2);}
 
 	// 移除 'v' 开头
-	if (ver1.startsWith("v")) ver1 = ver1.slice(1);
-	if (ver2.startsWith("v")) ver2 = ver2.slice(1);
+	if (ver1.startsWith("v")) {ver1 = ver1.slice(1);}
+	if (ver2.startsWith("v")) {ver2 = ver2.slice(1);}
 
 	// 验证版本号格式
 	if (/[^0-9.-]/i.test(ver1) || /[^0-9.-]/i.test(ver2)) {
@@ -107,13 +107,13 @@ export function checkVersion(ver1, ver2) {
 		let part = "";
 		for (const char of str) {
 			if (char === "." || char === "-") {
-				if (part) yield Number(part);
+				if (part) {yield Number(part);}
 				part = "";
 			} else {
 				part += char;
 			}
 		}
-		if (part) yield Number(part);
+		if (part) {yield Number(part);}
 	}
 
 	const iterator1 = walk(ver1);
@@ -136,7 +136,7 @@ export function checkVersion(ver1, ver2) {
 		} else if (item1 < item2) {
 			return -1;
 		} else {
-			if (iter1.done && iter2.done) break;
+			if (iter1.done && iter2.done) {break;}
 		}
 	}
 
@@ -374,16 +374,16 @@ export async function request(url, onProgress, options = {}) {
 		throw new Error(`HTTP error! status: ${response.status}`);
 	}
 
-	// @ts-ignore
+	// @ts-expect-error ignore
 	let total = parseInt(response.headers.get("Content-Length"), 10);
 	// 如果服务器未返回Content-Length，则无法准确计算进度
-	// @ts-ignore
-	if (isNaN(total)) total = null;
-	// @ts-ignore
+	// @ts-expect-error ignore
+	if (isNaN(total)) {total = null;}
+	// @ts-expect-error ignore
 	const reader = response.body.getReader();
 	let filename;
 	try {
-		// @ts-ignore
+		// @ts-expect-error ignore
 		filename = response.headers.get("Content-Disposition").split(";")[1].split("=")[1];
 	} catch {
 		/* empty */
@@ -431,7 +431,7 @@ export async function request(url, onProgress, options = {}) {
  */
 export function createProgress(title, max, fileName, value) {
 	/** @type { progress } */
-	// @ts-ignore
+	// @ts-expect-error ignore
 	const parent = ui.create.div(ui.window, {
 		textAlign: "center",
 		width: "300px",
@@ -459,7 +459,7 @@ export function createProgress(title, max, fileName, value) {
 
 	container.ontouchstart = ui.click.dialogtouchStart;
 	container.ontouchmove = ui.click.touchScroll;
-	// @ts-ignore
+	// @ts-expect-error ignore
 	container.style.WebkitOverflowScrolling = "touch";
 	parent.ontouchstart = ui.click.dragtouchdialog;
 
@@ -535,7 +535,7 @@ export async function getLatestVersionFromGitHub(owner = "libnoname", repo = "no
 
 	for (const tag of tags) {
 		const tagName = tag.name;
-		if (tagName === "v1998") continue;
+		if (tagName === "v1998") {continue;}
 		try {
 			checkVersion(tagName, lib.version);
 			return tagName;
@@ -570,7 +570,7 @@ export async function getTreesFromGithub(directories, version, owner = "libnonam
 		headers: defaultHeaders,
 	});
 	await defaultResponse(treesResponse);
-	if (!treesResponse.ok) throw new Error(`Failed to fetch the GitHub repository tree: HTTP status ${treesResponse.status}`);
+	if (!treesResponse.ok) {throw new Error(`Failed to fetch the GitHub repository tree: HTTP status ${treesResponse.status}`);}
 	/**
 	 * @type {{
 	 * 	sha: string;

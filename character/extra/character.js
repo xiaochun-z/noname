@@ -1,4 +1,18 @@
 const characters = {
+	wn_shen_machao: {
+		sex: "male",
+		group: "shen",
+		hp: 5,
+		skills: ["wn_qiangshu", "wn_yuma"],
+		groupInGuozhan: "shu",
+	},
+	wn_shen_xuzhu: {
+		sex: "male",
+		group: "shen",
+		hp: 5,
+		skills: ["wn_zhuanzhan", "wn_huwei"],
+		groupInGuozhan: "wei",
+	},
 	ca_shen_wangyun: {
 		sex: "male",
 		group: "shen",
@@ -10,6 +24,7 @@ const characters = {
 		group: "shen",
 		hp: 4,
 		skills: ["cazhaoshao", "caxiaoxiong"],
+		groupInGuozhan: "wei",
 	},
 	ca_shen_lijueguosi: {
 		sex: "male",
@@ -72,7 +87,7 @@ const characters = {
 		skills: ["hm_shice", "hm_podai"],
 		names: "皇甫|嵩",
 	},
-	hm_shen_luzhi: {
+	hm_shen_yl_luzhi: {
 		sex: "male",
 		group: "shen",
 		hp: 4,
@@ -124,6 +139,7 @@ const characters = {
 		group: "shen",
 		hp: 4,
 		skills: ["dclinjie", "dcduzhang", "dcjianghuo"],
+		groupInGuozhan: "ye",
 	},
 	shen_pangtong: {
 		sex: "male",
@@ -131,6 +147,7 @@ const characters = {
 		hp: 1,
 		maxHp: 1,
 		skills: ["luansuo", "fengliao", "kunyu"],
+		groupInGuozhan: "shu",
 	},
 	junk_zhangjiao: {
 		sex: "male",
@@ -140,28 +157,12 @@ const characters = {
 		groupInGuozhan: "qun",
 		dieAudios: ["shen_zhangjiao"],
 	},
-	junk_sunquan: {
-		sex: "male",
-		group: "shen",
-		hp: 4,
-		skills: ["dili", "yuheng"],
-		groupInGuozhan: "wu",
-		dieAudios: ["shen_sunquan"],
-	},
 	shen_huangzhong: {
 		sex: "male",
 		group: "shen",
 		hp: 4,
 		skills: ["new_dclieqiong", "dczhanjue"],
 		groupInGuozhan: "shu",
-	},
-	new_simayi: {
-		sex: "male",
-		group: "shen",
-		hp: 4,
-		skills: ["jilin", "yingyou", "yingtian"],
-		groupInGuozhan: "wei",
-		names: "司马|懿",
 	},
 	xin_simayi: {
 		sex: "male",

@@ -5,7 +5,9 @@ import security from "../../../../util/security.js";
 import { Character } from "../../../../library/element/character.js";
 
 export const extensionMenu = function (connectMenu) {
-	if (connectMenu) return;
+	if (connectMenu) {
+		return;
+	}
 	/**
 	 * 由于联机模式会创建第二个菜单，所以需要缓存一下可变的变量
 	 */
@@ -14,7 +16,7 @@ export const extensionMenu = function (connectMenu) {
 	// const cacheMenux = menux;
 	const cacheMenuxpages = menuxpages;
 	/** @type { HTMLDivElement } */
-	// @ts-ignore
+	// @ts-expect-error ignore
 	var start = cacheMenuxpages.shift();
 	var rightPane = start.lastChild;
 
@@ -30,8 +32,9 @@ export const extensionMenu = function (connectMenu) {
 		active.link.remove();
 		active = this;
 		this.classList.add("active");
-		if (this.link) rightPane.appendChild(this.link);
-		else {
+		if (this.link) {
+			rightPane.appendChild(this.link);
+		} else {
 			this._initLink();
 			rightPane.appendChild(this.link);
 		}
@@ -49,23 +52,35 @@ export const extensionMenu = function (connectMenu) {
 	var updateNodes = function () {
 		for (var i = 0; i < start.firstChild.childNodes.length; i++) {
 			var node = start.firstChild.childNodes[i];
-			if (node.mode == "get") continue;
-			if (node.mode == "create") continue;
+			if (node.mode == "get") {
+				continue;
+			}
+			if (node.mode == "create") {
+				continue;
+			}
 			if (node.mode && node.mode.startsWith("extension_")) {
 				if (lib.config[node.mode + "_enable"]) {
 					node.classList.remove("off");
-					if (node.link) node.link.firstChild.classList.add("on");
+					if (node.link) {
+						node.link.firstChild.classList.add("on");
+					}
 				} else {
 					node.classList.add("off");
-					if (node.link) node.link.firstChild.classList.remove("on");
+					if (node.link) {
+						node.link.firstChild.classList.remove("on");
+					}
 				}
 			} else {
 				if (lib.config.plays.includes(node.mode)) {
 					node.classList.remove("off");
-					if (node.link) node.link.firstChild.classList.add("on");
+					if (node.link) {
+						node.link.firstChild.classList.add("on");
+					}
 				} else {
 					node.classList.add("off");
-					if (node.link) node.link.firstChild.classList.remove("on");
+					if (node.link) {
+						node.link.firstChild.classList.remove("on");
+					}
 				}
 			}
 		}
@@ -109,7 +124,9 @@ export const extensionMenu = function (connectMenu) {
 		// node._initLink=function(){
 		node.link = page;
 		for (var i in lib.extensionMenu[mode]) {
-			if (i == "game") continue;
+			if (i == "game") {
+				continue;
+			}
 			var cfg = get.copy(lib.extensionMenu[mode][i]);
 			var j;
 			if (mode.startsWith("extension_")) {
@@ -149,13 +166,21 @@ export const extensionMenu = function (connectMenu) {
 		});
 	}
 	for (let i of extensionsInMenu) {
-		if (lib.config.all.stockextension.includes(i) && !lib.config.all.plays.includes(i)) continue;
-		if (lib.config.hiddenPlayPack.includes(i)) continue;
+		if (lib.config.all.stockextension.includes(i) && !lib.config.all.plays.includes(i)) {
+			continue;
+		}
+		if (lib.config.hiddenPlayPack.includes(i)) {
+			continue;
+		}
 		createModeConfig(i, start.firstChild);
 	}
 	(function () {
-		if (!lib.device && !lib.db) return;
-		if (lib.config.show_extensionmaker == false) return;
+		if (!lib.device && !lib.db) {
+			return;
+		}
+		if (lib.config.show_extensionmaker == false) {
+			return;
+		}
 		var page = ui.create.div("#create-extension");
 		var node = ui.create.div(".menubutton.large", "制作扩展", start.firstChild, clickMode);
 		node.mode = "create";
@@ -349,18 +374,22 @@ export const extensionMenu = function (connectMenu) {
 							//替换die audio，加上扩展名
 							//TODO: 创建扩展这部分更是重量级
 							character: (pack => {
-								var character = pack.character;
-								for (var key in character) {
-									var info = character[key];
-									if (Array.isArray(info[4])) {
-										var tag = info[4].find(tag => /^die:.+$/.test(tag));
+								const { character } = pack;
+								for (const [key, info] of Object.entries(character)) {
+									if (Array.isArray(info)) {
+										const tag = info[4]?.find(tag => /^die:.+$/.test(tag));
 										if (tag) {
 											info[4].remove(tag);
-											if (typeof game.readFile == "function") {
-												info[4].push("die:ext:" + page.currentExtension + "/audio/die/" + tag.slice(tag.lastIndexOf("/") + 1));
-											} else {
-												info[4].push("die:db:extension-" + page.currentExtension + ":audio/die/" + tag.slice(tag.lastIndexOf("/") + 1));
-											}
+											const audio = `die:${typeof game.readFile == "function" ? "ext:" : "db:extension-"}${page.currentExtension}/audio/die/${tag.slice(tag.lastIndexOf("/") + 1)}`;
+											info[4].push(audio);
+										}
+									} else if (Array.isArray(info.dieAudios)) {
+										const { dieAudios } = info;
+										const tag = dieAudios.find(tag => /^ext:.+$/.test(tag));
+										if (tag) {
+											dieAudios.remove(tag);
+											const audio = `${typeof game.readFile == "function" ? "ext:" : "db:extension-"}${page.currentExtension}/audio/die/${tag.slice(tag.lastIndexOf("/") + 1)}`;
+											dieAudios.push(audio);
 										}
 									}
 								}
@@ -659,15 +688,16 @@ export const extensionMenu = function (connectMenu) {
 						newCharacter.querySelector(".new_name").value = this.link;
 					}
 					var info = page.content.pack.character[this.link];
-					newCharacter.querySelector(".new_hp").value = info[2];
-					sexes.value = info[0];
-					groups.value = info[1];
-					if (info[4]) {
+					newCharacter.querySelector(".new_hp").value = get.character(this.link, 2);
+					sexes.value = get.character(this.link, 0);
+					groups.value = get.character(this.link, 1);
+					if (Array.isArray(info[4])) {
 						for (var i = 0; i < options.childNodes.length - 1; i++) {
-							if (options.childNodes[i].lastChild && info[4].includes(options.childNodes[i].lastChild.name)) {
-								options.childNodes[i].lastChild.checked = true;
-							} else if (options.childNodes[i].lastChild) {
-								options.childNodes[i].lastChild.checked = false;
+							const option = options.childNodes[i].lastChild;
+							if (info[4].includes(option?.name)) {
+								option.checked = true;
+							} else if (option) {
+								option.checked = false;
 							}
 						}
 						for (var i = 0; i < info[4].length; i++) {
@@ -707,9 +737,61 @@ export const extensionMenu = function (connectMenu) {
 								});
 							}
 						}
+					} else {
+						const optionMap = new Map([
+							["zhu", "isZhugong"],
+							["boss", "isBoss"],
+							["forbidai", "isAiForbidden"],
+							["hiddenSkill", "hasHiddenSkill"],
+						]);
+						for (var i = 0; i < options.childNodes.length - 1; i++) {
+							const option = options.childNodes[i].lastChild;
+							if (optionMap.has(option?.name) && info[optionMap.get(option.name)]) {
+								option.checked = true;
+							} else if (option) {
+								option.checked = false;
+							}
+						}
+						const description = info.trashBin?.find(item => item.startsWith("des:"));
+						if (description) {
+							newCharacter.querySelector(".new_des").value = description.slice(4);
+						}
+						const dieAudios = info.dieAudios || [];
+						for (var i = 0; i < dieAudios.length; i++) {
+							var dieaudionode = newCharacter.querySelector(".die_audio");
+							dieaudionode.file = {
+								name: dieAudios[i].slice(dieAudios[i].lastIndexOf("/") + 1),
+							};
+							await new Promise(resolve => {
+								if (typeof game.readFile == "function") {
+									game.readFile(
+										dieAudios[i].replace("ext:", "extension/"),
+										arraybuffer => {
+											dieaudionode.arrayBuffer = arraybuffer;
+											resolve();
+										},
+										() => {
+											console.warn(`未找到${dieAudios[i].replace("ext:", "extension/")}阵亡配音`);
+											resolve();
+										}
+									);
+								} else {
+									game.getDB("image", dieAudios[i].slice(3)).then(
+										octetStream => {
+											dieaudionode.arrayBuffer = octetStream;
+											resolve();
+										},
+										() => {
+											console.warn(`未找到${dieAudios[i]}阵亡配音`);
+											resolve();
+										}
+									);
+								}
+							});
+						}
 					}
 
-					var skills = info[3];
+					var skills = get.character(this.link, 3);
 					for (var i = 0; i < skills.length; i++) {
 						var node = document.createElement("button");
 						node.skill = skills[i];
@@ -728,7 +810,7 @@ export const extensionMenu = function (connectMenu) {
 					var button = ui.create.div(".button.character");
 					button.link = name;
 					button.image = image;
-					button.style.backgroundImage = "url(" + image + ")";
+					button.setBackground(name, "character");
 					button.style.backgroundSize = "cover";
 					button.listen(clickButton);
 					button.classList.add("noclick");
@@ -792,11 +874,12 @@ export const extensionMenu = function (connectMenu) {
 								} else {
 									loadImage(file, url);
 								}
-							} else
+							} else {
 								game.getDB("image", `extension-${name}:${file}`).then(value => {
 									createButton(i, value);
 									loadImage(file, value);
 								});
+							}
 						}
 					} else {
 						page.content = {
@@ -932,7 +1015,9 @@ export const extensionMenu = function (connectMenu) {
 				var dieaudiopreview = ui.create.node("button", dieaudio, () => {
 					if (dieaudiotag.error) {
 						alert("您使用的客户端不支持预览此音频！");
-					} else dieaudiotag.play();
+					} else {
+						dieaudiotag.play();
+					}
 				});
 				dieaudiopreview.innerHTML = "播放";
 				dieaudiopreview.style.display = "none";
@@ -960,7 +1045,7 @@ export const extensionMenu = function (connectMenu) {
 					}
 				}
 				if (!list.length) {
-					if (!lib.character["noname_sunce"])
+					if (!lib.character["noname_sunce"]) {
 						lib.character["noname_sunce"] = new Character({
 							sex: "male",
 							group: "wu",
@@ -968,7 +1053,10 @@ export const extensionMenu = function (connectMenu) {
 							skills: ["jiang"],
 							isUnseen: true,
 						});
-					if (!lib.translate["noname_sunce"]) lib.translate["noname_sunce"] = "孙策";
+					}
+					if (!lib.translate["noname_sunce"]) {
+						lib.translate["noname_sunce"] = "孙策";
+					}
 					list.push(["noname_sunce", lib.translate["noname_sunce"]]);
 				}
 				list.sort(function (a, b) {
@@ -996,7 +1084,9 @@ export const extensionMenu = function (connectMenu) {
 					}
 				}
 				for (var i = 0; i < skills.length; i++) {
-					if (lib.skill[skills[i]] && !lib.skill[skills[i]].sub && lib.translate[skills[i]]) list2.push([skills[i], lib.translate[skills[i]]]);
+					if (lib.skill[skills[i]] && !lib.skill[skills[i]].sub && lib.translate[skills[i]]) {
+						list2.push([skills[i], lib.translate[skills[i]]]);
+					}
 				}
 				list.unshift(["current_extension", "此扩展"]);
 
@@ -1042,10 +1132,14 @@ export const extensionMenu = function (connectMenu) {
 				};
 				addSkillButton.onclick = function () {
 					for (var i = 0; i < skillList.firstChild.childNodes.length; i++) {
-						if (skillList.firstChild.childNodes[i].skill == skillopt.value) return alert(selectname.value == "current_extension" ? "此扩展还未添加技能" : "此武将没有技能可添加");
+						if (skillList.firstChild.childNodes[i].skill == skillopt.value) {
+							return alert(selectname.value == "current_extension" ? "此扩展还未添加技能" : "此武将没有技能可添加");
+						}
 					}
 					//无技能时
-					if (!skillopt.value || skillopt.childElementCount == 0) return;
+					if (!skillopt.value || skillopt.childElementCount == 0) {
+						return;
+					}
 					var node = document.createElement("button");
 					node.skill = skillopt.value;
 					node.onclick = deletenode;
@@ -1086,13 +1180,13 @@ export const extensionMenu = function (connectMenu) {
 				var skillList = ui.create.div(".skill_list", newCharacter);
 				ui.create.div(skillList);
 				var editnode = ui.create.div(".menubutton.large.disabled", "创建武将", ui.create.div(skillList), function () {
-					var name = page.querySelector("input.new_name").value;
+					let name = page.querySelector("input.new_name").value;
 					if (!name) {
 						alert("请填写武将名\n提示：武将名格式为id+|+中文名，其中id必须惟一");
 						return;
 					}
 					name = name.split("|");
-					var translate = name[1] || name[0];
+					let translate = name[1] || name[0];
 					name = name[0];
 					if (currentButton) {
 						if (currentButton.link != name) {
@@ -1120,36 +1214,93 @@ export const extensionMenu = function (connectMenu) {
 							return;
 						}
 					}
-					var hp = page.querySelector("input.new_hp").value;
+					let hp = page.querySelector("input.new_hp").value;
 					//体力支持‘Infinity,∞,无限’表示无限
-					if (["Infinity", "∞", "无限"].includes(hp)) hp = Infinity;
-					else if (hp.indexOf("/") == -1) hp = parseInt(hp) || 1;
-					var skills = [];
-					for (var i = 0; i < skillList.firstChild.childNodes.length; i++) {
-						skills.add(skillList.firstChild.childNodes[i].skill);
+					if (["Infinity", "∞", "无限"].includes(hp)) {
+						hp = Infinity;
+					} else if (hp.indexOf("/") == -1) {
+						hp = parseInt(hp) || 1;
 					}
-					var tags = [];
-					for (var i = 0; i < options.childNodes.length - 1; i++) {
-						if (options.childNodes[i].lastChild && options.childNodes[i].lastChild.checked) {
-							tags.push(options.childNodes[i].lastChild.name);
+					const skills = Array.from(skillList.firstChild.childNodes).map(item => item.skill);
+					const oldCharacter = page.content.pack.character[name] || {};
+					const bool = !Array.isArray(oldCharacter);
+					const newCharacter = {
+						sex: sexes.value,
+						group: groups.value,
+						hp: get.infoHp(hp),
+						maxHp: get.infoMaxHp(hp),
+						hujia: get.infoHujia(hp),
+						skills,
+					};
+					const tags = Array.from(options.childNodes)
+						.slice(0, -1)
+						.reduce((list, node) => {
+							const child = node.lastChild;
+							if (child?.checked) {
+								list.push(child.name);
+							}
+							return list;
+						}, []);
+					const des = page.querySelector("input.new_des").value;
+					if (des) {
+						tags.add(`des:${des}`);
+						if (bool) {
+							oldCharacter.trashBin ??= [];
+							oldCharacter.trashBin = oldCharacter.trashBin.filter(tag => !tag.startsWith("des:"));
+							oldCharacter.trashBin.add(`des:${des}`);
 						}
+					} else if (bool && Array.isArray(oldCharacter.trashBin)) {
+						oldCharacter.trashBin = oldCharacter.trashBin.filter(tag => !tag.startsWith("des:"));
+						if (!oldCharacter.trashBin.length) {
+							delete oldCharacter.trashBin;
+						}
+					}
+					if (tags.includes("zhu")) {
+						newCharacter.isZhugong = true;
+					} else if (bool && "isZhugong" in oldCharacter) {
+						delete oldCharacter.isZhugong;
 					}
 					if (tags.includes("boss")) {
 						tags.add("bossallowed");
+						newCharacter.isBoss = true;
+						newCharacter.isBossAllowed = true;
+					} else if (bool) {
+						if ("isBoss" in oldCharacter) {
+							delete oldCharacter.isBoss;
+						}
+						if ("isBossAllowed" in oldCharacter) {
+							delete oldCharacter.isBossAllowed;
+						}
 					}
-					var des = page.querySelector("input.new_des").value;
-					if (des) {
-						tags.add("des:" + des);
+					if (tags.includes("forbidai")) {
+						newCharacter.isAiForbidden = true;
+					} else if (bool && "isAiForbidden" in oldCharacter) {
+						delete oldCharacter.isAiForbidden;
+					}
+					if (tags.includes("hiddenSkill")) {
+						newCharacter.hasHiddenSkill = true;
+					} else if (bool && "hasHiddenSkill" in oldCharacter) {
+						delete oldCharacter.hasHiddenSkill;
 					}
 					//阵亡配音
 					if (dieaudio.file && dieaudio.arrayBuffer) {
 						var audioname = name + dieaudio.file.name.slice(dieaudio.file.name.indexOf("."));
-						tags.add(`die:${typeof game.readFile == "function" ? "ext" : "db"}:audio/die/${audioname}`);
+						const dieAudio = `${typeof game.readFile == "function" ? "ext" : "db"}:audio/die/${audioname}`;
+						tags.add(`die:${dieAudio}`);
+						newCharacter.dieAudios = [];
+						newCharacter.dieAudios.add(dieAudio);
 						page.content.audio[audioname] = dieaudio.arrayBuffer;
+					} else if (bool && Array.isArray(oldCharacter.dieAudios)) {
+						delete oldCharacter.dieAudios;
 					}
-
 					page.content.pack.translate[name] = translate;
-					page.content.pack.character[name] = [sexes.value, groups.value, hp, skills, tags];
+					if (!page.content.pack.character[name]) {
+						page.content.pack.character[name] = newCharacter;
+					} else if (Array.isArray(page.content.pack.character[name])) {
+						page.content.pack.character[name] = [sexes.value, groups.value, hp, skills, tags];
+					} else {
+						Object.assign(page.content.pack.character[name], newCharacter);
+					}
 					if (this.innerHTML == "创建武将") {
 						createButton(name, fakeme.image64);
 					} else if (currentButton) {
@@ -1347,11 +1498,12 @@ export const extensionMenu = function (connectMenu) {
 								} else {
 									loadImage(file, url);
 								}
-							} else
+							} else {
 								game.getDB("image", `extension-${name}:${file}`).then(value => {
 									createButton(i, value, fullskin);
 									loadImage(file, value);
 								});
+							}
 						}
 					} else {
 						page.content = {
@@ -1903,11 +2055,17 @@ export const extensionMenu = function (connectMenu) {
 							for (const key in obj) {
 								const descriptor = Object.getOwnPropertyDescriptor(obj, key);
 								if (descriptor?.get || descriptor?.set) {
-									if (descriptor.get) str += indent + get.stringify(descriptor.get, 1) + ",\n";
-									if (descriptor.set) str += indent + get.stringify(descriptor.set, 1) + ",\n";
+									if (descriptor.get) {
+										str += indent + get.stringify(descriptor.get, 1) + ",\n";
+									}
+									if (descriptor.set) {
+										str += indent + get.stringify(descriptor.set, 1) + ",\n";
+									}
 								} else {
 									let keyString = (/[^a-zA-Z]/.test(key) ? `"${key}"` : key) + ": ";
-									if (get.is.functionMethod(obj, key)) keyString = "";
+									if (get.is.functionMethod(obj, key)) {
+										keyString = "";
+									}
 									str += indent + keyString + get.stringify(obj[key], 1) + ",\n";
 								}
 							}
@@ -2058,7 +2216,7 @@ export const extensionMenu = function (connectMenu) {
 					}
 				}
 				if (!list.length) {
-					if (!lib.character["noname_sunce"])
+					if (!lib.character["noname_sunce"]) {
 						lib.character["noname_sunce"] = new Character({
 							sex: "male",
 							group: "wu",
@@ -2066,7 +2224,10 @@ export const extensionMenu = function (connectMenu) {
 							skills: ["jiang"],
 							isUnseen: true,
 						});
-					if (!lib.translate["noname_sunce"]) lib.translate["noname_sunce"] = "孙策";
+					}
+					if (!lib.translate["noname_sunce"]) {
+						lib.translate["noname_sunce"] = "孙策";
+					}
 					list.push(["noname_sunce", lib.translate["noname_sunce"]]);
 				}
 				list.sort(function (a, b) {
@@ -2152,11 +2313,17 @@ export const extensionMenu = function (connectMenu) {
 							for (const key in obj) {
 								const descriptor = Object.getOwnPropertyDescriptor(obj, key);
 								if (descriptor?.get || descriptor?.set) {
-									if (descriptor.get) str += indent + get.stringify(descriptor.get, 1) + ",\n";
-									if (descriptor.set) str += indent + get.stringify(descriptor.set, 1) + ",\n";
+									if (descriptor.get) {
+										str += indent + get.stringify(descriptor.get, 1) + ",\n";
+									}
+									if (descriptor.set) {
+										str += indent + get.stringify(descriptor.set, 1) + ",\n";
+									}
 								} else {
 									let keyString = (/[^a-zA-Z]/.test(key) ? `"${key}"` : key) + ": ";
-									if (get.is.functionMethod(obj, key)) keyString = "";
+									if (get.is.functionMethod(obj, key)) {
+										keyString = "";
+									}
 									str += indent + keyString + get.stringify(obj[key], 1) + ",\n";
 								}
 							}
@@ -2422,7 +2589,9 @@ export const extensionMenu = function (connectMenu) {
 			createDash("技", "编辑技能", dash3);
 			createDash("码", "编辑代码", dash4);
 		};
-		if (!get.config("menu_loadondemand")) node._initLink();
+		if (!get.config("menu_loadondemand")) {
+			node._initLink();
+		}
 	})();
 	(function () {
 		var page = ui.create.div("");
@@ -2470,8 +2639,11 @@ export const extensionMenu = function (connectMenu) {
 			var extensionURL;
 			var source = lib.config.extension_sources,
 				index = lib.config.extension_source;
-			if (source && source[index]) extensionURL = source[index];
-			else extensionURL = lib.updateURL.replace(/noname/g, "noname-extension") + "/master/";
+			if (source && source[index]) {
+				extensionURL = source[index];
+			} else {
+				extensionURL = lib.updateURL.replace(/noname/g, "noname-extension") + "/master/";
+			}
 
 			var reloadnode = ui.create.div(".config.toggle.pointerdiv", "重新启动", page, game.reload);
 			reloadnode.style.display = "none";
@@ -2481,7 +2653,9 @@ export const extensionMenu = function (connectMenu) {
 
 			importExtension.firstChild.lastChild.onclick = function () {
 				const fileToLoad = this.previousSibling.files[0];
-				if (!fileToLoad) return;
+				if (!fileToLoad) {
+					return;
+				}
 				new Promise((resolve, reject) => {
 					const fileReader = new FileReader();
 					fileReader.onerror = reject;
@@ -2502,8 +2676,9 @@ export const extensionMenu = function (connectMenu) {
 								})
 								.then(game.reload);
 						})) !== false
-					)
+					) {
 						importExtension.style.display = "none";
+					}
 				});
 			};
 
@@ -2519,7 +2694,9 @@ export const extensionMenu = function (connectMenu) {
 				}, 200);
 			};
 			var downloadExtension = function (e) {
-				if ((this.innerHTML != "下载扩展" && this.innerHTML != "更新扩展") || !window.JSZip) return;
+				if ((this.innerHTML != "下载扩展" && this.innerHTML != "更新扩展") || !window.JSZip) {
+					return;
+				}
 				this.classList.remove("update");
 				if (e) {
 					e.stopPropagation();
@@ -2579,7 +2756,9 @@ export const extensionMenu = function (connectMenu) {
 								lib.assetURL + "extension/" + that.info.name,
 								"extension",
 								function () {
-									if (!lib.config.dev) delete window.game;
+									if (!lib.config.dev) {
+										delete window.game;
+									}
 									if (game.importedPack) {
 										var extname = game.importedPack.name;
 										if (lib.config.extensions.includes(extname)) {
@@ -2621,7 +2800,9 @@ export const extensionMenu = function (connectMenu) {
 			};
 
 			node.update = function () {
-				if (this.updated) return;
+				if (this.updated) {
+					return;
+				}
 				if (!window.JSZip) {
 					lib.init.js(lib.assetURL + "game", "jszip");
 				}
@@ -2739,16 +2920,22 @@ export const extensionMenu = function (connectMenu) {
 						loading.innerHTML = "连接失败:" + (reason instanceof Error ? reason.message : String(reason));
 					});
 			};
-			if (_thisUpdate) node.update();
+			if (_thisUpdate) {
+				node.update();
+			}
 		};
-		if (!get.config("menu_loadondemand")) node._initLink();
+		if (!get.config("menu_loadondemand")) {
+			node._initLink();
+		}
 	})();
 	var active = start.firstChild.querySelector(".active");
 	if (!active) {
 		active = start.firstChild.firstChild;
 		active.classList.add("active");
 	}
-	if (!active.link) active._initLink();
+	if (!active.link) {
+		active._initLink();
+	}
 	rightPane.appendChild(active.link);
 	updateNodes();
 };

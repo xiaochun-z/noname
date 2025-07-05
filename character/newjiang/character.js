@@ -1,4 +1,10 @@
 const characters = {
+	wufu: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["dczhonge", "dcjuekai"],
+	},
 	yj_sb_guojia: {
 		sex: "male",
 		group: "wei",
@@ -86,6 +92,7 @@ const characters = {
 		group: "wu",
 		hp: 4,
 		skills: ["lkbushi", "lkzhongzhuang"],
+		clans: ["吴郡陆氏"],
 	},
 	linghuyu: {
 		sex: "male",
@@ -186,24 +193,6 @@ const characters = {
 		skills: ["gongqiao", "jingyi"],
 		names: "马|钧",
 	},
-	cx_majun: {
-		sex: "male",
-		group: "wei",
-		hp: 3,
-		skills: ["chuanxie", "yjqiaosi"],
-		names: "马|钧",
-		dieAudios: ["yj_majun"],
-		img: "image/character/yj_majun.jpg",
-	},
-	qq_majun: {
-		sex: "male",
-		group: "wei",
-		hp: 3,
-		skills: ["yuliao", "qiqiao", "yanxie"],
-		names: "马|钧",
-		dieAudios: ["yj_majun"],
-		img: "image/character/yj_majun.jpg",
-	},
 	new_yj_dongzhuo: {
 		sex: "male",
 		group: "qun",
@@ -217,15 +206,6 @@ const characters = {
 		hp: 3,
 		skills: ["fjzhitu", "dcfujue"],
 		names: "裴|秀",
-	},
-	xj_peixiu: {
-		sex: "male",
-		group: "qun",
-		hp: 3,
-		skills: ["xjzhitu", "dcxiujue"],
-		names: "裴|秀",
-		dieAudios: ["fj_peixiu"],
-		img: "image/character/fj_peixiu.jpg",
 	},
 };
 

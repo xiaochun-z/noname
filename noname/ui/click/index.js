@@ -74,7 +74,9 @@ export class Click {
 			uiintro.style.bottom = "75px";
 
 			uiintro.refresh = function () {
-				if (button.focused) return;
+				if (button.focused) {
+					return;
+				}
 				uiintro.content.innerHTML = "";
 				uiintro.addText("创建约战");
 				button.textnode = uiintro.content.lastChild.lastChild;
@@ -100,7 +102,9 @@ export class Click {
 				var date = new Date();
 				var days = [];
 				var currentDay = date.getDay();
-				if (currentDay == 0) currentDay = 7;
+				if (currentDay == 0) {
+					currentDay = 7;
+				}
 				for (var i = 1; i <= 7; i++) {
 					if (i < currentDay) {
 						days.push([i.toString(), "下周" + get.cnNumber(i, true)]);
@@ -233,7 +237,9 @@ export class Click {
 
 				var num = 0;
 				for (var i = 0; i < button.info.length; i++) {
-					if (typeof button.info[i].creator == "string" && button.info[i].creator != game.onlineKey && get.is.banWords(button.info[i].content)) continue;
+					if (typeof button.info[i].creator == "string" && button.info[i].creator != game.onlineKey && get.is.banWords(button.info[i].content)) {
+						continue;
+					}
 					if (button.info[i].creator == game.onlineKey) {
 						num++;
 					}
@@ -241,7 +247,9 @@ export class Click {
 						".menubutton.videotext.onlineevent.pointerdiv",
 						function () {
 							var that = this;
-							if (typeof that.info.creator != "string") return;
+							if (typeof that.info.creator != "string") {
+								return;
+							}
 							setTimeout(function () {
 								if (that.classList.contains("active")) {
 									if (confirm("确定要离开" + that.info.content + "？")) {
@@ -352,7 +360,9 @@ export class Click {
 			uiintro.style.bottom = "75px";
 
 			uiintro.refresh = function () {
-				if (button.focused) return;
+				if (button.focused) {
+					return;
+				}
 				uiintro.content.innerHTML = "";
 				uiintro.addText("发状态");
 				button.textnode = uiintro.content.lastChild.lastChild;
@@ -433,7 +443,9 @@ export class Click {
 		}
 	}
 	autoskin() {
-		if (!lib.config.change_skin) return;
+		if (!lib.config.change_skin) {
+			return;
+		}
 		var players = game.filterPlayer();
 		var change = function (player, num, callback) {
 			if (num == "1") {
@@ -698,12 +710,22 @@ export class Click {
 		}
 	}
 	identity(e) {
-		if (_status.dragged) return;
+		if (_status.dragged) {
+			return;
+		}
 		_status.clicked = true;
-		if (!game.getIdentityList) return;
-		if (_status.video) return;
-		if (this.parentNode.forceShown) return;
-		if (!_status.connectMode && this.parentNode.ai.stratagem_camouflage && get.config("nei_auto_mark_camouflage") && game.me.identity == "nei") return;
+		if (!game.getIdentityList) {
+			return;
+		}
+		if (_status.video) {
+			return;
+		}
+		if (this.parentNode.forceShown) {
+			return;
+		}
+		if (!_status.connectMode && this.parentNode.ai.stratagem_camouflage && get.config("nei_auto_mark_camouflage") && game.me.identity == "nei") {
+			return;
+		}
 		if (_status.clickingidentity) {
 			for (var i = 0; i < _status.clickingidentity[1].length; i++) {
 				_status.clickingidentity[1][i].delete();
@@ -715,7 +737,9 @@ export class Click {
 			}
 		}
 		var list = game.getIdentityList(this.parentNode);
-		if (!list) return;
+		if (!list) {
+			return;
+		}
 		if (lib.config.mark_identity_style == "click") {
 			var list2 = [];
 			for (var i in list) {
@@ -732,7 +756,9 @@ export class Click {
 		} else {
 			if (get.mode() == "guozhan") {
 				list = { wei: "魏", shu: "蜀", wu: "吴", qun: "群", jin: "晋" };
-				if (_status.forceKey) list.key = "键";
+				if (_status.forceKey) {
+					list.key = "键";
+				}
 			}
 			var list2 = get.copy(list);
 			if (game.getIdentityList2) {
@@ -859,16 +885,24 @@ export class Click {
 		_status.clicked = true;
 	}
 	pausehistory() {
-		if (!lib.config.auto_popped_history) return;
-		if (!ui.sidebar.childNodes.length) return;
+		if (!lib.config.auto_popped_history) {
+			return;
+		}
+		if (!ui.sidebar.childNodes.length) {
+			return;
+		}
 		var uiintro = ui.create.dialog("hidden");
 		uiintro.style.maxHeight = "400px";
 		uiintro.add(ui.sidebar);
 		return uiintro;
 	}
 	pauseconfig() {
-		if (!lib.config.auto_popped_config) return;
-		if (get.is.phoneLayout()) return;
+		if (!lib.config.auto_popped_config) {
+			return;
+		}
+		if (get.is.phoneLayout()) {
+			return;
+		}
 		var uiintro = ui.create.dialog("hidden");
 		uiintro.listen(function (e) {
 			e.stopPropagation();
@@ -913,7 +947,9 @@ export class Click {
 		}
 		uiintro.add('剩余 <span style="font-family:' + "xinwei" + '">' + num);
 
-		if (_status.connectMode) return uiintro;
+		if (_status.connectMode) {
+			return uiintro;
+		}
 		uiintro.add('<div class="text center">轮数 <span style="font-family:xinwei">' + game.roundNumber + '</span>&nbsp;&nbsp;&nbsp;&nbsp;洗牌 <span style="font-family:xinwei">' + game.shuffleNumber + "</div>");
 		uiintro.add('<div class="text center">弃牌堆</div>');
 		if (ui.discardPile.childNodes.length) {
@@ -972,7 +1008,9 @@ export class Click {
 		uiintro.style.height = uiintro.content.offsetHeight + "px";
 		list.scrollTop = list.scrollHeight;
 
-		if (!_status.chatValue) _status.chatValue = "";
+		if (!_status.chatValue) {
+			_status.chatValue = "";
+		}
 		var node = uiintro.add('<input type="text" value="' + _status.chatValue + '">');
 		node.style.paddingTop = 0;
 		node.style.marginBottom = "16px";
@@ -999,7 +1037,9 @@ export class Click {
 						}
 					}
 				}
-				if (!player) return;
+				if (!player) {
+					return;
+				}
 				if (get.is.banWords(input.value)) {
 					player.say(input.value);
 					input.value = "";
@@ -1077,7 +1117,9 @@ export class Click {
 								}
 							}
 						}
-						if (!player) return;
+						if (!player) {
+							return;
+						}
 						if (game.online) {
 							game.send("emotion", game.onlineID, this.pack, this.emotionID);
 						} else {
@@ -1126,7 +1168,9 @@ export class Click {
 						}
 					}
 				}
-				if (!player) return;
+				if (!player) {
+					return;
+				}
 				if (game.online) {
 					game.send("chat", game.onlineID, str);
 				} else {
@@ -1177,7 +1221,9 @@ export class Click {
 		return uiintro;
 	}
 	volumn_background(e) {
-		if (_status.dragged) return;
+		if (_status.dragged) {
+			return;
+		}
 		var volume = this.link;
 		if (volume === 1 && lib.config.volumn_background === 1) {
 			volume = 0;
@@ -1194,7 +1240,9 @@ export class Click {
 		e.stopPropagation();
 	}
 	volumn_audio(e) {
-		if (_status.dragged) return;
+		if (_status.dragged) {
+			return;
+		}
 		var volume = this.link;
 		if (volume === 1 && lib.config.volumn_audio === 1) {
 			volume = 0;
@@ -1218,7 +1266,9 @@ export class Click {
 		}
 		ui.click.touchpop(this.forceclick);
 		var uiintro = this._poppedfunc();
-		if (!uiintro) return;
+		if (!uiintro) {
+			return;
+		}
 		if (ui.currentpopped && ui.currentpopped._uiintro) {
 			ui.currentpopped._uiintro.delete();
 			delete ui.currentpopped._uiintro;
@@ -1288,8 +1338,12 @@ export class Click {
 		this._poppedalready = false;
 	}
 	leavehoverpopped() {
-		if (_status.dragged) return;
-		if (this.classList.contains("noleave")) return;
+		if (_status.dragged) {
+			return;
+		}
+		if (this.classList.contains("noleave")) {
+			return;
+		}
 		this.delete();
 		var button = this._poppedorigin;
 
@@ -1348,7 +1402,9 @@ export class Click {
 		}
 	}
 	dieswap2() {
-		if (_status.dragged) return;
+		if (_status.dragged) {
+			return;
+		}
 		game.swapPlayer(this.link);
 	}
 	touchconfirm() {
@@ -1356,7 +1412,9 @@ export class Click {
 		document.removeEventListener("touchstart", ui.click.touchconfirm);
 	}
 	windowtouchstart(e) {
-		if (window.inSplash) return;
+		if (window.inSplash) {
+			return;
+		}
 		if (e.touches[0] && lib.config.swipe && e.touches.length < 2) {
 			_status._swipeorigin = {
 				clientX: e.touches[0].clientX,
@@ -1370,7 +1428,9 @@ export class Click {
 	}
 	windowtouchmove(e) {
 		e.preventDefault();
-		if (window.inSplash) return;
+		if (window.inSplash) {
+			return;
+		}
 		if (_status.draggingroundmenu) {
 			delete _status._swipeorigin;
 			if (ui.roundmenu._dragorigin && ui.roundmenu._dragtransform && e.touches.length) {
@@ -1574,7 +1634,9 @@ export class Click {
 		// 	clearInterval(_status.forcetouchinterval);
 		// 	delete _status.forcetouchinterval;
 		// }
-		if (window.inSplash) return;
+		if (window.inSplash) {
+			return;
+		}
 		if (e.touches.length == 1 && !_status.dragged && !_status.draggingtouchdialog) {
 			ui.click.pause();
 		}
@@ -1687,7 +1749,9 @@ export class Click {
 					ui.confirm.close();
 				}
 				var event = _status.event;
-				if (!event.filterOk || event.filterOk()) ui.click.ok();
+				if (!event.filterOk || event.filterOk()) {
+					ui.click.ok();
+				}
 				ui.canvas.width = ui.arena.offsetWidth;
 				ui.canvas.height = ui.arena.offsetHeight;
 			} else {
@@ -1737,13 +1801,17 @@ export class Click {
 		_status.tempunpopup = e;
 	}
 	windowmousemove(e) {
-		if (window.inSplash) return;
+		if (window.inSplash) {
+			return;
+		}
 		if (_status.tempunpopup) {
 			if (get.evtDistance(_status.tempunpopup, e) > 5) {
 				delete _status.tempunpopup;
 			}
 		}
-		if (e.button == 2) return;
+		if (e.button == 2) {
+			return;
+		}
 		var dialogs = document.querySelectorAll("#window>.dialog.popped:not(.static)");
 		for (var i = 0; i < dialogs.length; i++) {
 			dialogs[i].delete();
@@ -1963,9 +2031,15 @@ export class Click {
 		}
 	}
 	windowmousedown(e) {
-		if (window.inSplash) return;
-		if (!ui.window) return;
-		if (e.button == 2) return;
+		if (window.inSplash) {
+			return;
+		}
+		if (!ui.window) {
+			return;
+		}
+		if (e.button == 2) {
+			return;
+		}
 		_status.mousedown = true;
 		var dialogs = ui.window.querySelectorAll("#window>.dialog.popped:not(.static)");
 		for (var i = 0; i < dialogs.length; i++) {
@@ -1975,7 +2049,9 @@ export class Click {
 		var item = sourceitem;
 		while (item) {
 			var itemtype = get.itemtype(item);
-			if (itemtype == "button") break;
+			if (itemtype == "button") {
+				break;
+			}
 			if (itemtype == "dialog" && !item.classList.contains("popped") && !item.classList.contains("fixed")) {
 				var ddialog = item;
 				_status.draggingdialog = ddialog;
@@ -1997,9 +2073,15 @@ export class Click {
 		}
 
 		var evt = _status.event;
-		if (!lib.config.enable_drag) return;
-		if (!ui.arena.classList.contains("selecting")) return;
-		if (!evt.isMine()) return;
+		if (!lib.config.enable_drag) {
+			return;
+		}
+		if (!ui.arena.classList.contains("selecting")) {
+			return;
+		}
+		if (!evt.isMine()) {
+			return;
+		}
 
 		item = sourceitem;
 		while (item) {
@@ -2024,12 +2106,24 @@ export class Click {
 		}
 	}
 	cardtouchstart(e) {
-		if (e.touches.length != 1) return;
-		if (!lib.config.enable_drag) return;
-		if (!this.parentNode) return;
-		if (!this.parentNode.parentNode) return;
-		if (this.parentNode.parentNode.parentNode != ui.me) return;
-		if (this.parentNode.parentNode.classList.contains("scrollh")) return;
+		if (e.touches.length != 1) {
+			return;
+		}
+		if (!lib.config.enable_drag) {
+			return;
+		}
+		if (!this.parentNode) {
+			return;
+		}
+		if (!this.parentNode.parentNode) {
+			return;
+		}
+		if (this.parentNode.parentNode.parentNode != ui.me) {
+			return;
+		}
+		if (this.parentNode.parentNode.classList.contains("scrollh")) {
+			return;
+		}
 		if (this.classList.contains("selectable") && !this.classList.contains("selected") && !this.classList.contains("noclick")) {
 			this._waitingfordrag = {
 				clientX: e.touches[0].clientX,
@@ -2061,7 +2155,9 @@ export class Click {
 		// 	clearInterval(_status.forcetouchinterval);
 		// 	delete _status.forcetouchinterval;
 		// }
-		if (window.inSplash) return;
+		if (window.inSplash) {
+			return;
+		}
 		if (_status.draggingdialog) {
 			var ddialog = _status.draggingdialog;
 			var translate;
@@ -2114,7 +2210,9 @@ export class Click {
 						ui.confirm.close();
 					}
 					var event = _status.event;
-					if (!event.filterOk || event.filterOk()) ui.click.ok();
+					if (!event.filterOk || event.filterOk()) {
+						ui.click.ok();
+					}
 				} else {
 					game.uncheck();
 					game.check();
@@ -2177,11 +2275,15 @@ export class Click {
 	}
 	hoverplayer(e) {
 		var node = get.nodeintro(this, true);
-		if (node) node.style.zIndex = 21;
+		if (node) {
+			node.style.zIndex = 21;
+		}
 		return node;
 	}
 	longpressdown(e) {
-		if (_status.longpressed) return;
+		if (_status.longpressed) {
+			return;
+		}
 		if (this._longpresstimeout) {
 			clearTimeout(this._longpresstimeout);
 		}
@@ -2198,17 +2300,23 @@ export class Click {
 		_status.longpressing = this;
 	}
 	longpresscallback() {
-		if (!_status.longpressing) return;
+		if (!_status.longpressing) {
+			return;
+		}
 		var node = _status.longpressing;
 		var func = node._longpresscallback;
 		var e = node._longpressevent;
-		if (!func || !e) return;
+		if (!func || !e) {
+			return;
+		}
 		clearTimeout(node._longpresstimeout);
 		_status.force = true;
 		delete _status.longpressing;
 		delete node._longpresstimeout;
 		delete node._longpressevent;
-		if (_status.mousedragging && _status.mouseleft) return;
+		if (_status.mousedragging && _status.mouseleft) {
+			return;
+		}
 		if (!_status.longpressed) {
 			_status.longpressed = true;
 			setTimeout(function () {
@@ -2244,9 +2352,15 @@ export class Click {
 			_status.dialogtouched = false;
 			dialogtouched = true;
 		}
-		if (_status.dragged) return;
-		if (_status.touchpopping) return;
-		if (_status.reloading) return;
+		if (_status.dragged) {
+			return;
+		}
+		if (_status.touchpopping) {
+			return;
+		}
+		if (_status.reloading) {
+			return;
+		}
 		if (_status.clicked || _status.clicked2) {
 			_status.clicked = false;
 			_status.clicked2 = false;
@@ -2258,7 +2372,9 @@ export class Click {
 				}
 				delete _status.clickingidentity;
 			}
-			if (!_status.event.isMine) return;
+			if (!_status.event.isMine) {
+				return;
+			}
 			if (ui.controls.length) {
 				ui.updatec();
 			}
@@ -2320,31 +2436,51 @@ export class Click {
 		}
 	}
 	toggle() {
-		if (_status.dragged) return;
-		if (this.parentNode.classList.contains("disabled")) return;
+		if (_status.dragged) {
+			return;
+		}
+		if (this.parentNode.classList.contains("disabled")) {
+			return;
+		}
 		_status.tempunpop = true;
 		if (this.link) {
 			this.link = false;
 			this.classList.remove("on");
-			if (this.additionalCommand) this.additionalCommand(false, this.parentNode);
+			if (this.additionalCommand) {
+				this.additionalCommand(false, this.parentNode);
+			}
 		} else {
 			this.link = true;
 			this.classList.add("on");
-			if (this.additionalCommand) this.additionalCommand(true, this.parentNode);
+			if (this.additionalCommand) {
+				this.additionalCommand(true, this.parentNode);
+			}
 		}
 	}
 	editor() {
-		if (_status.dragged) return;
-		if (_status.editing) return;
+		if (_status.dragged) {
+			return;
+		}
+		if (_status.editing) {
+			return;
+		}
 		_status.clicked = true;
 		this.innerHTML = "";
 		_status.editing = this;
-		if (this.additionalCommand) this.additionalCommand(this);
+		if (this.additionalCommand) {
+			this.additionalCommand(this);
+		}
 	}
 	switcher() {
-		if (_status.dragged) return;
-		if (this.parentNode.classList.contains("disabled")) return;
-		if (_status.choosing) return;
+		if (_status.dragged) {
+			return;
+		}
+		if (this.parentNode.classList.contains("disabled")) {
+			return;
+		}
+		if (_status.choosing) {
+			return;
+		}
 		_status.clicked = true;
 		_status.tempunpop = true;
 		this.previousSibling.hide();
@@ -2365,8 +2501,12 @@ export class Click {
 		}
 	}
 	choice() {
-		if (_status.dragged) return;
-		if (!_status.choosing) return;
+		if (_status.dragged) {
+			return;
+		}
+		if (!_status.choosing) {
+			return;
+		}
 		_status.choosing.link = this.link;
 		_status.choosing.innerHTML = get.translation(this.link);
 		this.parentNode.parentNode.style.height = "";
@@ -2378,20 +2518,36 @@ export class Click {
 		}
 	}
 	button() {
-		if (_status.dragged) return;
-		if (_status.clicked) return;
-		if (_status.tempNoButton) return;
-		if (_status.draggingtouchdialog) return;
-		if (this.classList.contains("noclick")) return;
-		if (_status.justdragged) return;
+		if (_status.dragged) {
+			return;
+		}
+		if (_status.clicked) {
+			return;
+		}
+		if (_status.tempNoButton) {
+			return;
+		}
+		if (_status.draggingtouchdialog) {
+			return;
+		}
+		if (this.classList.contains("noclick")) {
+			return;
+		}
+		if (_status.justdragged) {
+			return;
+		}
 		_status.clicked = true;
 		var custom = _status.event.custom;
 		if (custom && custom.replace.button) {
 			custom.replace.button(this);
 			return;
 		}
-		if (!_status.event.isMine()) return;
-		if (this.classList.contains("selectable") == false) return;
+		if (!_status.event.isMine()) {
+			return;
+		}
+		if (this.classList.contains("selectable") == false) {
+			return;
+		}
 		if (this.classList.contains("selected")) {
 			ui.selected.buttons.remove(this);
 			this.classList.remove("selected");
@@ -2419,9 +2575,15 @@ export class Click {
 	}
 	card() {
 		delete this._waitingfordrag;
-		if (_status.dragged) return;
-		if (_status.clicked) return;
-		if (ui.intro) return;
+		if (_status.dragged) {
+			return;
+		}
+		if (_status.clicked) {
+			return;
+		}
+		if (ui.intro) {
+			return;
+		}
 		_status.clicked = true;
 		if (this.parentNode && (this.parentNode.classList.contains("judges") || this.parentNode.classList.contains("marks"))) {
 			var rect = this.getBoundingClientRect();
@@ -2438,7 +2600,9 @@ export class Click {
 			custom.replace.card(this);
 			return;
 		}
-		if (this.classList.contains("selectable") == false) return;
+		if (this.classList.contains("selectable") == false) {
+			return;
+		}
 		if (this.classList.contains("selected")) {
 			ui.selected.cards.remove(this);
 			if (_status.multitarget || _status.event.complexSelect) {
@@ -2479,13 +2643,23 @@ export class Click {
 		}
 	}
 	avatar() {
-		if (!lib.config.doubleclick_intro) return;
-		if (this.parentNode.isUnseen(0)) return;
-		if (!lib.character[this.parentNode.name]) return;
-		if (!ui.menuContainer) return;
+		if (!lib.config.doubleclick_intro) {
+			return;
+		}
+		if (this.parentNode.isUnseen(0)) {
+			return;
+		}
+		if (!lib.character[this.parentNode.name]) {
+			return;
+		}
+		if (!ui.menuContainer) {
+			return;
+		}
 		var avatar = this;
 		var player = this.parentNode;
-		if (!game.players.includes(player) && !game.dead.includes(player)) return;
+		if (!game.players.includes(player) && !game.dead.includes(player)) {
+			return;
+		}
 		if (!this._doubleClicking) {
 			this._doubleClicking = true;
 			setTimeout(function () {
@@ -2499,13 +2673,23 @@ export class Click {
 		ui.click.charactercard(player.name1 || player.name, null, null, true, this, audioName);
 	}
 	avatar2() {
-		if (!lib.config.doubleclick_intro) return;
-		if (this.parentNode.classList.contains("unseen2")) return;
-		if (!lib.character[this.parentNode.name2]) return;
-		if (!ui.menuContainer) return;
+		if (!lib.config.doubleclick_intro) {
+			return;
+		}
+		if (this.parentNode.classList.contains("unseen2")) {
+			return;
+		}
+		if (!lib.character[this.parentNode.name2]) {
+			return;
+		}
+		if (!ui.menuContainer) {
+			return;
+		}
 		var avatar = this;
 		var player = this.parentNode;
-		if (!game.players.includes(player) && !game.dead.includes(player)) return;
+		if (!game.players.includes(player) && !game.dead.includes(player)) {
+			return;
+		}
 		if (!this._doubleClicking) {
 			this._doubleClicking = true;
 			setTimeout(function () {
@@ -2518,9 +2702,15 @@ export class Click {
 		ui.click.charactercard(player.name2, null, null, true, this, player.skin.name2 || player.name2);
 	}
 	connectroom(e) {
-		if (_status.dragged) return;
-		if (_status.clicked) return;
-		if (ui.intro) return;
+		if (_status.dragged) {
+			return;
+		}
+		if (_status.clicked) {
+			return;
+		}
+		if (ui.intro) {
+			return;
+		}
 		if (this.roomfull) {
 			alert("房间已满");
 		} else if (this.roomgaming && !game.onlineID) {
@@ -2547,16 +2737,28 @@ export class Click {
 		return ui.click.target.apply(this, arguments);
 	}
 	target(e) {
-		if (_status.dragged) return;
-		if (_status.clicked) return;
-		if (ui.intro) return;
+		if (_status.dragged) {
+			return;
+		}
+		if (_status.clicked) {
+			return;
+		}
+		if (ui.intro) {
+			return;
+		}
 		if (this.classList.contains("connect")) {
 			if (game.online) {
 				if (game.onlinezhu) {
 					if (!this.playerid && game.connectPlayers) {
-						if (lib.configOL.mode == "versus" || lib.configOL.mode == "doudizhu") return;
-						if (lib.configOL.mode == "identity" && lib.configOL.identity_mode == "zhong") return;
-						if (!this.classList.contains("unselectable2") && lib.configOL.number <= 2) return;
+						if (lib.configOL.mode == "versus" || lib.configOL.mode == "doudizhu") {
+							return;
+						}
+						if (lib.configOL.mode == "identity" && lib.configOL.identity_mode == "zhong") {
+							return;
+						}
+						if (!this.classList.contains("unselectable2") && lib.configOL.number <= 2) {
+							return;
+						}
 						this.classList.toggle("unselectable2");
 						if (this.classList.contains("unselectable2")) {
 							lib.configOL.number--;
@@ -2591,9 +2793,15 @@ export class Click {
 					}
 				}
 			} else {
-				if (lib.configOL.mode == "versus" || lib.configOL.mode == "doudizhu" || lib.configOL.mode == "single") return;
-				if (lib.configOL.mode == "identity" && (lib.configOL.identity_mode == "zhong" || lib.configOL.identity_mode == "purple")) return;
-				if (!this.classList.contains("unselectable2") && lib.configOL.number <= 2) return;
+				if (lib.configOL.mode == "versus" || lib.configOL.mode == "doudizhu" || lib.configOL.mode == "single") {
+					return;
+				}
+				if (lib.configOL.mode == "identity" && (lib.configOL.identity_mode == "zhong" || lib.configOL.identity_mode == "purple")) {
+					return;
+				}
+				if (!this.classList.contains("unselectable2") && lib.configOL.number <= 2) {
+					return;
+				}
 				this.classList.toggle("unselectable2");
 				if (this.classList.contains("unselectable2")) {
 					lib.configOL.number--;
@@ -2611,7 +2819,9 @@ export class Click {
 			custom.replace.target(this, e);
 			return;
 		}
-		if (this.classList.contains("selectable") == false) return;
+		if (this.classList.contains("selectable") == false) {
+			return;
+		}
 		this.unprompt();
 		if (this.classList.contains("selected")) {
 			ui.selected.targets.remove(this);
@@ -2670,8 +2880,12 @@ export class Click {
 		}
 	}
 	control() {
-		if (_status.dragged) return;
-		if (ui.control.classList.contains("hidden")) return;
+		if (_status.dragged) {
+			return;
+		}
+		if (ui.control.classList.contains("hidden")) {
+			return;
+		}
 		var node = this.parentNode;
 		if (node) {
 			if (node._doubleclick) {
@@ -2682,9 +2896,15 @@ export class Click {
 					node._doubleclick = false;
 				}, 500);
 			}
-			if (node.classList.contains("hidden")) return;
-			if (node.classList.contains("removing")) return;
-			if (node.classList.contains("disabled")) return;
+			if (node.classList.contains("hidden")) {
+				return;
+			}
+			if (node.classList.contains("removing")) {
+				return;
+			}
+			if (node.classList.contains("disabled")) {
+				return;
+			}
 		}
 		if (ui.intro) {
 			ui.intro.close();
@@ -2783,7 +3003,9 @@ export class Click {
 			bool: true,
 			links: get.links(ui.selected.buttons),
 		});
-		if (node) node.parentNode.close();
+		if (node) {
+			node.parentNode.close();
+		}
 		const skill = gameEvent.skill;
 		if (skill) {
 			result.skill = skill;
@@ -2795,28 +3017,48 @@ export class Click {
 				viewAs = skillInformation.viewAs;
 			if (typeof viewAs == "function") {
 				const viewedAs = viewAs(result.cards, gameEvent.player);
-				if (viewedAs) result.card = get.autoViewAs(viewedAs);
-			} else if (viewAs) result.card = get.autoViewAs(viewAs);
+				if (viewedAs) {
+					result.card = get.autoViewAs(viewedAs);
+				}
+			} else if (viewAs) {
+				result.card = get.autoViewAs(viewAs);
+			}
 			const resultCard = result.card;
 			if (resultCard) {
 				const cards = result.cards;
 				if (cards.length == 1) {
 					const firstCard = cards[0];
-					if (!resultCard.suit) resultCard.suit = get.suit(firstCard);
-					if (!resultCard.number) resultCard.number = get.number(firstCard);
+					if (!resultCard.suit) {
+						resultCard.suit = get.suit(firstCard);
+					}
+					if (!resultCard.number) {
+						resultCard.number = get.number(firstCard);
+					}
 				}
 			}
 			const skillDialog = gameEvent.skillDialog;
-			if (skillDialog && get.objtype(skillDialog) == "div") skillDialog.close();
+			if (skillDialog && get.objtype(skillDialog) == "div") {
+				skillDialog.close();
+			}
 			gameEvent.player.getCards("hej").forEach(card => card.recheck("useSkill"));
 			gameEvent.restore();
-		} else if (["chooseToUse", "chooseToRespond"].includes(gameEvent.name)) result.card = get.autoViewAs(result.cards[0]);
-		if (ui.skills) ui.skills.close();
-		if (ui.skills2) ui.skills2.close();
-		if (ui.skills3) ui.skills3.close();
+		} else if (["chooseToUse", "chooseToRespond"].includes(gameEvent.name)) {
+			result.card = get.autoViewAs(result.cards[0]);
+		}
+		if (ui.skills) {
+			ui.skills.close();
+		}
+		if (ui.skills2) {
+			ui.skills2.close();
+		}
+		if (ui.skills3) {
+			ui.skills3.close();
+		}
 		game.uncheck();
 		const addConfirm = custom.add.confirm;
-		if (addConfirm) addConfirm(true);
+		if (addConfirm) {
+			addConfirm(true);
+		}
 		game.resume();
 	}
 	cancel(node) {
@@ -2852,9 +3094,15 @@ export class Click {
 		if (node) {
 			node.parentNode.close();
 		}
-		if (ui.skills) ui.skills.close();
-		if (ui.skills2) ui.skills2.close();
-		if (ui.skills3) ui.skills3.close();
+		if (ui.skills) {
+			ui.skills.close();
+		}
+		if (ui.skills2) {
+			ui.skills2.close();
+		}
+		if (ui.skills3) {
+			ui.skills3.close();
+		}
 		game.uncheck();
 		if (event.custom.add.confirm) {
 			event.custom.add.confirm(true);
@@ -2863,7 +3111,9 @@ export class Click {
 	}
 	logv(e) {
 		if (_status.currentlogv) {
-			if (_status.currentlogv == this) return;
+			if (_status.currentlogv == this) {
+				return;
+			}
 			if (_status.logvtimeout) {
 				clearTimeout(_status.logvtimeout);
 			}
@@ -2895,8 +3145,12 @@ export class Click {
 		}
 	}
 	charactercard(name, sourcenode, noedit, resume, avatar, audioName) {
-		if (!audioName) audioName = name;
-		if (_status.dragged) return;
+		if (!audioName) {
+			audioName = name;
+		}
+		if (_status.dragged) {
+			return;
+		}
 		if (lib.config.theme != "simple") {
 			ui.window.classList.add("shortcutpaused");
 			ui.menuContainer.classList.add("forceopaque");
@@ -2911,8 +3165,12 @@ export class Click {
 		}
 		var layer = ui.create.div(".popup-container");
 		var clicklayer = function (e) {
-			if (_status.touchpopping) return;
-			if (_status.dragged) return;
+			if (_status.touchpopping) {
+				return;
+			}
+			if (_status.dragged) {
+				return;
+			}
 			ui.window.classList.remove("shortcutpaused");
 			ui.window.classList.remove("systempaused");
 			ui.menuContainer.classList.remove("forceopaque");
@@ -2922,7 +3180,9 @@ export class Click {
 			ui.menuContainer.classList.remove("blur");
 			this.delete();
 			e.stopPropagation();
-			if (resume) game.resume2();
+			if (resume) {
+				game.resume2();
+			}
 			return false;
 		};
 		var uiintro = ui.create.div(".menubg.charactercard", layer);
@@ -2939,7 +3199,9 @@ export class Click {
 				}
 			})
 			.setBackground(audioName || name, "character");
-		if (iSTemp) delete lib.character[audioName];
+		if (iSTemp) {
+			delete lib.character[audioName];
+		}
 		var changeskinfunc = null;
 		var nameskin = name;
 		var nameskin2 = name;
@@ -2960,7 +3222,9 @@ export class Click {
 				}
 				node._created = true;
 				var createButtons = function (num) {
-					if (!num) return;
+					if (!num) {
+						return;
+					}
 					if (num >= 4) {
 						avatars.classList.add("scroll");
 						if (lib.config.touchscreen) {
@@ -2973,19 +3237,31 @@ export class Click {
 							if (this._link) {
 								lib.config.skin[nameskin] = this._link;
 								bg.style.backgroundImage = this.style.backgroundImage;
-								if (sourcenode) sourcenode.style.backgroundImage = this.style.backgroundImage;
-								if (avatar) avatar.style.backgroundImage = this.style.backgroundImage;
+								if (sourcenode) {
+									sourcenode.style.backgroundImage = this.style.backgroundImage;
+								}
+								if (avatar) {
+									avatar.style.backgroundImage = this.style.backgroundImage;
+								}
 								game.saveConfig("skin", lib.config.skin);
 							} else {
 								delete lib.config.skin[nameskin];
 								if (gzbool && lib.character[nameskin2].hasSkinInGuozhan && lib.config.mode_config.guozhan.guozhanSkin) {
 									bg.setBackground(nameskin2, "character");
-									if (sourcenode) sourcenode.setBackground(nameskin2, "character");
-									if (avatar) avatar.setBackground(nameskin2, "character");
+									if (sourcenode) {
+										sourcenode.setBackground(nameskin2, "character");
+									}
+									if (avatar) {
+										avatar.setBackground(nameskin2, "character");
+									}
 								} else {
 									bg.setBackground(nameskin, "character");
-									if (sourcenode) sourcenode.setBackground(nameskin, "character");
-									if (avatar) avatar.setBackground(nameskin, "character");
+									if (sourcenode) {
+										sourcenode.setBackground(nameskin, "character");
+									}
+									if (avatar) {
+										avatar.setBackground(nameskin, "character");
+									}
 								}
 								game.saveConfig("skin", lib.config.skin);
 							}
@@ -2994,8 +3270,11 @@ export class Click {
 						if (i) {
 							button.setBackgroundImage("image/skin/" + nameskin + "/" + i + ".jpg");
 						} else {
-							if (gzbool && lib.character[nameskin2].hasSkinInGuozhan && lib.config.mode_config.guozhan.guozhanSkin) button.setBackground(nameskin2, "character", "noskin");
-							else button.setBackground(nameskin, "character", "noskin");
+							if (gzbool && lib.character[nameskin2].hasSkinInGuozhan && lib.config.mode_config.guozhan.guozhanSkin) {
+								button.setBackground(nameskin2, "character", "noskin");
+							} else {
+								button.setBackground(nameskin, "character", "noskin");
+							}
 						}
 					}
 				};
@@ -3027,7 +3306,9 @@ export class Click {
 			changeskin();
 		}
 		var ban = ui.create.div(".menubutton.large.ban.character", uiintro, "禁用", function (e) {
-			if (this.classList.contains("unselectable")) return;
+			if (this.classList.contains("unselectable")) {
+				return;
+			}
 			if (typeof noedit == "string") {
 				this.classList.toggle("active");
 				var bannedname = noedit + "_banned";
@@ -3050,7 +3331,9 @@ export class Click {
 		ban.link = name;
 		ban._banning = "offline";
 		ban.updateBanned = function () {
-			if (noedit === true) return;
+			if (noedit === true) {
+				return;
+			}
 			if (lib.config[get.mode() + "_banned"] && lib.config[get.mode() + "_banned"].includes(name)) {
 				ban.classList.add("active");
 			} else {
@@ -3062,7 +3345,9 @@ export class Click {
 		};
 		ban.updateBanned();
 		var fav = ui.create.div(".menubutton.large.fav", uiintro, "收藏", function () {
-			if (this.classList.contains("unselectable")) return;
+			if (this.classList.contains("unselectable")) {
+				return;
+			}
 			this.classList.toggle("active");
 			if (this.classList.contains("active")) {
 				lib.config.favouriteCharacter.add(name);
@@ -3078,292 +3363,268 @@ export class Click {
 			fav.classList.add("active");
 		}
 
-		// 样式二
-		if (lib.config.show_characternamepinyin == "showPinyin2" || lib.config.show_skillnamepinyin == "showPinyin2" || lib.config.show_characternamepinyin == "showCodeIdentifier2" || lib.config.show_skillnamepinyin == "showCodeIdentifier2") {
-			var nameinfo = get.character(name);
-			var intro = ui.create.div(".characterintro", get.characterIntro(name), uiintro);
-			if (lib.config.show_characternamepinyin == "showPinyin2" || lib.config.show_characternamepinyin == "showCodeIdentifier2") {
-				var charactername = get.rawName2(name);
-				var characterpinyin = lib.config.show_characternamepinyin == "showCodeIdentifier2" ? name : get.pinyin(charactername);
-				var charactersex = get.translation(nameinfo[0]);
-				const charactergroups = get.is.double(name, true);
-				let charactergroup;
-				if (charactergroups) charactergroup = charactergroups.map(i => get.translation(i)).join("/");
-				else charactergroup = get.translation(nameinfo[1]);
-				var characterhp = nameinfo[2];
-				var characterintroinfo = get.characterIntro(name);
-				var spacemark = " | ";
-				if (charactername.length > 3) spacemark = '<span style="font-size:7px">' + " " + "</span>" + "|" + '<span style="font-size:7px">' + " " + "</span>";
-				intro.innerHTML = '<span style="font-weight:bold;margin-right:5px">' + charactername + "</span>" + '<span style="font-size:14px;font-family:SimHei,STHeiti,sans-serif">' + "[" + characterpinyin + "]" + "</span>" + spacemark + charactersex + spacemark + charactergroup + spacemark + characterhp + '<span style="line-height:2"></span>' + "<br>" + characterintroinfo;
+		let intro, list = [], clickSkill;
+		let skills = ui.create.div(".characterskill", uiintro);
+		const refreshIntro = function () {
+			if (intro?.firstChild) {
+				while (intro.firstChild) {
+					intro.removeChild(intro.lastChild);
+				}
 			}
+			// 样式二
+			if (lib.config.show_characternamepinyin == "showPinyin2" || lib.config.show_skillnamepinyin == "showPinyin2" || lib.config.show_characternamepinyin == "showCodeIdentifier2" || lib.config.show_skillnamepinyin == "showCodeIdentifier2") {
+				var nameinfo = get.character(name);
+				intro = ui.create.div(".characterintro", get.characterIntro(name), uiintro);
+				if (lib.config.show_characternamepinyin == "showPinyin2" || lib.config.show_characternamepinyin == "showCodeIdentifier2") {
+					var charactername = get.rawName2(name);
+					var characterpinyin = lib.config.show_characternamepinyin == "showCodeIdentifier2" ? name : get.pinyin(charactername);
+					var charactersex = get.translation(nameinfo[0]);
+					const charactergroups = get.is.double(name, true);
+					let charactergroup;
+					if (charactergroups) {
+						charactergroup = charactergroups.map(i => get.translation(i)).join("/");
+					} else {
+						charactergroup = get.translation(nameinfo[1]);
+					}
+					var characterhp = nameinfo[2];
+					var characterintroinfo = get.characterIntro(name);
+					var spacemark = " | ";
+					if (charactername.length > 3) {
+						spacemark = '<span style="font-size:7px">' + " " + "</span>" + "|" + '<span style="font-size:7px">' + " " + "</span>";
+					}
+					intro.innerHTML = '<span style="font-weight:bold;margin-right:5px">' + charactername + "</span>" + '<span style="font-size:14px;font-family:SimHei,STHeiti,sans-serif">' + "[" + characterpinyin + "]" + "</span>" + spacemark + charactersex + spacemark + charactergroup + spacemark + characterhp + '<span style="line-height:2"></span>' + "<br>" + characterintroinfo;
+				}
 
-			// 添加台词部分
-			let dieAudios = get.Audio.die({ player: audioName })
-				.audioList.map(i => i.text)
-				.filter(Boolean);
-			if (!dieAudios.length)
-				dieAudios = get.Audio.die({ player: name })
+				// 添加台词部分
+				let dieAudios = get.Audio.die({ player: bg.tempSkin || audioName })
 					.audioList.map(i => i.text)
 					.filter(Boolean);
-			const skillAudioMap = new Map();
-			nameinfo.skills.forEach(skill => {
-				let voiceMap = get.Audio.skill({ skill, player: audioName }).textList;
-				if (!voiceMap.length) voiceMap = get.Audio.skill({ skill, player: name }).textList;
-				if (voiceMap.length) skillAudioMap.set(skill, voiceMap);
-			});
-			const derivationSkillAudioMap = new Map();
-			nameinfo.skills.forEach(skill => {
-				var info = get.info(skill);
-				if (info.derivation) {
-					var derivation = info.derivation;
-					if (typeof derivation == "string") {
-						derivation = [derivation];
+				if (!dieAudios.length) {
+					dieAudios = get.Audio.die({ player: name })
+						.audioList.map(i => i.text)
+						.filter(Boolean);
+				}
+				const skillAudioMap = new Map();
+				nameinfo.skills.forEach(skill => {
+					let voiceMap = get.Audio.skill({ skill, player: bg.tempSkin || audioName }).textList;
+					if (!voiceMap.length) {
+						voiceMap = get.Audio.skill({ skill, player: name }).textList;
 					}
-					for (var i = 0; i < derivation.length; i++) {
-						if (derivation[i].indexOf("_faq") != -1) continue;
-						let derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: audioName }).textList;
-						if (!derivationVoiceMap.length) derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: name }).textList;
-						if (derivationVoiceMap.length) derivationSkillAudioMap.set(derivation[i], derivationVoiceMap);
+					if (voiceMap.length) {
+						skillAudioMap.set(skill, voiceMap);
 					}
-				}
-			});
-			if (dieAudios.length || skillAudioMap.size > 0 || derivationSkillAudioMap.size > 0) {
-				const eleHr = document.createElement("hr");
-				eleHr.style.marginTop = "11px";
-				intro.appendChild(eleHr);
-				if (skillAudioMap.size > 0) {
-					const skillNameSpan = document.createElement("span");
-					skillNameSpan.style.lineHeight = "1.7";
-					skillNameSpan.innerHTML = `• 技能台词<br>`;
-					intro.appendChild(skillNameSpan);
-					skillAudioMap.forEach((texts, skill) => {
-						const skillNameSpan1 = document.createElement("span"),
-							skillNameSpanStyle1 = skillNameSpan1.style;
-						skillNameSpanStyle1.fontWeight = "bold";
-						skillNameSpanStyle1.fontSize = "15.7px";
-						skillNameSpanStyle1.lineHeight = "1.4";
-						skillNameSpan1.innerHTML = `${get.translation(skill)}<br>`;
-						intro.appendChild(skillNameSpan1);
-						texts.forEach((text, index) => {
-							const skillTextSpan = document.createElement("span");
-							skillTextSpan.style.fontSize = "15.2px";
-							skillTextSpan.innerHTML = `${texts.length > 1 ? `${index + 1}. ` : ""}${text}<br>`;
-							intro.appendChild(skillTextSpan);
-						});
-					});
-				}
-				if (derivationSkillAudioMap.size > 0) {
-					const derivationSkillNameSpan = document.createElement("span");
-					derivationSkillNameSpan.style.lineHeight = "1.7";
-					derivationSkillNameSpan.innerHTML = `• 衍生技能台词<br>`;
-					intro.appendChild(derivationSkillNameSpan);
-					derivationSkillAudioMap.forEach((texts, skill) => {
-						const derivationSkillNameSpan1 = document.createElement("span"),
-							derivationSkillNameSpanStyle1 = derivationSkillNameSpan1.style;
-						derivationSkillNameSpanStyle1.fontWeight = "bold";
-						derivationSkillNameSpanStyle1.fontSize = "15.7px";
-						derivationSkillNameSpanStyle1.lineHeight = "1.4";
-						derivationSkillNameSpan1.innerHTML = `${get.translation(skill)}<br>`;
-						intro.appendChild(derivationSkillNameSpan1);
-						texts.forEach((text, index) => {
-							const derivationSkillTextSpan = document.createElement("span");
-							derivationSkillTextSpan.style.fontSize = "15.2px";
-							derivationSkillTextSpan.innerHTML = `${texts.length > 1 ? `${index + 1}. ` : ""}${text}<br>`;
-							intro.appendChild(derivationSkillTextSpan);
-						});
-					});
-				}
-			}
-
-			var intro2 = ui.create.div(".characterintro.intro2", uiintro);
-			var list = get.character(name, 3) || [];
-			var skills = ui.create.div(".characterskill", uiintro);
-			if (lib.config.touchscreen) {
-				lib.setScroll(intro);
-				lib.setScroll(intro2);
-				lib.setScroll(skills);
-			}
-
-			if (lib.config.mousewheel) {
-				skills.onmousewheel = ui.click.mousewheel;
-			}
-			var clickSkill = function (e) {
-				while (intro2.firstChild) {
-					intro2.removeChild(intro2.lastChild);
-				}
-				var current = this.parentNode.querySelector(".active");
-				if (current) {
-					current.classList.remove("active");
-				}
-				this.classList.add("active");
-				if (this.link != "dieAudios") {
-					var skillname = get.translation(this.link);
-					var skilltranslationinfo = get.skillInfoTranslation(this.link);
-					if ((lib.config.show_skillnamepinyin == "showPinyin2" || lib.config.show_skillnamepinyin == "showCodeIdentifier2") && skillname != "阵亡") {
-						var skillpinyin = lib.config.show_skillnamepinyin == "showCodeIdentifier2" ? this.link : get.pinyin(skillname);
-						intro2.innerHTML = '<span style="font-weight:bold;margin-right:5px">' + skillname + "</span>" + '<span style="font-size:14px;font-family:SimHei,STHeiti,sans-serif">' + "[" + skillpinyin + "]" + "</span>" + "  " + skilltranslationinfo;
-					} else {
-						intro2.innerHTML = '<span style="font-weight:bold;margin-right:5px">' + skillname + "</span>" + skilltranslationinfo;
-					}
-					var info = get.info(this.link);
-					var skill = this.link;
-					var playername = this.linkname;
-					let audioName = this.linkAudioName;
-					var skillnode = this;
+				});
+				const derivationSkillAudioMap = new Map();
+				nameinfo.skills.forEach(skill => {
+					var info = get.info(skill);
 					if (info.derivation) {
 						var derivation = info.derivation;
 						if (typeof derivation == "string") {
 							derivation = [derivation];
 						}
 						for (var i = 0; i < derivation.length; i++) {
-							var derivationname = get.translation(derivation[i]);
-							var derivationtranslationinfo = get.skillInfoTranslation(derivation[i]);
-							if ((lib.config.show_skillnamepinyin == "showPinyin2" || lib.config.show_skillnamepinyin == "showCodeIdentifier2") && derivationname.length <= 5 && derivation[i].indexOf("_faq") == -1) {
-								var derivationpinyin = lib.config.show_skillnamepinyin == "showCodeIdentifier2" ? derivation[i] : get.pinyin(derivationname);
-								intro2.innerHTML += '<br><br><span style="font-weight:bold;margin-right:5px">' + derivationname + "</span>" + '<span style="font-size:14px;font-family:SimHei,STHeiti,sans-serif">' + "[" + derivationpinyin + "]" + "</span>" + "  " + derivationtranslationinfo;
-							} else {
-								intro2.innerHTML += '<br><br><span style="font-weight:bold;margin-right:5px">' + derivationname + "</span>" + derivationtranslationinfo;
+							if (derivation[i].indexOf("_faq") != -1) {
+								continue;
+							}
+							if (nameinfo.skills.includes(derivation[i])) {
+								continue;
+							}
+							let derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: bg.tempSkin || audioName }).textList;
+							if (!derivationVoiceMap.length) {
+								derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: name }).textList;
+							}
+							if (derivationVoiceMap.length) {
+								derivationSkillAudioMap.set(derivation[i], derivationVoiceMap);
 							}
 						}
 					}
-
-					if (lib.config.background_speak && e !== "init") {
-						let name = bg.tempSkin || audioName || playername;
-						if (!this.playAudio || name != this.audioName) {
-							const audioList = get.Audio.skill({ skill: this.link, player: name }).fileList;
-							this.playAudio = game.tryAudio({
-								audioList,
-								addVideo: false,
-								random: false,
-								autoplay: false,
+				});
+				if (dieAudios.length || skillAudioMap.size > 0 || derivationSkillAudioMap.size > 0) {
+					const eleHr = document.createElement("hr");
+					eleHr.style.marginTop = "11px";
+					intro.appendChild(eleHr);
+					if (skillAudioMap.size > 0) {
+						const skillNameSpan = document.createElement("span");
+						skillNameSpan.style.lineHeight = "1.7";
+						skillNameSpan.innerHTML = `• 技能台词<br>`;
+						intro.appendChild(skillNameSpan);
+						skillAudioMap.forEach((texts, skill) => {
+							const skillNameSpan1 = document.createElement("span"),
+								skillNameSpanStyle1 = skillNameSpan1.style;
+							skillNameSpanStyle1.fontWeight = "bold";
+							skillNameSpanStyle1.fontSize = "15.7px";
+							skillNameSpanStyle1.lineHeight = "1.4";
+							skillNameSpan1.innerHTML = `${get.translation(skill)}<br>`;
+							intro.appendChild(skillNameSpan1);
+							texts.forEach((text, index) => {
+								const skillTextSpan = document.createElement("span");
+								skillTextSpan.style.fontSize = "15.2px";
+								skillTextSpan.innerHTML = `${texts.length > 1 ? `${index + 1}. ` : ""}${text}<br>`;
+								intro.appendChild(skillTextSpan);
 							});
-							this.audioName = name;
-						}
-						this.playAudio();
+						});
 					}
-				} else {
-					let dieAudios = this.dieAudios;
-					intro2.innerHTML = '<span style="font-weight:bold;margin-right:5px">阵亡台词</span>';
-					dieAudios.forEach((text, index) => {
-						const dieTextSpan = document.createElement("span");
-						dieTextSpan.style.fontSize = "15.2px";
-						dieTextSpan.innerHTML = `<br>${dieAudios.length > 1 ? `${index + 1}. ` : ""}${text}`;
-						intro2.appendChild(dieTextSpan);
-					});
-					if (lib.config.background_speak && e !== "init") {
-						let name = bg.tempSkin || this.linkname;
-						if (!this.playAudio || name != this.audioName) {
-							let audioList = get.Audio.die({ player: { name: this.playername, skin: { name: name } } }).fileList;
-							this.playAudio = game.tryAudio({
-								audioList,
-								addVideo: false,
-								random: false,
-								autoplay: false,
+					if (derivationSkillAudioMap.size > 0) {
+						const derivationSkillNameSpan = document.createElement("span");
+						derivationSkillNameSpan.style.lineHeight = "1.7";
+						derivationSkillNameSpan.innerHTML = `• 衍生技能台词<br>`;
+						intro.appendChild(derivationSkillNameSpan);
+						derivationSkillAudioMap.forEach((texts, skill) => {
+							const derivationSkillNameSpan1 = document.createElement("span"),
+								derivationSkillNameSpanStyle1 = derivationSkillNameSpan1.style;
+							derivationSkillNameSpanStyle1.fontWeight = "bold";
+							derivationSkillNameSpanStyle1.fontSize = "15.7px";
+							derivationSkillNameSpanStyle1.lineHeight = "1.4";
+							derivationSkillNameSpan1.innerHTML = `${get.translation(skill)}<br>`;
+							intro.appendChild(derivationSkillNameSpan1);
+							texts.forEach((text, index) => {
+								const derivationSkillTextSpan = document.createElement("span");
+								derivationSkillTextSpan.style.fontSize = "15.2px";
+								derivationSkillTextSpan.innerHTML = `${texts.length > 1 ? `${index + 1}. ` : ""}${text}<br>`;
+								intro.appendChild(derivationSkillTextSpan);
 							});
-							this.audioName = name;
-						}
-						this.playAudio();
+						});
 					}
 				}
-			};
-		} else {
-			// 样式一
-			//TODO: 这里的数据也暂时没有改成新格式，需要后续的修改
-			const nameInfo = get.character(name);
-			const introduction = ui.create.div(".characterintro", uiintro),
-				showCharacterNamePinyin = lib.config.show_characternamepinyin;
-			if (showCharacterNamePinyin != "doNotShow") {
-				const characterIntroTable = ui.create.div(".character-intro-table", introduction),
-					span = document.createElement("span");
-				span.style.fontWeight = "bold";
-				const exInfo = nameInfo.trashBin,
-					characterName = exInfo && exInfo.includes("ruby") ? lib.translate[name] : get.rawName2(name);
-				span.innerHTML = characterName;
-				const ruby = document.createElement("ruby");
-				ruby.appendChild(span);
-				const leftParenthesisRP = document.createElement("rp");
-				leftParenthesisRP.textContent = "（";
-				ruby.appendChild(leftParenthesisRP);
-				const rt = document.createElement("rt");
-				rt.innerHTML = showCharacterNamePinyin == "showCodeIdentifier" ? name : lib.translate[`${name}_rt`] || get.pinyin(characterName).join(" ");
-				ruby.appendChild(rt);
-				const rightParenthesisRP = document.createElement("rp");
-				rightParenthesisRP.textContent = "）";
-				ruby.appendChild(rightParenthesisRP);
-				characterIntroTable.appendChild(ruby);
-				const characterSexDiv = ui.create.div(".character-sex", characterIntroTable),
-					exInfoSex = exInfo && exInfo.find(value => value.startsWith("sex:")),
-					characterSex = exInfoSex ? exInfoSex.split(":").pop() : nameInfo[0];
-				new Promise((resolve, reject) => {
-					const imageName = `sex_${characterSex}`,
-						information = lib.card[imageName];
-					if (!information) {
-						resolve(`${lib.assetURL}image/card/${imageName}.png`);
-						return;
+
+				var intro2 = ui.create.div(".characterintro.intro2", uiintro);
+				list.addArray(get.character(name, 3) || []);
+				if (lib.config.touchscreen) {
+					lib.setScroll(intro);
+					lib.setScroll(intro2);
+					lib.setScroll(skills);
+				}
+
+				if (lib.config.mousewheel) {
+					skills.onmousewheel = ui.click.mousewheel;
+				}
+				clickSkill = function (e) {
+					while (intro2.firstChild) {
+						intro2.removeChild(intro2.lastChild);
 					}
-					const image = information.image;
-					if (!image) resolve(`${lib.assetURL}image/card/${imageName}.png`);
-					else if (image.startsWith("db:")) game.getDB("image", image.slice(3)).then(resolve, reject);
-					else if (image.startsWith("ext:")) resolve(`${lib.assetURL}${image.replace(/^ext:/, "extension/")}`);
-					else resolve(`${lib.assetURL}${image}`);
-				})
-					.then(
-						source =>
-							new Promise((resolve, reject) => {
-								const image = new Image();
-								image.onload = () => resolve(image);
-								image.onerror = reject;
-								image.src = source;
-							})
-					)
-					.then(image => characterSexDiv.appendChild(image))
-					.catch(() => (characterSexDiv.innerHTML = get.translation(characterSex)));
-				const characterGroupDiv = ui.create.div(".character-group", characterIntroTable),
-					characterGroups = get.is.double(name, true);
-				if (characterGroups)
-					Promise.all(
-						characterGroups.map(characterGroup =>
-							Promise.resolve()
-								.then(async () => {
-									const imageName = `group_${characterGroup}`,
-										information = lib.card[imageName];
-									if (!information) return `${lib.assetURL}image/card/${imageName}.png`;
-									const image = information.image;
-									if (!image) return `${lib.assetURL}image/card/${imageName}.png`;
-									if (image.startsWith("db:")) return await game.getDB("image", image.slice(3));
-									if (image.startsWith("ext:")) return `${lib.assetURL}${image.replace(/^ext:/, "extension/")}`;
-									return `${lib.assetURL}${image}`;
-								})
-								.then(
-									source =>
-										new Promise((resolve, reject) => {
-											const image = new Image();
-											image.onload = () => resolve(image);
-											image.onerror = reject;
-											image.src = source;
-										})
-								)
-						)
-					)
-						.then(images => {
-							let documentFragment = document.createDocumentFragment();
-							images.forEach(documentFragment.appendChild, documentFragment);
-							characterGroupDiv.appendChild(documentFragment);
-						})
-						.catch(() => (characterGroupDiv.innerHTML = characterGroups.map(characterGroup => get.translation(characterGroup)).join("/")));
-				else {
-					const characterGroup = nameInfo[1];
-					Promise.resolve()
-						.then(async () => {
-							const imageName = `group_${characterGroup}`,
-								information = lib.card[imageName];
-							if (!information) return `${lib.assetURL}image/card/${imageName}.png`;
-							const image = information.image;
-							if (!image) return `${lib.assetURL}image/card/${imageName}.png`;
-							if (image.startsWith("db:")) return await game.getDB("image", image.slice(3));
-							if (image.startsWith("ext:")) return `${lib.assetURL}${image.replace(/^ext:/, "extension/")}`;
-							return `${lib.assetURL}${image}`;
-						})
+					var current = this.parentNode.querySelector(".active");
+					if (current) {
+						current.classList.remove("active");
+					}
+					this.classList.add("active");
+					if (this.link != "dieAudios") {
+						var skillname = get.translation(this.link);
+						var skilltranslationinfo = get.skillInfoTranslation(this.link);
+						if ((lib.config.show_skillnamepinyin == "showPinyin2" || lib.config.show_skillnamepinyin == "showCodeIdentifier2") && skillname != "阵亡") {
+							var skillpinyin = lib.config.show_skillnamepinyin == "showCodeIdentifier2" ? this.link : get.pinyin(skillname);
+							intro2.innerHTML = '<span style="font-weight:bold;margin-right:5px">' + skillname + "</span>" + '<span style="font-size:14px;font-family:SimHei,STHeiti,sans-serif">' + "[" + skillpinyin + "]" + "</span>" + "  " + skilltranslationinfo;
+						} else {
+							intro2.innerHTML = '<span style="font-weight:bold;margin-right:5px">' + skillname + "</span>" + skilltranslationinfo;
+						}
+						var info = get.info(this.link);
+						var skill = this.link;
+						var playername = this.linkname;
+						let audioName = this.linkAudioName;
+						var skillnode = this;
+						if (info.derivation) {
+							var derivation = info.derivation;
+							if (typeof derivation == "string") {
+								derivation = [derivation];
+							}
+							for (var i = 0; i < derivation.length; i++) {
+								var derivationname = get.translation(derivation[i]);
+								var derivationtranslationinfo = get.skillInfoTranslation(derivation[i]);
+								if ((lib.config.show_skillnamepinyin == "showPinyin2" || lib.config.show_skillnamepinyin == "showCodeIdentifier2") && derivationname.length <= 5 && derivation[i].indexOf("_faq") == -1) {
+									var derivationpinyin = lib.config.show_skillnamepinyin == "showCodeIdentifier2" ? derivation[i] : get.pinyin(derivationname);
+									intro2.innerHTML += '<br><br><span style="font-weight:bold;margin-right:5px">' + derivationname + "</span>" + '<span style="font-size:14px;font-family:SimHei,STHeiti,sans-serif">' + "[" + derivationpinyin + "]" + "</span>" + "  " + derivationtranslationinfo;
+								} else {
+									intro2.innerHTML += '<br><br><span style="font-weight:bold;margin-right:5px">' + derivationname + "</span>" + derivationtranslationinfo;
+								}
+							}
+						}
+
+						if (lib.config.background_speak && e !== "init") {
+							let name = bg.tempSkin || audioName || playername;
+							if (!this.playAudio || name != this.audioName) {
+								const audioList = get.Audio.skill({ skill: this.link, player: name }).fileList;
+								this.playAudio = game.tryAudio({
+									audioList,
+									addVideo: false,
+									random: false,
+									autoplay: false,
+								});
+								this.audioName = name;
+							}
+							this.playAudio();
+						}
+					} else {
+						let name = bg.tempSkin || this.linkname;
+						let dieAudios = get.Audio.die({ player: { name: this.playername, skin: { name: name } } })
+							.audioList.map(i => i.text)
+							.filter(Boolean);
+						intro2.innerHTML = '<span style="font-weight:bold;margin-right:5px">阵亡台词</span>';
+						dieAudios.forEach((text, index) => {
+							const dieTextSpan = document.createElement("span");
+							dieTextSpan.style.fontSize = "15.2px";
+							dieTextSpan.innerHTML = `<br>${dieAudios.length > 1 ? `${index + 1}. ` : ""}${text}`;
+							intro2.appendChild(dieTextSpan);
+						});
+						if (lib.config.background_speak && e !== "init") {
+							if (!this.playAudio || name != this.audioName) {
+								let audioList = get.Audio.die({ player: { name: this.playername, skin: { name: name } } }).fileList;
+								this.playAudio = game.tryAudio({
+									audioList,
+									addVideo: false,
+									random: false,
+									autoplay: false,
+								});
+								this.audioName = name;
+							}
+							this.playAudio();
+						}
+					}
+				};
+			} else {
+				// 样式一
+				//TODO: 这里的数据也暂时没有改成新格式，需要后续的修改
+				const nameInfo = get.character(name),
+					showCharacterNamePinyin = lib.config.show_characternamepinyin;
+				intro = ui.create.div(".characterintro", uiintro);
+				if (showCharacterNamePinyin != "doNotShow") {
+					const characterIntroTable = ui.create.div(".character-intro-table", intro),
+						span = document.createElement("span");
+					span.style.fontWeight = "bold";
+					const exInfo = nameInfo.trashBin,
+						characterName = exInfo && exInfo.includes("ruby") ? lib.translate[name] : get.rawName2(name);
+					span.innerHTML = characterName;
+					const ruby = document.createElement("ruby");
+					ruby.appendChild(span);
+					const leftParenthesisRP = document.createElement("rp");
+					leftParenthesisRP.textContent = "（";
+					ruby.appendChild(leftParenthesisRP);
+					const rt = document.createElement("rt");
+					rt.innerHTML = showCharacterNamePinyin == "showCodeIdentifier" ? name : lib.translate[`${name}_rt`] || get.pinyin(characterName).join(" ");
+					ruby.appendChild(rt);
+					const rightParenthesisRP = document.createElement("rp");
+					rightParenthesisRP.textContent = "）";
+					ruby.appendChild(rightParenthesisRP);
+					characterIntroTable.appendChild(ruby);
+					const characterSexDiv = ui.create.div(".character-sex", characterIntroTable),
+						exInfoSex = exInfo && exInfo.find(value => value.startsWith("sex:")),
+						characterSex = exInfoSex ? exInfoSex.split(":").pop() : nameInfo[0];
+					new Promise((resolve, reject) => {
+						const imageName = `sex_${characterSex}`,
+							information = lib.card[imageName];
+						if (!information) {
+							resolve(`${lib.assetURL}image/card/${imageName}.png`);
+							return;
+						}
+						const image = information.image;
+						if (!image) {
+							resolve(`${lib.assetURL}image/card/${imageName}.png`);
+						} else if (image.startsWith("db:")) {
+							game.getDB("image", image.slice(3)).then(resolve, reject);
+						} else if (image.startsWith("ext:")) {
+							resolve(`${lib.assetURL}${image.replace(/^ext:/, "extension/")}`);
+						} else {
+							resolve(`${lib.assetURL}${image}`);
+						}
+					})
 						.then(
 							source =>
 								new Promise((resolve, reject) => {
@@ -3373,235 +3634,332 @@ export class Click {
 									image.src = source;
 								})
 						)
-						.then(image => characterGroupDiv.appendChild(image))
-						.catch(() => (characterGroupDiv.innerHTML = get.translation(characterGroup)));
+						.then(image => characterSexDiv.appendChild(image))
+						.catch(() => (characterSexDiv.innerHTML = get.translation(characterSex)));
+					const characterGroupDiv = ui.create.div(".character-group", characterIntroTable),
+						characterGroups = get.is.double(name, true);
+					if (characterGroups) {
+						Promise.all(
+							characterGroups.map(characterGroup =>
+								Promise.resolve()
+									.then(async () => {
+										const imageName = `group_${characterGroup}`,
+											information = lib.card[imageName];
+										if (!information) {
+											return `${lib.assetURL}image/card/${imageName}.png`;
+										}
+										const image = information.image;
+										if (!image) {
+											return `${lib.assetURL}image/card/${imageName}.png`;
+										}
+										if (image.startsWith("db:")) {
+											return await game.getDB("image", image.slice(3));
+										}
+										if (image.startsWith("ext:")) {
+											return `${lib.assetURL}${image.replace(/^ext:/, "extension/")}`;
+										}
+										return `${lib.assetURL}${image}`;
+									})
+									.then(
+										source =>
+											new Promise((resolve, reject) => {
+												const image = new Image();
+												image.onload = () => resolve(image);
+												image.onerror = reject;
+												image.src = source;
+											})
+									)
+							)
+						)
+							.then(images => {
+								let documentFragment = document.createDocumentFragment();
+								images.forEach(documentFragment.appendChild, documentFragment);
+								characterGroupDiv.appendChild(documentFragment);
+							})
+							.catch(() => (characterGroupDiv.innerHTML = characterGroups.map(characterGroup => get.translation(characterGroup)).join("/")));
+					} else {
+						const characterGroup = nameInfo[1];
+						Promise.resolve()
+							.then(async () => {
+								const imageName = `group_${characterGroup}`,
+									information = lib.card[imageName];
+								if (!information) {
+									return `${lib.assetURL}image/card/${imageName}.png`;
+								}
+								const image = information.image;
+								if (!image) {
+									return `${lib.assetURL}image/card/${imageName}.png`;
+								}
+								if (image.startsWith("db:")) {
+									return await game.getDB("image", image.slice(3));
+								}
+								if (image.startsWith("ext:")) {
+									return `${lib.assetURL}${image.replace(/^ext:/, "extension/")}`;
+								}
+								return `${lib.assetURL}${image}`;
+							})
+							.then(
+								source =>
+									new Promise((resolve, reject) => {
+										const image = new Image();
+										image.onload = () => resolve(image);
+										image.onerror = reject;
+										image.src = source;
+									})
+							)
+							.then(image => characterGroupDiv.appendChild(image))
+							.catch(() => (characterGroupDiv.innerHTML = get.translation(characterGroup)));
+					}
+					const hpDiv = ui.create.div(".hp", characterIntroTable),
+						nameInfoHP = nameInfo[2],
+						infoHP = get.infoHp(nameInfoHP);
+					hpDiv.dataset.condition = infoHP < 4 ? "mid" : "high";
+					ui.create.div(hpDiv);
+					const hpTextDiv = ui.create.div(".text", hpDiv),
+						infoMaxHP = get.infoMaxHp(nameInfoHP);
+					hpTextDiv.innerHTML = infoHP == infoMaxHP ? `×${infoHP}` : `×${infoHP}/${infoMaxHP}`;
+					const infoShield = get.infoHujia(nameInfoHP);
+					if (infoShield) {
+						ui.create.div(".shield", hpDiv);
+						const shieldTextDiv = ui.create.div(".text", hpDiv);
+						shieldTextDiv.innerHTML = `×${infoShield}`;
+					}
+					intro.appendChild(document.createElement("hr"));
 				}
-				const hpDiv = ui.create.div(".hp", characterIntroTable),
-					nameInfoHP = nameInfo[2],
-					infoHP = get.infoHp(nameInfoHP);
-				hpDiv.dataset.condition = infoHP < 4 ? "mid" : "high";
-				ui.create.div(hpDiv);
-				const hpTextDiv = ui.create.div(".text", hpDiv),
-					infoMaxHP = get.infoMaxHp(nameInfoHP);
-				hpTextDiv.innerHTML = infoHP == infoMaxHP ? `×${infoHP}` : `×${infoHP}/${infoMaxHP}`;
-				const infoShield = get.infoHujia(nameInfoHP);
-				if (infoShield) {
-					ui.create.div(".shield", hpDiv);
-					const shieldTextDiv = ui.create.div(".text", hpDiv);
-					shieldTextDiv.innerHTML = `×${infoShield}`;
-				}
-				introduction.appendChild(document.createElement("hr"));
-			}
-			const htmlParser = document.createElement("body");
-			htmlParser.innerHTML = get.characterIntro(name);
-			Array.from(htmlParser.childNodes).forEach(value => introduction.appendChild(value));
+				const htmlParser = document.createElement("body");
+				htmlParser.innerHTML = get.characterIntro(name);
+				Array.from(htmlParser.childNodes).forEach(value => intro.appendChild(value));
 
-			// 添加台词部分
-			let dieAudios = get.Audio.die({ player: audioName })
-				.audioList.map(i => i.text)
-				.filter(Boolean);
-			if (!dieAudios.length)
-				dieAudios = get.Audio.die({ player: name })
+				// 添加台词部分
+				let dieAudios = get.Audio.die({ player: bg.tempSkin || audioName })
 					.audioList.map(i => i.text)
 					.filter(Boolean);
-			const skillAudioMap = new Map();
-			nameInfo.skills.forEach(skill => {
-				let voiceMap = get.Audio.skill({ skill, player: audioName }).textList;
-				if (!voiceMap.length) voiceMap = get.Audio.skill({ skill, player: name }).textList;
-				if (voiceMap.length) skillAudioMap.set(skill, voiceMap);
-			});
-			const derivationSkillAudioMap = new Map();
-			nameInfo.skills.forEach(skill => {
-				var info = get.info(skill);
-				if (info.derivation) {
-					var derivation = info.derivation;
-					if (typeof derivation == "string") {
-						derivation = [derivation];
+				if (!dieAudios.length) {
+					dieAudios = get.Audio.die({ player: name })
+						.audioList.map(i => i.text)
+						.filter(Boolean);
+				}
+				const skillAudioMap = new Map();
+				nameInfo.skills.forEach(skill => {
+					let voiceMap = get.Audio.skill({ skill, player: bg.tempSkin || audioName }).textList;
+					if (!voiceMap.length) {
+						voiceMap = get.Audio.skill({ skill, player: name }).textList;
 					}
-					for (var i = 0; i < derivation.length; i++) {
-						if (derivation[i].indexOf("_faq") != -1) continue;
-						let derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: audioName }).textList;
-						if (!derivationVoiceMap.length) derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: name }).textList;
-						if (derivationVoiceMap.length) derivationSkillAudioMap.set(derivation[i], derivationVoiceMap);
+					if (voiceMap.length) {
+						skillAudioMap.set(skill, voiceMap);
+					}
+				});
+				const derivationSkillAudioMap = new Map();
+				nameInfo.skills.forEach(skill => {
+					var info = get.info(skill);
+					if (info.derivation) {
+						var derivation = info.derivation;
+						if (typeof derivation == "string") {
+							derivation = [derivation];
+						}
+						for (var i = 0; i < derivation.length; i++) {
+							if (derivation[i].indexOf("_faq") != -1) {
+								continue;
+							}
+							if (nameInfo.skills.includes(derivation[i])) {
+								continue;
+							}
+							let derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: bg.tempSkin || audioName }).textList;
+							if (!derivationVoiceMap.length) {
+								derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: name }).textList;
+							}
+							if (derivationVoiceMap.length) {
+								derivationSkillAudioMap.set(derivation[i], derivationVoiceMap);
+							}
+						}
+					}
+				});
+				if (dieAudios.length || skillAudioMap.size > 0 || derivationSkillAudioMap.size > 0) {
+					intro.appendChild(document.createElement("hr"));
+
+					if (skillAudioMap.size > 0) {
+						const skillNameSpan = document.createElement("span");
+						skillNameSpan.innerHTML = `技能台词<br>`;
+						intro.appendChild(skillNameSpan);
+
+						skillAudioMap.forEach((texts, skill) => {
+							const skillNameSpan = document.createElement("span"),
+								skillNameSpanStyle = skillNameSpan.style;
+							skillNameSpanStyle.fontWeight = "bold";
+							skillNameSpan.innerHTML = `<br>${get.translation(skill)}<br>`;
+							intro.appendChild(skillNameSpan);
+							texts.forEach((text, index) => {
+								const skillTextSpan = document.createElement("span");
+								skillTextSpan.innerHTML = `${texts.length > 1 ? `${index + 1}. ` : ""}${text}<br>`;
+								intro.appendChild(skillTextSpan);
+							});
+						});
+					}
+
+					if (derivationSkillAudioMap.size > 0) {
+						const derivationSkillNameSpan = document.createElement("span");
+						derivationSkillNameSpan.innerHTML = `<br>衍生技能台词<br>`;
+						intro.appendChild(derivationSkillNameSpan);
+						derivationSkillAudioMap.forEach((texts, skill) => {
+							const derivationSkillNameSpan1 = document.createElement("span"),
+								derivationSkillNameSpanStyle1 = derivationSkillNameSpan1.style;
+							derivationSkillNameSpanStyle1.fontWeight = "bold";
+							derivationSkillNameSpan1.innerHTML = `<br>${get.translation(skill)}<br>`;
+							intro.appendChild(derivationSkillNameSpan1);
+							texts.forEach((text, index) => {
+								const derivationSkillTextSpan = document.createElement("span");
+								derivationSkillTextSpan.innerHTML = `${texts.length > 1 ? `${index + 1}. ` : ""}${text}<br>`;
+								intro.appendChild(derivationSkillTextSpan);
+							});
+						});
 					}
 				}
-			});
-			if (dieAudios.length || skillAudioMap.size > 0 || derivationSkillAudioMap.size > 0) {
-				introduction.appendChild(document.createElement("hr"));
 
-				if (skillAudioMap.size > 0) {
-					const skillNameSpan = document.createElement("span");
-					skillNameSpan.innerHTML = `技能台词<br>`;
-					introduction.appendChild(skillNameSpan);
+				const introduction2 = ui.create.div(".characterintro.intro2", uiintro);
+				list.addArray(get.character(name).skills || []);
+				if (lib.config.touchscreen) {
+					lib.setScroll(intro);
+					lib.setScroll(introduction2);
+					lib.setScroll(skills);
+				}
 
-					skillAudioMap.forEach((texts, skill) => {
+				if (lib.config.mousewheel) {
+					skills.onmousewheel = ui.click.mousewheel;
+				}
+				clickSkill = function (e) {
+					while (introduction2.firstChild) {
+						introduction2.removeChild(introduction2.lastChild);
+					}
+					var current = this.parentNode.querySelector(".active");
+					if (current) {
+						current.classList.remove("active");
+					}
+					this.classList.add("active");
+					if (this.link != "dieAudios") {
 						const skillNameSpan = document.createElement("span"),
 							skillNameSpanStyle = skillNameSpan.style;
 						skillNameSpanStyle.fontWeight = "bold";
-						skillNameSpan.innerHTML = `<br>${get.translation(skill)}<br>`;
-						introduction.appendChild(skillNameSpan);
-						texts.forEach((text, index) => {
-							const skillTextSpan = document.createElement("span");
-							skillTextSpan.innerHTML = `${texts.length > 1 ? `${index + 1}. ` : ""}${text}<br>`;
-							introduction.appendChild(skillTextSpan);
-						});
-					});
-				}
-
-				if (derivationSkillAudioMap.size > 0) {
-					const derivationSkillNameSpan = document.createElement("span");
-					derivationSkillNameSpan.innerHTML = `<br>衍生技能台词<br>`;
-					introduction.appendChild(derivationSkillNameSpan);
-					derivationSkillAudioMap.forEach((texts, skill) => {
-						const derivationSkillNameSpan1 = document.createElement("span"),
-							derivationSkillNameSpanStyle1 = derivationSkillNameSpan1.style;
-						derivationSkillNameSpanStyle1.fontWeight = "bold";
-						derivationSkillNameSpan1.innerHTML = `<br>${get.translation(skill)}<br>`;
-						introduction.appendChild(derivationSkillNameSpan1);
-						texts.forEach((text, index) => {
-							const derivationSkillTextSpan = document.createElement("span");
-							derivationSkillTextSpan.innerHTML = `${texts.length > 1 ? `${index + 1}. ` : ""}${text}<br>`;
-							introduction.appendChild(derivationSkillTextSpan);
-						});
-					});
-				}
-			}
-
-			const introduction2 = ui.create.div(".characterintro.intro2", uiintro);
-			var list = get.character(name).skills;
-			var skills = ui.create.div(".characterskill", uiintro);
-			if (lib.config.touchscreen) {
-				lib.setScroll(introduction);
-				lib.setScroll(introduction2);
-				lib.setScroll(skills);
-			}
-
-			if (lib.config.mousewheel) {
-				skills.onmousewheel = ui.click.mousewheel;
-			}
-			var clickSkill = function (e) {
-				while (introduction2.firstChild) {
-					introduction2.removeChild(introduction2.lastChild);
-				}
-				var current = this.parentNode.querySelector(".active");
-				if (current) {
-					current.classList.remove("active");
-				}
-				this.classList.add("active");
-				if (this.link != "dieAudios") {
-					const skillNameSpan = document.createElement("span"),
-						skillNameSpanStyle = skillNameSpan.style;
-					skillNameSpanStyle.fontWeight = "bold";
-					const link = this.link,
-						skillName = get.translation(link);
-					skillNameSpan.innerHTML = skillName;
-					const showSkillNamePinyin = lib.config.show_skillnamepinyin;
-					if (showSkillNamePinyin != "doNotShow" && skillName != "阵亡") {
-						const ruby = document.createElement("ruby");
-						ruby.appendChild(skillNameSpan);
-						const leftParenthesisRP = document.createElement("rp");
-						leftParenthesisRP.textContent = "（";
-						ruby.appendChild(leftParenthesisRP);
-						const rt = document.createElement("rt");
-						rt.innerHTML = showSkillNamePinyin == "showCodeIdentifier" ? link : lib.translate[`${link}_rt`] || get.pinyin(skillName).join(" ");
-						ruby.appendChild(rt);
-						const rightParenthesisRP = document.createElement("rp");
-						rightParenthesisRP.textContent = "）";
-						ruby.appendChild(rightParenthesisRP);
-						const div = ui.create.div(introduction2);
-						div.style.marginRight = "5px";
-						div.appendChild(ruby);
-					} else {
-						skillNameSpanStyle.marginRight = "5px";
-						introduction2.appendChild(skillNameSpan);
-					}
-					htmlParser.innerHTML = get.skillInfoTranslation(this.link);
-					Array.from(htmlParser.childNodes).forEach(childNode => introduction2.appendChild(childNode));
-					var info = get.info(this.link);
-					var skill = this.link;
-					var playername = this.linkname;
-					let audioName = this.linkAudioName;
-					var skillnode = this;
-					let derivations = info.derivation;
-					if (derivations) {
-						if (typeof derivations == "string") derivations = [derivations];
-						derivations.forEach(derivation => {
-							introduction2.appendChild(document.createElement("br"));
-							introduction2.appendChild(document.createElement("br"));
-							const derivationNameSpan = document.createElement("span"),
-								derivationNameSpanStyle = derivationNameSpan.style;
-							derivationNameSpanStyle.fontWeight = "bold";
-							const derivationName = get.translation(derivation);
-							derivationNameSpan.innerHTML = derivationName;
-							if (showSkillNamePinyin != "doNotShow" && derivationName.length <= 5 && derivation.indexOf("_faq") == -1) {
-								const ruby = document.createElement("ruby");
-								ruby.appendChild(derivationNameSpan);
-								const leftParenthesisRP = document.createElement("rp");
-								leftParenthesisRP.textContent = "（";
-								ruby.appendChild(leftParenthesisRP);
-								const rt = document.createElement("rt");
-								rt.innerHTML = showSkillNamePinyin == "showCodeIdentifier" ? derivation : lib.translate[`${derivation}_rt`] || get.pinyin(derivationName).join(" ");
-								ruby.appendChild(rt);
-								const rightParenthesisRP = document.createElement("rp");
-								rightParenthesisRP.textContent = "）";
-								ruby.appendChild(rightParenthesisRP);
-								const div = ui.create.div(introduction2);
-								div.style.marginRight = "5px";
-								div.appendChild(ruby);
-							} else {
-								derivationNameSpanStyle.marginRight = "5px";
-								introduction2.appendChild(derivationNameSpan);
+						const link = this.link,
+							skillName = get.translation(link);
+						skillNameSpan.innerHTML = skillName;
+						const showSkillNamePinyin = lib.config.show_skillnamepinyin;
+						if (showSkillNamePinyin != "doNotShow" && skillName != "阵亡") {
+							const ruby = document.createElement("ruby");
+							ruby.appendChild(skillNameSpan);
+							const leftParenthesisRP = document.createElement("rp");
+							leftParenthesisRP.textContent = "（";
+							ruby.appendChild(leftParenthesisRP);
+							const rt = document.createElement("rt");
+							rt.innerHTML = showSkillNamePinyin == "showCodeIdentifier" ? link : lib.translate[`${link}_rt`] || get.pinyin(skillName).join(" ");
+							ruby.appendChild(rt);
+							const rightParenthesisRP = document.createElement("rp");
+							rightParenthesisRP.textContent = "）";
+							ruby.appendChild(rightParenthesisRP);
+							const div = ui.create.div(introduction2);
+							div.style.marginRight = "5px";
+							div.appendChild(ruby);
+						} else {
+							skillNameSpanStyle.marginRight = "5px";
+							introduction2.appendChild(skillNameSpan);
+						}
+						htmlParser.innerHTML = get.skillInfoTranslation(this.link);
+						Array.from(htmlParser.childNodes).forEach(childNode => introduction2.appendChild(childNode));
+						var info = get.info(this.link);
+						var skill = this.link;
+						var playername = this.linkname;
+						let audioName = this.linkAudioName;
+						var skillnode = this;
+						let derivations = info.derivation;
+						if (derivations) {
+							if (typeof derivations == "string") {
+								derivations = [derivations];
 							}
-							htmlParser.innerHTML = get.skillInfoTranslation(derivation);
-							Array.from(htmlParser.childNodes).forEach(childNode => introduction2.appendChild(childNode));
-						});
-					}
+							derivations.forEach(derivation => {
+								introduction2.appendChild(document.createElement("br"));
+								introduction2.appendChild(document.createElement("br"));
+								const derivationNameSpan = document.createElement("span"),
+									derivationNameSpanStyle = derivationNameSpan.style;
+								derivationNameSpanStyle.fontWeight = "bold";
+								const derivationName = get.translation(derivation);
+								derivationNameSpan.innerHTML = derivationName;
+								if (showSkillNamePinyin != "doNotShow" && derivationName.length <= 5 && derivation.indexOf("_faq") == -1) {
+									const ruby = document.createElement("ruby");
+									ruby.appendChild(derivationNameSpan);
+									const leftParenthesisRP = document.createElement("rp");
+									leftParenthesisRP.textContent = "（";
+									ruby.appendChild(leftParenthesisRP);
+									const rt = document.createElement("rt");
+									rt.innerHTML = showSkillNamePinyin == "showCodeIdentifier" ? derivation : lib.translate[`${derivation}_rt`] || get.pinyin(derivationName).join(" ");
+									ruby.appendChild(rt);
+									const rightParenthesisRP = document.createElement("rp");
+									rightParenthesisRP.textContent = "）";
+									ruby.appendChild(rightParenthesisRP);
+									const div = ui.create.div(introduction2);
+									div.style.marginRight = "5px";
+									div.appendChild(ruby);
+								} else {
+									derivationNameSpanStyle.marginRight = "5px";
+									introduction2.appendChild(derivationNameSpan);
+								}
+								htmlParser.innerHTML = get.skillInfoTranslation(derivation);
+								Array.from(htmlParser.childNodes).forEach(childNode => introduction2.appendChild(childNode));
+							});
+						}
 
-					if (lib.config.background_speak && e !== "init") {
-						let name = bg.tempSkin || audioName || playername;
-						if (!this.playAudio || name != this.audioName) {
-							const audioList = get.Audio.skill({ skill: this.link, player: name }).fileList;
-							this.playAudio = game.tryAudio({
-								audioList,
-								addVideo: false,
-								random: false,
-								autoplay: false,
-							});
-							this.audioName = name;
+						if (lib.config.background_speak && e !== "init") {
+							let name = bg.tempSkin || audioName || playername;
+							if (!this.playAudio || name != this.audioName) {
+								const audioList = get.Audio.skill({ skill: this.link, player: name }).fileList;
+								this.playAudio = game.tryAudio({
+									audioList,
+									addVideo: false,
+									random: false,
+									autoplay: false,
+								});
+								this.audioName = name;
+							}
+							this.playAudio();
 						}
-						this.playAudio();
-					}
-				} else {
-					let dieAudios = this.dieAudios;
-					introduction2.innerHTML = '<span style="font-weight:bold;margin-right:5px">阵亡台词</span>';
-					dieAudios.forEach((text, index) => {
-						const dieTextSpan = document.createElement("span");
-						dieTextSpan.style.fontSize = "15.2px";
-						dieTextSpan.innerHTML = `<br>${dieAudios.length > 1 ? `${index + 1}. ` : ""}${text}`;
-						introduction2.appendChild(dieTextSpan);
-					});
-					if (lib.config.background_speak && e !== "init") {
+					} else {
 						let name = bg.tempSkin || this.linkname;
-						if (!this.playAudio || name != this.audioName) {
-							let audioList = get.Audio.die({ player: { name: this.playername, skin: { name: name } } }).fileList;
-							this.playAudio = game.tryAudio({
-								audioList,
-								addVideo: false,
-								random: false,
-								autoplay: false,
-							});
-							this.audioName = name;
+						let dieAudios = get.Audio.die({ player: { name: this.playername, skin: { name: name } } })
+							.audioList.map(i => i.text)
+							.filter(Boolean);
+						introduction2.innerHTML = '<span style="font-weight:bold;margin-right:5px">阵亡台词</span>';
+						dieAudios.forEach((text, index) => {
+							const dieTextSpan = document.createElement("span");
+							dieTextSpan.style.fontSize = "15.2px";
+							dieTextSpan.innerHTML = `<br>${dieAudios.length > 1 ? `${index + 1}. ` : ""}${text}`;
+							introduction2.appendChild(dieTextSpan);
+						});
+						if (lib.config.background_speak && e !== "init") {
+							if (!this.playAudio || name != this.audioName) {
+								let audioList = get.Audio.die({ player: { name: this.playername, skin: { name: name } } }).fileList;
+								this.playAudio = game.tryAudio({
+									audioList,
+									addVideo: false,
+									random: false,
+									autoplay: false,
+								});
+								this.audioName = name;
+							}
+							this.playAudio();
 						}
-						this.playAudio();
 					}
-				}
-			};
-		}
+				};
+			}
+		};
+		refreshIntro();
+
 		var initskill = false;
 		let deri = [];
 		for (var i = 0; i < list.length; i++) {
-			if (!get.info(list[i]) || get.info(list[i]).nopop) continue;
-			if (!lib.translate[list[i]] || !lib.translate[list[i] + "_info"]) continue;
+			if (!get.info(list[i]) || get.info(list[i]).nopop) {
+				continue;
+			}
+			if (!lib.translate[list[i]] || !lib.translate[list[i] + "_info"]) {
+				continue;
+			}
 			var skilltrans = get.translation(list[i]);
 			if (skilltrans.startsWith("&nbsp;")) {
 				skilltrans = skilltrans.slice(6);
@@ -3616,16 +3974,27 @@ export class Click {
 			}
 			let derivations = get.info(list[i]).derivation;
 			if (derivations) {
-				if (!Array.isArray(derivations)) derivations = [derivations];
+				if (!Array.isArray(derivations)) {
+					derivations = [derivations];
+				}
 				deri.addArray(derivations);
 			}
 		}
 		let border = get.groupnature(get.bordergroup(name), "raw");
 		for (let skill of deri) {
-			if (list.includes(skill)) continue;
+			if (list.includes(skill)) {
+				continue;
+			}
 			let info = get.info(skill);
-			if (!info || info.nopop) continue;
-			if (!lib.translate[skill] || !lib.translate[skill + "_info"]) continue;
+			if (!info || info.nopop) {
+				continue;
+			}
+			if (!lib.translate[skill] || !lib.translate[skill + "_info"]) {
+				continue;
+			}
+			if (skill.indexOf("_faq") != -1) {
+				continue;
+			}
 			let tran = get.translation(skill);
 			if (tran.startsWith("&nbsp;")) {
 				tran = tran.slice(6);
@@ -3640,13 +4009,14 @@ export class Click {
 				clickSkill.call(currentx, "init");
 			}
 		}
-		let dieAudios = get.Audio.die({ player: audioName })
+		let dieAudios = get.Audio.die({ player: bg.tempSkin || audioName })
 			.audioList.map(i => i.text)
 			.filter(Boolean);
-		if (!dieAudios.length)
+		if (!dieAudios.length) {
 			dieAudios = get.Audio.die({ player: name })
 				.audioList.map(i => i.text)
 				.filter(Boolean);
+		}
 		if (dieAudios.length) {
 			let dieaudio = ui.create.div(".menubutton.large", skills, clickSkill, "阵亡");
 			dieaudio.style.backgroundColor = "rgb(0, 0, 0, 1)";
@@ -3664,7 +4034,9 @@ export class Click {
 				}
 				skin._created = true;
 				var createButtons = function (list, skinList) {
-					if (!list) return;
+					if (!list) {
+						return;
+					}
 					if (list.length >= 4) {
 						avatars2.classList.add("scroll");
 						if (lib.config.touchscreen) {
@@ -3676,6 +4048,7 @@ export class Click {
 							playerbg.classList.remove("scroll");
 							bg.style.backgroundImage = this.style.backgroundImage;
 							bg.tempSkin = this.name;
+							refreshIntro();
 						});
 						let iSTemp = false;
 						if (!lib.character[i] && skinList.some(skin => skin[0] == i)) {
@@ -3684,7 +4057,9 @@ export class Click {
 						}
 						button.name = i;
 						button.setBackground(i, "character");
-						if (iSTemp) delete lib.character[i];
+						if (iSTemp) {
+							delete lib.character[i];
+						}
 					}
 				};
 				let list = this.list,
@@ -3700,7 +4075,9 @@ export class Click {
 		ui.window.appendChild(layer);
 	}
 	intro(e) {
-		if (_status.dragged) return;
+		if (_status.dragged) {
+			return;
+		}
 		_status.clicked = true;
 		if (this.classList.contains("player") && !this.name) {
 			return;
@@ -3708,7 +4085,9 @@ export class Click {
 		if (this.parentNode == ui.historybar) {
 			if (ui.historybar.style.zIndex == "22") {
 				if (_status.removePop) {
-					if (_status.removePop(this) == false) return;
+					if (_status.removePop(this) == false) {
+						return;
+					}
 				} else {
 					return;
 				}
@@ -3720,28 +4099,38 @@ export class Click {
 			uiintro = get.nodeintro(this.parentNode.parentNode, false, e);
 		}
 		uiintro = uiintro || get.nodeintro(this, false, e);
-		if (!uiintro) return;
+		if (!uiintro) {
+			return;
+		}
 		uiintro.classList.add("popped");
 		uiintro.classList.add("static");
 		ui.window.appendChild(uiintro);
 		var layer = ui.create.div(".poplayer", ui.window);
 		var clicklayer = function (e) {
-			if (_status.touchpopping) return;
+			if (_status.touchpopping) {
+				return;
+			}
 			delete ui.throwEmotion;
 			delete _status.removePop;
 			uiintro.delete();
 			this.remove();
 			ui.historybar.style.zIndex = "";
 			delete _status.currentlogv;
-			if (!ui.arena.classList.contains("menupaused") && !uiintro.noresume) game.resume2();
-			if (e && e.stopPropagation) e.stopPropagation();
+			if (!ui.arena.classList.contains("menupaused") && !uiintro.noresume) {
+				game.resume2();
+			}
+			if (e && e.stopPropagation) {
+				e.stopPropagation();
+			}
 			if (uiintro._onclose) {
 				uiintro._onclose();
 			}
 			return false;
 		};
 		layer.addEventListener(lib.config.touchscreen ? "touchend" : "click", clicklayer);
-		if (!lib.config.touchscreen) layer.oncontextmenu = clicklayer;
+		if (!lib.config.touchscreen) {
+			layer.oncontextmenu = clicklayer;
+		}
 		if (this.parentNode == ui.historybar && lib.config.touchscreen) {
 			var rect = this.getBoundingClientRect();
 			e = { clientX: 0, clientY: rect.top + 30 };
@@ -3756,20 +4145,26 @@ export class Click {
 		}
 		uiintro.style.zIndex = 21;
 		var clickintro = function () {
-			if (_status.touchpopping) return;
+			if (_status.touchpopping) {
+				return;
+			}
 			delete _status.removePop;
 			layer.remove();
 			this.delete();
 			ui.historybar.style.zIndex = "";
 			delete _status.currentlogv;
-			if (!ui.arena.classList.contains("menupaused") && !uiintro.noresume) game.resume2();
+			if (!ui.arena.classList.contains("menupaused") && !uiintro.noresume) {
+				game.resume2();
+			}
 			if (uiintro._onclose) {
 				uiintro._onclose();
 			}
 		};
 		var currentpop = this;
 		_status.removePop = function (node) {
-			if (node == currentpop) return false;
+			if (node == currentpop) {
+				return false;
+			}
 			layer.remove();
 			uiintro.delete();
 			delete _status.removePop;
@@ -3803,15 +4198,21 @@ export class Click {
 		}
 	}
 	auto() {
-		if (!ui || !ui.auto || (ui.auto.classList.contains("hidden") && arguments[0] !== "forced")) return;
-		if (_status.paused2) return;
+		if (!ui || !ui.auto || (ui.auto.classList.contains("hidden") && arguments[0] !== "forced")) {
+			return;
+		}
+		if (_status.paused2) {
+			return;
+		}
 		ui.click.shortcut(false);
 		if (!_status.auto) {
 			_status.auto = true;
 			ui.auto.classList.add("glow");
 			ui.arena.classList.add("auto");
 			if (_status.imchoosing && _status.paused) {
-				if (ui.confirm) ui.confirm.close();
+				if (ui.confirm) {
+					ui.confirm.close();
+				}
 				ui.control.hide();
 				if (_status.event.switchToAuto) {
 					_status.event.switchToAuto();
@@ -3819,7 +4220,9 @@ export class Click {
 					if (_status.paused && _status.imchoosing) {
 						game.uncheck();
 						_status.event.redo();
-						if (_status.event.skill && !_status.event.norestore) _status.event.restore();
+						if (_status.event.skill && !_status.event.norestore) {
+							_status.event.restore();
+						}
 					}
 				}
 				game.resume();
@@ -3834,7 +4237,9 @@ export class Click {
 				}, game.me);
 			}
 		} else {
-			if (game.notMe) return;
+			if (game.notMe) {
+				return;
+			}
 			ui.control.show();
 			_status.auto = false;
 			ui.auto.classList.remove("glow");
@@ -3850,14 +4255,18 @@ export class Click {
 		}
 	}
 	wuxie() {
-		if (this.classList.contains("hidden")) return;
+		if (this.classList.contains("hidden")) {
+			return;
+		}
 		this.classList.toggle("glow");
 		if (this.classList.contains("glow") && _status.event.type == "wuxie" && _status.event.isMine() && ui.confirm && _status.imchoosing) {
 			ui.click.cancel(ui.confirm.lastChild);
 		}
 	}
 	tempnowuxie() {
-		if (this.classList.contains("hidden")) return;
+		if (this.classList.contains("hidden")) {
+			return;
+		}
 		this.classList.toggle("glow");
 		if (this.classList.contains("glow") && _status.event.type == "wuxie" && _status.event.isMine() && ui.confirm && _status.imchoosing) {
 			var triggerevent = _status.event.getTrigger();
@@ -3870,16 +4279,26 @@ export class Click {
 		}
 	}
 	pause() {
-		if (lib.config.test_game) return;
-		if (_status.paused2 || _status.pausing || _status.nopause || !ui.pause) return;
+		if (lib.config.test_game) {
+			return;
+		}
+		if (_status.paused2 || _status.pausing || _status.nopause || !ui.pause) {
+			return;
+		}
 		if (!_status.video) {
-			if (ui.pause.classList.contains("hidden")) return;
-			if (!_status.gameStarted) return;
+			if (ui.pause.classList.contains("hidden")) {
+				return;
+			}
+			if (!_status.gameStarted) {
+				return;
+			}
 		}
 		ui.system.hide();
 		game.pause2();
 		var node = ui.create.pause();
-		if (!node) return;
+		if (!node) {
+			return;
+		}
 		node.addTempClass("start");
 		ui.sidebar3.innerHTML = "";
 		if (lib.config.show_discardpile) {
@@ -3900,10 +4319,18 @@ export class Click {
 		}
 	}
 	resume(e) {
-		if (_status.pausing) return;
-		if (_status.dragged) return;
-		if (_status.clicked) return;
-		if (lib.config.test_game) return;
+		if (_status.pausing) {
+			return;
+		}
+		if (_status.dragged) {
+			return;
+		}
+		if (_status.clicked) {
+			return;
+		}
+		if (lib.config.test_game) {
+			return;
+		}
 		this.delete();
 		ui.system.show();
 		ui.time.show();
@@ -3918,9 +4345,14 @@ export class Click {
 		return false;
 	}
 	config() {
-		if (!ui.click.configMenu) return;
-		if (_status.paused2) _status.config2 = false;
-		else _status.config2 = true;
+		if (!ui.click.configMenu) {
+			return;
+		}
+		if (_status.paused2) {
+			_status.config2 = false;
+		} else {
+			_status.config2 = true;
+		}
 
 		_status.clicked = true;
 		game.pause2();
@@ -3929,15 +4361,27 @@ export class Click {
 		ui.system2.classList.remove("shown");
 	}
 	swap() {
-		if (_status.dragged) return;
-		if (this.classList.contains("dead")) return;
-		if (_status.over) return;
-		if (ui.auto) ui.auto.show();
-		if (ui.wuxie) ui.wuxie.show();
+		if (_status.dragged) {
+			return;
+		}
+		if (this.classList.contains("dead")) {
+			return;
+		}
+		if (_status.over) {
+			return;
+		}
+		if (ui.auto) {
+			ui.auto.show();
+		}
+		if (ui.wuxie) {
+			ui.wuxie.show();
+		}
 		game.swapPlayer(this);
 	}
 	mousewheel(evt) {
-		if (this.firstElementChild && this.firstElementChild.classList.contains("handcards") && !this.classList.contains("scrollh")) return;
+		if (this.firstElementChild && this.firstElementChild.classList.contains("handcards") && !this.classList.contains("scrollh")) {
+			return;
+		}
 		var node = this;
 		var num = this._scrollnum || 6;
 		var speed = this._scrollspeed || 16;
@@ -3970,8 +4414,12 @@ export class Click {
 		_status.dialogtouched = true;
 	}
 	touchScroll(e) {
-		if (_status.mousedragging) return;
-		if (_status.draggingtouchdialog) return;
+		if (_status.mousedragging) {
+			return;
+		}
+		if (_status.draggingtouchdialog) {
+			return;
+		}
 		if (!_status.dragged) {
 			if (Math.abs(e.touches[0].clientX / game.documentZoom - this.startX) > 10 || Math.abs(e.touches[0].clientY / game.documentZoom - this.startY) > 10) {
 				_status.dragged = true;
@@ -4039,7 +4487,9 @@ export class Click {
 		e.stopPropagation();
 	}
 	rightplayer(e) {
-		if (this._nopup) return false;
+		if (this._nopup) {
+			return false;
+		}
 		if (_status.clickedplayer) {
 			return false;
 		}
@@ -4055,8 +4505,12 @@ export class Click {
 		return false;
 	}
 	right(e) {
-		if (window.inSplash) return false;
-		if (lib.config.touchscreen) return;
+		if (window.inSplash) {
+			return false;
+		}
+		if (lib.config.touchscreen) {
+			return;
+		}
 		if (_status.noright) {
 			_status.noright = false;
 			return false;

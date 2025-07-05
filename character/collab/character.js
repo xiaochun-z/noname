@@ -1,4 +1,22 @@
 const characters = {
+	ren_jiangwei: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["renhuoluan", "renguxing"],
+	},
+	ren_dengai: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["renneyan", "renqianyao"],
+	},
+	strong_caochong: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["strongduanti", "stronglianwu", "olchengxiang"],
+	},
 	taipingsangong: {
 		sex: "male",
 		group: "qun",
