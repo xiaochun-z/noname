@@ -1023,7 +1023,7 @@ const translates = {
 	mb_xiahoushang: "手杀夏侯尚",
 	mb_xiahoushang_prefix: "手杀",
 	mbtanfeng: "探锋",
-	mbtanfeng_info: "准备阶段，你可以选择任意项：1.弃置一名角色至多两张牌，然后若其手牌数小于等于你，你跳过摸牌阶段；2.对一名角色造成1点无属性伤害，然后若其体力值小于等于你，你跳过出牌阶段。",
+	mbtanfeng_info: "准备阶段，你可以选择任意项：1.弃置一名角色至多两张牌，然后若其手牌数小于等于你，你跳过摸牌阶段；2.对一名角色造成1点火焰伤害，然后若其体力值小于等于你，你跳过出牌阶段。",
 	mb_yanghong: "手杀杨弘",
 	mb_yanghong_prefix: "手杀",
 	mbjianji: "间计",
