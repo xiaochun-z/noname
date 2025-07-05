@@ -563,19 +563,9 @@ const skills = {
 							chooseds: player.getStorage("clanjiannan_used"),
 							filterButton: button => {
 								const link = button.link;
-								if (get.event("chooseds").includes(link)) {
-									return false;
-								}
-								return true;
+								return !get.event("chooseds").includes(link);
 							},
-							filterTarget: (card, player, target) => {
-								if (ui.selected.buttons[0]?.link == "discard") {
-									return target.countDiscardableCards(target, "he");
-								}
-								if (ui.selected.buttons[0]?.link == "recast") {
-									return target.countCards("he", card => target.canRecast(card));
-								}
-							},
+							filterTarget: true,
 							ai1: button => {
 								const player = get.player();
 								switch (button.link) {
@@ -641,9 +631,7 @@ const skills = {
 					player.markAuto("clanjiannan_used", link);
 					switch (link) {
 						case "discard": {
-							if (target.countDiscardableCards(target, "he")) {
-								await target.chooseToDiscard("he", 2, true);
-							}
+							await target.chooseToDiscard("he", 2, true);
 							break;
 						}
 						case "draw": {
