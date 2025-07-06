@@ -190,8 +190,9 @@ game.import("card", function () {
 				fullskin: true,
 				type: "trick",
 				enable: true,
+				global: ["qingsuan_record"],
 				filterTarget(card, player, target) {
-					return target.hasAllHistory("sourceDamage", evt => evt.player == player);
+					return player.getStorage("qingsuan_record").includes(target);
 				},
 				async content(event, trigger, player) {
 					const { target } = event;
@@ -1698,6 +1699,18 @@ game.import("card", function () {
 			},
 		},
 		skill: {
+			qingsuan_record: {
+				silent: true,
+				charlotte: true,
+				trigger: { player: "damageEnd" },
+				firstDo: true,
+				filter(event, player) {
+					return event.source && !player.getStorage("qingsuan_record").includes(event.source);
+				},
+				async content(event, trigger, player) {
+					player.markAuto(event.name, trigger.source);
+				},
+			},
 			jiaoyou_skill: {
 				charlotte: true,
 				silent: true,

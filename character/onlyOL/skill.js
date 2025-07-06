@@ -200,7 +200,7 @@ const skills = {
 					const history = game.getAllGlobalHistory(),
 						map = {};
 					if (history.length <= 1) {
-						return list;
+						return map;
 					}
 					for (let i = history.length - 1; i >= 0; i--) {
 						const evts = history[i]["everything"].filter(evt => {

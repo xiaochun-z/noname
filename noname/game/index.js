@@ -7400,27 +7400,33 @@ export class Game extends GameCompatible {
 	loadModeAsync(name, callback, onerror = e => console.error(e)) {
 		let promise = (async () => {
 			window.game = game;
-			const exports = await import(`../../mode/${name}.js`);
-			// esm模式
-			if (Object.keys(exports).length > 0) {
-				if (typeof exports.default !== "function") {
+			let exports;
+			let isESM = true;
+			try {
+				exports = await import(`../../mode/${name}/index.js`);
+			} catch (e1) {
+				try {
+					exports = await import(`../../mode/${name}.js`);
+				} catch (e2) {
+					isESM = false;
+					await new Promise((resolve, reject) => {
+						let script = lib.init.js(
+							`${lib.assetURL}mode`,
+							name,
+							() => {
+								script?.remove();
+								resolve(null);
+							},
+							e => reject(e.error)
+						);
+					});
+				}
+			}
+			if (isESM) {
+				if (!["object", "function"].includes(typeof exports.default)) {
 					throw new Error(`导入的模式[${name}]格式不正确！`);
 				}
 				game.import("mode", exports.default);
-			}
-			// 普通模式
-			else {
-				await new Promise((resolve, reject) => {
-					let script = lib.init.js(
-						`${lib.assetURL}mode`,
-						name,
-						() => {
-							script?.remove();
-							resolve(null);
-						},
-						e => reject(e.error)
-					);
-				});
 			}
 			await Promise.allSettled(_status.importing.mode);
 			if (!lib.config.dev) {

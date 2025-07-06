@@ -1007,9 +1007,9 @@ const skills = {
 				eventId = get.id();
 			game.broadcastAll(
 				(id, player, target, targets, event) => {
-					if (!targets.includes(game.me)) {
+					/*if (!targets.includes(game.me)) {
 						return;
-					}
+					}*/
 					const dialog = ui.create.dialog("扫奸：" + (game.me === player ? "请选择" : "为" + get.translation(player) + "推荐") + "其中一张牌");
 					dialog.videoId = id;
 					dialog.add('<div class="text center">' + get.translation(target) + "的手牌</div>");
