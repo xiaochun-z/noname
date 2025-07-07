@@ -12093,7 +12093,9 @@ const skills = {
 			return false;
 		},
 		onChooseToUse(event) {
-			if (game.online) return;
+			if (game.online) {
+				return;
+			}
 			let suits = [];
 			game.getGlobalHistory("cardMove", function (evt) {
 				if (suits.length >= 3) {
@@ -12116,7 +12118,9 @@ const skills = {
 			event.set("ciyin_suits", suits);
 		},
 		onChooseToRespond(event) {
-			if (game.online) return;
+			if (game.online) {
+				return;
+			}
 			let suits = [];
 			game.getGlobalHistory("cardMove", function (evt) {
 				if (suits.length >= 3) {
