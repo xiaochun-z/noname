@@ -12093,6 +12093,7 @@ const skills = {
 			return false;
 		},
 		onChooseToUse(event) {
+			if (game.online) return;
 			let suits = [];
 			game.getGlobalHistory("cardMove", function (evt) {
 				if (suits.length >= 3) {
@@ -12115,6 +12116,7 @@ const skills = {
 			event.set("ciyin_suits", suits);
 		},
 		onChooseToRespond(event) {
+			if (game.online) return;
 			let suits = [];
 			game.getGlobalHistory("cardMove", function (evt) {
 				if (suits.length >= 3) {
@@ -12638,15 +12640,12 @@ const skills = {
 	jsrgdangyi: {
 		init(player, skill) {
 			player.setMark(skill, player.getDamagedHp() + 1, false);
-			game.broadcastAll(
-				function (player) {
-					if (!player.node.jiu_dangyi) {
-    					player.node.jiu_dangyi = ui.create.div(".playerjiu", player.node.avatar);
-    					player.node.jiu_dangyi2 = ui.create.div(".playerjiu", player.node.avatar2);
-					}
-				},
-				player
-			);
+			game.broadcastAll(function (player) {
+				if (!player.node.jiu_dangyi) {
+					player.node.jiu_dangyi = ui.create.div(".playerjiu", player.node.avatar);
+					player.node.jiu_dangyi2 = ui.create.div(".playerjiu", player.node.avatar2);
+				}
+			}, player);
 		},
 		zhuSkill: true,
 		trigger: {
@@ -12671,12 +12670,12 @@ const skills = {
 			trigger.num++;
 			game.broadcastAll(
 				function (player, name) {
-    				if (player.countMark(name + "_used") >= player.countMark(name) && player.node.jiu_dangyi) {
-    					player.node.jiu_dangyi.delete();
-    					player.node.jiu_dangyi2.delete();
-    					delete player.node.jiu_dangyi;
-    					delete player.node.jiu_dangyi2;
-    				}
+					if (player.countMark(name + "_used") >= player.countMark(name) && player.node.jiu_dangyi) {
+						player.node.jiu_dangyi.delete();
+						player.node.jiu_dangyi2.delete();
+						delete player.node.jiu_dangyi;
+						delete player.node.jiu_dangyi2;
+					}
 				},
 				player,
 				event.name
@@ -12691,17 +12690,14 @@ const skills = {
 		},
 		onremove(player, skill) {
 			delete player.storage[skill];
-			game.broadcastAll(
-				function (player) {
-    				if (player.node.jiu_dangyi) {
-    					player.node.jiu_dangyi.delete();
-    					player.node.jiu_dangyi2.delete();
-    					delete player.node.jiu_dangyi;
-    					delete player.node.jiu_dangyi2;
-    				}
-				},
-				player
-			);
+			game.broadcastAll(function (player) {
+				if (player.node.jiu_dangyi) {
+					player.node.jiu_dangyi.delete();
+					player.node.jiu_dangyi2.delete();
+					delete player.node.jiu_dangyi;
+					delete player.node.jiu_dangyi2;
+				}
+			}, player);
 		},
 		subSkill: {
 			used: {
