@@ -2730,20 +2730,17 @@ const skills = {
 					}
 				})
 				.set("ai", button => {
-					if (button.link == "draw") {
-						const target = _status.currentPhase;
-						if (target?.isIn() && get.attitude(get.player(), target) > 0) {
-							return 2;
-						}
-						return 0;
+					if (button.link == "discard") {
+						return 1;
 					}
-					if (button.link == "both") {
-						if (get.event().count > 1) {
-							return 0;
+					const target = _status.currentPhase;
+					if (target?.isIn() && get.attitude(get.player(), target) > 0) {
+						if (button.link == "both") {
+							return get.event("count") > 1 ? 0 : 3;
 						}
-						return 3;
+						return 2;
 					}
-					return 1;
+					return 0;
 				})
 				.set("count", count)
 				.forResult();
@@ -2828,7 +2825,7 @@ const skills = {
 						if (
 							used &&
 							!game.hasPlayer(target => {
-								return !target.hasHistory("gain", evt => evt.cards.length);
+								return !target.hasHistory("gain", evt => evt.cards?.length);
 							})
 						) {
 							return;
@@ -2869,17 +2866,18 @@ const skills = {
 								black: black,
 								red: red,
 								used: used,
+								targetsx: game.filterPlayer(target=>!target.hasHistory("gain", evt => evt.cards?.length)),
 								filterButton(button) {
-									return get.event()[button.link].length;
+									return get.event()[button.link]?.length;
 								},
 								filterTarget(card, player, target) {
 									if (get.event().used) {
-										return !target.hasHistory("gain", evt => evt.cards.length);
+										return get.event().targetsx.includes(target);
 									}
 									return true;
 								},
 								ai1(button) {
-									return get.event()[button.link].length;
+									return get.event()[button.link]?.length;
 								},
 								ai2(target) {
 									if (!get.event().used && get.player() == target) {
@@ -3919,7 +3917,7 @@ const skills = {
 					[
 						[
 							["discard", "弃置一名角色至多两张牌，然后若其手牌数小于等于你,你跳过摸牌阶段"],
-							["damage", "对一名角色造成1点无属性伤害，然后若其体力值小于等于你，你跳过出牌阶段。"],
+							["damage", "对一名角色造成1点火焰伤害，然后若其体力值小于等于你，你跳过出牌阶段。"],
 						],
 						"textbutton",
 					],
@@ -3937,7 +3935,7 @@ const skills = {
 						}
 						return 1;
 					} else if (button.link === "damage") {
-						if (!game.hasPlayer(target => target.getHp() - 1 > player.getHp() && get.damageEffect(target, player, player))) {
+						if (!game.hasPlayer(target => target.getHp() - 1 > player.getHp() && get.damageEffect(target, player, player, "fire"))) {
 							return 0;
 						}
 						return 1;
@@ -3969,14 +3967,14 @@ const skills = {
 			}
 			if (choices.includes("damage")) {
 				const result = await player
-					.chooseTarget("探锋：对一名角色造成1点无属性伤害", true)
+					.chooseTarget("探锋：对一名角色造成1点火焰伤害", true)
 					.set("ai", target => {
 						const player = get.player();
-						return get.damageEffect(target, player, player);
+						return get.damageEffect(target, player, player, "fire");
 					})
 					.forResult();
 				player.line(result.targets);
-				await result.targets[0].damage();
+				await result.targets[0].damage("fire");
 				if (result.targets[0].getHp() <= player.getHp()) {
 					player.skip("phaseUse");
 				}
@@ -5728,7 +5726,12 @@ const skills = {
 									return true;
 								}
 								ui.selected.cards.add(card);
-								const bool = targets.some(target => player.canUse(useCard, target));
+								const bool = targets.some(target => {
+									if (!lib.filter.cardEnabled(useCard, player, "forceEnable")) {
+										return false;
+									}
+									return lib.filter.targetEnabled2(useCard, player, target) && lib.filter.targetInRange(useCard, player, target);
+								});
 								ui.selected.cards.remove(card);
 								return bool;
 							})
@@ -21558,6 +21561,7 @@ const skills = {
 			return 5 - get.value(card);
 		},
 		async content(event, trigger, player) {
+			const {target} = event;
 			const result = await player
 				.gainPlayerCard(target, "e", true)
 				.set("ai", function (button) {

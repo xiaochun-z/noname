@@ -2,6 +2,230 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//Ol樊氏
+	olzhuoyue: {
+		audio: 2,
+		trigger: { target: "useCardToTargeted" },
+		filter(event, player) {
+			return !get.tag(event.card, "damage") && !event.card.storage?.olzhuoyue && game.hasPlayer(target => target.hasUseTarget({ name: "jiu", isCard: true }, false, false));
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
+					return target.hasUseTarget({ name: "jiu", isCard: true }, false, false);
+				})
+				.set("ai", target => get.effect(target, { name: "jiu", isCard: true }, target, get.player()))
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			await target.chooseUseTarget(get.autoViewAs({ name: "jiu", isCard: true, storage: { olzhuoyue: true } }), true, false);
+		},
+		group: ["olzhuoyue_tao"],
+		subSkill: {
+			tao: {
+				audio: "olzhuoyue",
+				trigger: { global: "useCardToTargeted" },
+				filter(event, player) {
+					return get.tag(event.card, "damage") > 0.5 && event.target.hasSkill("jiu") && event.target.hasUseTarget({ name: "tao", isCard: true }, false, false);
+				},
+				logTarget: "target",
+				prompt2(event, player) {
+					return `移除其【酒】状态并令其视为使用【桃】`;
+				},
+				async content(event, trigger, player) {
+					const { target } = trigger;
+					game.broadcastAll(function (player) {
+						player.removeSkill("jiu");
+					}, target);
+					game.addVideo("jiuNode", target, false);
+					await target.chooseUseTarget({ name: "tao", isCard: true }, true, false);
+				},
+			},
+		},
+	},
+	olqiaowu: {
+		audio: 2,
+		mark: true,
+		marktext: "☯",
+		zhuanhuanji: true,
+		intro: {
+			content(storage) {
+				if (!storage) {
+					return "转换技，每回合限一次，当你使用的【杀】或【闪】结算完毕后，你可令所有处于【酒】状态的角色摸一张牌。";
+				}
+				return "转换技，每回合限一次，当你使用的【杀】或【闪】结算完毕后，你可令所有处于【酒】状态的角色选择是否使用一张【杀】。";
+			},
+		},
+		usable: 1,
+		trigger: { player: "useCardAfter" },
+		filter(event, player) {
+			return ["sha", "shan"].includes(event.card.name) && lib.skill.olqiaowu.logTarget(event, player).length > 0;
+		},
+		logTarget(event, player) {
+			return game.filterPlayer(target => target.hasSkill("jiu"));
+		},
+		check(event, player) {
+			return lib.skill.olqiaowu.logTarget(event, player).some(target => get.attitude(player, target) > 0);
+		},
+		async content(event, trigger, player) {
+			const { targets } = event;
+			const bool = player.storage[event.name];
+			player.changeZhuanhuanji(event.name);
+			if (!bool) {
+				await game.asyncDraw(targets.sortBySeat());
+			} else {
+				for (const target of targets.sortBySeat()) {
+					await target
+						.chooseToUse(function (card, player, event) {
+							if (get.name(card) != "sha") {
+								return false;
+							}
+							return lib.filter.filterCard.apply(this, arguments);
+						}, `俏舞：是否使用一张【杀】`)
+						.set("targetRequired", true)
+						.set("complexSelect", true)
+						.set("complexTarget", true);
+				}
+			}
+		},
+	},
+	//OL桥公
+	olmeiyan: {
+		audio: 2,
+		enable: "phaseUse",
+		usable: 1,
+		filter(event, player) {
+			if (!player.countCards("h")) {
+				return false;
+			}
+			return game.hasPlayer(target => lib.skill.olmeiyan.filterTarget(null, player, target));
+		},
+		manualConfirm: true,
+		filterTarget(card, player, target) {
+			return target.hp >= player.hp && target.countCards("h") && player != target;
+		},
+		selectTarget: -1,
+		multitarget: true,
+		multiline: true,
+		async content(event, trigger, player) {
+			const { targets } = event;
+			await player.chooseToDebate([player].concat(targets.sortBySeat())).set("callback", async (event, trigger, player) => {
+				const { debateResult: result } = event;
+				const { bool, opinion, targets, opinions } = result;
+				if (opinion == "red") {
+					await player
+						.gain(result.red.map(i => i[1]))
+						.set("animate", event => {
+							var player = event.player,
+								cards = event.cards;
+							event.targets.forEach((target, index) => {
+								target.$give(cards[index], player);
+							});
+						})
+						.set(
+							"targets",
+							result.red.map(i => i[0]).filter(target => target != player)
+						);
+				} else if (opinion == "black") {
+					const drawer = result.red
+						.map(i => i[0])
+						.unique()
+						.sortBySeat();
+					await game.asyncDraw([player].concat(drawer));
+				}
+			});
+		},
+	},
+	olshuoyu: {
+		audio: 2,
+		usable: 1,
+		trigger: { global: "useCardToTarget" },
+		filter(event, player) {
+			return event.card.name == "sha" && event.target.isMinHandcard() && (event.target == player || player.inRange(event.target)) && player.countCards("h") && lib.skill.olshuoyu.logTarget(event, player).length;
+		},
+		logTarget(event, player) {
+			return game.filterPlayer(target => target.hp <= player.hp && target.countCards("h") && player != target).sortBySeat();
+		},
+		check(event, player) {
+			return get.effect(event.target, event.card, event.player, player) < 0;
+		},
+		async content(event, trigger, player) {
+			const { targets } = event;
+			await player.chooseToDebate([player].concat(targets)).set("callback", async (event, trigger, player) => {
+				const { debateResult: result } = event;
+				const { bool, opinion, targets, opinions } = result;
+				if (opinion == "red") {
+					const lose_list = [];
+					for (const [target, card] of result.red) {
+						const list = lose_list.find(i => i[0] == target);
+						if (!list) {
+							lose_list.push([target, [card]]);
+						} else {
+							lose_list[lose_list.indexOf(list)][1].push(card);
+						}
+					}
+					await game
+						.loseAsync({
+							lose_list: lose_list,
+							discarder: player,
+						})
+						.setContent("discardMultiple");
+					const evt = event.getTrigger(); //.getParent(2)
+					const targetsx = game.filterPlayer(target => !evt.targets?.includes(target) && lib.filter.targetEnabled(evt.card, evt.player, target) && !targets.includes(target));
+					if (targetsx.length) {
+						const result = await player
+							.chooseTarget(`妁语：将${get.translation(evt.card)}从${get.translation(evt.target)}转移给一名未参与议事的角色`, true, (card, player, target) => {
+								return get.event().targetsx.includes(target);
+							})
+							.set("targetsx", targetsx)
+							.set("cardx", evt.card)
+							.set("sourcex", evt.player)
+							.set("ai", target => get.effect(target, get.event().cardx, get.event().sourcex, get.player()))
+							.forResult();
+						if (result?.targets?.length) {
+							const evtx = evt.getParent();
+							const target = evt.target;
+							player.line(result.targets);
+							evtx.triggeredTargets2.remove(target);
+							evtx.targets.remove(target);
+							evtx.targets.push(result.targets[0]);
+						}
+					}
+				} else if (opinion == "black") {
+					player.tempBanSkill("olshuoyu", { player: "phaseAfter" });
+				}
+			});
+		},
+	},
+	olzuobao: {
+		audio: 2,
+		limited: true,
+		skillAnimation: true,
+		animationColor: "wood",
+		trigger: {
+			global: "debateShowOpinion",
+		},
+		filter(event, player) {
+			return event.targets.includes(player) && event.opinions.some(i => event[i].flat().includes(player)) && event.black.some(i => get.suit(i[1], i[0]) == "spade");
+		},
+		/*logTarget(event,player){
+			return event.black.filter(i=>get.suit(i[1],i[0]) == "spade").map(i=>i[0]).unique().sortBySeat();
+		},*/
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			const targets = [];
+			for (let i = 0; i < trigger.black.length; i++) {
+				const entry = trigger.black[i];
+				if (get.suit(entry[1], entry[0]) == "spade") {
+					trigger.red.push(entry);
+					trigger.black.splice(i--, 1);
+					targets.add(entry[0]);
+				}
+			}
+			player.line(targets);
+		},
+	},
 	//OL三娘
 	//苦命打工人~强烈谴责会长牢萌！！！
 	newwuniang: {
@@ -183,7 +407,7 @@ const skills = {
 					}
 					const ranks = target.getSkills(null, false, false).reduce((sum, name) => {
 						_status.event.skillRankPlayer = target;
-						sum += get.skillRank(name, true);
+						sum += get.skillRank(name);
 						delete _status.event.skillRankPlayer;
 						return sum;
 					}, 1);
@@ -30713,25 +30937,24 @@ const skills = {
 		discard: false,
 		lose: false,
 		delay: false,
-		content() {
-			"step 0";
-			player.give(cards, target);
-			if (get.color(cards[0]) == "black") {
-				target
-					.chooseToDiscard(2, "he", "弃置两张牌，或令" + get.translation(player) + "摸两张牌")
-					.set("ai", function (card) {
-						if (_status.event.goon) {
-							return 7 - get.value(card);
-						}
-						return 0;
-					})
-					.set("goon", get.attitude(target, player) < 0);
-			} else {
-				event.finish();
+		async content(event, trigger, player) {
+			const { cards, target } = event;
+			player.give(cards, target, true);
+			if (get.color(cards[0], player) == "red") {
+				return;
 			}
-			"step 1";
+			const result = await target
+				.chooseToDiscard("he", 2, "弃置两张牌，或令" + get.translation(player) + "摸两张牌")
+				.set("goon", get.attitude(target, player) < 0)
+				.set("ai", function (card) {
+					if (!_status.event.goon) {
+						return -get.value(card);
+					}
+					return 6 - get.value(card);
+				})
+				.forResult();
 			if (!result.bool) {
-				player.draw(2);
+				await player.draw(2);
 			}
 		},
 		ai: {
@@ -35620,7 +35843,7 @@ const skills = {
 		},
 	},
 	rezhoufu: {
-		audio: "zhoufu",
+		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
@@ -35650,7 +35873,7 @@ const skills = {
 		group: ["rezhoufu_losehp"],
 		subSkill: {
 			judge: {
-				audio: "zhoufu",
+				audio: "rezhoufu",
 				init: player => {
 					player.storage.rezhoufu_judge_markcount = 0;
 				},
@@ -35676,7 +35899,7 @@ const skills = {
 				},
 			},
 			losehp: {
-				audio: "zhoufu",
+				audio: "rezhoufu",
 				trigger: { global: "phaseEnd" },
 				forced: true,
 				filter(event, player) {
@@ -35735,7 +35958,7 @@ const skills = {
 		},
 	},
 	reyingbing: {
-		audio: "yingbing",
+		audio: 2,
 		trigger: { global: "useCard" },
 		forced: true,
 		filter(event, player) {

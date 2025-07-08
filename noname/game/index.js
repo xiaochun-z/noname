@@ -7052,11 +7052,10 @@ export class Game extends GameCompatible {
 				}
 			}
 		}
-		const eventinfo = get.info(get.card() || {}) || skillinfo;
-		if (_status.event.name == "chooseToUse" && eventinfo?.manualConfirm === true) {
+		const cardinfo = get.info(get.card()) || {};
+		if (_status.event.name == "chooseToUse" && (skillinfo?.manualConfirm === true || cardinfo?.manualConfirm === true)) {
 			auto_confirm = false;
 		}
-
 		player.node.equips.classList.remove("popequip");
 		if (event.filterCard && lib.config.popequip && !_status.nopopequip && get.is.phoneLayout() && typeof event.position === "string" && event.position.includes("e") && player.node.equips.querySelector(".card.selectable")) {
 			player.node.equips.classList.add("popequip");
@@ -7400,27 +7399,33 @@ export class Game extends GameCompatible {
 	loadModeAsync(name, callback, onerror = e => console.error(e)) {
 		let promise = (async () => {
 			window.game = game;
-			const exports = await import(`../../mode/${name}.js`);
-			// esm模式
-			if (Object.keys(exports).length > 0) {
-				if (typeof exports.default !== "function") {
+			let exports;
+			let isESM = true;
+			try {
+				exports = await import(`../../mode/${name}/index.js`);
+			} catch (e1) {
+				try {
+					exports = await import(`../../mode/${name}.js`);
+				} catch (e2) {
+					isESM = false;
+					await new Promise((resolve, reject) => {
+						let script = lib.init.js(
+							`${lib.assetURL}mode`,
+							name,
+							() => {
+								script?.remove();
+								resolve(null);
+							},
+							e => reject(e.error)
+						);
+					});
+				}
+			}
+			if (isESM) {
+				if (!["object", "function"].includes(typeof exports.default)) {
 					throw new Error(`导入的模式[${name}]格式不正确！`);
 				}
 				game.import("mode", exports.default);
-			}
-			// 普通模式
-			else {
-				await new Promise((resolve, reject) => {
-					let script = lib.init.js(
-						`${lib.assetURL}mode`,
-						name,
-						() => {
-							script?.remove();
-							resolve(null);
-						},
-						e => reject(e.error)
-					);
-				});
 			}
 			await Promise.allSettled(_status.importing.mode);
 			if (!lib.config.dev) {

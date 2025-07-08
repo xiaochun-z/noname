@@ -3425,7 +3425,8 @@ const skills = {
 			const toKeepCount = player
 				.getCards("h")
 				.map(card => get.name(card))
-				.unique();
+				.unique()
+				.length;
 			if (count > toKeepCount) {
 				const [bool, cards] = await player
 					.chooseCard("自缚：选择要保留的手牌", "选择不同牌名的手牌各一张，然后弃置其余手牌", toKeepCount)
@@ -17477,27 +17478,25 @@ const skills = {
 				return 7 - num;
 			}
 		},
-		content() {
-			"step 0";
-			player.give(cards, target);
-			"step 1";
+		async content(event, trigger, player) {
+			const { cards, target } = event;
+			player.give(cards, target, true);
 			if (get.color(cards[0], player) == "red") {
-				player.draw();
-				event.finish();
-			} else {
-				target
-					.chooseToDiscard("he", 2, "弃置两张牌，或令" + get.translation(player) + "摸两张牌")
-					.set("goon", get.attitude(target, player) < 0)
-					.set("ai", function (card) {
-						if (!_status.event.goon) {
-							return -get.value(card);
-						}
-						return 6 - get.value(card);
-					});
+				await player.draw();
+				return;
 			}
-			"step 2";
+			const result = await target
+				.chooseToDiscard("he", 2, "弃置两张牌，或令" + get.translation(player) + "摸两张牌")
+				.set("goon", get.attitude(target, player) < 0)
+				.set("ai", function (card) {
+					if (!_status.event.goon) {
+						return -get.value(card);
+					}
+					return 6 - get.value(card);
+				})
+				.forResult();
 			if (!result.bool) {
-				player.draw(2);
+				await player.draw(2);
 			}
 		},
 		ai: {
