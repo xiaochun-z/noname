@@ -4617,7 +4617,7 @@ player.removeVirtualEquip(card);
 		}
 		game.log();
 		const skill = event.skill && get.sourceSkillFor(event.skill);
-		game.log(player, "的", skill ? `#y【${get.translation(skill)}】`: "", "回合开始");
+		game.log(player, "的", skill ? `#y【${get.translation(skill)}】` : "", "回合开始");
 		player._noVibrate = true;
 		if (get.config("identity_mode") != "zhong" && get.config("identity_mode") != "purple" && !_status.connectMode) {
 			var num;
@@ -6132,7 +6132,8 @@ player.removeVirtualEquip(card);
 			game.log(targets[index], "的拼点牌为", card);
 		});
 		player.addTempClass("target");
-		game.delay(0, 1000);
+		//共同拼点延时修改
+		game.delay(0, lib.config.game_speed == "vvfast" ? 4000 : 1000);
 		"step 5";
 		event.target = null;
 		event.trigger("compare");
@@ -6331,7 +6332,8 @@ player.removeVirtualEquip(card);
 			player.line(event.target);
 			player.$compare(event.card1, event.target, event.card2);
 			event.trigger("compare");
-			game.delay(0, 1500);
+			//多元拼点延时调整
+			game.delay(0, lib.config.game_speed == "vvfast" ? 4000 : 1500);
 		} else {
 			event.goto(10);
 		}
@@ -6537,7 +6539,8 @@ player.removeVirtualEquip(card);
 			event.num1 = getNum(event.card1);
 			event.num2 = getNum(event.card2);
 			event.trigger("compare");
-			game.delay(0, 1500);
+			//普通拼点延迟时间修改
+			game.delay(0, lib.config.game_speed == "vvfast" ? 4000 : 1500);
 		},
 		async (event, trigger, player) => {
 			event.result = {
@@ -6634,7 +6637,8 @@ player.removeVirtualEquip(card);
 		event.num1 = getNum(event.card1);
 		event.num2 = getNum(event.card2);
 		await event.trigger("compare");
-		await game.delay(0, 1500);
+		//延时拼点延迟时间修改 if(lib.config.game_speed == "vvfast")
+		await game.delay(0, lib.config.game_speed == "vvfast" ? 4000 : 1500);
 		event.result = {
 			player: event.card1,
 			target: event.card2,
@@ -11630,6 +11634,10 @@ player.removeVirtualEquip(card);
 			} else {
 				cardj = get.cards()[0];
 			}
+		}
+		if (!cardj) {
+			event.finish();
+			return;
 		}
 		var owner = get.owner(cardj);
 		if (owner) {
