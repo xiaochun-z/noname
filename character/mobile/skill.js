@@ -2730,20 +2730,17 @@ const skills = {
 					}
 				})
 				.set("ai", button => {
-					if (button.link == "draw") {
-						const target = _status.currentPhase;
-						if (target?.isIn() && get.attitude(get.player(), target) > 0) {
-							return 2;
-						}
-						return 0;
+					if (button.link == "discard") {
+						return 1;
 					}
-					if (button.link == "both") {
-						if (get.event().count > 1) {
-							return 0;
+					const target = _status.currentPhase;
+					if (target?.isIn() && get.attitude(get.player(), target) > 0) {
+						if (button.link == "both") {
+							return get.event("count") > 1 ? 0 : 3;
 						}
-						return 3;
+						return 2;
 					}
-					return 1;
+					return 0;
 				})
 				.set("count", count)
 				.forResult();
@@ -5729,7 +5726,12 @@ const skills = {
 									return true;
 								}
 								ui.selected.cards.add(card);
-								const bool = targets.some(target => player.canUse(useCard, target));
+								const bool = targets.some(target => {
+									if (!lib.filter.cardEnabled(useCard, player, "forceEnable")) {
+										return false;
+									}
+									return lib.filter.targetEnabled2(useCard, player, target) && lib.filter.targetInRange(useCard, player, target);
+								});
 								ui.selected.cards.remove(card);
 								return bool;
 							})
