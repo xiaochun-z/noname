@@ -4670,7 +4670,7 @@ const skills = {
 						if (!cards.length) {
 							return;
 						}
-						await target.chooseToGive(player, "he", 2, "天香：交给" + get.translation(player) + "两张牌", true).forResult();
+						await target.chooseToGive(player, "he", 2, "天香：交给" + get.translation(player) + "两张牌", true);
 					} else {
 						return;
 					}
