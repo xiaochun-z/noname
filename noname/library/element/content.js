@@ -3923,7 +3923,7 @@ player.removeVirtualEquip(card);
 		if (hidden.includes(event.skill)) {
 			if (!info.silent && player.hasSkillTag("nomingzhi", false, null, true)) {
 				event.finish();
-			} else if (!info.direct && typeof info.cost !== "function") {
+			} else if ((!info.direct && typeof info.cost !== "function") || (get.is.locked(event.skill, player) && typeof info.cost == "function")) {
 				event.trigger("triggerHidden");
 			} else {
 				event.skillHidden = true;
@@ -8820,7 +8820,7 @@ player.removeVirtualEquip(card);
 				player.stat[player.stat.length - 1].card[card.name]++;
 			}
 		}
-		if (event.skill && event.addStatCount !== false) {
+		if (event.skill && event.addSkillCount !== false) {
 			if (player.stat[player.stat.length - 1].skill[event.skill] == undefined) {
 				player.stat[player.stat.length - 1].skill[event.skill] = 1;
 			} else {
@@ -9788,7 +9788,7 @@ player.removeVirtualEquip(card);
 				card
 			);
 		}
-		if (event.skill && event.addStatCount !== false) {
+		if (event.skill && event.addSkillCount !== false) {
 			if (player.stat[player.stat.length - 1].skill[event.skill] == undefined) {
 				player.stat[player.stat.length - 1].skill[event.skill] = 1;
 			} else {

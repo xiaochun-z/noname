@@ -21181,7 +21181,7 @@ const skills = {
 						result.links
 					);
 					evt.result.cards = [result.links[0]];
-					evt.result._apply_args = { addStatCount: false };
+					evt.result._apply_args = { addSkillCount: false };
 					target.$give(result.links[0], player, false);
 					if (player != target) {
 						target.addTempSkill("fengyin");
@@ -21362,7 +21362,7 @@ const skills = {
 			backup: {
 				precontent() {
 					"step 0";
-					event.result._apply_args = { throw: false, addStatCount: false };
+					event.result._apply_args = { throw: false, addSkillCount: false };
 					var cards = event.result.card.cards;
 					event.result.cards = cards;
 					var owner = get.owner(cards[0]);
