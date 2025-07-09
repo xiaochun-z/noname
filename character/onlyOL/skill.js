@@ -738,7 +738,7 @@ const skills = {
 		initList() {
 			//先用许劭评鉴那个函数初始化一下角色列表
 			if (!_status.characterlist) {
-				game.initCharactertList();
+				game.initCharacterList();
 			}
 			//获取各个角色的技能并去重
 			const skills = _status.characterlist
@@ -4499,7 +4499,7 @@ const skills = {
 						return;
 					}
 					player.popup("失败", "fire");
-					player.storage.olsbjinming.remove(num);
+					player.storage.olsbjinming?.remove(num);
 					game.log(player, "删除了", "#g【矜名】", "的选项", `#y${choice.slice(2)}`);
 				},
 				intro: {
