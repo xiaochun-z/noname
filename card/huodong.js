@@ -248,8 +248,6 @@ game.import("card", function () {
 									(tag, str) => {
 										lib.skill[tag] = {};
 										lib.translate[tag] = "浇油+" + str;
-										console.log(tag);
-										console.log(str);
 									},
 									tag,
 									tag.slice(name.length)
