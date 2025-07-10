@@ -2560,9 +2560,10 @@ const skills = {
 					filterTarget: lib.filter.notMe,
 					selectTarget: -1,
 					log: false,
+					link: links[0],
 					async precontent(event, trigger, player) {
 						player.logSkill("dcsbzhanban", event.result.targets);
-						const link = links[0];
+						const link = lib.skill.dcsbzhanban_backup.link;
 						if (link > 0) {
 							await player.draw(link);
 						} else if (link < 0) {

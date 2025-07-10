@@ -114,6 +114,7 @@ window.noname_character_rank = {
 		"sxrm_caocao",
 	],
 	a: [
+		"pe_xiahouxuan",
 		"mb_zerong",
 		"pe_jun_liubei",
 		"pe_jun_caocao",
@@ -2430,6 +2431,7 @@ window.noname_character_rank = {
 	],
 	rarity: {
 		legend: [
+			"pe_xiahouxuan",
 			"pe_que",
 			"chenshou",
 			"strong_caochong",
