@@ -1618,12 +1618,15 @@ const skills = {
 		},
 		filterCard: lib.filter.cardDiscardable,
 		position: "he",
-		content() {
-			var card = get.discardPile(card => card.name == "sha");
+		async content(event, trigger, player) {
+			const card = get.discardPile(card => card.name == "sha"),
+				{ target } = event;
 			if (card) {
-				target.gain(card, "gain2").gaintag.add("refuman");
 				target.addTempSkill("refuman2", { player: "phaseAfter" });
 				player.addSkill("refuman_draw");
+				const next = target.gain(card, "gain2");
+				next.gaintag.add("refuman");
+				await next;
 			}
 			var stat = player.getStat("skill");
 			if (!stat.refuman_targets) {
@@ -1653,7 +1656,7 @@ const skills = {
 				getIndex(event, player) {
 					return game
 						.filterPlayer2(target => {
-							const evt = event.getParent();
+							const evt = event.getParent(2);
 							if (!["useCard", "respond"].includes(evt?.name) && !target.isIn()) {
 								return false;
 							}
@@ -1675,13 +1678,13 @@ const skills = {
 				forced: true,
 				filter: (event, player, name, target) => target,
 				logTarget: (event, player, name, target) => target,
-				content() {
+				async content(event, trigger, player) {
 					const [target] = event.targets,
-						evt = trigger.getParent();
+						evt = trigger.getParent(2);
 					if (["useCard", "respond"].includes(evt?.name)) {
-						game.asyncDraw([target, player]);
+						await game.asyncDraw([target, player]);
 					} else {
-						target.draw();
+						await target.draw();
 					}
 					trigger.refuman_active = true;
 				},
@@ -10423,7 +10426,7 @@ const skills = {
 		trigger: { player: "loseAfter" },
 		frequent: true,
 		filter(event, player) {
-			return player != _status.currentPhase && event.hs && event.hs.length > 0 && ["useCard", "respond"].includes(event.getParent().name);
+			return player != _status.currentPhase && event.hs && event.hs.length > 0 && ["useCard", "respond"].includes(event.getParent(2).name);
 		},
 		content() {
 			"step 0";

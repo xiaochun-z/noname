@@ -1418,7 +1418,7 @@ const skills = {
 				if (event.type === "discard") {
 					return false;
 				}
-				if (event.name == "lose" && ["useCard", "respond"].includes(event?.getParent()?.name)) {
+				if (event.name == "loseAsync" && ["useCard", "respond"].includes(event?.getParent()?.name)) {
 					return false;
 				}
 			}
@@ -1427,7 +1427,7 @@ const skills = {
 					if (evtx.type == "discard") {
 						return false;
 					}
-					if (["useCard", "respond"].includes(evtx.getParent().name)) {
+					if (["useCard", "respond"].includes(evtx.getParent(2)?.name)) {
 						return false;
 					}
 					return evtx?.hs.some(card => get.type(card) == "equip" || get.name(card) == "jiu");

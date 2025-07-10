@@ -10920,7 +10920,7 @@ const skills = {
 		},
 		direct: true,
 		filter(event, player) {
-			if (player == _status.currentPhase || event.getParent().name == "useCard") {
+			if (player == _status.currentPhase || event.getParent(2)?.name == "useCard") {
 				return false;
 			}
 			if (event.name == "gain" && event.player == player) {

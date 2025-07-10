@@ -2535,7 +2535,7 @@ const skills = {
 		},
 		usable: 1,
 		filter(event, player) {
-			if (event.name == "lose" && event.getParent().name == "useCard") {
+			if (event.name == "loseAsync" && event.getParent().name == "useCard") {
 				return false;
 			}
 			return event.getl(player)?.hs?.some(card => get.name(card, false) == "sha" && !get.owner(card));
@@ -2866,7 +2866,7 @@ const skills = {
 								black: black,
 								red: red,
 								used: used,
-								targetsx: game.filterPlayer(target=>!target.hasHistory("gain", evt => evt.cards?.length)),
+								targetsx: game.filterPlayer(target => !target.hasHistory("gain", evt => evt.cards?.length)),
 								filterButton(button) {
 									return get.event()[button.link]?.length;
 								},
@@ -11619,9 +11619,12 @@ const skills = {
 		inherit: "twkujian",
 		selectCard: [1, 2],
 		logAudio: () => "twkujian1.mp3",
-		content() {
-			player.give(cards, target).gaintag.add("twkujianx");
+		async content(event, trigger, player) {
+			const { cards, target } = event;
 			player.addSkill("kujian_discard");
+			const next = player.give(cards, target);
+			next.gaintag.add("twkujianx");
+			await next;
 		},
 		subSkill: {
 			discard: {
@@ -11633,7 +11636,6 @@ const skills = {
 					let list = [],
 						players = game.filterPlayer().sortBySeat();
 					for (const current of players) {
-						let bool = ["useCard", "respond"].includes(event.getParent().name);
 						if (current == player) {
 							continue;
 						}
@@ -11641,18 +11643,11 @@ const skills = {
 						if (!evt || !evt.hs || !evt.hs.length) {
 							continue;
 						}
-						if (event.name == "lose") {
-							for (var i in event.gaintag_map) {
-								if (event.gaintag_map[i].includes("twkujianx")) {
-									list.push([current, bool]);
-								}
-							}
-							continue;
-						}
 						current.getHistory("lose", evt => {
-							if (event != evt.getParent()) {
+							if (event != evt.getParent() && event != evt) {
 								return false;
 							}
+							const bool = ["useCard", "respond"].includes(evt.getParent(2).name);
 							for (var i in evt.gaintag_map) {
 								if (evt.gaintag_map[i].includes("twkujianx")) {
 									list.push([current, bool]);
@@ -21561,7 +21556,7 @@ const skills = {
 			return 5 - get.value(card);
 		},
 		async content(event, trigger, player) {
-			const {target} = event;
+			const { target } = event;
 			const result = await player
 				.gainPlayerCard(target, "e", true)
 				.set("ai", function (button) {
@@ -26641,7 +26636,7 @@ const skills = {
 		getNum(player) {
 			let num = 0;
 			player.getHistory("lose", evt => {
-				const evt2 = evt.getParent();
+				const evt2 = evt.getParent(2);
 				if (evt2.name == "useCard" && evt2.player == player && get.type(evt2.card, null, false) == "equip") {
 					return;
 				}

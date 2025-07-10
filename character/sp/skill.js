@@ -27479,7 +27479,7 @@ const skills = {
 			var num = 0;
 			for (var i = 0; i < history.length; i++) {
 				for (var j = 0; j < history[i].lose.length; j++) {
-					if (history[i].lose[j].parent.name == "useCard") {
+					if (history[i].lose[j].getParent(2).name == "useCard") {
 						continue;
 					}
 					num += history[i].lose[j].cards2.filter(function (card) {
@@ -27492,21 +27492,19 @@ const skills = {
 				player.markSkill("xinshanjia");
 			}
 		},
-		content() {
-			"step 0";
-			player.draw(3);
-			"step 1";
+		async content(event, trigger, player) {
+			await player.draw(3);
 			lib.skill.xinshanjia.sync(player);
-			var num = 3 - player.storage.xinshanjia;
+			const num = 3 - player.storage.xinshanjia;
+			let result;
 			if (num > 0) {
-				player.chooseToDiscard("he", true, num).ai = get.disvalue;
+				result = await player.chooseToDiscard("he", true, num).set("ai", get.disvalue).forResult();
 			}
-			"step 2";
-			var bool1 = true,
+			let bool1 = true,
 				bool2 = true;
-			if (result.cards) {
-				var cards = result.cards;
-				for (var i = 0; i < result.cards.length; i++) {
+			if (result?.cards?.length) {
+				const cards = result.cards;
+				for (let i = 0; i < result.cards.length; i++) {
 					var type = get.type(result.cards[i], "trick", result.cards[i].original == "h" ? player : false);
 					if (type == "basic") {
 						bool1 = false;
@@ -27517,13 +27515,13 @@ const skills = {
 				}
 			}
 			if (bool1) {
-				player.addTempSkill("xinshanjia_sha", "phaseUseAfter");
+				player.addTempSkill("xinshanjia_sha", "phaseChange");
 			}
 			if (bool2) {
-				player.addTempSkill("xinshanjia_nodis", "phaseUseAfter");
+				player.addTempSkill("xinshanjia_nodis", "phaseChange");
 			}
 			if (bool1 && bool2) {
-				player.chooseUseTarget({ name: "sha" }, "是否视为使用一张【杀】？", false);
+				await player.chooseUseTarget({ name: "sha" }, "是否视为使用一张【杀】？", false);
 			}
 		},
 		ai: {

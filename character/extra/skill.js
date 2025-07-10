@@ -222,12 +222,6 @@ const skills = {
 		},
 	},
 	cadingxi: {
-		init(player, skill) {
-			player.addSkill(skill + "_record");
-		},
-		onremove(player, skill) {
-			player.removekill(skill + "_record");
-		},
 		chargeSkill: Infinity,
 		locked: false,
 		enable: "chooseToUse",
@@ -282,6 +276,20 @@ const skills = {
 								key = "result";
 						}
 						if (get.type2(card) == type) {
+							event.getParent().set("cadingxi_result", true);
+							const history = player.getAllHistory("useSkill", evt => evt.skill == event.name);
+							const list = history.slice(-Math.min(3, history.length)).map(evt => evt.event.cadingxi_result);
+							if (list.slice(-2).length >= 2 && !list.slice(-2).some(i => !i)) {
+								await player.recoverTo(player.maxHp);
+							}
+							if (list.length >= 3 && !list.some(i => !i)) {
+								const damage = async target => {
+									await target.damage();
+								};
+								const targets = game.filterPlayer(target => target != player);
+								player.line(targets);
+								await game.doAsyncInOrder(targets, damage);
+							}
 							if (filterCard(get.autoViewAs(card), player, evt)) {
 								if (evt.name == "chooseToUse") {
 									game.broadcastAll(
@@ -298,11 +306,13 @@ const skills = {
 									delete evt[key].used;
 									evt[key].card = get.autoViewAs(card);
 									evt[key].cards = [card];
+									delete evt[key].skill;
 									evt.redo();
 									return;
 								}
 							}
 						} else {
+							event.getParent().set("cadingxi_result", false);
 							await player.draw("bottom");
 						}
 						evt.goto(0);
@@ -320,7 +330,7 @@ const skills = {
 				}
 			},
 		},
-		group: ["cadingxi_init", "cadingxi_useCard"],
+		group: "cadingxi_init",
 		subSkill: {
 			backup2: {
 				precontent() {
@@ -341,55 +351,6 @@ const skills = {
 				log: false,
 			},
 			backup: {},
-			record: {
-				init(player, skill) {
-					const history = player.getAllHistory("useCard");
-					player.storage[skill] = [];
-					player.storage[skill][0] = get.type2(history[history.length - 1]?.card) || "";
-					player.storage[skill][1] = get.type2(history[history.length - 2]?.card) || "";
-				},
-				mark: true,
-				silent: true,
-				charlotte: true,
-				intro: {
-					markcount: () => 0,
-					content(storage, player, skill) {
-						return `<li>上一张：${get.translation(storage[0])}<br><li>上上张：${get.translation(storage[1])}`;
-					},
-				},
-				trigger: { player: "useCard1" },
-				async content(event, trigger, player) {
-					const storage = player.getStorage(event.name);
-					storage.unshift(get.type2(trigger.card));
-					if (storage.slice(0, 2).unique().length == 1) {
-						trigger.cadingxi_useCard = 2;
-					}
-					if (storage.slice(0, 3).unique().length == 1) {
-						trigger.cadingxi_useCard = 3;
-					}
-				},
-			},
-			useCard: {
-				trigger: { player: "useCard" },
-				filter(event, player) {
-					return event.cadingxi_useCard > 0;
-				},
-				forced: true,
-				locked: false,
-				async content(event, trigger, player) {
-					if (trigger.cadingxi_useCard >= 2) {
-						await player.recoverTo(player.maxHp);
-					}
-					if (trigger.cadingxi_useCard >= 3) {
-						const damage = async target => {
-							await target.damage();
-						};
-						const targets = game.filterPlayer(target => target != player);
-						player.line(targets);
-						await game.doAsyncInOrder(targets, damage);
-					}
-				},
-			},
 			init: {
 				trigger: {
 					player: "enterGame",
