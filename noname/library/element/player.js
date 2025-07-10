@@ -4322,7 +4322,7 @@ export class Player extends HTMLDivElement {
 			this.marks[i].classList.add("overflowmark");
 			var num = 0;
 			if (typeof lib.skill[i].intro.markcount == "function") {
-				num = lib.skill[i].intro.markcount(this.storage[i], this);
+				num = lib.skill[i].intro.markcount(this.storage[i], this, i);
 			} else if (lib.skill[i].intro.markcount == "expansion") {
 				num = this.countCards("x", card => card.hasGaintag(i));
 			} else if (typeof this.storage[i + "_markcount"] == "number") {
