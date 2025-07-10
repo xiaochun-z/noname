@@ -12651,8 +12651,8 @@ const skills = {
 							try {
 								const rules = sheet.cssRules || sheet.rules;
 								for (const rule of rules) {
-									if (rule.selectorText === ".player .playerjiu") {
-										return true;
+									if (rule.selectorText === ".player .playerjiu_dangyi") {
+										return false;
 									}
 								}
 							} catch (e) {
