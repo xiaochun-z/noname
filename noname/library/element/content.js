@@ -8752,7 +8752,7 @@ player.removeVirtualEquip(card);
 						event.cards.removeArray(cardsx);
 						event.cards.add(card);
 					});
-					if (!event.lose_map[id]) event.lose_map[id] = [];
+					event.lose_map[id] ??= [];
 					event.lose_map[id].addArray(Cards_card);
 				} else {
 					cards_ow.shift();
@@ -8774,7 +8774,9 @@ player.removeVirtualEquip(card);
 						event.lose_map.noowner.add(virtualCard);
 					}
 					for (let id in event.lose_map) {
-						if (id == "noowner") continue;
+						if (id == "noowner") {
+							continue;
+						}
 						const owner = (_status.connectMode ? lib.playerOL : game.playerMap)[id];
 						let throws = event.lose_map[id];
 						if (owner == player) {
@@ -9902,7 +9904,7 @@ player.removeVirtualEquip(card);
 						event.cards.removeArray(cardsx);
 						event.cards.add(card);
 					});
-					if (!event.lose_map[id]) event.lose_map[id] = [];
+					event.lose_map[id] ??= [];
 					event.lose_map[id].addArray(Cards_card);
 				} else {
 					cards_ow.shift();
@@ -9923,7 +9925,9 @@ player.removeVirtualEquip(card);
 					event.lose_map.noowner.add(virtualCard);
 				}
 				for (let id in event.lose_map) {
-					if (id == "noowner") continue;
+					if (id == "noowner") {
+						continue;
+					}
 					const owner = (_status.connectMode ? lib.playerOL : game.playerMap)[id];
 					let throws = event.lose_map[id];
 					if (owner == player) {
