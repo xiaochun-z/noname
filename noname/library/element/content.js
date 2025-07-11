@@ -1070,16 +1070,21 @@ export const Content = {
 			}
 		};
 		//检查实体牌会不会被销毁
-		if (event.cards?.some(card => card.willBeDestroyed("equip", player, event) || "hejx".includes(get.position(card, true)))) {
-			const willBeDestroyed = event.cards.filter(card => card.willBeDestroyed("equip", player, event));
-			if (willBeDestroyed.length) {
-				for (let cardx of willBeDestroyed) {
-					cardx.selfDestroy(event);
-				}
-				const cards = event.cards.slice().removeArray(willBeDestroyed);
-				if (cards.length) {
-					await game.cardsDiscard(cards);
-				}
+		let stop = false;
+		const list = [];
+		for (const cardx of event.cards) {
+			if (cardx.willBeDestroyed("equip", player, event)) {
+				cardx.selfDestroy(event);
+				stop = true;
+			} else if ("hejx".includes(get.position(cardx, true))) {
+				stop = true;
+			} else {
+				list.add(cardx);
+			}
+		}
+		if (stop) {
+			if (list.length) {
+				await game.cardsDiscard(list);
 			}
 			return;
 		}
