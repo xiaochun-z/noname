@@ -1,4 +1,11 @@
 const characters = {
+	dm_diaochan: {
+		sex: "female",
+		group: "qun",
+		hp: 3,
+		skills: ["olhuanhuo", "olqingshi"],
+		names: "null|null",
+	},
 	ol_guohuanghou: {
 		sex: "female",
 		group: "wei",

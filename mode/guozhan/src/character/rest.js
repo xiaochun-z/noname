@@ -343,14 +343,6 @@ export default {
 		hujia: 0,
 		skills: ["repojun"],
 	}),
-	gz_re_xusheng: new Character({
-		sex: "male",
-		group: "wu",
-		hp: 4,
-		maxHp: 4,
-		hujia: 0,
-		skills: ["repojun"],
-	}),
 	gz_liuyan: new Character({
 		sex: "male",
 		group: "qun",
