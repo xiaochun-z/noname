@@ -4667,25 +4667,11 @@ const skills = {
 	mbdangyi: {
 		audio: "jsrgdangyi",
 		inherit: "jsrgdangyi",
-		init(player, skill) {
-			player.setMark(skill, 2, false);
-			game.broadcastAll(function (player) {
-				if (!player.node.jiu_dangyi) {
-					player.node.jiu_dangyi = ui.create.div(".playerjiu", player.node.avatar);
-					player.node.jiu_dangyi2 = ui.create.div(".playerjiu", player.node.avatar2);
-				}
-			}, player);
-		},
 		filter(event, player) {
 			return player.countMark("mbdangyi_used") < player.countMark("mbdangyi");
 		},
 		usable: 1,
 		persevereSkill: true,
-		intro: {
-			content(storage = 0, player) {
-				return `剩余可发动次数为${storage - player.countMark("mbdangyi_used")}`;
-			},
-		},
 	},
 	//牢又寄双雄
 	//友崔均

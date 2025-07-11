@@ -3489,7 +3489,7 @@ const skills = {
 		forced: true,
 		async content(event, trigger, player) {
 			if (!_status.characterlist) {
-				game.initCharactertList();
+				game.initCharacterList();
 			}
 			_status.characterlist.randomSort();
 			let characters = [];

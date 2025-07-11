@@ -3923,7 +3923,7 @@ player.removeVirtualEquip(card);
 		if (hidden.includes(event.skill)) {
 			if (!info.silent && player.hasSkillTag("nomingzhi", false, null, true)) {
 				event.finish();
-			} else if (!info.direct && typeof info.cost !== "function") {
+			} else if ((!info.direct && typeof info.cost !== "function") || (get.is.locked(event.skill, player) && typeof info.cost == "function")) {
 				event.trigger("triggerHidden");
 			} else {
 				event.skillHidden = true;
@@ -5484,6 +5484,11 @@ player.removeVirtualEquip(card);
 				}
 				if (event.noOrdering) {
 					next.noOrdering = true;
+				}
+				if (event.result._apply_args) {
+					for (var i in event.result._apply_args) {
+						next[i] = event.result._apply_args[i];
+					}
 				}
 			}
 		} else if (event._sendskill) {
@@ -8858,6 +8863,7 @@ player.removeVirtualEquip(card);
 			}
 			//player.using=cards;
 			let cardaudio = true;
+      
 			if (event.skill) {
 				if (lib.skill[event.skill].audio) {
 					cardaudio = false;
@@ -8916,7 +8922,7 @@ player.removeVirtualEquip(card);
 					player.stat[player.stat.length - 1].card[event.card.name]++;
 				}
 			}
-			if (event.skill) {
+			if (event.skill && event.addSkillCount !== false) {
 				if (player.stat[player.stat.length - 1].skill[event.skill] == undefined) {
 					player.stat[player.stat.length - 1].skill[event.skill] = 1;
 				} else {
@@ -9863,7 +9869,7 @@ player.removeVirtualEquip(card);
 					event.card
 				);
 			}
-			if (event.skill) {
+			if (event.skill && event.addSkillCount !== false) {
 				if (player.stat[player.stat.length - 1].skill[event.skill] == undefined) {
 					player.stat[player.stat.length - 1].skill[event.skill] = 1;
 				} else {

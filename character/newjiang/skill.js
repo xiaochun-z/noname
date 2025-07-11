@@ -2484,7 +2484,7 @@ const skills = {
 					mod: {
 						aiOrder(player, card, num) {
 							var number = get.number(card);
-							if (typeof number != "number" || number <= numbers[0] || number >= numbers[1]) {
+							if (typeof number != "number" || number < numbers[0] || number > numbers[1]) {
 								return num + 10;
 							}
 						},
@@ -2497,7 +2497,7 @@ const skills = {
 					var number = get.number(trigger.card);
 					var numbers = get.info(event.name).numbers;
 					event.playerx = get.info(event.name).playerx;
-					if (typeof number != "number" || number <= numbers[0] || number >= numbers[1]) {
+					if (typeof number != "number" || number < numbers[0] || number > numbers[1]) {
 						event.finish();
 					}
 				})
