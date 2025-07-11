@@ -21533,7 +21533,7 @@ const skills = {
 					return get.type(card) != "basic";
 				}) &&
 				game.hasPlayer(function (target) {
-					return target != player && target.countCards("e") > 0;
+					return target != player && target.countGainableCards(player, "e") > 0;
 				})
 			);
 		},
@@ -21542,7 +21542,7 @@ const skills = {
 		},
 		position: "he",
 		filterTarget(card, player, target) {
-			return target != player && target.countCards("e") > 0;
+			return target != player && target.countGainableCards(player, "e") > 0;
 		},
 		check(card) {
 			var player = _status.event.player;
@@ -26794,7 +26794,8 @@ const skills = {
 		wolong_card() {
 			"step 0";
 			var ingame = game.hasPlayer(function (current) {
-				return ["sp_zhugeliang", "re_sp_zhugeliang", "ol_sp_zhugeliang", "prp_zhugeliang"].includes(current.name) || ["sp_zhugeliang", "re_sp_zhugeliang", "ol_sp_zhugeliang", "prp_zhugeliang"].includes(current.name2);
+				const translate = get.translation(current);
+				return ["诸葛亮", "卧龙", "孔明", "诸葛孔明"].some(name => translate.includes(name));
 			})
 				? true
 				: false;
@@ -26818,7 +26819,8 @@ const skills = {
 		fengchu_card() {
 			"step 0";
 			var ingame = game.hasPlayer(function (current) {
-				return ["re_pangtong", "pangtong", "ol_pangtong"].includes(current.name) || ["re_pangtong", "pangtong", "ol_pangtong"].includes(current.name2);
+				const translate = get.translation(current);
+				return ["庞统", "庞士元", "凤雏"].some(name => translate.includes(name));
 			})
 				? true
 				: false;
@@ -26846,7 +26848,8 @@ const skills = {
 		xuanjian_card() {
 			"step 0";
 			event.ingame = game.hasPlayer(function (current) {
-				return ["re_xushu", "xin_xushu", "xushu", "dc_xushu"].includes(current.name) || ["re_xushu", "xin_xushu", "xushu", "dc_xushu"].includes(current.name2);
+				const translate = get.translation(current);
+				return ["徐庶", "徐元直", "单福"].some(name => translate.includes(name));
 			})
 				? true
 				: false;
@@ -26870,7 +26873,8 @@ const skills = {
 		shuijing_card() {
 			"step 0";
 			event.ingame = game.hasPlayer(function (current) {
-				return current.name == "simahui" || current.name2 == "simahui";
+				const translate = get.translation(current);
+				return ["司马徽"].some(name => translate.includes(name));
 			})
 				? true
 				: false;

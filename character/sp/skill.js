@@ -2354,6 +2354,7 @@ const skills = {
 			backup(links, player) {
 				return {
 					filterTarget: lib.filter.notMe,
+					selectTarget: 1,
 					filterCard: true,
 					selectCard() {
 						const count = Math.min(3, game.roundNumber);

@@ -688,6 +688,7 @@ window.noname_character_rank = {
 		"yj_zhenji",
 	],
 	bp: [
+		"wild_liru",
 		"ol_qiaogong",
 		"yj_zhangyan",
 		"yj_zhanghuan",
@@ -2431,6 +2432,7 @@ window.noname_character_rank = {
 	],
 	rarity: {
 		legend: [
+			"wild_liru",
 			"pe_xiahouxuan",
 			"pe_que",
 			"chenshou",

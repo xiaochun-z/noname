@@ -147,7 +147,7 @@ window.noname_character_replace = {
 	lingcao: ["lingcao", "dc_lingcao"],
 	lingju: ["lingju", "old_lingju"],
 	lingtong: ["lingtong", "ol_lingtong", "re_lingtong", "xin_lingtong", "old_lingtong"],
-	liru: ["xin_liru", "ol_liru", "dc_liru", "re_liru", "std_liru", "yj_liru", "liru"],
+	liru: ["xin_liru", "ol_liru", "dc_liru", "re_liru", "std_liru", "yj_liru", "liru", "wild_liru"],
 	lisu: ["ol_lisu", "lisu"],
 	liuba: ["ol_liuba", "dc_liuba", "liuba", "ddd_liuba", "std_liuba"],
 	liubei: ["liubei", "re_liubei", "sp_ol_liubei", "dc_liubei", "sb_liubei", "xia_liubei", "jsrg_liubei", "jd_sb_liubei", "ty_liubei", "sp_liubei", "jsp_liubei", "junk_liubei", "ps_liubei", "sxrm_liubei", "pe_jun_liubei"],

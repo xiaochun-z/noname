@@ -8755,7 +8755,7 @@ player.removeVirtualEquip(card);
 					event.lose_map[id] ??= [];
 					event.lose_map[id].addArray(Cards_card);
 				} else {
-					cards_ow.shift();
+					event.lose_map.noowner.add(cards_ow.shift());
 				}
 			}
 			if (event.animate != false) {
@@ -8847,7 +8847,6 @@ player.removeVirtualEquip(card);
 							}
 						}
 						if (cards_noowner.length) {
-							event.getParent().lose_map.noowner.addArray(cards_noowner);
 							await game.cardsGotoOrdering(cards_noowner).set("relatedEvent", event.getParent());
 						}
 					});
@@ -9907,7 +9906,7 @@ player.removeVirtualEquip(card);
 					event.lose_map[id] ??= [];
 					event.lose_map[id].addArray(Cards_card);
 				} else {
-					cards_ow.shift();
+					event.lose_map.noowner.add(cards_ow.shift());
 				}
 			}
 			if (event.animate != false && event.throw !== false) {
@@ -10004,7 +10003,6 @@ player.removeVirtualEquip(card);
 							}
 						}
 						if (cards_noowner.length) {
-							event.getParent().lose_map.noowner.addArray(cards_noowner);
 							await game.cardsGotoOrdering(cards_noowner).set("relatedEvent", event.getParent());
 						}
 					});

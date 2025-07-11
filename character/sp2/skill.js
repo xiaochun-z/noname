@@ -40,34 +40,40 @@ const skills = {
 			const suit = event.cost_data,
 				skill = event.name + "_debuff",
 				target = trigger.player;
-			target.addSkill(skill);
+			player.addTempSkill(skill, { player: "dieAfter" });
 			target.markAuto(skill, [suit]);
 			game.log(target, "获得了一个", `#g【蠹】(${get.translation(suit)})`);
 		},
 		subSkill: {
 			debuff: {
-				onremove: true,
+				onremove(player, skill) {
+					if (!game.hasPlayer(target => target != player && target.hasSkill("starduhai"))) {
+						game.players.forEach(target => {
+							target.unmarkAuto(skill, target.getStorage(skill));
+							delete target.storage[skill];
+						});
+					}
+				},
 				charlotte: true,
 				forced: true,
 				intro: {
 					content: storage => `已获得标记：<span class=thundertext>${storage.reduce((str, suit) => str + get.translation(suit), "")}</span>`,
 				},
-				trigger: { player: "phaseEnd" },
+				trigger: { global: "phaseEnd" },
 				filter(event, player) {
-					return player.hasCard(card => player.getStorage("starduhai_debuff").includes(get.suit(card, player)), "h");
+					return event.player.hasCard(card => event.player.getStorage("starduhai_debuff").includes(get.suit(card, event.player)), "h");
 				},
+				logTarget: "player",
 				async content(event, trigger, player) {
 					const skill = event.name,
-						suits = player.getStorage(skill).filter(suit => player.hasCard(card => get.suit(card, player) == suit, "h"));
-					await player.loseHp(suits.length);
-					if (!player?.isIn()) {
+						target = trigger.player,
+						suits = target.getStorage(skill).filter(suit => target.hasCard(card => get.suit(card, target) == suit, "h"));
+					await target.loseHp(suits.length);
+					if (!target?.isIn()) {
 						return;
 					}
-					player.unmarkAuto(skill, suits);
-					game.log(player, "移去了", get.cnNumber(suits.length), "个", `#g【蠹】(${suits.reduce((str, suit) => str + get.translation(suit), "")})`);
-					if (!player.getStorage(skill).length) {
-						player.removeSkill(skill);
-					}
+					target.unmarkAuto(skill, suits);
+					game.log(target, "移去了", get.cnNumber(suits.length), "个", `#g【蠹】(${suits.reduce((str, suit) => str + get.translation(suit), "")})`);
 				},
 			},
 		},
