@@ -2,8 +2,350 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//魔吕布
+	olduoqi: {
+		audio: 2,
+		group: ["olduoqi_gain", "olduoqi_mark"],
+		trigger: {
+			global: "phaseBeforeEnd",
+		},
+		forced: true,
+		cardslist(player, target) {
+			const cards = [...ui.cardPile.childNodes, ...ui.discardPile.childNodes];
+			const targets = game.filterPlayer();
+			targets.forEach(targetx => {
+				const pos = "ej" + (targetx !== player ? "h" : "");
+				cards.addArray(targetx.getCards(pos));
+			});
+			return cards.filter(card => card.hasGaintag("eternal_olduoqi_tag") && target._start_cards.includes(card));
+		},
+		filter(event, player) {
+			if (event?.olduoqi_phase) {
+				return false;
+			}
+			return event.player.getSeatNum() == 1 && event.player.phaseNumber == 0 && !event?.olduoqi_record?.includes(player);
+		},
+		onRound(event) {
+			return !event.olduoqi_phase;
+		},
+		async content(event, trigger, player) {
+			const next = player.insertPhase();
+			next._noTurnOver = true;
+			next.set("olduoqi_phase", true);
+			next.set("phaseList", ["phaseUse"]);
+			player
+				.when({ player: "phaseBegin" })
+				.filter(evt => evt.skill == "olduoqi")
+				.then(() => {
+					player.addTempSkill("olduoqi_limit");
+				})
+				.assign({ firstDo: true });
+			if (!trigger._finished) {
+				trigger.finish();
+				trigger.untrigger(true);
+				trigger._triggered = 5;
+				if (!lib.onround.includes(get.info("olduoqi").onRound)) {
+					lib.onround.push(get.info("olduoqi").onRound);
+				}
+				const evt = trigger.player.insertPhase();
+				evt.set("olduoqi_record", trigger?.olduoqi_record?.concat(player) || [player]);
+				evt.set("olduoqi_phase", true);
+				evt.relatedEvent = trigger.relatedEvent || trigger.getParent(2);
+				evt.skill = trigger.skill;
+				evt._noTurnOver = true;
+				evt.set("phaseList", trigger.phaseList);
+				evt.pushHandler("olduoqi_phase", (event, option) => {
+					if (event.step === 0 && option.state === "begin") {
+						event.step = 4;
+						_status.globalHistory.push({
+							cardMove: [],
+							custom: [],
+							useCard: [],
+							changeHp: [],
+							everything: [],
+						});
+						let players = game.players.slice(0).concat(game.dead);
+						for (let i = 0; i < players.length; i++) {
+							let current = players[i];
+							current.actionHistory.push({
+								useCard: [],
+								respond: [],
+								skipped: [],
+								lose: [],
+								gain: [],
+								sourceDamage: [],
+								damage: [],
+								custom: [],
+								useSkill: [],
+							});
+							current.stat.push({ card: {}, skill: {} });
+						}
+					}
+				});
+			}
+		},
+		subSkill: {
+			gain: {
+				audio: "olduoqi",
+				trigger: {
+					source: "damageSource",
+				},
+				forced: true,
+				filter(event, player) {
+					const cards = get.info("olduoqi").cardslist(player, event.player);
+					return (
+						player
+							.getHistory("sourceDamage", evt => {
+								return evt.player === event.player;
+							})
+							.indexOf(event) == 0 && event.player?._start_cards?.some(card => cards.includes(card))
+					);
+				},
+				async content(event, trigger, player) {
+					const cards = get.info("olduoqi").cardslist(player, trigger.player);
+					if (cards.length) {
+						await player.gain(cards.randomGet(), "gain2");
+					}
+				},
+			},
+			mark: {
+				trigger: {
+					global: "gameDrawAfter",
+				},
+				forced: true,
+				popup: false,
+				filter(event, player) {
+					return game.hasPlayer(target => target._start_cards?.length);
+				},
+				async content(event, trigger, player) {
+					game.filterPlayer().forEach(target => target.addGaintag(target._start_cards, "eternal_olduoqi_tag"));
+				},
+			},
+			tag: {},
+			limit: {
+				mark: true,
+				charlotte: true,
+				marktext: "炁",
+				intro: {
+					markcount: () => 0,
+					content: "执行一个仅有出牌阶段的额外回合",
+				},
+				mod: {
+					cardEnabled(card, player) {
+						if (get.type(card) == "delay") {
+							return false;
+						}
+					},
+					cardSavable(card, player) {
+						if (get.type(card) == "delay") {
+							return false;
+						}
+					},
+				},
+			},
+		},
+	},
+	olkuangmo: {
+		group: "olkuangmo_point",
+		audio: 2,
+		enable: "phaseUse",
+		skillAnimation: "epic",
+		animationColor: "metal",
+		filter(event, player) {
+			return game.hasPlayer(current => player !== current) && !player.hasSkill("olrumo");
+		},
+		filterTarget: lib.filter.notMe,
+		async content(event, trigger, player) {
+			player.addSkill("olrumo");
+			const target = event.targets[0];
+			const name = event.name + "_effect";
+			player.markAuto(name, target);
+			target.markAuto(name, player);
+			player.addTip(name, "狂：" + player.getStorage(name).map(targetx => get.translation(targetx)));
+			target.addTip(name, "狂：" + target.getStorage(name).map(targetx => get.translation(targetx)));
+			target.addSkill(name);
+			player.addSkill(name);
+		},
+		ai: {
+			order: 8,
+			result: {
+				player: 8,
+				target(player, target) {
+					return get.damageEffect(target, player, target);
+				},
+			},
+		},
+		subSkill: {
+			point: {
+				trigger: {
+					global: "dieAfter",
+				},
+				forced: true,
+				lastDo: true,
+				skillAnimation: "epic",
+				animationColor: "metal",
+				filter(event, player) {
+					return event.player.getStorage("olkuangmo_effect").length && game.hasPlayer(current => player !== current);
+				},
+				async content(event, trigger, player) {
+					const result = await player
+						.chooseTarget(get.prompt("olkuangmo"), "重新指定一名角色，你与其成为“狂”角色", lib.filter.notMe, true)
+						.set("ai", target => {
+							const player = get.player();
+							return get.damageEffect(target, player, player);
+						})
+						.forResult();
+					if (!result?.targets[0]?.isIn()) {
+						return;
+					}
+					const target = result.targets[0];
+					player.line(target, "fire");
+					const name = "olkuangmo_effect";
+					player.unmarkAuto(name, player.getStorage(name));
+					player.markAuto(name, target);
+					target.markAuto(name, player);
+					player.addTip(name, "狂：" + player.getStorage(name).map(targetx => get.translation(targetx)));
+					target.addTip(name, "狂：" + target.getStorage(name).map(targetx => get.translation(targetx)));
+					target.addSkill(name);
+					player.addSkill(name);
+				},
+			},
+			effect: {
+				mark: true,
+				marktext: "狂",
+				intro: {
+					content: "跟$魔怔上了",
+				},
+				trigger: {
+					source: ["damageBegin1", "dieAfter"],
+				},
+				charlotte: true,
+				popup: false,
+				forced: true,
+				filter(event, player) {
+					if (
+						event.name == "damage" &&
+						game
+							.getGlobalHistory("everything", evt => {
+								return evt.name == "damage" && evt.source == player && event.player == evt.player;
+							})
+							.indexOf(event) != 0
+					) {
+						return false;
+					}
+					return player.getStorage("olkuangmo_effect").includes(event.player);
+				},
+				async content(event, trigger, player) {
+					if (trigger.name == "damage") {
+						trigger.num++;
+					} else {
+						const cards = get.info("olduoqi").cardslist(player, trigger.player);
+						if (cards.length) {
+							await player.gain(cards, "gain2");
+						}
+					}
+				},
+				ai: {
+					presha: true,
+				},
+			},
+		},
+	},
+	olgangquan: {
+		audio: 2,
+		enable: "chooseToUse",
+		filter(event, player) {
+			const bool = event.olgangquan,
+				type = bool ? "equip" : "trick",
+				viewAs = bool ? { name: "sha", nature: "fire" } : { name: "juedou" },
+				card = get.autoViewAs(viewAs, "unsure");
+			return event.filterCard(card, player, event) && player.hasCard(card => get.type2(card) == type, "hes");
+		},
+		hiddenCard(player, name) {
+			return (name == "juedou" && player.hasCard(card => get.type2(card) == "trick", "hes")) || (name == "sha" && player.hasCard(card => get.type2(card) == "equip", "hes"));
+		},
+		onChooseToUse(event) {
+			if (game.online || event?.olgangquan) {
+				return;
+			}
+			const evt = get.info("dcjianying").getLastUsed(event.player);
+			event.set(
+				"olgangquan",
+				evt.cards?.some(card => card.hasGaintag("eternal_olduoqi_tag"))
+			);
+		},
+		chooseButton: {
+			dialog(event, player) {
+				const list = get.inpileVCardList(info => {
+					return event.olgangquan ? info[2] == "sha" && info[3] === "fire" : info[2] == "juedou";
+				});
+				const dialog = ui.create.dialog("罡拳", [list, "vcard"]);
+				dialog.direct = true;
+				return dialog;
+			},
+			check(button) {
+				return get.player().getUseValue({
+					name: button.link[2],
+					nature: button?.link[3],
+				});
+			},
+			backup(links, player) {
+				return {
+					audio: "olgangquan",
+					viewAs: {
+						name: links[0][2],
+						nature: links[0][3],
+					},
+					choice: links[0][2],
+					filterCard(card) {
+						if (get.info("olgangquan_backup").choice == "sha") {
+							return get.type2(card) == "equip";
+						}
+						return get.type2(card) == "trick";
+					},
+					position: "hes",
+					selectCard: 1,
+					filterTarget(card, player, target) {
+						if (get.info("olgangquan_backup").choice == "sha" && ![player.getPrevious(), player.getNext()].includes(target)) {
+							return false;
+						}
+						return lib.filter.filterTarget.apply(this, arguments);
+					},
+					selectTarget() {
+						return get.info("olgangquan_backup").choice != "sha" ? 1 : -1;
+					},
+					popname: true,
+				};
+			},
+			prompt(links, player) {
+				const card = `${get.translation(links[0][3]) || ""}${get.translation(links[0][2])}`;
+				return `###罡拳###将一张${links[0][2] === "sha" ? "装备" : "锦囊"}牌当做${card}使用`;
+			},
+		},
+		ai: {
+			order: 9,
+			result: {
+				player: 8,
+			},
+		},
+		/*locked: false,
+		mod: {
+			playerEnabled(card, player, target) {
+				if (!card.storage?.olgangquan || get.name(card) != "sha") {
+					return;
+				}
+				if (player.getNext() !== target && player.getPrevious() !== target) {
+					return false;
+				}
+			},
+		},*/
+		subSkill: {
+			backup: {},
+		},
+	},
 	//魔貂蝉
 	olhuanhuo: {
+		audio: 2,
 		trigger: { global: "roundStart" },
 		forced: true,
 		locked: false,
@@ -12,7 +354,9 @@ const skills = {
 				game.broadcastAll(() => {
 					_status[skill] = lib.filter.filterEnable;
 					lib.filter.filterEnable = function (event, ...args) {
-						if (event.name === "chooseToUse" && event.type === "phase" && event[skill + "_debuff"]) return false;
+						if (event.name === "chooseToUse" && event.type === "phase" && event[skill + "_debuff"]) {
+							return false;
+						}
 						return _status[skill](event, ...args);
 					};
 				});
@@ -107,6 +451,7 @@ const skills = {
 		},
 	},
 	olqingshi: {
+		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
 			return !player.hasSkill("olrumo") || !game.hasPlayer(target => target.countCards("h", card => card.hasGaintag("olqingshi_tag")));
@@ -138,6 +483,7 @@ const skills = {
 		subSkill: {
 			tag: {},
 			effect: {
+				audio: "olqingshi",
 				trigger: {
 					global: ["damageSource", "loseAfter", "cardsDiscardAfter", "loseAsyncAfter", "useCardToPlayer"],
 				},

@@ -246,6 +246,12 @@ const skills = {
 			return 7 - get.value(card);
 		},
 		precontent() {
+			event.result._apply_args = {
+				oncard: (card, player) => {
+					const evt = get.event();
+					evt.directHit.addArray(game.players);
+				},
+			};
 			player.addTempSkill("newwuniang_mxzxz");
 		},
 		ai: {
@@ -314,11 +320,19 @@ const skills = {
 						})
 						.forResult();
 					if (result?.bool && result.cards?.some(i => get.type2(i, target) !== "basic")) {
-						await player.loseHp();
-						if (player.awakenedSkills.includes("newzhennan")) {
-							player.restoreSkill("newzhennan");
-							player.popup("newzhennan");
-							game.log(player, "重置了技能", "#g【" + get.translation("newzhennan") + "】");
+						const resultx = await player
+							.chooseBool(`武娘：失去1点体力，重置所有角色的〖镇南〗`)
+							.set("choice", player.hp > 1 && game.hasPlayer(target => get.attitude(player, target) && target.awakenedSkills.includes("newzhennan")))
+							.forResult();
+						if (resultx?.bool) {
+							await player.loseHp();
+							game.filterPlayer().forEach(target => {
+								if (target.awakenedSkills.includes("newzhennan")) {
+									target.restoreSkill("newzhennan");
+									target.popup("newzhennan");
+									game.log(target, "重置了技能", "#g【" + get.translation("newzhennan") + "】");
+								}
+							});
 						}
 					}
 				},
@@ -330,13 +344,13 @@ const skills = {
 		limited: true,
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
-			return player.hasCard(card => (get.position(card) === "h" && _status.connectMode) || lib.filter.cardDiscardable(card, player), "he");
+			return player.countDiscardableCards(player, "he") > 1;
 		},
 		skillAnimation: true,
 		animationColor: "orange",
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseToDiscard(get.prompt2(event.skill), "he")
+				.chooseToDiscard(get.prompt2(event.skill), "he", 2)
 				.set("ai", card => {
 					const player = get.player(),
 						nanman = new lib.element.VCard({ name: "nanman" });
@@ -344,12 +358,11 @@ const skills = {
 					if (!targets.length) {
 						return 0;
 					}
-					return (
-						(7 - get.value(card)) *
-						targets.slice(0, Math.max(1, get.info(card, false).filterTarget ? get.info("jsrgchengxian").getNumber(card, player)[1] : 0)).reduce((sum, target) => {
-							return sum + get.effect(target, nanman, player, player);
-						}, 0)
-					);
+					return 7 - get.value(card);
+					/*
+					targets.reduce((sum, target) => {
+						return sum + get.effect(target, nanman, player, player);
+					}, 0)*/
 				})
 				.set("logSkill", event.skill)
 				.forResult();
@@ -357,17 +370,22 @@ const skills = {
 		popup: false,
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			const card = event.cards[0],
-				nanman = new lib.element.VCard({ name: "nanman" });
-			const select = [1, Math.max(1, get.info(card, false).filterTarget ? get.info("jsrgchengxian").getNumber(card, player)[1] : 0)];
-			if (game.hasPlayer(target => player.canUse(nanman, target))) {
-				const result = await player.chooseUseTarget(nanman, true, false, select).forResult();
+			const nanman = new lib.element.VCard({ name: "nanman" }); //card = event.cards[0],
+			//const select = [1, Math.max(1, get.info(card, false).filterTarget ? get.info("jsrgchengxian").getNumber(card, player)[1] : 0)];
+			if (player.hasUseTarget(nanman, true, false)) {
+				const result = await player.chooseUseTarget(nanman, true, false, [1, Infinity]).forResult();
 				if (result?.bool && result.targets?.length) {
-					const targets = result.targets.filter(target => !target.hasHistory("damage", evt => evt.getParent(4) === event)).sortBySeat();
-					if (targets.length > 0) {
-						player.line(targets);
-						player.addTempSkill("newzhennan_dist");
-						player.markAuto("newzhennan_dist", targets);
+					for (const target of result.targets.sortBySeat()) {
+						if (target.hasHistory("damage", evt => evt.getParent(4) === event)) {
+							const cards = target.getDiscardableCards(target, "he");
+							if (cards.length) {
+								await target.discard(cards.randomGet());
+							}
+						} else {
+							player.line(target);
+							player.addTempSkill("newzhennan_dist");
+							player.markAuto("newzhennan_dist", target);
+						}
 					}
 				}
 			}

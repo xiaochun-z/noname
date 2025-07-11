@@ -4,6 +4,7 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 const skills = {
 	//狂李儒
 	olhuaquan: {
+		audio: 2,
 		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
 			return event.targets.some(target => target != player) && get.color(event.card) == "black" && event.isFirstTarget;
@@ -64,6 +65,7 @@ const skills = {
 		},
 	},
 	olsanou: {
+		audio: 2,
 		marktext: "👊",
 		intro: {
 			name: "击倒",

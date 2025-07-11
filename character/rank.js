@@ -688,6 +688,7 @@ window.noname_character_rank = {
 		"yj_zhenji",
 	],
 	bp: [
+		"dm_lvbu",
 		"dm_diaochan",
 		"wild_liru",
 		"ol_qiaogong",
@@ -2434,6 +2435,7 @@ window.noname_character_rank = {
 	rarity: {
 		legend: [
 			"dm_diaochan",
+			"dm_lvbu",
 			"wild_liru",
 			"pe_xiahouxuan",
 			"pe_que",

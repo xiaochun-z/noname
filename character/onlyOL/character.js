@@ -1,4 +1,10 @@
 const characters = {
+	dm_lvbu: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["olduoqi", "olkuangmo", "olgangquan"],
+	},
 	dm_diaochan: {
 		sex: "female",
 		group: "qun",
