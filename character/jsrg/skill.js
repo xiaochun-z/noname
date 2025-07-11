@@ -12643,18 +12643,35 @@ const skills = {
 	},
 	jsrgdangyi: {
 		init(player, skill) {
-			player.setMark(skill, player.getDamagedHp() + 1, false);
+			player.setMark(skill, skill === "mbdangyi" ? 2 : player.getDamagedHp() + 1, false);
 			game.broadcastAll(function (player) {
+				if (
+					(() => {
+						for (const sheet of document.styleSheets) {
+							try {
+								const rules = sheet.cssRules || sheet.rules;
+								for (const rule of rules) {
+									if (rule.selectorText === ".player .playerjiu_dangyi") {
+										return false;
+									}
+								}
+							} catch (e) {
+								continue;
+							}
+						}
+						return true;
+					})()
+				) {
+					lib.init.sheet(".player .playerjiu_dangyi { animation: game_start 0.5s; -webkit-animation: game_start 0.5s; position: absolute; width: 100%; height: 100%; left: 0; top: 0; z-index: 4; pointer-events: none; background: linear-gradient( to top, rgba(255, 0, 0, 0.3) 0%, rgba(255, 0, 0, 0.3) 60%, rgba(255, 0, 0, 0) 80%, rgba(255, 0, 0, 0) 100% );}");
+				}
 				if (!player.node.jiu_dangyi) {
-					player.node.jiu_dangyi = ui.create.div(".playerjiu", player.node.avatar);
-					player.node.jiu_dangyi2 = ui.create.div(".playerjiu", player.node.avatar2);
+					player.node.jiu_dangyi = ui.create.div(".playerjiu_dangyi", player.node.avatar);
+					player.node.jiu_dangyi2 = ui.create.div(".playerjiu_dangyi", player.node.avatar2);
 				}
 			}, player);
 		},
 		zhuSkill: true,
-		trigger: {
-			source: "damageBegin1",
-		},
+		trigger: { source: "damageBegin1" },
 		check(event, player) {
 			return (
 				get.attitude(player, event.player) < 0 &&
@@ -12688,8 +12705,12 @@ const skills = {
 		audio: 2,
 		mark: true,
 		intro: {
-			content(storage, player) {
-				return `剩余可发动次数为${player.countMark("jsrgdangyi") - player.countMark("jsrgdangyi_used")}`;
+			markcount(storage = 0, player, skill) {
+				const used = `${skill}_used`;
+				return `${storage - player.countMark(used)}/${storage}`;
+			},
+			content(storage = 0, player, skill) {
+				return `剩余可发动次数为${storage - player.countMark(`${skill}_used`)}`;
 			},
 		},
 		onremove(player, skill) {
