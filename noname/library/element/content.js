@@ -1070,13 +1070,18 @@ export const Content = {
 			}
 		};
 		//检查实体牌会不会被销毁
-		for (let cardx of event.cards) {
-			if (cardx.willBeDestroyed("equip", player, event)) {
-				cardx.selfDestroy(event);
-				return;
-			} else if ("hejx".includes(get.position(cardx, true))) {
-				return;
+		if (event.cards?.some(card => card.willBeDestroyed("equip", player, event) || "hejx".includes(get.position(card, true)))) {
+			const willBeDestroyed = event.cards.filter(card => card.willBeDestroyed("equip", player, event));
+			if (willBeDestroyed.length) {
+				for (let cardx of willBeDestroyed) {
+					cardx.selfDestroy(event);
+				}
+				const cards = event.cards.slice().removeArray(willBeDestroyed);
+				if (cards.length) {
+					await game.cardsDiscard(cards);
+				}
 			}
+			return;
 		}
 		//同时播放所有装备牌的装备动画
 		if (event.cards.length) {
