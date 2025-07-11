@@ -10577,7 +10577,7 @@ const skills = {
 		animationColor: "water",
 		async cost(event, trigger, player) {
 			if (!_status.characterlist) {
-				game.initCharactertList();
+				game.initCharacterList();
 			}
 			event.result = await player
 				.chooseTarget(get.prompt(event.skill), "令一名其他角色选择是否更换武将牌", lib.filter.notMe)
