@@ -722,12 +722,15 @@ const skills = {
 		trigger: { player: "useCard" },
 		forced: true,
 		filter(event, player) {
-			return player.hasHistory("lose", evt => {
-				if (evt.getParent() != event) {
-					return false;
-				}
-				return !Object.values(evt.gaintag_map).flat().includes("oldigong_tag");
-			});
+			return game.hasPlayer2(target=>{
+				return target.hasHistory("lose", evt => {
+					const evtx = evt.relatedEvent || evt.getParent()
+					if (evtx != event) {
+						return false;
+					}
+					return !Object.values(evt.gaintag_map).flat().includes("oldigong_tag");
+				});
+			})
 		},
 		async content(event, trigger, player) {
 			if (player.storage.oldigongCount < 4) {
@@ -898,7 +901,7 @@ const skills = {
 				if (get.itemtype(card) != "card" || !player.getCards("h").includes(card)) {
 					return;
 				}
-				if (player.hasSkill("dcshigong") && player.storage.dcshigong_first !== false) {
+				if (player.hasSkill("dcshigong", null, false, false) && player.storage.dcshigong_first !== false) {
 					return;
 				}
 				if (!card.hasGaintag(lib.skill.dclieti.getName(player))) {
@@ -2556,7 +2559,8 @@ const skills = {
 					return (
 						event.addCount !== false &&
 						player.hasHistory("lose", evt => {
-							if (evt.getParent() !== event) {
+							const evtx = evt.relatedEvent || evt.getParent();
+							if (evtx !== event) {
 								return false;
 							}
 							return Object.values(evt.gaintag_map).flat().includes("dcbeijin_effect");

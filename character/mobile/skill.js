@@ -817,7 +817,8 @@ const skills = {
 			return (
 				list?.includes(get.color(card, player)) &&
 				player.hasHistory("lose", evtx => {
-					return evtx.hs?.length && evtx.getParent() == evt;
+					const evt2 = evt.relatedEvent || evt.getParent();
+					return evtx.hs?.length && evt2 == evt;
 				})
 			);
 		},
@@ -1159,7 +1160,7 @@ const skills = {
 					}
 					const suits = player
 						.getHistory("lose", evt => {
-							if (evt.getParent().name != "useCard") {
+							if ((evt.relatedEvent || evt.getParent()).name != "useCard") {
 								return false;
 							}
 							return evt.cards.length == 1 && evt.hs?.length == 1;
@@ -1186,7 +1187,8 @@ const skills = {
 						event.cards.length == 1 &&
 						!player.getStorage("mbxianshuai_record").includes(get.suit(event.card)) &&
 						player.hasHistory("lose", evt => {
-							return evt.getParent() == event && evt.hs?.length == 1;
+							const evtx = evt.relatedEvent || evt.getParent();
+							return evtx == event && evt.hs?.length == 1;
 						})
 					);
 				},
@@ -2468,7 +2470,8 @@ const skills = {
 				get.tag(event.card, "damage") > 0.5 &&
 				player.countDiscardableCards(player, "h") &&
 				player.hasHistory("lose", evt => {
-					return evt.getParent() == event.getParent() && evt.hs?.length;
+					const evtx = evt.relatedEvent || evt.getParent();
+					return evtx == event.getParent() && evt.hs?.length;
 				})
 			);
 		},
@@ -2535,7 +2538,7 @@ const skills = {
 		},
 		usable: 1,
 		filter(event, player) {
-			if (event.name == "loseAsync" && event.getParent().name == "useCard") {
+			if (event.getParent().name == "useCard") {
 				return false;
 			}
 			return event.getl(player)?.hs?.some(card => get.name(card, false) == "sha" && !get.owner(card));
@@ -3136,13 +3139,15 @@ const skills = {
 							return false;
 						}
 						return player.hasHistory("lose", evt => {
-							return evt.getParent() == event && Object.values(evt.gaintag_map).flat().includes("mbxuehen_sha");
+							const evtx = evt.relatedEvent || evt.getParent();
+							return evtx == event && Object.values(evt.gaintag_map).flat().includes("mbxuehen_sha");
 						});
 					}
 					return (
 						event.card &&
 						player.hasHistory("lose", evt => {
-							return evt.getParent() == event.getParent(2) && Object.values(evt.gaintag_map).flat().includes("mbxuehen_sha");
+							const evtx = evt.relatedEvent || evt.getParent();
+							return evtx.card == event.card && Object.values(evt.gaintag_map).flat().includes("mbxuehen_sha");
 						})
 					);
 				},
@@ -3341,7 +3346,8 @@ const skills = {
 				trigger: { player: ["useCard", "useCardAfter"] },
 				filter(event, player) {
 					return player.hasHistory("lose", evt => {
-						if (event !== evt.getParent()) {
+						const evtx = evt.relatedEvent || evt.getParent();
+						if (event !== evtx) {
 							return false;
 						}
 						return Object.values(evt.gaintag_map).flat().includes("potwanglie");
@@ -4679,11 +4685,11 @@ const skills = {
 		audio: 2,
 		trigger: { player: "useCard" },
 		getIndex(event, player) {
-			const evt = player.getHistory("lose", evt => evt.getParent() === event)[0];
+			const evt = player.getHistory("lose", evt => (evt.relatedEvent || evt.getParent()) === event)[0];
 			return evt?.hs ?? [];
 		},
 		filter(event, player, name, card) {
-			const hs = player.getHistory("lose", evt => evt.getParent() === event)[0].hs;
+			const hs = player.getHistory("lose", evt => (evt.relatedEvent || evt.getParent()) === event)[0].hs;
 			const suit = get.suit(card, player),
 				number = get.number(card, player);
 			if (!["heart"].concat(player.getStorage("friendgongli_cuijun_shunyi")).includes(suit)) {
@@ -5908,12 +5914,13 @@ const skills = {
 					source: "damageBegin1",
 				},
 				filter(event, player, name) {
-					const ori_event = event.name === "damage" ? event.getParent(2) : event;
+					const ori_event = event.name === "damage" ? event.getParent("useCard") : event;
 					if (
 						!ori_event ||
 						ori_event.name !== "useCard" ||
 						!player.hasHistory("lose", evt => {
-							if (evt.getParent() !== ori_event) {
+							const evtx = evt.relatedEvent || evt.getParent();
+							if (evtx !== ori_event) {
 								return false;
 							}
 							return Object.values(evt.gaintag_map).flat().includes("potfuji");
@@ -5936,7 +5943,7 @@ const skills = {
 						await player.draw();
 					} else {
 						const history = player.getHistory("lose", evt => {
-								if (evt.getParent() !== trigger) {
+								if ((evt.relatedEvent || evt.getParent()) !== trigger) {
 									return false;
 								}
 								return Object.values(evt.gaintag_map).flat().includes("potfuji");
@@ -6790,7 +6797,8 @@ const skills = {
 				filter(event, player) {
 					if (
 						!player.hasHistory("lose", function (evt) {
-							if (evt.getParent() != event) {
+							const evtx = evt.relatedEvent || evt.getParent();
+							if (evtx != event) {
 								return false;
 							}
 							for (var i in evt.gaintag_map) {
@@ -11622,19 +11630,27 @@ const skills = {
 					let list = [],
 						players = game.filterPlayer().sortBySeat();
 					for (const current of players) {
+						let bool = ["useCard", "respond"].includes(event.getParent().name);
 						if (current == player) {
 							continue;
 						}
-						var evt = event.getl(current);
+						const evt = event.getl(current);
 						if (!evt || !evt.hs || !evt.hs.length) {
 							continue;
 						}
+						if (event.name == "lose") {
+							for (const i in event.gaintag_map) {
+								if (event.gaintag_map[i].includes("twkujianx")) {
+									list.push([current, bool]);
+								}
+							}
+							continue;
+						}
 						current.getHistory("lose", evt => {
-							if (event != evt.getParent() && event != evt) {
+							if (event != evt.getParent()) {
 								return false;
 							}
-							const bool = ["useCard", "respond"].includes(evt.getParent(2).name);
-							for (var i in evt.gaintag_map) {
+							for (const i in evt.gaintag_map) {
 								if (evt.gaintag_map[i].includes("twkujianx")) {
 									list.push([current, bool]);
 								}
@@ -26622,7 +26638,7 @@ const skills = {
 		getNum(player) {
 			let num = 0;
 			player.getHistory("lose", evt => {
-				const evt2 = evt.getParent(2);
+				const evt2 = evt.relatedEvent || evt.getParent();
 				if (evt2.name == "useCard" && evt2.player == player && get.type(evt2.card, null, false) == "equip") {
 					return;
 				}

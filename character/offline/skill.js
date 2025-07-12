@@ -13318,7 +13318,8 @@ const skills = {
 		filter(event, player) {
 			if (
 				!event.player.hasHistory("lose", evt => {
-					return !["useCard", "respond"].includes(evt.getParent(2).name);
+					const evtx = evt.relatedEvent || evt.getParent();
+					return !["useCard", "respond"].includes(evtx.name);
 				})
 			) {
 				return false;

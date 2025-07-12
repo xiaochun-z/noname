@@ -10,14 +10,23 @@ const skills = {
 			global: "phaseBeforeEnd",
 		},
 		forced: true,
-		cardslist(player, target) {
-			const cards = [...ui.cardPile.childNodes, ...ui.discardPile.childNodes];
+		cardslist(player, target, killGain = false) {
+			const filterCard = card => card.hasGaintag("eternal_olduoqi_tag") && target._start_cards.includes(card);
+			let cards = [...ui.cardPile.childNodes, ...ui.discardPile.childNodes].filter(filterCard);
+			const lose_list = [];
 			const targets = game.filterPlayer();
 			targets.forEach(targetx => {
 				const pos = "ej" + (targetx !== player ? "h" : "");
-				cards.addArray(targetx.getCards(pos));
+				const cardsx = targetx.getCards(pos, filterCard);
+				if (cardsx.length) {
+					cards = cards.concat(cardsx);
+					if (killGain) {
+						targetx.$throw(cards, 1000);
+						lose_list.push([targetx, cards]);
+					}
+				}
 			});
-			return cards.filter(card => card.hasGaintag("eternal_olduoqi_tag") && target._start_cards.includes(card));
+			return killGain ? [cards, lose_list] : cards;
 		},
 		filter(event, player) {
 			if (event?.olduoqi_phase) {
@@ -104,7 +113,12 @@ const skills = {
 				async content(event, trigger, player) {
 					const cards = get.info("olduoqi").cardslist(player, trigger.player);
 					if (cards.length) {
-						await player.gain(cards.randomGet(), "gain2");
+						const card = cards.randomGet();
+						if (get.owner(card)) {
+							await player.gain(card, "give", get.owner(card));
+						} else {
+							await player.gain(card, "gain2");
+						}
 					}
 				},
 			},
@@ -185,7 +199,7 @@ const skills = {
 				skillAnimation: "epic",
 				animationColor: "metal",
 				filter(event, player) {
-					return event.player.getStorage("olkuangmo_effect").length && game.hasPlayer(current => player !== current);
+					return player.getStorage("olkuangmo_effect").includes(event.player) && game.hasPlayer(current => player !== current && !player.getStorage("olkuangmo_effect").includes(current));
 				},
 				async content(event, trigger, player) {
 					const result = await player
@@ -201,7 +215,7 @@ const skills = {
 					const target = result.targets[0];
 					player.line(target, "fire");
 					const name = "olkuangmo_effect";
-					player.unmarkAuto(name, player.getStorage(name));
+					player.unmarkAuto(name, trigger.player);
 					player.markAuto(name, target);
 					target.markAuto(name, player);
 					player.addTip(name, "狂：" + player.getStorage(name).map(targetx => get.translation(targetx)));
@@ -239,10 +253,13 @@ const skills = {
 					if (trigger.name == "damage") {
 						trigger.num++;
 					} else {
-						const cards = get.info("olduoqi").cardslist(player, trigger.player);
-						if (cards.length) {
-							await player.gain(cards, "gain2");
-						}
+						const target = trigger.player;
+						const list = get.info("olduoqi").cardslist(player, target, true);
+						const cards = list[0];
+						const lose_list = list[1];
+						await game.loseAsync({ lose_list: lose_list }).setContent("chooseToCompareLose");
+						await game.delayx();
+						await player.gain(cards, "gain2");
 					}
 				},
 				ai: {
@@ -349,7 +366,8 @@ const skills = {
 		trigger: { global: "roundStart" },
 		forced: true,
 		locked: false,
-		init(player, skill) {
+		//牢萌的方案
+		/*init(player, skill) {
 			if (!_status[skill]) {
 				game.broadcastAll(() => {
 					_status[skill] = lib.filter.filterEnable;
@@ -361,7 +379,7 @@ const skills = {
 					};
 				});
 			}
-		},
+		},*/
 		async content(event, trigger, player) {
 			await player.draw(2);
 			const num = Math.min(
@@ -399,6 +417,24 @@ const skills = {
 			}
 		},
 		subSkill: {
+			backup: {
+				filterCard(card) {
+					return get.itemtype(card) == "card" && card == get.event().olhuanhuo_debuff;
+				},
+				viewAs(cards, player) {
+					if (cards.length) {
+						const card = get.event().olhuanhuo_debuff;
+						return {
+							name: get.name(card, player),
+							cards: [card],
+							isCard: true,
+						};
+					}
+					return null;
+				},
+				popname: true,
+				log: false,
+			},
 			debuff: {
 				forced: true,
 				charlotte: true,
@@ -410,7 +446,7 @@ const skills = {
 				intro: {
 					content: "当前“幻惑”剩余次数：#",
 				},
-				//firstDo:true,
+				firstDo: true,
 				trigger: {
 					player: ["chooseToUseBegin", "useCard1"],
 				},
@@ -437,14 +473,24 @@ const skills = {
 						if (!cards.length) {
 							return;
 						}
-						const originalFilter = trigger.filterCard;
+						const card = cards.randomGet();
+						trigger.set(event.name, card);
+						const name = "olhuanhuo_backup";
+						//trigger.set("openskilldialog", "请选择" + get.translation(card) + "的目标");
+						trigger.set("norestore", true);
+						trigger.set("_backupevent", name);
+						trigger.set("custom", {
+							add: {},
+							replace: { window() {} },
+						});
+						trigger.backup(name);
+						/*const originalFilter = trigger.filterCard;
 						trigger.filterCard = function (card) {
 							if (get.itemtype(card) !== "card" || card != get.event().olhuanhuo_debuff) {
 								return false;
 							}
 							return originalFilter.apply(this, arguments);
-						};
-						trigger.set(event.name, cards.randomGet());
+						};*/
 					}
 				},
 			},
@@ -490,13 +536,14 @@ const skills = {
 				filter(event, player, name) {
 					const tag = "olqingshi_tag";
 					if (name == "useCardToPlayer") {
+						const evtx = event.getParent();
 						return (
 							event.targets.length == 1 &&
 							event.player != player &&
 							event.isFirstTarget &&
 							game.hasPlayer2(target => {
 								return target.hasHistory("lose", evt => {
-									if (evt.getParent(2) != event.getParent()) {
+									if (evt.getParent() != evtx || evt.relatedEvent == evtx) {
 										return false;
 									}
 									return Object.values(evt.gaintag_map || {})
@@ -511,7 +558,7 @@ const skills = {
 							event.cards &&
 							game.hasPlayer2(target => {
 								return target.hasHistory("lose", evt => {
-									if (evt.getParent(2).card != event.card) {
+									if (evt.getParent().card != event.card || evt.relatedEvent?.card == event.card) {
 										return false;
 									}
 									return Object.values(evt.gaintag_map || {})
@@ -4829,7 +4876,8 @@ const skills = {
 				return false;
 			}
 			return event.player.hasHistory("lose", function (evt) {
-				if (evt.getParent() != event) {
+				const evtx = evt.relatedEvent || evt.getParent();
+				if (evtx != event) {
 					return false;
 				}
 				for (var i in evt.gaintag_map) {

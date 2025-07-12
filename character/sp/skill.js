@@ -472,7 +472,7 @@ const skills = {
 			if (!player.isPhaseUsing()) {
 				return false;
 			}
-			if (!player.hasHistory("lose", evtx => evtx?.hs?.length && evtx.getParent() == event)) {
+			if (!player.hasHistory("lose", evtx => evtx?.hs?.length && (evtx.relatedEvent || evtx.getParent()) == event)) {
 				return false;
 			}
 			return (
@@ -482,7 +482,7 @@ const skills = {
 						if (!evt.isPhaseUsing()) {
 							return false;
 						}
-						return player.hasHistory("lose", evtx => evtx?.hs?.length && evtx.getParent() == evt);
+						return player.hasHistory("lose", evtx => evtx?.hs?.length && (evtx.relatedEvent || evtx.getParent()) == evt);
 					},
 					event
 				).length <= 2
@@ -695,7 +695,8 @@ const skills = {
 				player.isPhaseUsing() &&
 				player.countMark("olleishi_used") < player.countMark("olkuangxin") &&
 				player.hasHistory("lose", evt => {
-					if (evt.getParent() != event) {
+					const evtx = evt.relatedEvent || evt.getParent();
+					if (evtx != event) {
 						return false;
 					}
 					return Object.values(evt.gaintag_map).flat().includes("olleishi");
@@ -1064,7 +1065,8 @@ const skills = {
 			}
 			return (
 				event.player.hasHistory("lose", evt => {
-					if (evt.getParent() != event) {
+					const evtx = evt.relatedEvent || evt.getParent();
+					if (evtx != event) {
 						return false;
 					}
 					return Object.values(evt.gaintag_map).flat().includes("oljiyun_effect");
@@ -1362,7 +1364,8 @@ const skills = {
 						return false;
 					}
 					return player.hasHistory("lose", evt => {
-						if (evt.getParent() !== event) {
+						const evtx = evt.relatedEvent || evt.getParent();
+						if (evtx !== event) {
 							return false;
 						}
 						return Object.values(evt.gaintag_map).flat().includes("olkuangjuan_effect");
@@ -1889,7 +1892,8 @@ const skills = {
 					}
 					if (
 						!player.hasHistory("lose", evt => {
-							return evt.getParent() === event && evt.hs.length > 0;
+							const evtx = evt.relatedEvent || evt.getParent();
+							return evtx === event && evt.hs.length > 0;
 						})
 					) {
 						return false;
@@ -5079,7 +5083,8 @@ const skills = {
 						return false;
 					}
 					return player.hasHistory("lose", evt => {
-						if (evt.getParent() !== event) {
+						const evtx = evt.relatedEvent || evt.getParent();
+						if (evtx !== event) {
 							return false;
 						}
 						return Object.keys(evt.gaintag_map).some(i => evt.gaintag_map[i].includes("olbianyu_viewAs"));
@@ -5492,7 +5497,7 @@ const skills = {
 					if (!evt || evt.card !== event.card || evt.cards?.length !== 1) {
 						return false;
 					}
-					return player.hasHistory("lose", evtx => evtx.getParent() === evt && Object.keys(evtx.gaintag_map).some(i => evtx.gaintag_map[i].includes("olkuangxiang_effect")));
+					return player.hasHistory("lose", evtx => (evtx.relatedEvent || evtx.getParent()) === evt && Object.keys(evtx.gaintag_map).some(i => evtx.gaintag_map[i].includes("olkuangxiang_effect")));
 				},
 				forced: true,
 				logTarget: "player",
@@ -12012,7 +12017,7 @@ const skills = {
 					let num = 0;
 					if (Array.isArray(event.cards) && event.cards.length) {
 						const history = player.getHistory("lose", evt => {
-							if (evt.getParent() != event) {
+							if ((evt.relatedEvent || evt.getParent()) != event) {
 								return false;
 							}
 							return event.cards.some(card => evt.hs.includes(card));
@@ -18743,7 +18748,8 @@ const skills = {
 		filter(event, player) {
 			if (
 				!player.hasHistory("lose", function (evt) {
-					return evt.hs.length > 0 && evt.getParent() == event;
+					const evtx = evt.relatedEvent || evt.getParent();
+					return evt.hs.length > 0 && evtx == event;
 				}) ||
 				!event.cards.filterInD("oe").length
 			) {
@@ -27476,7 +27482,12 @@ const skills = {
 	},
 	//新服曹笨
 	xinshanjia: {
-		group: ["xinshanjia_count"],
+		init(player, skill) {
+			player.addSkill("xinshanjia_count");
+		},
+		onremove(player, skill) {
+			player.removeSkill("xinshanjia_count");
+		},
 		locked: false,
 		mod: {
 			aiValue(player, card, num) {
@@ -30162,7 +30173,8 @@ const skills = {
 				charlotte: true,
 				filter(event, player) {
 					return event.player.hasHistory("lose", function (evt) {
-						if (evt.getParent() != event) {
+						const evtx = evt.relatedEvent || evt.getParent();
+						if (evtx != event) {
 							return false;
 						}
 						for (var i in evt.gaintag_map) {
@@ -32294,7 +32306,7 @@ const skills = {
 				player.storage.shefu2 &&
 				player.storage.shefu2.includes(event.card.name) &&
 				event.player.getHistory("lose", function (evt) {
-					return evt.getParent() == event && evt.hs && evt.hs.length == event.cards.length;
+					return (evt.relatedEvent || evt.getParent()) == event && evt.hs && evt.hs.length == event.cards.length;
 				}).length
 			);
 		},
@@ -34268,7 +34280,7 @@ const skills = {
 					}
 					if (
 						!player.hasHistory("lose", function (evt) {
-							if (evt.getParent() != event) {
+							if ((evt.relatedEvent || evt.getParent()) != event) {
 								return false;
 							}
 							for (var i in evt.gaintag_map) {

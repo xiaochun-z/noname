@@ -4937,14 +4937,15 @@ const skills = {
 				trigger: { player: "useCard" },
 				forced: true,
 				filter(event, player) {
-					var tags = ["dctuoyu_fengtian_tag", "dctuoyu_qingqu_tag", "dctuoyu_junshan_tag"],
+					const tags = ["dctuoyu_fengtian_tag", "dctuoyu_qingqu_tag", "dctuoyu_junshan_tag"],
 						card = event.card;
 					return player.hasHistory("lose", function (evt) {
-						if (evt.getParent() != event) {
+						const evtx = evt.relatedEvent || evt.getParent();
+						if (evtx != event) {
 							return false;
 						}
-						for (var i in evt.gaintag_map) {
-							for (var tag of evt.gaintag_map[i]) {
+						for (const i in evt.gaintag_map) {
+							for (const tag of evt.gaintag_map[i]) {
 								if (tags.includes(tag)) {
 									return true;
 								}
@@ -4954,13 +4955,14 @@ const skills = {
 					});
 				},
 				content() {
-					var tags = ["dctuoyu_fengtian_tag", "dctuoyu_qingqu_tag", "dctuoyu_junshan_tag"],
+					const tags = ["dctuoyu_fengtian_tag", "dctuoyu_qingqu_tag", "dctuoyu_junshan_tag"],
 						card = trigger.card;
 					player.hasHistory("lose", function (evt) {
-						if (evt.getParent() != trigger) {
+						const evtx = evt.relatedEvent || evt.getParent();
+						if (evtx != trigger) {
 							return false;
 						}
-						for (var i in evt.gaintag_map) {
+						for (const i in evt.gaintag_map) {
 							tags.removeArray(evt.gaintag_map[i]);
 						}
 						return tags.length == 0;
@@ -4974,7 +4976,7 @@ const skills = {
 					if (!tags.includes("dctuoyu_qingqu_tag")) {
 						if (trigger.addCount !== false) {
 							trigger.addCount = false;
-							var stat = player.getStat("card");
+							let stat = player.getStat("card");
 							if (stat[card.name] && stat[card.name] > 0) {
 								stat[card.name]--;
 							}

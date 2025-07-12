@@ -3190,7 +3190,7 @@ const skills = {
 						event.cards.length == 1 &&
 						player.hasUseTarget(get.copy(event.cards[0])) &&
 						player.getHistory("lose", evt => {
-							if (evt.getParent() != event) {
+							if ((evt.relatedEvent || evt.getParent()) != event) {
 								return false;
 							}
 							for (var i in evt.gaintag_map) {
@@ -7088,7 +7088,7 @@ const skills = {
 			return (
 				get.color(event.card) === "black" &&
 				event.player.hasHistory("lose", event2 => {
-					return event2 && event2.hs.length && event2.getParent() === event;
+					return event2 && event2.hs.length && (event2.relatedEvent || evevt2.getParent()) === event;
 				}) &&
 				event.player
 					.getHistory("useCard", event2 => {
@@ -10926,7 +10926,7 @@ const skills = {
 		},
 		direct: true,
 		filter(event, player) {
-			if (player == _status.currentPhase || event.getParent(2)?.name == "useCard") {
+			if (player == _status.currentPhase || event.getParent()?.name == "useCard") {
 				return false;
 			}
 			if (event.name == "gain" && event.player == player) {

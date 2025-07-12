@@ -1656,7 +1656,7 @@ const skills = {
 				getIndex(event, player) {
 					return game
 						.filterPlayer2(target => {
-							const evt = event.getParent(2);
+							const evt = event.getParent();
 							if (!["useCard", "respond"].includes(evt?.name) && !target.isIn()) {
 								return false;
 							}
@@ -1680,7 +1680,7 @@ const skills = {
 				logTarget: (event, player, name, target) => target,
 				async content(event, trigger, player) {
 					const [target] = event.targets,
-						evt = trigger.getParent(2);
+						evt = trigger.getParent();
 					if (["useCard", "respond"].includes(evt?.name)) {
 						await game.asyncDraw([target, player]);
 					} else {
@@ -10423,10 +10423,16 @@ const skills = {
 	},
 	olyajiao: {
 		audio: "reyajiao",
-		trigger: { player: "loseAfter" },
+		trigger: {
+			player: "loseAfter",
+			global: "loseAsyncAfter",
+		},
 		frequent: true,
 		filter(event, player) {
-			return player != _status.currentPhase && event.hs && event.hs.length > 0 && ["useCard", "respond"].includes(event.getParent(2).name);
+			if (player == _status.currentPhase) {
+				return false;
+			}
+			return ["useCard", "respond"].includes(event.getParent().name) && event.getl(player)?.hs?.length;
 		},
 		content() {
 			"step 0";

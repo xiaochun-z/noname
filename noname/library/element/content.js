@@ -8837,24 +8837,35 @@ player.removeVirtualEquip(card);
 				const ownerCards = event.cards.filter(card => get.owner(card)),
 					directDiscard = event.cards.filter(card => !get.owner(card));
 				if (ownerCards.length) {
-					await game.loseAsync({ player: player, cards: ownerCards }).setContent(async (event, trigger, player) => {
-						let cards = event.cards;
-						let cards_noowner = [];
-						while (cards.length) {
-							const owner = get.owner(cards[0]);
-							if (!owner) {
-								cards_noowner.add(cards.shift());
-							} else {
-								const id = owner.playerid;
-								let onLoseCards = cards.filter(card => get.owner(card) == owner);
-								event.cards.removeArray(onLoseCards);
-								await owner.lose(onLoseCards, "visible", ui.ordering).set("relatedEvent", event.getParent()).set("getlx", false).set("type", "use");
+					const ownerx = get.owner(cards.find(card => get.owner(card) !== false));
+					if (
+						cards.some(card => {
+							const owner = get.owner(card);
+							if (owner === false) return false;
+							return owner != ownerx;
+						})
+					) {
+						await game.loseAsync({ player: player, cards: ownerCards }).setContent(async (event, trigger, player) => {
+							let cards = event.cards;
+							let cards_noowner = [];
+							while (cards.length) {
+								const owner = get.owner(cards[0]);
+								if (!owner) {
+									cards_noowner.add(cards.shift());
+								} else {
+									const id = owner.playerid;
+									let onLoseCards = cards.filter(card => get.owner(card) == owner);
+									event.cards.removeArray(onLoseCards);
+									await owner.lose(onLoseCards, "visible", ui.ordering).set("relatedEvent", event.getParent()).set("getlx", false).set("type", "use");
+								}
 							}
-						}
-						if (cards_noowner.length) {
-							await game.cardsGotoOrdering(cards_noowner).set("relatedEvent", event.getParent());
-						}
-					});
+							if (cards_noowner.length) {
+								await game.cardsGotoOrdering(cards_noowner).set("relatedEvent", event.getParent());
+							}
+						});
+					} else {
+						await ownerx.lose(ownerCards, "visible", ui.ordering).set("type", "use");
+					}
 				}
 				if (directDiscard.length) {
 					event.lose_map.noowner.addArray(directDiscard);
@@ -8863,7 +8874,7 @@ player.removeVirtualEquip(card);
 			}
 			//player.using=cards;
 			let cardaudio = true;
-      
+
 			if (event.skill) {
 				if (lib.skill[event.skill].audio) {
 					cardaudio = false;
@@ -9994,24 +10005,35 @@ player.removeVirtualEquip(card);
 				const ownerCards = cards.filter(card => get.owner(card)),
 					directDiscard = cards.filter(card => !get.owner(card));
 				if (ownerCards.length) {
-					await game.loseAsync({ player: player, cards: ownerCards }).setContent(async (event, trigger, player) => {
-						let cards = event.cards;
-						let cards_noowner = [];
-						while (cards.length) {
-							const owner = get.owner(cards[0]);
-							if (!owner) {
-								cards_noowner.add(cards.shift());
-							} else {
-								const id = owner.playerid;
-								let onLoseCards = cards.filter(card => get.owner(card) == owner);
-								event.cards.removeArray(onLoseCards);
-								await owner.lose(onLoseCards, "visible", ui.ordering).set("relatedEvent", event.getParent()).set("getlx", false).set("type", "use");
+					const ownerx = get.owner(cards.find(card => get.owner(card) !== false));
+					if (
+						cards.some(card => {
+							const owner = get.owner(card);
+							if (owner === false) return false;
+							return owner != ownerx;
+						})
+					) {
+						await game.loseAsync({ player: player, cards: ownerCards }).setContent(async (event, trigger, player) => {
+							let cards = event.cards;
+							let cards_noowner = [];
+							while (cards.length) {
+								const owner = get.owner(cards[0]);
+								if (!owner) {
+									cards_noowner.add(cards.shift());
+								} else {
+									const id = owner.playerid;
+									let onLoseCards = cards.filter(card => get.owner(card) == owner);
+									event.cards.removeArray(onLoseCards);
+									await owner.lose(onLoseCards, "visible", ui.ordering).set("relatedEvent", event.getParent()).set("getlx", false).set("type", "use");
+								}
 							}
-						}
-						if (cards_noowner.length) {
-							await game.cardsGotoOrdering(cards_noowner).set("relatedEvent", event.getParent());
-						}
-					});
+							if (cards_noowner.length) {
+								await game.cardsGotoOrdering(cards_noowner).set("relatedEvent", event.getParent());
+							}
+						});
+					} else {
+						await ownerx.lose(ownerCards, "visible", ui.ordering).set("type", "use");
+					}
 				}
 				if (directDiscard.length) {
 					event.lose_map.noowner.addArray(directDiscard);

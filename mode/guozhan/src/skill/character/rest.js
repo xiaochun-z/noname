@@ -6682,7 +6682,7 @@ export default {
 				return (
 					get.color(event.card, false) == "red" &&
 					player.hasHistory("lose", function (evt) {
-						return evt.getParent() == event && evt.hs && evt.hs.length > 0;
+						return (evt.relatedEvent || evt.getParent()) == event && evt.hs && evt.hs.length > 0;
 					})
 				);
 			}
@@ -10867,7 +10867,7 @@ export default {
 				filter(event, player) {
 					return (
 						player.getHistory("lose", function (evt) {
-							if (evt.getParent() != event) {
+							if ((evt.relatedEvent || evt.getParent()) != event) {
 								return false;
 							}
 							for (var i in evt.gaintag_map) {
@@ -17211,7 +17211,7 @@ export default {
 					global: ["equipEnd", "addJudgeEnd", "gainEnd", "loseAsyncEnd", "addToExpansionEnd"],
 				},
 				filter(event, player) {
-					if (event.name == "loseAsync" && event.getParent().name == "useCard") {
+					if (event.getParent().name == "useCard") {
 						return false;
 					}
 					const evt = event.getl(player);

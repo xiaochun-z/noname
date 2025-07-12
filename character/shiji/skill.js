@@ -1759,7 +1759,8 @@ const skills = {
 					return (
 						player.countMark("zaoli") < 4 &&
 						player.hasHistory("lose", function (evt) {
-							return evt.hs && evt.hs.length > 0 && evt.getParent() == event;
+							const evtx = evt.relatedEvent || evt.getParent();
+							return evt.hs && evt.hs.length > 0 && evtx == event;
 						})
 					);
 				},
