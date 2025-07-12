@@ -4,6 +4,7 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 const skills = {
 	//张奂
 	dcyiju: {
+		audio: 2,
 		trigger: { target: "useCardToPlayered" },
 		forced: true,
 		filter(event, player) {
@@ -24,6 +25,7 @@ const skills = {
 		},
 	},
 	dcshuguo: {
+		audio: 2,
 		trigger: { global: "phaseEnd" },
 		filter(event, player) {
 			return game.hasGlobalHistory("cardMove", evt => {
@@ -112,6 +114,7 @@ const skills = {
 	},
 	//张燕
 	dcqiaolve: {
+		audio: 2,
 		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
 			if (player == event.target) {
@@ -128,6 +131,7 @@ const skills = {
 		},
 	},
 	dchanjie: {
+		audio: 2,
 		trigger: { global: "phaseBegin" },
 		filter(event, player) {
 			return player != event.player && event.player.isMaxHp() && player.countCards("h", { color: "black" });
@@ -169,6 +173,7 @@ const skills = {
 	},
 	//伍孚
 	dchuairen: {
+		audio: 2,
 		enable: "chooseToUse",
 		filter(event, player) {
 			return get
@@ -299,6 +304,7 @@ const skills = {
 		},
 	},
 	dcchizei: {
+		audio: 2,
 		trigger: {
 			player: "damageBegin3",
 		},
@@ -337,6 +343,7 @@ const skills = {
 		},
 	},
 	dczhonge: {
+		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget: lib.filter.notMe,
@@ -471,6 +478,7 @@ const skills = {
 		},
 	},
 	dcjuekai: {
+		audio: 2,
 		enable: "phaseUse",
 		limited: true,
 		skillAnimation: true,
@@ -2484,7 +2492,7 @@ const skills = {
 					mod: {
 						aiOrder(player, card, num) {
 							var number = get.number(card);
-							if (typeof number != "number" || number <= numbers[0] || number >= numbers[1]) {
+							if (typeof number != "number" || number < numbers[0] || number > numbers[1]) {
 								return num + 10;
 							}
 						},
@@ -2497,7 +2505,7 @@ const skills = {
 					var number = get.number(trigger.card);
 					var numbers = get.info(event.name).numbers;
 					event.playerx = get.info(event.name).playerx;
-					if (typeof number != "number" || number <= numbers[0] || number >= numbers[1]) {
+					if (typeof number != "number" || number < numbers[0] || number > numbers[1]) {
 						event.finish();
 					}
 				})
@@ -3188,7 +3196,8 @@ const skills = {
 				firstDo: true,
 				filter(event, player) {
 					return player.hasHistory("lose", evt => {
-						if (evt.getParent() != event) {
+						const evtx = evt.relatedEvent || evt.getParent();
+						if (evtx != event) {
 							return false;
 						}
 						for (var i in evt.gaintag_map) {
@@ -3871,7 +3880,8 @@ const skills = {
 						return false;
 					}
 					return player.hasHistory("lose", function (evt) {
-						if (evt.getParent() != event) {
+						const evtx = evt.relatedEvent || evt.getParent();
+						if (evtx != event) {
 							return false;
 						}
 						for (var i in evt.gaintag_map) {

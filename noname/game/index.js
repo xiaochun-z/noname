@@ -143,7 +143,7 @@ export class Game extends GameCompatible {
 	 * @param { boolean } [filter] 筛选逻辑：false跳过移除逻辑，否则执行默认移除逻辑
 	 * @returns { string[] }
 	 */
-	initCharactertList(filter) {
+	initCharacterList(filter) {
 		let list;
 		if (_status.connectMode) {
 			list = get.charactersOL();

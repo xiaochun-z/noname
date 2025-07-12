@@ -240,7 +240,7 @@ game.import("card", function () {
 						for (const card of cards) {
 							let tag = card.gaintag?.find(tag => tag.startsWith(name));
 							if (tag) {
-								player.removeGaintag(tag, [card]);
+								target.removeGaintag(tag, [card]);
 							}
 							tag = tag ? name + parseFloat(parseInt(tag.slice(name.length)) + 1) : "jiaoyou1";
 							if (!lib.skill[tag]) {
@@ -253,7 +253,7 @@ game.import("card", function () {
 									tag.slice(name.length)
 								);
 							}
-							player.addGaintag([card], tag);
+							target.addGaintag([card], tag);
 						}
 					}
 				},
@@ -281,48 +281,46 @@ game.import("card", function () {
 				selectTarget: -1,
 				toself: true,
 				modTarget: true,
-				async contentBefore(event, trigger, player) {
-					const evt = event.getParent();
-					if (!evt.haoyun) {
-						const result = await player
-							.chooseControl("black", "red")
-							.set("prompt", `好运：选择一种颜色，然后开始判定。如果颜色为你选择的颜色，你获得此牌且重复此流程。`)
-							.set("ai", () => (Math.random() > 0.4 ? "black" : "red"))
-							.forResult();
-						if (result?.control) {
-							game.log(player, "选择了", "#y" + result.control);
-							player.popup(result.control);
-							evt.haoyun = result.control;
-						}
-					}
-				},
 				async content(event, trigger, player) {
 					event.cards ??= [];
-					const evt = event.getParent(),
-						{ target } = event,
-						color = evt.haoyun;
-					if (!color) {
-						return;
-					}
-					while (true) {
-						const judgeEvent = target.judge(card => {
-							if (get.color(card) == get.event().haoyun_color) {
-								return 1.5;
+					const { target } = event;
+					const result = await target
+						.chooseControl("black", "red")
+						.set("prompt", `好运：选择一种颜色，然后开始判定。如果颜色为你选择的颜色，你获得此牌且重复此流程。`)
+						.set("ai", () => (Math.random() > 0.4 ? "black" : "red"))
+						.forResult();
+					if (result?.control) {
+						const color = result.control;
+						game.log(player, "选择了", "#y" + color);
+						player.popup(color);
+						while (true) {
+							const judgeEvent = target.judge(card => {
+								if (get.color(card) == get.event().haoyun_color) {
+									return 1.5;
+								}
+								return -1.5;
+							});
+							judgeEvent.set("haoyun_color", color);
+							judgeEvent.judge2 = result => result.bool;
+							if (!player.hasSkillTag("rejudge")) {
+								judgeEvent.set("callback", async event => {
+									if (event.judgeResult.color == event.getParent().haoyun_color && get.position(event.card, true) == "o") {
+										await event.player.gain(event.card, "gain2");
+									}
+								});
+							} else {
+								judgeEvent.set("callback", async event => {
+									if (event.judgeResult.color == event.getParent().haoyun_color) {
+										event.getParent().orderingCards.remove(event.card);
+									}
+								});
 							}
-							return -1.5;
-						});
-						judgeEvent.set("haoyun_color", color);
-						judgeEvent.judge2 = result => result.bool;
-						judgeEvent.set("callback", async event => {
-							if (event.judgeResult.color == event.getParent().haoyun_color && get.position(event.card, true) == "o") {
-								await event.player.gain(event.card, "gain2");
+							const result = await judgeEvent.forResult();
+							if (result?.bool && result?.card) {
+								event.cards.push(result.card);
+							} else {
+								break;
 							}
-						});
-						const result = await judgeEvent.forResult();
-						if (result?.bool && result?.card) {
-							event.cards.push(result.card);
-						} else {
-							break;
 						}
 					}
 				},
@@ -2002,7 +2000,7 @@ game.import("card", function () {
 					return event.card.name == "leigong";
 				},
 				async content(event, trigger, player) {
-					const num = game.countPlayer2(target => target.hasHistory("damage", evt => evt.getParent(2) == trigger && evt.notLink()));
+					const num = game.countPlayer2(target => target.hasHistory("damage", evt => evt.getParent(4) == trigger && evt.notLink()));
 					if (num > 0) {
 						await player.draw(num);
 					}
@@ -2066,7 +2064,7 @@ game.import("card", function () {
 					}
 					trigger._chadaox_skill_players.add(player);
 					trigger.player = target;
-					const dbi = [
+					/*const dbi = [
 						["皇帝的新文案", "皇帝的新文案"],
 						["兄啊，有个事情你能不能帮我一下", "死叛恶艹"],
 						["替我挡着！", "你咋这么自私呢，呸！"],
@@ -2084,7 +2082,7 @@ game.import("card", function () {
 						await game.asyncDelayx();
 						target.throwEmotion(player, ["egg", "shoe"].randomGet(), false);
 						target.chat(str[1]);
-					}
+					}*/
 				},
 			},
 			yifu_skill: {
@@ -2241,8 +2239,9 @@ game.import("card", function () {
 			chadaox_bg: "插",
 			//致敬传奇啥比光环描述
 			chadaox_info: "出牌阶段，令场上获得“两肋插刀”光环效果。",
+			chadaox_append: "<span style='font-family:yuanli'>当你受到伤害或失去体力时，将此效果转移给一名本次事件中未被选择过的队友（没有则不转移）。</span>",
 			chadaox_skill: "两肋插刀",
-			chadaox_skill_info: "当你受到伤害或失去体力时，将此效果转移给你一名未以此法转移过伤害的队友（没有则不转移）。",
+			chadaox_skill_info: "当你受到伤害或失去体力时，将此效果转移给一名本次事件中未被选择过的队友（没有则不转移）。",
 			yifu: "义父",
 			yifu_bg: "父",
 			get yifu_info() {

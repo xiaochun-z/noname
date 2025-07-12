@@ -2320,6 +2320,7 @@ const skills = {
 	},
 	//夏侯徽
 	dcdujun: {
+		audio: 2,
 		trigger: {
 			global: ["damageSource", "damageEnd"],
 		},
@@ -2410,6 +2411,7 @@ const skills = {
 		},
 	},
 	dcjikun: {
+		audio: 2,
 		trigger: {
 			player: "loseAfter",
 			global: ["addToExpansionAfter", "gainAfter", "addJudgeAfter", "loseAsyncAfter", "equipAfter"],
@@ -2560,9 +2562,10 @@ const skills = {
 					filterTarget: lib.filter.notMe,
 					selectTarget: -1,
 					log: false,
+					link: links[0],
 					async precontent(event, trigger, player) {
 						player.logSkill("dcsbzhanban", event.result.targets);
-						const link = links[0];
+						const link = lib.skill.dcsbzhanban_backup.link;
 						if (link > 0) {
 							await player.draw(link);
 						} else if (link < 0) {
@@ -4463,7 +4466,7 @@ const skills = {
 					return (
 						event.addCount !== false &&
 						player.hasHistory("lose", evt => {
-							if (evt.getParent() !== event) {
+							if ((evt.relatedEvent || evt.getParent()) !== event) {
 								return false;
 							}
 							return Object.values(evt.gaintag_map).flat().includes("dcxiaowu");
@@ -5826,7 +5829,7 @@ const skills = {
 					return (
 						event.addCount !== false &&
 						player.hasHistory("lose", evt => {
-							return evt.getParent() == event && evt.hs.length && Object.values(evt.gaintag_map).flat().includes("dcyuxi");
+							return (evt.relatedEvent || evt.getParent()) == event && evt.hs.length && Object.values(evt.gaintag_map).flat().includes("dcyuxi");
 						})
 					);
 				},
@@ -6615,7 +6618,7 @@ const skills = {
 					return current.countCards("h") && !player.getStorage("dclianjie_used").includes(current);
 				}) ||
 				!player.hasHistory("lose", evt => {
-					if (evt.getParent() != event.getParent()) {
+					if ((evt.relatedEvent || evt.getParent()) != event.getParent()) {
 						return false;
 					}
 					return event.cards?.some(card => (evt.hs || []).includes(card));
@@ -6797,7 +6800,7 @@ const skills = {
 					if (
 						!player.hasHistory("lose", evt => {
 							let gaintag = false;
-							if (evt.getParent() != event.getParent("useCard")) {
+							if ((evt.relatedEvent || evt.getParent()) != event.getParent("useCard")) {
 								return false;
 							}
 							for (var i in evt.gaintag_map) {
@@ -9694,7 +9697,7 @@ const skills = {
 				charlotte: true,
 				filter(event, player) {
 					return player.hasHistory("lose", evt => {
-						if (evt.getParent() !== event) {
+						if ((evt.relatedEvent || evt.getParent()) !== event) {
 							return false;
 						}
 						return Object.values(evt.gaintag_map).some(tags => tags.includes("dcxingmen"));
@@ -10036,7 +10039,7 @@ const skills = {
 						return false;
 					}
 					return player.hasHistory("lose", evt => {
-						if (evt.getParent() != event) {
+						if ((evt.relatedEvent || evt.getParent()) != event) {
 							return false;
 						}
 						for (const i in evt.gaintag_map) {
@@ -12830,7 +12833,7 @@ const skills = {
 				return false;
 			}
 			return player.hasHistory("lose", evt => {
-				if (evt.getParent() != event) {
+				if ((evt.relatedEvent || evt.getParent()) != event) {
 					return false;
 				}
 				return event.cards.every(card => {
@@ -15288,7 +15291,7 @@ const skills = {
 			if (
 				event.targets.length != 1 ||
 				!player.hasHistory("lose", evt => {
-					if (evt.getParent() != event) {
+					if ((evt.relatedEvent || evt.getParent()) != event) {
 						return false;
 					}
 					return event.cards.every(card => evt.hs.includes(card));
@@ -15401,7 +15404,7 @@ const skills = {
 			"step 1";
 			var character = result.control;
 			if (!_status.characterlist) {
-				game.initCharactertList();
+				game.initCharacterList();
 			}
 			player.reinitCharacter(get.character(player.name2, 3).includes("dcxunbie") ? player.name2 : player.name1, character);
 			"step 2";
@@ -15768,7 +15771,7 @@ const skills = {
 				filter(event, player) {
 					var cards = event.cards.filter(card => get.color(card, player) == "red");
 					return player.hasHistory("lose", evt => {
-						if (event != evt.getParent()) {
+						if (event != (evt.relatedEvent || evt.getParent())) {
 							return false;
 						}
 						for (var i in evt.gaintag_map) {
@@ -15784,7 +15787,7 @@ const skills = {
 					var num = 0;
 					var cards = trigger.cards.filter(card => get.color(card, player) == "red");
 					player.getHistory("lose", evt => {
-						if (trigger != evt.getParent()) {
+						if (trigger != (evt.relatedEvent || evt.getParent())) {
 							return false;
 						}
 						for (var i in evt.gaintag_map) {
@@ -16331,7 +16334,7 @@ const skills = {
 				forced: true,
 				filter(event, player) {
 					return player.hasHistory("lose", function (evt) {
-						if (evt.getParent() != event) {
+						if ((evt.relatedEvent || evt.getParent()) != event) {
 							return false;
 						}
 						for (var i in evt.gaintag_map) {
@@ -16352,7 +16355,7 @@ const skills = {
 					"step 0";
 					var cards = [];
 					player.getHistory("lose", function (evt) {
-						if (evt.getParent() != trigger) {
+						if ((evt.relatedEvent || evt.getParent()) != trigger) {
 							return false;
 						}
 						for (var i in evt.gaintag_map) {
@@ -16760,7 +16763,7 @@ const skills = {
 						return false;
 					}
 					return player.hasHistory("lose", function (evt) {
-						if (evt.getParent() != event) {
+						if ((evt.relatedEvent || evt.getParent()) != event) {
 							return false;
 						}
 						for (var i in evt.gaintag_map) {
@@ -24635,7 +24638,7 @@ const skills = {
 			"step 0";
 			player.awakenSkill(event.name);
 			if (!_status.characterlist) {
-				game.initCharactertList();
+				game.initCharacterList();
 			}
 			if (_status.characterlist.includes("xushi")) {
 				if (player.name2 && get.character(player.name2)[3].includes("syxiongyi")) {

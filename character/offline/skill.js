@@ -2,6 +2,48 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//夏侯玄
+	pehuanfu: {
+		trigger: {
+			player: "useCardToPlayered",
+			target: "useCardToTargeted",
+		},
+		filter(event, player) {
+			return event.card.name == "sha";
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseToDiscard(get.prompt2(event.skill), "he", [1, player.maxHp], "chooseonly")
+				.set("ai", card => {
+					return 6 - get.value(card);
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const { cards } = event;
+			await player.discard(cards).set("discarder", player);
+			await player.draw(cards.length * 2);
+			game.log(trigger.card, "的伤害改为", "#y" + cards.length);
+			player.addTempSkill(event.name + "_damage");
+			trigger.card.storage[event.name + "_damage"] = cards.length;
+		},
+		subSkill: {
+			damage: {
+				trigger: {
+					global: "damageBegin1",
+				},
+				filter(event, player) {
+					return event.card?.storage?.pehuanfu_damage > 0 && event.getParent(2)?.targets?.includes(event.player);
+				},
+				charlotte: true,
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					trigger.num = trigger.card.storage.pehuanfu_damage;
+				},
+			},
+		},
+	},
 	//渭南风云
 	//张郃
 	wn_qiaobian: {
@@ -5502,7 +5544,7 @@ const skills = {
 		initList() {
 			//先用许劭评鉴那个函数初始化一下角色列表
 			if (!_status.characterlist) {
-				game.initCharactertList();
+				game.initCharacterList();
 			}
 			const characters = _status.characterlist.slice();
 			//获取各个角色的技能并去重
@@ -13276,7 +13318,8 @@ const skills = {
 		filter(event, player) {
 			if (
 				!event.player.hasHistory("lose", evt => {
-					return !["useCard", "respond"].includes(evt.getParent().name);
+					const evtx = evt.relatedEvent || evt.getParent();
+					return !["useCard", "respond"].includes(evtx.name);
 				})
 			) {
 				return false;
@@ -21181,6 +21224,7 @@ const skills = {
 						result.links
 					);
 					evt.result.cards = [result.links[0]];
+					evt.result._apply_args = { addSkillCount: false };
 					target.$give(result.links[0], player, false);
 					if (player != target) {
 						target.addTempSkill("fengyin");
@@ -21361,7 +21405,7 @@ const skills = {
 			backup: {
 				precontent() {
 					"step 0";
-					event.result._apply_args = { throw: false };
+					event.result._apply_args = { throw: false, addSkillCount: false };
 					var cards = event.result.card.cards;
 					event.result.cards = cards;
 					var owner = get.owner(cards[0]);
@@ -23576,7 +23620,7 @@ const skills = {
 	zyshilu: {
 		init() {
 			if (!_status.characterlist) {
-				game.initCharactertList();
+				game.initCharacterList();
 			}
 		},
 		audio: 2,

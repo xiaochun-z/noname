@@ -2236,9 +2236,9 @@ game.import("card", function () {
 								}
 								result = await next.forResult();
 							}
-							if (result.bool) {
+							if (result?.bool) {
 								event.shaRequired--;
-								if (result.cards) {
+								if (result.cards?.length) {
 									if (event.turn === target) {
 										event.targetCards.addArray(result.cards);
 									} else {

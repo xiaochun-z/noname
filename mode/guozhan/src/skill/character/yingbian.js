@@ -1939,9 +1939,6 @@ export default {
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget(card, player, target) {
-			if (target == player) {
-				return false;
-			}
 			if (ui.selected.targets.length) {
 				const source = ui.selected.targets[0];
 				return !source.isFriendOf(target) && source.canCompare(target);
@@ -2141,7 +2138,7 @@ export default {
 				firstDo: true,
 				filter(event, player) {
 					return event.player.hasHistory("lose", evt => {
-						return evt.hs.length > 0 && evt.getParent() == event;
+						return evt.hs.length > 0 && (evt.relatedEvent || evt.getParent()) == event;
 					});
 				},
 				direct: true,
@@ -5481,7 +5478,7 @@ export default {
 			}
 			return (
 				player.getHistory("lose", function (evt) {
-					if (evt.getParent() != event) {
+					if ((evt.relatedEvent || evt.getParent()) != event) {
 						return false;
 					}
 					for (var i in evt.gaintag_map) {
