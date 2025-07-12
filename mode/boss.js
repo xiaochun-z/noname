@@ -8130,7 +8130,7 @@ export default () => {
 				},
 			},
 			lingbo: {
-				audio: 2,
+				audio: ["qingguo", 2],
 				trigger: { player: ["respond", "useCard"] },
 				filter: function (event, player) {
 					return event.card.name == "shan";

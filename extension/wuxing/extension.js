@@ -49,7 +49,7 @@ game.import("play", function () {
 					if (_status.video || _status.connectMode) {
 						return;
 					}
-					if (card.name == "wuxingpan") {
+					if (card.name === "wuxingpan") {
 						return;
 					}
 					if (card.wunature) {
@@ -174,12 +174,12 @@ game.import("play", function () {
 								case "metal":
 									switch (target.wunature) {
 										case "wood":
-											if (current != 0) {
+											if (current !== 0) {
 												return [1, -0.3];
 											}
 											return;
 										case "water":
-											if (current != 0) {
+											if (current !== 0) {
 												return [1, 0.3];
 											}
 											return;
@@ -188,12 +188,12 @@ game.import("play", function () {
 								case "wood":
 									switch (target.wunature) {
 										case "soil":
-											if (current != 0) {
+											if (current !== 0) {
 												return [1, -0.3];
 											}
 											return;
 										case "fire":
-											if (current != 0) {
+											if (current !== 0) {
 												return [1, 0.3];
 											}
 											return;
@@ -202,12 +202,12 @@ game.import("play", function () {
 								case "water":
 									switch (target.wunature) {
 										case "fire":
-											if (current != 0) {
+											if (current !== 0) {
 												return [1, -0.3];
 											}
 											return;
 										case "wood":
-											if (current != 0) {
+											if (current !== 0) {
 												return [1, 0.3];
 											}
 											return;
@@ -216,12 +216,12 @@ game.import("play", function () {
 								case "fire":
 									switch (target.wunature) {
 										case "metal":
-											if (current != 0) {
+											if (current !== 0) {
 												return [1, -0.3];
 											}
 											return;
 										case "soil":
-											if (current != 0) {
+											if (current !== 0) {
 												return [1, 0.3];
 											}
 											return;
@@ -230,12 +230,12 @@ game.import("play", function () {
 								case "soil":
 									switch (target.wunature) {
 										case "water":
-											if (current != 0) {
+											if (current !== 0) {
 												return [1, -0.3];
 											}
 											return;
 										case "metal":
-											if (current != 0) {
+											if (current !== 0) {
 												return [1, 0.3];
 											}
 											return;
