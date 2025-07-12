@@ -298,9 +298,6 @@ self.addEventListener("fetch", event => {
 									esModuleInterop: true,
 								}, `${url.origin}${url.pathname}?${scriptSearchParams.toString()}`) : script.content, "__sfc_main__")
 									.replace(`const __sfc_main__`, `export const __sfc_main__`)
-									// import vue重新指向
-									.replaceAll(`from "vue"`, `from "/game/vue.esm-browser.js"`)
-									.replaceAll(`from 'vue'`, `from '/game/vue.esm-browser.js'`)
 							);
 	
 							codeList.push(`import { __sfc_main__ } from '${ url.origin + url.pathname + '?' + scriptSearchParams.toString() }'`);
@@ -321,8 +318,6 @@ self.addEventListener("fetch", event => {
 								`${url.origin}${url.pathname}?${templateSearchParams.toString()}`,
 								template.code
 								// .replace(`function render(_ctx, _cache) {`, str => str + 'console.log(_ctx);')
-								.replaceAll(`from "vue"`, `from "/game/vue.esm-browser.js"`)
-								.replaceAll(`from 'vue'`, `from '/game/vue.esm-browser.js'`)
 							);
 							
 							codeList.push(`import { render } from '${ url.origin + url.pathname + '?' + templateSearchParams.toString() }'`);
