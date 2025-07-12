@@ -34,8 +34,10 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
 	// 当一个 service worker 被初始注册时，页面在下次加载之前不会使用它。 claim() 方法会立即控制这些页面
 	// event.waitUntil(self.clients.claim());
-	console.log("service worker加载完成，执行重启操作");
-	sendReload();
+	event.waitUntil(self.clients.claim().then(() => {
+		console.log("service worker加载完成，执行重启操作");
+		sendReload();
+	}));
 });
 
 self.addEventListener('message', event => {
@@ -83,7 +85,7 @@ self.addEventListener("fetch", event => {
 		event.respondWith(rep);
 		return;
 	}
-	if (!['.ts', '.json', '.vue', 'css', '.js'].some(ext => url.pathname.endsWith(ext)) && !request.url.replace(location.origin, '').startsWith('/noname-builtinModules/')) {
+	if (!['.ts', '.json', '.vue', '.css', '.js'].some(ext => url.pathname.endsWith(ext)) && !request.url.replace(location.origin, '').startsWith('/noname-builtinModules/')) {
 		return;
 	}
 	// 普通js请求不处理
@@ -145,7 +147,7 @@ self.addEventListener("fetch", event => {
 		// 请求原文件
 		const response = fetch(request.url.replace(/\?.*/, ''), {
 			method: request.method,
-			mode: "no-cors",
+			// mode: "no-cors",
 			headers: new Headers({
 				"Content-Type": "text/plain"
 			}),
