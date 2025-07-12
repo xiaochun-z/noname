@@ -8851,7 +8851,9 @@ player.removeVirtualEquip(card);
 					if (
 						cards.some(card => {
 							const owner = get.owner(card);
-							if (owner === false) return false;
+							if (owner === false) {
+								return false;
+							}
 							return owner != ownerx;
 						})
 					) {
@@ -10019,7 +10021,9 @@ player.removeVirtualEquip(card);
 					if (
 						cards.some(card => {
 							const owner = get.owner(card);
-							if (owner === false) return false;
+							if (owner === false) {
+								return false;
+							}
 							return owner != ownerx;
 						})
 					) {
