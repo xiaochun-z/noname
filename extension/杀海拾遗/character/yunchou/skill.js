@@ -4,10 +4,10 @@ const skills = {
 		preHidden: true,
 		trigger: { player: "damageEnd" },
 		filter(event, player) {
-			return get.itemtype(event.cards) == "cards" && get.position(event.cards[0], true) == "o";
+			return get.itemtype(event.cards) === "cards" && get.position(event.cards[0], true) === "o";
 		},
 		async content(event, trigger, player) {
-			player.gain(trigger.cards, "gain2");
+			await player.gain(trigger.cards, "gain2");
 		},
 		ai: {
 			maixie: true,
@@ -28,12 +28,16 @@ const skills = {
 		mode: ["identity", "guozhan"],
 		trigger: { global: "dieBefore" },
 		filter(event, player) {
-			if (_status.currentPhase !== player) return false;
-			if (get.mode() === "identity") return event.player !== game.zhu;
+			if (_status.currentPhase !== player) {
+				return false;
+			}
+			if (get.mode() === "identity") {
+				return event.player !== game.zhu;
+			}
 			return get.mode() === "guozhan" && event.player.isFriendOf(player);
 		},
 		forced: true,
-		content() {
+		async content() {
 			game.broadcastAll(
 				function (target, group) {
 					if (get.mode() === "identity") {
@@ -53,9 +57,13 @@ const skills = {
 		ai: {
 			effect: {
 				player_use(card, player, target) {
-					if (!get.tag(card, "damage") || player === target || target.hp > 1 || target === game.zhu) return;
+					if (!get.tag(card, "damage") || player === target || target.hp > 1 || target === game.zhu) {
+						return;
+					}
 					if (get.mode() === "identity") {
-						if (target.identity === "fan") return;
+						if (target.identity === "fan") {
+							return;
+						}
 						let res = 3;
 						/*const pid = player.identity;
 						const tid = target.identity;
@@ -65,13 +73,19 @@ const skills = {
 						}*/
 						return [1, (get.attitude(player, target) > 0 ? 0.7 : 1) * res];
 					} else if (get.mode() === "guozhan") {
-						if (target.isFriendOf(player)) return [1, 0.7 * player.countCards("h")];
+						if (target.isFriendOf(player)) {
+							return [1, 0.7 * player.countCards("h")];
+						}
 					}
 				},
 				player(card, player, target) {
-					if (!get.tag(card, "damage") || player === target || target.hp > 1 || target === game.zhu) return;
+					if (!get.tag(card, "damage") || player === target || target.hp > 1 || target === game.zhu) {
+						return;
+					}
 					if (get.mode() === "identity") {
-						if (target.identity === "fan") return;
+						if (target.identity === "fan") {
+							return;
+						}
 						let res = 3;
 						/*const pid = player.identity;
 						const tid = target.identity;
@@ -81,7 +95,9 @@ const skills = {
 						}*/
 						return [1, (get.attitude(player, target) > 0 ? 0.7 : 1) * res];
 					} else if (get.mode() === "guozhan") {
-						if (target.isFriendOf(player)) return [1, 0.7 * player.countCards("h")];
+						if (target.isFriendOf(player)) {
+							return [1, 0.7 * player.countCards("h")];
+						}
 					}
 				},
 			},
@@ -90,23 +106,34 @@ const skills = {
 	diykuanggu: {
 		trigger: { source: "damageEnd" },
 		filter(event, player) {
-			if (player.isHealthy()) return get.distance(trigger.player, player, "attack") > 1;
+			if (player.isHealthy()) {
+				return get.distance(trigger.player, player, "attack") > 1;
+			}
 			return true;
 		},
 		getIndex(event, player, triggername) {
 			return event.num;
 		},
 		forced: true,
-		content() {
-			if (get.distance(trigger.player, player, "attack") > 1) player.draw();
-			else player.recover();
+		async content(event, trigger, player) {
+			if (get.distance(trigger.player, player, "attack") > 1) {
+				await player.draw();
+			} else {
+				await player.recover();
+			}
 		},
 		ai: {
 			effect: {
 				player(card, player, target) {
-					if (!target || !get.tag(card, "damage")) return;
-					if (get.distance(target, player, "attack") > 1) return [1, 0.6];
-					if (player.isDamaged()) return [1, 1.5];
+					if (!target || !get.tag(card, "damage")) {
+						return;
+					}
+					if (get.distance(target, player, "attack") > 1) {
+						return [1, 0.6];
+					}
+					if (player.isDamaged()) {
+						return [1, 1.5];
+					}
 				},
 			},
 		},
@@ -126,19 +153,19 @@ const skills = {
 			if (event._notrigger.includes(event.player)) {
 				return false;
 			}
-			return event.num && event.source?.isIn() && event.player?.isIn() && event.source != event.player;
+			return event.num && event.source?.isIn() && event.player?.isIn() && event.source !== event.player;
 		},
 		check(event, player) {
 			if (player.isPhaseUsing()) {
 				return true;
 			}
-			if (event.player == player) {
+			if (event.player === player) {
 				return get.attitude(player, event.source) > -3;
 			}
 			return get.attitude(player, event.player) > -3;
 		},
 		logTarget(event, player) {
-			if (event.player == player) {
+			if (event.player === player) {
 				return event.source;
 			}
 			return event.player;

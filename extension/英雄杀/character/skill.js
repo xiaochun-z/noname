@@ -1078,10 +1078,10 @@ const skill = {
 				const {
 					result: { bool, links },
 				} =
-					cards.length == 1
+					cards.length === 1
 						? { result: { links: cards.slice(0), bool: true } }
 						: await player.chooseCardButton("遗计：请选择要分配的牌", true, cards, [1, cards.length]).set("ai", () => {
-								if (ui.selected.buttons.length == 0) {
+								if (ui.selected.buttons.length === 0) {
 									return 1;
 								}
 								return 0;
@@ -1159,10 +1159,10 @@ const skill = {
 						if (target.hp >= 4) {
 							return [1, num * 2];
 						}
-						if (target.hp == 3) {
+						if (target.hp === 3) {
 							return [1, num * 1.5];
 						}
-						if (target.hp == 2) {
+						if (target.hp === 2) {
 							return [1, num * 0.5];
 						}
 					}
@@ -1219,7 +1219,7 @@ const skill = {
 		trigger: { source: "damageBegin1" },
 		forced: true,
 		filter(event) {
-			return event.card && event.card.name == "sha" && event.player.isHealthy();
+			return event.card && event.card.name === "sha" && event.player.isHealthy();
 		},
 		content() {
 			trigger.num++;
@@ -1231,7 +1231,7 @@ const skill = {
 		ai: {
 			effect: {
 				player(card, player, target) {
-					if (card.name == "sha" && target.isHealthy() && get.attitude(player, target) > 0) {
+					if (card.name === "sha" && target.isHealthy() && get.attitude(player, target) > 0) {
 						return [1, -2];
 					}
 				},
@@ -2573,7 +2573,7 @@ const skill = {
 		audioname: ["re_gongsunzan"],
 		forced: true,
 		filter(event, player) {
-			return get.sgn(player.hp - 2.5) != get.sgn(player.hp - 2.5 - event.num);
+			return get.sgn(player.hp - 2.5) !== get.sgn(player.hp - 2.5 - event.num);
 		},
 		content() {},
 		mod: {

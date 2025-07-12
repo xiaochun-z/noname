@@ -1761,10 +1761,13 @@ const card = {
 		filterTarget(card, player, target) {
 			return target === player;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const target = event.target,
+				targets = event.targets;
+			let card = event.card,
+				cards = event.cards;
 			if (target.isDying()) {
-				target.recover();
+				await target.recover();
 			} else {
 				target.addTempSkill("tianxianjiu", ["phaseAfter", "shaAfter"]);
 				if (cards && cards.length) {
@@ -1857,7 +1860,11 @@ const card = {
 		filterTarget(card, player, target) {
 			return !target.hasSkill("huanpodan_skill");
 		},
-		content() {
+		async content(event, trigger, player) {
+			const target = event.target,
+				targets = event.targets;
+			let card = event.card,
+				cards = event.cards;
 			target.addSkill("huanpodan_skill");
 			if (cards && cards.length) {
 				card = cards[0];

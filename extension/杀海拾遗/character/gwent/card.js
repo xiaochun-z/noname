@@ -25,10 +25,13 @@ const card = {
 		filterTarget(card, player, target) {
 			return target === player;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const target = event.target,
+				targets = event.targets;
+			let card = event.card,
+				cards = event.cards;
 			if (target.isDying()) {
-				target.recover();
+				await target.recover();
 			} else {
 				target.addTempSkill("gw_xianzumaijiu", ["phaseAfter", "shaAfter"]);
 				if (cards && cards.length) {

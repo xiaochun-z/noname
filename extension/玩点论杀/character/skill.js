@@ -55,7 +55,7 @@ const skills = {
 		filter(event, player) {
 			if (event.cards) {
 				for (var i = 0; i < event.cards.length; i++) {
-					if (event.cards[i].name == "sha") {
+					if (event.cards[i].name === "sha") {
 						return true;
 					}
 				}
@@ -65,7 +65,7 @@ const skills = {
 		content() {
 			var num = 0;
 			for (var i = 0; i < trigger.cards.length; i++) {
-				if (trigger.cards[i].name == "sha") {
+				if (trigger.cards[i].name === "sha") {
 					num++;
 				}
 			}
@@ -76,7 +76,7 @@ const skills = {
 		trigger: { source: "damageBegin1" },
 		forced: true,
 		filter(event) {
-			return event.card && event.card.name == "sha" && event.player.isHealthy();
+			return event.card && event.card.name === "sha" && event.player.isHealthy();
 		},
 		content() {
 			"step 0";
@@ -89,7 +89,7 @@ const skills = {
 		ai: {
 			effect: {
 				player(card, player, target) {
-					if (card.name == "sha" && target.isHealthy() && get.attitude(player, target) > 0) {
+					if (card.name === "sha" && target.isHealthy() && get.attitude(player, target) > 0) {
 						return [1, -2];
 					}
 				},

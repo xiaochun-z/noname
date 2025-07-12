@@ -626,7 +626,9 @@ const card = {
 		filterTarget(card, player, target) {
 			return !target.hasSkill("yunvyuanshen_skill");
 		},
-		content() {
+		async content(event, trigger, player) {
+			let card = event.card,
+				cards = event.cards;
 			target.storage.yunvyuanshen_skill = game.createCard("yunvyuanshen");
 			target.addSkill("yunvyuanshen_skill");
 			if (cards && cards.length) {

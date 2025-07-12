@@ -3130,13 +3130,13 @@ const skills = {
 			var next = player.chooseToMove("恂恂：将两张牌置于牌堆顶", true);
 			next.set("list", [["牌堆顶", cards], ["牌堆底"]]);
 			next.set("filterMove", function (from, to, moved) {
-				if (to == 1 && moved[1].length >= 2) {
+				if (to === 1 && moved[1].length >= 2) {
 					return false;
 				}
 				return true;
 			});
 			next.set("filterOk", function (moved) {
-				return moved[1].length == 2;
+				return moved[1].length === 2;
 			});
 			next.set("processAI", function (list) {
 				var cards = list[0][1].slice(0).sort(function (a, b) {
