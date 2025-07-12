@@ -1508,6 +1508,7 @@ const skills = {
 		content() {
 			player.loseHp();
 		},
+		nopop: true,
 		mark: true,
 		marktext: "魔",
 		intro: { content: "你已入魔" },
