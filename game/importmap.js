@@ -5,7 +5,7 @@ if (typeof HTMLScriptElement.supports === "function" && HTMLScriptElement.suppor
 			vue: "./game/vue.esm-browser.js",
 			typescript: "./game/typescript.js",
 			"@vue/devtools-api": "./game/empty-devtools-api.js",
-			"@/": "./noname/",
+			"@/": "./",
 			"@vue/": "./node_modules/@types/noname-typings/@vue/",
 		},
 		scopes: {},
