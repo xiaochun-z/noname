@@ -956,7 +956,7 @@ const skills = {
 				player
 					.getHistory("useCard", evt => {
 						return player.hasHistory("lose", evtx => {
-							if (evtx.getParent() != evt) {
+							if ((evtx.relatedEvent || evtx.getParent()) != evt) {
 								return false;
 							}
 							return evtx.getl?.(player)?.hs?.length;
@@ -976,7 +976,7 @@ const skills = {
 			}
 			const gaintag = [];
 			player.checkHistory("lose", evt => {
-				if (evt.getParent() != trigger) {
+				if ((evt.relatedEvent || evt.getParent()) != trigger) {
 					return false;
 				}
 				gaintag.addArray(

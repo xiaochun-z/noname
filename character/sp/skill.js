@@ -1086,7 +1086,7 @@ const skills = {
 			} else {
 				let cards = [];
 				trigger.player.checkHistory("lose", evt => {
-					if (evt.getParent() != trigger) {
+					if ((evt.relatedEvent || evt.getParent()) != trigger) {
 						return false;
 					}
 					cards.addArray(evt.cards.filter(card => evt.gaintag_map[card.cardid]?.includes("oljiyun_effect") && !get.owner(card)));
