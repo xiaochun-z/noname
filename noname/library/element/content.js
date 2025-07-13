@@ -9412,12 +9412,12 @@ player.removeVirtualEquip(card);
 					next.target.addTempClass("target");
 				}
 			}
-			event._result = await next.forResult();
 			if (!info.nodelay && num > 0) {
 				if (event.targetDelay !== false) {
-					game.delayx(0.5);
+					await game.delayx(0.5);
 				}
 			}
+			event._result = await next.forResult();
 		},
 		async (event, trigger, player) => {
 			let { cards, card, targets, num } = event;
