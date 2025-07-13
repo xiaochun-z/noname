@@ -8590,50 +8590,68 @@ const skills = {
 		ai: { order: 1, result: { player: 1 } },
 	},
 	resghuishi: {
+		onChooseToUse(event) {
+			event.targetprompt2.add(target => {
+				if (
+					event.player.maxHp >= game.players.length &&
+					target.getSkills(null, false, false).some(skill => {
+						const info = get.info(skill);
+						return info?.juexingji && !target.awakenedSkills.includes(skill);
+					})
+				) {
+					return "觉醒";
+				} else {
+					return "摸牌";
+				}
+		},
 		audio: "sghuishi",
-		inherit: "sghuishi",
+		enable: "phaseUse",
 		filterTarget: true,
+		limited: true,
+		skillAnimation: true,
+		animationColor: "water",
 		prompt() {
-			var player = _status.event.player;
+			const player = get.player();
 			if (player.maxHp >= game.players.length) {
 				return "选择一名角色。若其拥有未发动过的觉醒技，则你解除其中一个觉醒技的发动限制；否则其摸四张牌。然后你减2点体力上限。";
 			}
 			return "令一名角色摸四张牌，然后你减2点体力上限。";
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const { target } = event;
 			player.awakenSkill(event.name);
-			var list = target.getSkills(null, false, false).filter(function (skill) {
-				var info = lib.skill[skill];
-				return info && info.juexingji && !target.awakenedSkills.includes(skill);
+			const list = target.getSkills(null, false, false).filter(function (skill) {
+				const info = get.info(skill);
+				return info?.juexingji && !target.awakenedSkills.includes(skill);
 			});
 			if (player.maxHp >= game.players.length && list.length > 0) {
-				if (list.length == 1) {
-					event._result = { control: list[0] };
-				} else {
-					player.chooseControl(list).set("prompt", "选择一个觉醒技，令" + get.translation(target) + "可无视条件发动该技能");
+				const result =
+					list.length == 1
+						? { bool: true, links: list }
+						: await player
+								.chooseButton([`辉逝：选择一个觉醒技，令${get.translation(target)}可无视条件发动该技能`, [list, "skill"]], true)
+								.set("displayIndex", false)
+								.forResult();
+				if (result?.bool && result.links?.length) {
+					const [skill] = result.links;
+					target.storage.resghuishi_mark = skill;
+					target.markSkill("resghuishi_mark");
+					const info = lib.skill[skill];
+					if (info.filter && !info.charlotte && !info.resghuishi_filter) {
+						info.resghuishi_filter = info.filter;
+						info.filter = function (event, player) {
+							if (player.storage.resghuishi_mark) {
+								return true;
+							}
+							return this.resghuishi_filter.apply(this, arguments);
+						};
+					}
 				}
 			} else {
-				target.draw(4);
-				event.goto(2);
+				await target.draw(4);
 			}
-			"step 1";
-			target.storage.resghuishi_mark = result.control;
-			target.markSkill("resghuishi_mark");
-			var info = lib.skill[result.control];
-			if (info.filter && !info.charlotte && !info.resghuishi_filter) {
-				info.resghuishi_filter = info.filter;
-				info.filter = function (event, player) {
-					if (player.storage.resghuishi_mark) {
-						return true;
-					}
-					return this.resghuishi_filter.apply(this, arguments);
-				};
-			}
-			"step 2";
-			player.loseMaxHp(2);
+			await player.loseMaxHp(2);
 		},
-		intro: { content: "未发动" },
 		ai: {
 			order: 0.1,
 			expose: 0.2,
@@ -8662,7 +8680,7 @@ const skills = {
 				},
 			},
 		},
-		subSkill: { mark: { intro: { content: "发动【$】时无视条件" } } },
+		subSkill: { mark: { charlotte: true, intro: { content: "发动【$】时无视条件" } } },
 	},
 	sghuishi: {
 		audio: 2,

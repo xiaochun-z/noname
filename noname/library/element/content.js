@@ -7183,6 +7183,14 @@ player.removeVirtualEquip(card);
 	},
 	chooseTarget: function () {
 		"step 0";
+		const skills = player.getSkills("invisible").concat(lib.skill.global);
+		game.expandSkills(skills);
+		for (var i = 0; i < skills.length; i++) {
+			var info = lib.skill[skills[i]];
+			if (info && info.onchooseTarget) {
+				info.onchooseTarget(event, player);
+			}
+		}
 		if (event.isMine()) {
 			if (event.hsskill && !event.forced && _status.prehidden_skills.includes(event.hsskill)) {
 				ui.click.cancel();

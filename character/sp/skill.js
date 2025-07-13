@@ -28790,24 +28790,25 @@ const skills = {
 		},
 	},
 	fuqi: {
+		targetprompt2: target => {
+			const player = get.player(),
+				card = get.card();
+			if (get.type(card) == "trick" || (get.type(card) == "basic" && !["shan", "tao", "jiu", "du"].includes(card.name))) {
+				if (target !== player && get.distance(target, player) <= 1) {
+					return "不可响应";
+				}
+			}
+		},
+		onChooseToUse(event) {
+			event.targetprompt2.add(lib.skill.fuqi.targetprompt2);
+		},
+		onchooseTarget(event) {
+			event.targetprompt2.add(lib.skill.fuqi.targetprompt2);
+		},
 		audio: 2,
 		forced: true,
 		trigger: {
 			player: "useCard",
-		},
-		onChooseToUse(event) {
-			event.targetprompt2.add(target => {
-				if (!target.isIn()) {
-					return false;
-				}
-				const player = get.player(),
-					card = get.card();
-				if (get.type(card) == "trick" || (get.type(card) == "basic" && !["shan", "tao", "jiu", "du"].includes(card.name))) {
-					if (target.isIn() && target !== player && get.distance(target, player) <= 1) {
-						return "不可响应";
-					}
-				}
-			});
 		},
 		filter(event, player) {
 			return (
