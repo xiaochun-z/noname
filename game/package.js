@@ -49,7 +49,6 @@ window.noname_package = {
 	play: {
 		boss: "诸神降临",
 		cardpile: "牌堆补充",
-		wuxing: "五行生克",
 		coin: "富甲天下",
 	},
 	mode: {

@@ -20,7 +20,7 @@ window.config = {
 		sgscards: ["standard", "extra", "sp", "guozhan", "zhulu", "yingbian", "yongjian"],
 		sgsmodes: ["identity", "guozhan", "versus", "doudizhu", "single", "brawl", "connect"],
 		stockmode: ["identity", "guozhan", "versus", "boss", "doudizhu", "single", "chess", "stone", "connect", "brawl", "tafang"],
-		stockextension: ["boss", "cardpile", "coin", "wuxing"],
+		stockextension: ["boss", "cardpile", "coin"],
 		layout: ["default", "newlayout"],
 		theme: ["woodden", "music", "simple"],
 		card_font: ["xiaozhuan", "huangcao", "caoshu", "xingshu"],
