@@ -1691,12 +1691,13 @@ export const extensionMenu = function (connectMenu) {
 				codeButton.onclick = function () {
 					ui.window.classList.add("shortcutpaused");
 					ui.window.classList.add("systempaused");
-					window.saveNonameInput = saveInput;
 					ui.window.appendChild(container);
 					ui.create.editor2(container, {
 						language: "javascript",
 						value: code,
 						saveInput,
+					}).then(editor => {
+						window.saveNonameInput = () => saveInput(editor);
 					});
 				};
 
@@ -2109,12 +2110,13 @@ export const extensionMenu = function (connectMenu) {
 				editbutton.onclick = function () {
 					ui.window.classList.add("shortcutpaused");
 					ui.window.classList.add("systempaused");
-					window.saveNonameInput = saveInput;
 					ui.window.appendChild(container);
 					ui.create.editor2(container, {
 						language: "javascript",
 						value: code,
 						saveInput,
+					}).then(editor => {
+						window.saveNonameInput = () => saveInput(editor);
 					});
 				};
 
@@ -2489,12 +2491,13 @@ export const extensionMenu = function (connectMenu) {
 					var node = this.node;
 					ui.window.classList.add("shortcutpaused");
 					ui.window.classList.add("systempaused");
-					window.saveNonameInput = this.saveInput;
 					ui.window.appendChild(node);
 					ui.create.editor2(node, {
 						language: "javascript",
 						value: node.code,
 						saveInput: this.saveInput,
+					}).then(editor => {
+						window.saveNonameInput = () => this.saveInput(editor);
 					});
 				};
 				page.content = {};

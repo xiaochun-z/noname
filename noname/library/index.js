@@ -6982,11 +6982,12 @@ export class Library {
 							container.delete();
 							delete window.saveNonameInput;
 						};
-						window.saveNonameInput = saveInput;
 						ui.create.editor2(container, {
 							language: "javascript",
 							value: str,
 							saveInput,
+						}).then(editor => {
+							window.saveNonameInput = () => saveInput(editor);
 						});
 					},
 				},
@@ -7042,12 +7043,13 @@ export class Library {
 							container.delete();
 							delete window.saveNonameInput;
 						};
-						window.saveNonameInput = saveInput;
 						ui.create.editor2(container, {
 							language: "javascript",
 							value: str,
 							saveInput,
-						});
+						}).then(editor => {
+							window.saveNonameInput = () => saveInput(editor);
+						});;
 					},
 				},
 				reset_character_four: {
@@ -7627,12 +7629,13 @@ export class Library {
 							container.delete();
 							delete window.saveNonameInput;
 						};
-						window.saveNonameInput = saveInput;
 						ui.create.editor2(container, {
 							language: "javascript",
 							value: code,
 							saveInput,
-						});
+						}).then(editor => {
+							window.saveNonameInput = () => saveInput(editor);
+						});;
 					},
 				},
 				reset_character: {
