@@ -7185,10 +7185,10 @@ player.removeVirtualEquip(card);
 		"step 0";
 		const skills = player.getSkills("invisible").concat(lib.skill.global);
 		game.expandSkills(skills);
-		for (var i = 0; i < skills.length; i++) {
-			var info = lib.skill[skills[i]];
-			if (info && info.onchooseTarget) {
-				info.onchooseTarget(event, player);
+		for (let i = 0; i < skills.length; i++) {
+			const info = lib.skill[skills[i]];
+			if (info?.onChooseTarget) {
+				info.onChooseTarget(event, player);
 			}
 		}
 		if (event.isMine()) {

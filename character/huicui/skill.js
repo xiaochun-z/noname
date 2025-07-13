@@ -1318,7 +1318,7 @@ const skills = {
 	},
 	//黄舞蝶
 	dcshuangrui: {
-		onchooseTarget(event, player) {
+		onChooseTarget(event, player) {
 			event.targetprompt2.add(target => {
 				if (player.inRange(target)) {
 					return "加伤";

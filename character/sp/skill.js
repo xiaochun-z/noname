@@ -28802,7 +28802,7 @@ const skills = {
 		onChooseToUse(event) {
 			event.targetprompt2.add(lib.skill.fuqi.targetprompt2);
 		},
-		onchooseTarget(event) {
+		onChooseTarget(event) {
 			event.targetprompt2.add(lib.skill.fuqi.targetprompt2);
 		},
 		audio: 2,
