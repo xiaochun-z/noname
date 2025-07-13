@@ -53,7 +53,9 @@ const skill = {
 		ai: {
 			effect: {
 				target(card, player, target, current) {
-					if (typeof card !== "object" || !card.wunature || current === 0) return;
+					if (typeof card !== "object" || !card.wunature || current === 0) {
+						return;
+					}
 
 					const RELATIONS = {
 						metal: { ke: "wood", sheng: "water" },
@@ -64,8 +66,12 @@ const skill = {
 					};
 
 					const nature = RELATIONS[card.wunature];
-					if (target.wunature === nature.ke) return [1, -0.3];
-					if (target.wunature === nature.sheng) return [1, 0.3];
+					if (target.wunature === nature.ke) {
+						return [1, -0.3];
+					}
+					if (target.wunature === nature.sheng) {
+						return [1, 0.3];
+					}
 				},
 			},
 		},

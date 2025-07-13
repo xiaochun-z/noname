@@ -1,6 +1,7 @@
 import { lib, game, ui, get, ai, _status } from "../../../noname.js";
 
 export function precontent(config, pack) {
+	// 适用于多模块并行场景，一个加载失败其余均不加载
 	Promise.all([import("../card/index.js"), import("../character/index.js")])
 		.then(() => {
 			lib.translate.wandian_card_config = "玩点论杀";
