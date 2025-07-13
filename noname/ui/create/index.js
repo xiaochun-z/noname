@@ -423,54 +423,57 @@ export class Create {
 			highlightSelectionMatches(), // 高亮匹配的选择项
 		];
 
-		if (language === "javascript") {
+		if (language === "javascript" || language === "typescript") {
 			const { javascript, scopeCompletionSource, javascriptLanguage, esLint } = await import("@codemirror/lang-javascript");
-			const { Linter } = await import("@/game/eslint-linter-browserify.js");
-
 			extensions.push(
 				javascript({ typescript: true }),
 				javascriptLanguage.data.of({
 					autocomplete: scopeCompletionSource(proxyWindow),
-				}),
-				linter(
-					esLint(new Linter(), {
-						rules: {
-							"no-class-assign": 0,
-							"no-console": 0,
-							"no-constant-condition": [
-								"error",
-								{
-									checkLoops: false,
-								},
-							],
-							"no-irregular-whitespace": [
-								"error",
-								{
-									skipStrings: true,
-									skipTemplates: true,
-								},
-							],
-							"prefer-const": 0,
-							"no-redeclare": 0,
-							"no-undef": 0,
-							"no-empty": [
-								"error",
-								{
-									allowEmptyCatch: true,
-								},
-							],
-							"no-unused-vars": 1,
-							"require-yield": 0,
-							"no-fallthrough": ["error", { commentPattern: "\\[falls[\\s\\w]*through\\]" }],
-							curly: "error",
-						},
-						languageOptions: {
-							ecmaVersion: 13,
-							sourceType: "module",
-						},
-					})
-				)
+				})
 			);
+			if (language === "javascript") {
+				const { Linter } = await import("@/game/eslint-linter-browserify.js");
+				extensions.push(
+					linter(
+						esLint(new Linter(), {
+							rules: {
+								"no-class-assign": 0,
+								"no-console": 0,
+								"no-constant-condition": [
+									"error",
+									{
+										checkLoops: false,
+									},
+								],
+								"no-irregular-whitespace": [
+									"error",
+									{
+										skipStrings: true,
+										skipTemplates: true,
+									},
+								],
+								"prefer-const": 0,
+								"no-redeclare": 0,
+								"no-undef": 0,
+								"no-empty": [
+									"error",
+									{
+										allowEmptyCatch: true,
+									},
+								],
+								"no-unused-vars": 1,
+								"require-yield": 0,
+								"no-fallthrough": ["error", { commentPattern: "\\[falls[\\s\\w]*through\\]" }],
+								curly: "error",
+							},
+							languageOptions: {
+								ecmaVersion: 13,
+								sourceType: "module",
+							},
+						})
+					)
+				);
+			}
 		} else if (language === "css") {
 			const { css } = await import("@codemirror/lang-css");
 			extensions.push(css());
