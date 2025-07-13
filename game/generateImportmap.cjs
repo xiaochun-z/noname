@@ -8,6 +8,46 @@ const importMap = {
 		"@vue/devtools-api": "./game/empty-devtools-api.js",
 		"@/": "./",
 		"@vue/": "./node_modules/@types/noname-typings/@vue/",
+		// codemirror6
+		codemirror: "./game/codemirror6.js",
+		"@codemirror/autocomplete": "./game/@codemirror/autocomplete/index.js",
+		"@codemirror/commands": "./game/@codemirror/commands/index.js",
+		"@codemirror/lang-css": "./game/@codemirror/lang-css/index.js",
+		"@codemirror/lang-html": "./game/@codemirror/lang-html/index.js",
+		"@codemirror/lang-javascript": "./game/@codemirror/lang-javascript/index.js",
+		"@codemirror/lang-json": "./game/@codemirror/lang-json/index.js",
+		"@codemirror/lang-markdown": "./game/@codemirror/lang-markdown/index.js",
+		"@codemirror/lang-vue": "./game/@codemirror/lang-vue/index.js",
+		"@codemirror/language": "./game/@codemirror/language/index.js",
+		"@codemirror/lint": "./game/@codemirror/lint/index.js",
+		"@codemirror/search": "./game/@codemirror/search/index.js",
+		"@codemirror/state": "./game/@codemirror/state/index.js",
+		"@codemirror/view": "./game/@codemirror/view/index.js",
+		// codemirror6的依赖
+		"@lezer/common": "/node_modules/@lezer/common/dist/index.js",
+		"@lezer/common/": "/node_modules/@lezer/common/",
+		"@lezer/css": "/node_modules/@lezer/css/dist/index.js",
+		"@lezer/css/": "/node_modules/@lezer/css/",
+		"@lezer/html": "/node_modules/@lezer/html/dist/index.js",
+		"@lezer/html/": "/node_modules/@lezer/html/",
+		"@lezer/javascript": "/node_modules/@lezer/javascript/dist/index.js",
+		"@lezer/javascript/": "/node_modules/@lezer/javascript/",
+		"@lezer/json": "/node_modules/@lezer/json/dist/index.js",
+		"@lezer/json/": "/node_modules/@lezer/json/",
+		"@lezer/markdown": "/node_modules/@lezer/markdown/dist/index.js",
+		"@lezer/markdown/": "/node_modules/@lezer/markdown/",
+		"@lezer/lr": "/node_modules/@lezer/lr/dist/index.js",
+		"@lezer/lr/": "/node_modules/@lezer/lr/",
+		"@lezer/highlight": "/node_modules/@lezer/highlight/dist/index.js",
+		"@lezer/highlight/": "/node_modules/@lezer/highlight/",
+		"style-mod": "/node_modules/style-mod/src/style-mod.js",
+		"style-mod/": "/node_modules/style-mod/",
+		crelt: "/node_modules/crelt/index.js",
+		"crelt/": "/node_modules/crelt/",
+		"@marijn/find-cluster-break": "/node_modules/@marijn/find-cluster-break/src/index.js",
+		"@marijn/find-cluster-break/": "/node_modules/@marijn/find-cluster-break/",
+		"w3c-keyname": "/node_modules/w3c-keyname/index.js",
+		"w3c-keyname/": "/node_modules/w3c-keyname/",
 	},
 	scopes: {},
 };
@@ -58,7 +98,7 @@ while (queue.length > 0) {
 	/** @type {string} */
 	// @ts-ignore
 	const moduleName = queue.shift();
-
+	console.log("正在处理模块", moduleName);
 	try {
 		const modPkgPath = path.join(__dirname, "../node_modules", moduleName, "package.json");
 		const modPkg = parseJson(modPkgPath);
@@ -66,7 +106,7 @@ while (queue.length > 0) {
 		let moduleEntry = modPkg.module || modPkg.main;
 
 		if (!moduleEntry || !/\.(js|mjs)$/i.test(moduleEntry)) {
-			console.warn(`过滤非 ESM 的入口的模块 ${moduleName}`);
+			console.log(`过滤非 ESM 的入口的模块 ${moduleName}`);
 			continue;
 		}
 
@@ -98,13 +138,23 @@ while (queue.length > 0) {
 			console.warn(`无法读取目录 ${moduleDir}`, err);
 		}
 
+		// 注：有import 包名的时候又没有提供browser兼容的js可以用这个
+		// 或许可以使用require esm判断引入
+		if (!resolvedPath) {
+			// 尝试使用原始模块名
+			resolvedPath = `/node_modules/${moduleName}/${moduleEntry.replace(/\\/g, "/")}`;
+		}
+
 		if (resolvedPath) {
 			importMap.imports[moduleName] = resolvedPath;
 			importMap.imports[`${moduleName}/`] = `/node_modules/${moduleName}/`;
+			console.log(`已处理模块 ${moduleName}，入口文件为 ${resolvedPath}`);
 		} else {
+			console.warn(`无法处理模块 ${moduleName}`);
 			continue;
 		}
 
+		console.log(`正在处理模块 ${moduleName} 的依赖...`);
 		const deps = { ...modPkg.dependencies, ...modPkg.devDependencies };
 		for (const depName of Object.keys(deps)) {
 			if (!processedModules.has(depName)) {
@@ -113,7 +163,7 @@ while (queue.length > 0) {
 			}
 		}
 	} catch (e) {
-		console.warn(`无法加载模块 ${moduleName} 的 package.json`, e);
+		console.warn(`无法加载模块 ${moduleName} 的 package.json`);
 	}
 }
 
