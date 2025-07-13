@@ -8592,6 +8592,9 @@ const skills = {
 	resghuishi: {
 		onChooseToUse(event) {
 			event.targetprompt2.add(target => {
+				if (event.skill !== "resghuishi") {
+					return;
+				}
 				if (
 					event.player.maxHp >= game.players.length &&
 					target.getSkills(null, false, false).some(skill => {
@@ -8621,7 +8624,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const { target } = event;
 			player.awakenSkill(event.name);
-			const list = target.getSkills(null, false, false).filter(function (skill) {
+			const list = target.getSkills(null, false, false).filter(skill => {
 				const info = get.info(skill);
 				return info?.juexingji && !target.awakenedSkills.includes(skill);
 			});
@@ -8637,7 +8640,7 @@ const skills = {
 					const [skill] = result.links;
 					target.storage.resghuishi_mark = skill;
 					target.markSkill("resghuishi_mark");
-					const info = lib.skill[skill];
+					const info = get.info(skill);
 					if (info.filter && !info.charlotte && !info.resghuishi_filter) {
 						info.resghuishi_filter = info.filter;
 						info.filter = function (event, player) {
@@ -8684,23 +8687,40 @@ const skills = {
 		subSkill: { mark: { charlotte: true, intro: { content: "发动【$】时无视条件" } } },
 	},
 	sghuishi: {
+		onChooseToUse(event) {
+			event.targetprompt2.add(target => {
+				if (event.skill !== "sghuishi") {
+					return;
+				}
+				if (
+					target.getSkills(null, false, false).some(skill => {
+						const info = get.info(skill);
+						return info?.juexingji && !target.awakenedSkills.includes(skill);
+					})
+				) {
+					return "觉醒";
+				} else {
+					return "摸牌";
+				}
+			});
+		},
 		audio: 2,
 		enable: "phaseUse",
 		limited: true,
 		skillAnimation: true,
 		animationColor: "water",
 		filterTarget: lib.filter.notMe,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const { target } = event;
 			player.awakenSkill(event.name);
-			var list = target.getSkills(null, false, false).filter(function (skill) {
-				var info = lib.skill[skill];
-				return info && info.juexingji;
+			const list = target.getSkills(null, false, false).filter(skill => {
+				const info = get.info(skill);
+				return info?.juexingji && !target.awakenedSkills.includes(skill);
 			});
 			if (list.length) {
-				target.addMark("sghuishi", 1, false);
-				for (var i of list) {
-					var info = lib.skill[i];
+				target.addMark(event.name, 1, false);
+				for (const skill of list) {
+					const info = get.info(skill);
 					if (info.filter && !info.charlotte && !info.sghuishi_filter) {
 						info.sghuishi_filter = info.filter;
 						info.filter = function (event, player) {
@@ -8712,9 +8732,9 @@ const skills = {
 					}
 				}
 			} else {
-				target.draw(4);
+				await target.draw(4);
 			}
-			player.loseMaxHp(2);
+			await player.loseMaxHp(2);
 		},
 		intro: { content: "发动非Charlotte觉醒技时无视条件" },
 		ai: {
