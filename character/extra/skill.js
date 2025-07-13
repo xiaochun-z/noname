@@ -8603,6 +8603,7 @@ const skills = {
 				} else {
 					return "摸牌";
 				}
+			});
 		},
 		audio: "sghuishi",
 		enable: "phaseUse",
