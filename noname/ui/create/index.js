@@ -346,7 +346,9 @@ export class Create {
 
 		const fontSize = ui.create.div(".editbutton", "字号", editorpage, () => {
 			game.promises.prompt(`###请输入字号###${lib.config.codeMirror_fontSize || "16px"}`).then(size => {
-				if (size === false) return;
+				if (size === false) {
+					return;
+				}
 				container.style.fontSize = Number(size.slice(0, -2)) / game.documentZoom + "px";
 				game.saveConfig("codeMirror_fontSize", size);
 			});
