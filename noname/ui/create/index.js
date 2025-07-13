@@ -12,7 +12,6 @@ import { optionsMenu } from "./menu/pages/optionsMenu.js";
 import { otherMenu } from "./menu/pages/otherMenu.js";
 import { startMenu } from "./menu/pages/startMenu.js";
 import { Pagination } from "../../util/pagination.js";
-import security from "@/noname/util/security.js";
 
 export class Create {
 	/**
@@ -371,7 +370,7 @@ export class Create {
 
 		if (language === "javascript" || language === "typescript") {
 			const { javascript, scopeCompletionSource, javascriptLanguage, esLint } = await import("@codemirror/lang-javascript");
-
+			const { default: security } = await import("@/noname/util/security.js");
 			let proxyWindow = Object.assign({}, window, {
 				_status: _status,
 				lib: lib,
