@@ -11466,7 +11466,285 @@ player.removeVirtualEquip(card);
 			player.die(event.reason);
 		}
 	},
-	die: function () {
+	die: [
+		async (event, trigger, player) => {
+			const { reason, source, restMap } = event;
+			event.forceDie = true;
+			const bool = typeof restMap.type == "string" && typeof restMap.count == "number";
+			if (_status.roundStart == player) {
+				_status.roundStart = player.next || player.getNext() || game.players[0];
+				if (bool) {
+					player.when("restEnd").then(() => (_status.roundStart = player));
+				}
+			}
+			if (ui.land && ui.land.player == player) {
+				game.addVideo("destroyLand");
+				ui.land.destroy();
+			}
+			let unseen = false;
+			if (player.classList.contains("unseen")) {
+				player.classList.remove("unseen");
+				unseen = true;
+			}
+			const logvid = game.logv(player, "die", source);
+			event.logvid = logvid;
+			if (unseen) {
+				player.classList.add("unseen");
+			}
+			if (source) {
+				game.log(player, "被", source, "杀害");
+				if (source.stat[source.stat.length - 1].kill == undefined) {
+					source.stat[source.stat.length - 1].kill = 1;
+				} else {
+					source.stat[source.stat.length - 1].kill++;
+				}
+			} else {
+				game.log(player, "阵亡");
+			}
+
+			/*player.removeEquipTrigger();
+			for (const i in lib.skill.globalmap) {
+				if (lib.skill.globalmap[i].includes(player)) {
+					lib.skill.globalmap[i].remove(player);
+					if (lib.skill.globalmap[i].length == 0 && !lib.skill[i].globalFixed) {
+						game.removeGlobalSkill(i);
+					}
+				}
+			}*/
+			if (bool) {
+				if (player.isIn() && !_status._rest_return?.[player.playerid]) {
+					event.reserveOut = true;
+					game.log(player, "进入了修整状态");
+					game.log(player, "移出了游戏");
+					//game.addGlobalSkill('_rest_return');
+					_status._rest_return ??= {};
+					_status._rest_return[player.playerid] = {
+						type: restMap.type,
+						count: restMap.count,
+					};
+				} else {
+					event.finish();
+				}
+			}
+			if (!event.reserveOut) {
+				game.broadcastAll(function (player) {
+					player.classList.add("dead");
+					player.removeLink();
+					player.classList.remove("turnedover");
+					player.classList.remove("out");
+					player.node.count.innerHTML = "0";
+					player.node.hp.hide();
+					player.node.equips.hide();
+					player.node.count.hide();
+					player.previous.next = player.next;
+					player.next.previous = player.previous;
+					game.players.remove(player);
+					game.dead.push(player);
+					_status.dying.remove(player);
+				}, player);
+			}
+
+			if (!event.noDieAudio) {
+				game.tryDieAudio(player);
+			}
+			if (!event.reserveOut) {
+				game.addVideo("diex", player);
+				if (event.animate !== false) {
+					player.$die(source);
+				}
+			}
+			if (!game.countPlayer()) {
+				game.over();
+			} else if (player.hp != 0) {
+				await player.changeHp(0 - player.hp, false).set("forceDie", true);
+			}
+			if (event.reserveOut) {
+				game.broadcastAll(function (player) {
+					if (player.isLinked()) {
+						if (get.is.linked2(player)) {
+							player.classList.toggle("linked2");
+						} else {
+							player.classList.toggle("linked");
+						}
+					}
+					if (player.isTurnedOver()) {
+						player.classList.toggle("turnedover");
+					}
+				}, player);
+				game.addVideo("link", player, player.isLinked());
+				game.addVideo("turnOver", player, player.classList.contains("turnedover"));
+			}
+		},
+		async (event, trigger, player) => {
+			const { source, restMap } = event;
+			if (player.dieAfter && !event.reserveOut) {
+				player.dieAfter(source);
+			}
+		},
+		async (event, trigger, player) => {
+			if (!event.reserveOut) {
+				game.callHook("checkDie", [event, player]);
+			}
+			await event.trigger("die");
+		},
+		async (event, trigger, player) => {
+			const { reason, source, restMap } = event;
+			if (player.isDead() || event.reserveOut) {
+				if (!game.reserveDead) {
+					const exclude = event.excludeMark;
+					for (const mark in player.marks) {
+						if (exclude.includes(mark)) {
+							continue;
+						}
+						player.unmarkSkill(mark);
+					}
+					let count = 1;
+					const list = Array.from(player.node.marks.childNodes);
+					count += exclude.filter(name => list.some(i => i.name == name)).length;
+					const func = function (player, count, exclude) {
+						while (player.node.marks.childNodes.length > count) {
+							const node = player.node.marks.lastChild;
+							if (exclude.includes(node.name)) {
+								node = node.previousSibling;
+							}
+							node.remove();
+						}
+					};
+					func(player, count, exclude);
+					game.broadcast(
+						function (func, player, count, exclude) {
+							func(player, count, exclude);
+						},
+						func,
+						player,
+						count,
+						exclude
+					);
+					player.removeTip();
+				}
+				for (const i in player.tempSkills) {
+					player.removeSkill(i);
+				}
+				const skills = player.getSkills();
+				for (let i = 0; i < skills.length; i++) {
+					if (lib.skill[skills[i]].temp) {
+						player.removeSkill(skills[i]);
+					}
+				}
+				if (_status.characterlist && !event.reserveOut) {
+					if (lib.character[player.name] && !player.name.startsWith("gz_shibing") && !player.name.startsWith("gz_jun_")) {
+						_status.characterlist.add(player.name);
+					}
+					if (lib.character[player.name1] && !player.name1.startsWith("gz_shibing") && !player.name1.startsWith("gz_jun_")) {
+						_status.characterlist.add(player.name1);
+					}
+					if (lib.character[player.name2] && !player.name2.startsWith("gz_shibing") && !player.name2.startsWith("gz_jun_")) {
+						_status.characterlist.add(player.name2);
+					}
+				}
+				event.cards = player.getCards("hejsx");
+				if (event.cards.length) {
+					await player.discard(event.cards).set("forceDie", true);
+					//player.$throw(event.cards,1000);
+				}
+			}
+		},
+		async (event, trigger, player) => {
+			const { source, restMap } = event;
+			if (player.dieAfter2 && !event.reserveOut) {
+				player.dieAfter2(source);
+			}
+		},
+		async (event, trigger, player) => {
+			const { reason, source, restMap } = event;
+			if (!event.reserveOut) {
+				game.broadcastAll(function (player) {
+					if (game.online && player == game.me && !_status.over && !game.controlOver && !ui.exit) {
+						if (lib.mode[lib.configOL.mode].config.dierestart) {
+							ui.create.exit();
+						}
+					}
+				}, player);
+				if (!_status.connectMode && player == game.me && !_status.over && !game.controlOver) {
+					ui.control.show();
+					if (get.config("revive") && lib.mode[lib.config.mode].config.revive && !ui.revive) {
+						ui.revive = ui.create.control("revive", ui.click.dierevive);
+					}
+					if (get.config("continue_game") && !ui.continue_game && lib.mode[lib.config.mode].config.continue_game && !_status.brawl && !game.no_continue_game) {
+						ui.continue_game = ui.create.control("再战", game.reloadCurrent);
+					}
+					if (get.config("dierestart") && lib.mode[lib.config.mode].config.dierestart && !ui.restart) {
+						ui.restart = ui.create.control("restart", game.reload);
+					}
+				}
+
+				if (!_status.connectMode && player == game.me && !game.modeSwapPlayer) {
+					// _status.auto=false;
+					if (ui.auto) {
+						// ui.auto.classList.remove('glow');
+						ui.auto.hide();
+					}
+					if (ui.wuxie) {
+						ui.wuxie.hide();
+					}
+				}
+
+				if (typeof _status.coin == "number" && source && !_status.auto) {
+					if (source == game.me || source.isUnderControl()) {
+						_status.coin += 10;
+					}
+				}
+			} else {
+				game.broadcastAll(function (player) {
+					player.classList.add("out");
+				}, player);
+				await event.trigger("rest");
+			}
+			if (source && lib.config.border_style == "auto" && (lib.config.autoborder_count == "kill" || lib.config.autoborder_count == "mix")) {
+				switch (source.node.framebg.dataset.auto) {
+					case "gold":
+					case "silver":
+						source.node.framebg.dataset.auto = "gold";
+						break;
+					case "bronze":
+						source.node.framebg.dataset.auto = "silver";
+						break;
+					default:
+						source.node.framebg.dataset.auto = lib.config.autoborder_start || "bronze";
+				}
+				if (lib.config.autoborder_count == "kill") {
+					source.node.framebg.dataset.decoration = source.node.framebg.dataset.auto;
+				} else {
+					let dnum = 0;
+					for (let j = 0; j < source.stat.length; j++) {
+						if (source.stat[j].damage != undefined) {
+							dnum += source.stat[j].damage;
+						}
+					}
+					source.node.framebg.dataset.decoration = "";
+					switch (source.node.framebg.dataset.auto) {
+						case "bronze":
+							if (dnum >= 4) {
+								source.node.framebg.dataset.decoration = "bronze";
+							}
+							break;
+						case "silver":
+							if (dnum >= 8) {
+								source.node.framebg.dataset.decoration = "silver";
+							}
+							break;
+						case "gold":
+							if (dnum >= 12) {
+								source.node.framebg.dataset.decoration = "gold";
+							}
+							break;
+					}
+				}
+				source.classList.add("topcount");
+			}
+		},
+	],
+	die_old: function () {
 		"step 0";
 		event.forceDie = true;
 		if (_status.roundStart == player) {
@@ -11497,16 +11775,16 @@ player.removeVirtualEquip(card);
 			game.log(player, "阵亡");
 		}
 
-		// player.removeEquipTrigger();
+		/*player.removeEquipTrigger();
+		for (var i in lib.skill.globalmap) {
+			if (lib.skill.globalmap[i].includes(player)) {
+				lib.skill.globalmap[i].remove(player);
+				if (lib.skill.globalmap[i].length == 0 && !lib.skill[i].globalFixed) {
+					game.removeGlobalSkill(i);
+				}
+			}
+		}*/
 
-		// for(var i in lib.skill.globalmap){
-		//     if(lib.skill.globalmap[i].includes(player)){
-		//      			lib.skill.globalmap[i].remove(player);
-		//      			if(lib.skill.globalmap[i].length==0&&!lib.skill[i].globalFixed){
-		//      						 game.removeGlobalSkill(i);
-		//      			}
-		//     }
-		// }
 		game.broadcastAll(function (player) {
 			player.classList.add("dead");
 			player.removeLink();

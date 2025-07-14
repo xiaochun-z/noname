@@ -8126,17 +8126,20 @@ export class Player extends HTMLDivElement {
 		return next;
 	}
 	/**
-	 * 令玩家死亡
-	 * @param { GameEvent | GameEventPromise } reason
+	 * 令玩家死亡或进入休整状态
+	 * @param { GameEvent | GameEventPromise } reason 导致角色死亡的事件
+	 * @param { Boolean } restMap 进入休整状态状态相关的参数
 	 * @returns { GameEventPromise }
 	 */
-	die(reason) {
+	die(reason, restMap = { type: null, count: null }) {
 		var next = game.createEvent("die");
 		next.player = this;
 		next.reason = reason;
+		next.restMap = restMap;
 		if (reason) {
 			next.source = reason.source;
 		}
+		next.excludeMark = [];
 		next.setContent("die");
 		return next;
 	}

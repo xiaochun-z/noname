@@ -10415,6 +10415,7 @@ export class Library {
 		fengyin: "封印",
 		baiban: "白板",
 		_disableJudge: "判定区",
+		_rest_return: "休整",
 
 		xiaowu_emotion: "小无表情",
 		wanglang_emotion: "王朗表情",
@@ -13481,6 +13482,42 @@ export class Library {
 				player.link();
 				if (trigger.getParent().notLink()) {
 					trigger.getParent().lianhuanable = true;
+				}
+			},
+		},
+		//休整
+		_rest_return: {
+			trigger: { global: "phaseBefore" },
+			forced: true,
+			charlotte: true,
+			silent: true,
+			forceDie: true,
+			forceOut: true,
+			filter(event, player) {
+				const map = _status._rest_return?.[player.playerid];
+				if (map?.type == "round" && event.player != player) {
+					return false;
+				}
+				return !event._rest_return && player.isOut();
+			},
+			async content(event, trigger, player) {
+				const map = _status._rest_return?.[player.playerid];
+				game.broadcastAll(map => {
+					map.count--;
+				}, map);
+				trigger._rest_return = true;
+				if (!map.count) {
+					//trigger._rest_return = true;
+					game.broadcastAll(function (player) {
+						player.classList.remove("out");
+					}, player);
+					game.log(player, "移回了游戏");
+					delete _status._rest_return[player.playerid];
+					await player.recoverTo(player.maxHp);
+					const next = game.createEvent("restEnd", false);
+					next.setContent("emptyEvent");
+					next.player = player;
+					await next;
 				}
 			},
 		},
