@@ -315,8 +315,8 @@ game.import("card", function () {
 							}
 						}
 					}
-					if(event.cards.length){
-						await player.gain(event.cards,"gain2");
+					if (event.cards.length) {
+						await player.gain(event.cards, "gain2");
 					}
 				},
 				ai: {
@@ -1096,7 +1096,7 @@ game.import("card", function () {
 					player.$skill(get.translation(event.name), null, "thunder", null, "shen_jiaxu");
 					await game.delayx();
 					const targets = game.filterPlayer2(target => target != player).sortBySeat();
-					player.line(targets);
+					player.line(targets.filter(target => target.isIn()));
 					game.broadcastAll(event => {
 						if (!_status.nisiwohuo) {
 							_status.nisiwohuo = [];
