@@ -16619,6 +16619,9 @@ const skills = {
 			order: 8,
 			result: {
 				player(player) {
+					if (player.needsToDiscard(3) && !player.hasValueTarget({ name: "sha" }, false)) {
+						return -1;
+					}
 					return get.effect(player, { name: "losehp" }, player, player);
 				},
 			},
