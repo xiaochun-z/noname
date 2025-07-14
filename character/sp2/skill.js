@@ -10941,24 +10941,8 @@ const skills = {
 				return number >= 1 && number <= 13;
 			});
 			const suits = lib.suit.slice();
-			const videoId = lib.status.videoId++;
-			const func = (id, numbers, suits) => {
-				const dialog = ui.create.dialog(get.prompt2("moying"));
-				dialog.addText("花色");
-				dialog.add([suits.map(suit => [suit, get.translation(suit)]), "tdnodes"]);
-				dialog.addText("点数");
-				dialog.add([numbers, "tdnodes"]);
-				dialog.videoId = id;
-				return dialog;
-			};
-			if (player.isOnline2()) {
-				player.send(func, videoId, numbers, suits);
-			} else {
-				func(videoId, numbers, suits);
-			}
 			const result = await player
-				.chooseButton(2)
-				.set("dialog", get.idDialog(videoId))
+				.chooseButton([get.prompt2("moying"), `<div class="text center">花色</div>`, [suits.map(suit => [suit, get.translation(suit)]), "tdnodes"], `<div class="text center">点数</div>`, [numbers, "tdnodes"]], 2)
 				.set("filterButton", button => {
 					const selected = ui.selected.buttons;
 					if (!selected.length) {
@@ -10970,7 +10954,6 @@ const skills = {
 					return Math.random();
 				})
 				.forResult();
-			game.broadcastAll("closeDialog", videoId);
 			if (result?.links?.length) {
 				const links = result.links;
 				if (!suits.includes(links[0])) {
