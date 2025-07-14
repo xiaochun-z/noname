@@ -297,6 +297,12 @@ const skills = {
 	},
 	olgangquan: {
 		audio: 2,
+		init(player, skill) {
+			player.addSkill(skill + "_mark");
+		},
+		onremove(player, skill) {
+			player.removeSkill(skill + "_mark");
+		},
 		enable: "chooseToUse",
 		filter(event, player) {
 			const bool = event.olgangquan,
@@ -400,6 +406,39 @@ const skills = {
 		},
 		subSkill: {
 			backup: {},
+			mark: {
+				charlotte: true,
+				silent: true,
+				markColor: ["rgba(72, 118, 255, 1)", "rgba(255, 69, 0, 1)"],
+				init(player, skill) {
+					const evt = get.info("dcjianying").getLastUsed(player);
+					const bool = evt.cards?.some(card => card.hasGaintag("eternal_olduoqi_tag"));
+					player.markSkill(skill);
+					game.broadcastAll(
+						function (index, player) {
+							const name = "olgangquan_mark";
+							const bgColor = get.info(name).markColor[index],
+								text = `<span style = "color:#000000;font-weight:bold">${index ? "杀" : "斗"}</span>`;
+							if (player.marks[name]) {
+								player.marks[name].firstChild.style.backgroundColor = bgColor;
+								player.marks[name].firstChild.innerHTML = text;
+							}
+							player.update();
+						},
+						Number(!!bool),
+						player
+					);
+				},
+				trigger: {
+					player: "useCard1",
+				},
+				async content(event, trigger, player) {
+					get.info(event.name).init(player, event.name);
+				},
+				intro: {
+					content: "图标的文字就是【罡拳】能印的牌",
+				},
+			},
 		},
 	},
 	//魔貂蝉
@@ -436,7 +475,6 @@ const skills = {
 					filterTarget: lib.filter.notMe,
 					selectTarget: [1, num],
 					complexCard: true,
-
 					filterOk() {
 						if (!ui.selected.cards.length) {
 							return false;
@@ -468,6 +506,7 @@ const skills = {
 						const card = get.event().olhuanhuo_debuff;
 						return {
 							name: get.name(card, player),
+							nature: get.nature(card, player),
 							cards: [card],
 							isCard: true,
 						};
@@ -544,13 +583,26 @@ const skills = {
 		filter(event, player) {
 			return !player.hasSkill("olrumo") || !game.hasPlayer(target => target.countCards("h", card => card.hasGaintag("olqingshi_tag")));
 		},
-		skillAnimation: true,
-		animationColor: "metal",
-		logTarget(event, player) {
-			return game.filterPlayer();
+		async cost(event, trigger, player) {
+			let result;
+			if (!player.hasSkill("olrumo")) {
+				result = await player.chooseBool(get.prompt2(event.skill)).set("choice", true).forResult();
+			} else {
+				result = { bool: true };
+			}
+			if (result.bool) {
+				event.result = {
+					bool: true,
+					targets: game.filterPlayer(),
+				};
+			}
 		},
 		async content(event, trigger, player) {
-			player.addSkill("olrumo");
+			if (!player.hasSkill("olrumo")) {
+				const name = event.name + "_animate";
+				player.trySkillAnimate(name, name, player.checkShow(name));
+				player.addSkill("olrumo");
+			}
 			const { targets } = event;
 			const effect = async target => {
 				const card = get.cardPile(card => {
@@ -570,6 +622,10 @@ const skills = {
 		group: ["olqingshi_effect"],
 		subSkill: {
 			tag: {},
+			animate: {
+				skillAnimation: true,
+				animationColor: "metal",
+			},
 			effect: {
 				audio: "olqingshi",
 				trigger: {
@@ -585,7 +641,7 @@ const skills = {
 							event.isFirstTarget &&
 							game.hasPlayer2(target => {
 								return target.hasHistory("lose", evt => {
-									if (evt.getParent() != evtx || evt.relatedEvent == evtx) {
+									if ((evt.relatedEvent || evt.getParent()) != evtx) {
 										return false;
 									}
 									return Object.values(evt.gaintag_map || {})
@@ -655,7 +711,7 @@ const skills = {
 					const name = event.triggername;
 					if (name == "useCardToPlayer") {
 						event.result = await player
-							.chooseToDiscard(`###${get.prompt(event.skill, trigger.player)}###弃置一张牌，为${get.translation(trigger.card)}重新指定目标（无距离限制）`, "chooseonly", "he")
+							.chooseToDiscard(`###${get.prompt(event.skill, trigger.player)}###弃置一张牌，为${get.translation(trigger.card)}重新指定目标（无距离限制）<br><span class=bluetext>原目标：${get.translation(trigger.target)}[${trigger.target.getSeatNum()}]</span>`, "chooseonly", "he")
 							.set("ai", card => {
 								if (get.event().goon) {
 									return 7 - get.value(card);
@@ -675,7 +731,7 @@ const skills = {
 					if (name == "useCardToPlayer") {
 						const { cards } = event;
 						await player.discard(cards);
-						const result = await player
+						const next = player
 							.chooseTarget(`倾世：为${get.translation(trigger.card)}重新指定目标（无距离限制）`, true, (card, player, target) => {
 								return get.event().targets.includes(target);
 							})
@@ -685,8 +741,14 @@ const skills = {
 							)
 							.set("ai", target => {
 								return get.effect(target, get.event().getTrigger().card, get.event().getTrigger().player, get.player());
-							})
-							.forResult();
+							});
+						next.targetprompt2.add(target => {
+							if (!target.isIn() || target != get.event().getTrigger().target) {
+								return false;
+							}
+							return "原目标";
+						});
+						const result = await next.forResult();
 						if (!result?.targets?.length) {
 							return;
 						}
