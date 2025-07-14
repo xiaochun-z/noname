@@ -5886,15 +5886,16 @@ export default () => {
 				ai: {
 					effect: {
 						target(card, player, target) {
-							if (target.hasSkillTag("unequip2")) return;
 							if (
+								target.hasSkillTag("unequip2") ||
 								player.hasSkillTag("unequip", false, {
 									name: card ? card.name : null,
 									target: target,
 									card: card,
 								})
-							)
+							) {
 								return;
+							}
 							return lib.skill.sanshou_skill.ai.effect.target(card, player, target);
 						},
 					},
