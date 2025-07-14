@@ -1,3 +1,5 @@
+import { lib, game, ui, get, ai, _status } from "../../../noname.js";
+
 /** @type { importCardConfig['skill'] } */
 const skill = {
 	youdishenru: {

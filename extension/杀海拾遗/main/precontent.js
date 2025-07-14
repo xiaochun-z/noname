@@ -26,33 +26,46 @@ export async function precontent(config, pack) {
 		}
 	}
 	if (lib.config.extension_杀海拾遗_gwent) {
-		// 依赖项是否加载成功
 		let success =
 			(await loadPack("gwent", "昆特牌", ["card", "character"])) &&
 			// “古剑奇谭”依赖“昆特牌”
 			(await loadPack("gujian", "古剑奇谭", ["card", "character"]));
 		if (lib.config.extension_杀海拾遗_yunchou) {
-			if ((await loadPack("yunchou", "运筹帷幄", ["card", "character"])) && success) {
-				// 以下这些扩展包彼此依赖且依赖“古剑奇谭”和“运筹帷幄”
-				try {
-					await Promise.all([import("../card/hearth/index.js"), import("../card/swd/index.js"), import("../character/hearth/index.js"), import("../character/ow/index.js"), import("../character/swd/index.js"), import("../character/xianjian/index.js")]);
-					lib.translate.hearth_character_config = "炉石传说";
-					lib.translate.hearth_card_config = "炉石传说";
-					lib.translate.ow_character_config = "守望先锋";
-					lib.translate.swd_character_config = "轩辕剑";
-					lib.translate.swd_card_config = "轩辕剑";
-					lib.translate.xianjian_character_config = "仙剑奇侠传";
-				} catch (err) {
-					console.error("Failed to import extension 『杀海拾遗』: ", err);
-					alert("Error:『杀海拾遗』扩展加载扩展包失败");
-				}
+			if (
+				// “运筹帷幄”是独立扩展，优先加载
+				(await loadPack("yunchou", "运筹帷幄", ["card", "character"])) &&
+				success &&
+				// “轩辕剑”依赖上述所有扩展
+				(await loadPack("swd", "轩辕剑", ["card", "character"])) &&
+				// “炉石传说”依赖“轩辕剑”
+				(await loadPack("hearth", "炉石传说", ["card", "character"]))
+			) {
+				// 以下这些扩展包均依赖上述扩展包
+				const results = await Promise.allSettled([import("../character/ow/index.js"), import("../character/xianjian/index.js")]);
+				results.forEach(result => {
+					if (result.status === "fulfilled") {
+						lib.translate.ow_character_config = "守望先锋";
+						lib.translate.xianjian_character_config = "仙剑奇侠传";
+					} else {
+						console.error("『杀海拾遗』扩展模块加载失败", result.reason);
+					}
+				});
 			}
 		}
 	} else if (lib.config.extension_杀海拾遗_yunchou) {
 		await loadPack("yunchou", "运筹帷幄", ["card", "character"]);
 	}
 	if (lib.config.extension_杀海拾遗_mtg) {
-		await loadPack("mtg", "万智牌", ["card", "character"]);
+		// 适用于多模块、无依赖、并发场景，一个加载失败其余仍正常加载
+		const results = await Promise.allSettled([import("../card/mtg/index.js"), import("../character/mtg/index.js")]);
+		results.forEach(result => {
+			if (result.status === "fulfilled") {
+				lib.translate.mtg_card_config = "万智牌";
+				lib.translate.mtg_character_config = "万智牌";
+			} else {
+				console.error("『杀海拾遗』扩展模块加载失败", result.reason);
+			}
+		});
 	}
 	if (lib.config.extension_杀海拾遗_wuxing) {
 		await loadPack("wuxing", "五行生克", ["play"]);

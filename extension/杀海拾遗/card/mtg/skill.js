@@ -1,3 +1,5 @@
+import { lib, game, ui, get, ai, _status } from "../../main/utils.js";
+
 /** @type { importCardConfig['skill'] } */
 const skill = {
 	mtg_bingheyaosai_skill: {

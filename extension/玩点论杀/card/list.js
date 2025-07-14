@@ -22,18 +22,6 @@ const list = [
 	["heart", 5, "tao"],
 	["heart", 7, "tao"],
 
-	["diamond", 4, "fudichouxin"],
-	["club", 6, "fudichouxin"],
-	["spade", 1, "fudichouxin"],
-	["club", 8, "guohe"],
-	["spade", 9, "shuigong"],
-	["heart", 9, "toulianghuanzhu"],
-	["club", 10, "toulianghuanzhu"],
-	["spade", 13, "guohe"],
-	["diamond", 6, "chenhuodajie"],
-	["diamond", 9, "chenhuodajie"],
-	["club", 3, "chenhuodajie"],
-
 	["heart", 4, "diaobingqianjiang"],
 	["diamond", 4, "diaobingqianjiang"],
 	// ["heart", 8, "yuqinguzong"],
