@@ -8175,7 +8175,7 @@ export default () => {
 				},
 			},
 			lingbo: {
-				audio: 2,
+				audio: ["qingguo", 2],
 				trigger: { player: ["respond", "useCard"] },
 				filter(event, player) {
 					return event.card.name == "shan";
