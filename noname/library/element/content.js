@@ -11494,7 +11494,7 @@ player.removeVirtualEquip(card);
 					count += exclude.filter(name => list.some(i => i.name == name)).length;
 					const func = function (player, count, exclude) {
 						while (player.node.marks.childNodes.length > count) {
-							const node = player.node.marks.lastChild;
+							let node = player.node.marks.lastChild;
 							if (exclude.includes(node.name)) {
 								node = node.previousSibling;
 							}
