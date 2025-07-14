@@ -1060,12 +1060,14 @@ game.import("card", function () {
 							)
 							.set("addCount", false);*/
 						if (!result?.bool) {
-							const damage = game.filterPlayer(current => current != target).sortBySeat();
+							const damage = game.filterPlayer2(current => current != target).sortBySeat();
 							if (damage.length) {
 								while (damage.length && target.isIn()) {
 									const current = damage.shift();
-									current.line(target, "yellow");
-									await target.damage(current);
+									if(current.isIn()){
+										current.line(target, "yellow");
+										await target.damage(current);
+									}
 								}
 							}
 							break;
@@ -1098,7 +1100,7 @@ game.import("card", function () {
 				async content(event, trigger, player) {
 					player.$skill(get.translation(event.name), null, "thunder", null, "shen_jiaxu");
 					await game.delayx();
-					const targets = game.filterPlayer(target => target != player).sortBySeat();
+					const targets = game.filterPlayer2(target => target != player).sortBySeat();
 					player.line(targets);
 					game.broadcastAll(event => {
 						if (!_status.nisiwohuo) {

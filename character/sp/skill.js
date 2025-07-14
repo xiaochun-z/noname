@@ -836,7 +836,9 @@ const skills = {
 					["基本", "", "sha"],
 					["基本", "", "shan"],
 				];
-				return ui.create.dialog("卸尾", [list, "vcard"], "hidden");
+				const dialog = ui.create.dialog("卸尾", [list, "vcard"], "hidden");
+				dialog.direct = true;
+				return dialog;
 			},
 			filter(button, player) {
 				return get.event().getParent().filterCard({ name: button.link[2] }, player, get.event().getParent());
@@ -851,14 +853,14 @@ const skills = {
 						isCard: true,
 					},
 					position: "h",
+					ignoreMod: true,
 					check(card) {
 						return 6 - get.value(card);
 					},
-					log: false,
 					precontent() {
 						const skill = "olxiewei",
 							cards = event.result.cards;
-						player.logSkill(skill);
+						//player.logSkill(skill);
 						if (cards.length < 2) {
 							var evt = event.getParent();
 							evt.set(skill, true);
@@ -884,6 +886,9 @@ const skills = {
 			markcount: "expansion",
 			content: "expansion",
 		},
+		subSkill: {
+			backup: {},
+		},
 	},
 	olyouque: {
 		audio: 2,
@@ -892,8 +897,10 @@ const skills = {
 			return player.getExpansions("olxiewei").length && game.hasPlayer(target => player.canCompare(target, true));
 		},
 		delay: false,
-		log: false,
-		async content(event, trigger, player) {
+		lose: false,
+		discard: false,
+		//log: false,
+		async precontent(event, trigger, player) {
 			const cards = player.getExpansions("olxiewei");
 			const result = await player
 				.chooseButtonTarget({
@@ -911,34 +918,37 @@ const skills = {
 				})
 				.forResult();
 			if (result?.bool && result.links?.length && result.targets?.length) {
-				const card = result.links[0],
-					target = result.targets[0];
-				if (!player.canCompare(target, true)) {
-					return;
-				}
-				player.logSkill(event.name, target);
-				player.addTempSkill(event.name + "_effect");
-				let next = player.chooseToCompare(target);
-				//next.small = true;
-				if (!next.fixedResult) {
-					next.fixedResult = {};
-				}
-				next.fixedResult[player.playerid] = card;
-				const resultx = await next.forResult();
-				for (const targetx of [player, target]) {
-					if (resultx.winner != targetx) {
-						const card = targetx == player ? resultx.player : resultx.target,
-							num = get.number(card),
-							winner = resultx.winner;
-						await targetx.modedDiscard(targetx.getCards("h", cardx => get.number(cardx, player) > num));
-						if (winner && targetx.canUse({ name: "sha", isCard: true }, winner, false, false)) {
-							const sha = get.autoViewAs({ name: "sha", isCard: true, storage: { olyouque: true } });
-							await targetx.useCard(sha, winner, false);
-						}
+				event.result.targets = result.targets;
+				event.result.cards = result.links;
+			} else {
+				event.getParent().goto(0);
+			}
+		},
+		async content(event, trigger, player) {
+			const card = event.cards[0],
+				target = event.targets[0];
+			if (!player.canCompare(target, true)) {
+				return;
+			}
+			player.addTempSkill(event.name + "_effect");
+			let next = player.chooseToCompare(target);
+			//next.small = true;
+			if (!next.fixedResult) {
+				next.fixedResult = {};
+			}
+			next.fixedResult[player.playerid] = card;
+			const resultx = await next.forResult();
+			for (const targetx of [player, target]) {
+				if (resultx.winner != targetx) {
+					const card = targetx == player ? resultx.player : resultx.target,
+						num = get.number(card),
+						winner = resultx.winner;
+					await targetx.modedDiscard(targetx.getCards("h", cardx => get.number(cardx, player) > num));
+					if (winner && targetx.canUse({ name: "sha", isCard: true }, winner, false, false)) {
+						const sha = get.autoViewAs({ name: "sha", isCard: true, storage: { olyouque: true } });
+						await targetx.useCard(sha, winner, false);
 					}
 				}
-			} else {
-				return;
 			}
 		},
 		ai: {
@@ -956,8 +966,8 @@ const skills = {
 					return event.card?.storage?.olyouque;
 				},
 				forced: true,
-				content() {
-					player.draw(2);
+				async content(event, trigger, player) {
+					await player.draw(2);
 					if (!player.getExpansions("olxiewei").some(card => get.suit(card) == "spade")) {
 						player.tempBanSkill("olyouque", "phaseUseAfter");
 					}
