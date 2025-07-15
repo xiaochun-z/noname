@@ -2392,6 +2392,7 @@ const skills = {
 						const count = Math.min(3, game.roundNumber);
 						return [count, count];
 					},
+					position: "he",
 					lose: false,
 					discard: false,
 					visible: false,
