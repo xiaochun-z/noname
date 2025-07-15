@@ -909,7 +909,7 @@ game.import("card", function () {
 				ai: {
 					order: 6,
 					useful: 1.2,
-					value: 8,
+					value: 7,
 					result: {
 						target(player, target) {
 							const list = [];
@@ -1329,7 +1329,7 @@ game.import("card", function () {
 				ai: {
 					order: 7,
 					useful: 3.5,
-					value: 9,
+					value: 8,
 					tag: {
 						draw: 2,
 					},

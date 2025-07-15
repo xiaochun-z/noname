@@ -9272,7 +9272,7 @@ player.removeVirtualEquip(card);
 			}
 		},
 		async (event, trigger, player) => {
-			let { cards, card, targets, num } = event;
+			let { cards, card, targets, num, target } = event;
 			if (event.all_excluded) {
 				return;
 			}
