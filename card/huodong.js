@@ -282,7 +282,7 @@ game.import("card", function () {
 				toself: true,
 				modTarget: true,
 				async content(event, trigger, player) {
-					event.cards ??= [];
+					const cards = [];
 					const { target } = event;
 					while (true) {
 						const result = await target
@@ -309,14 +309,14 @@ game.import("card", function () {
 							});
 							const resultx = await judgeEvent.forResult();
 							if (resultx?.bool && resultx?.card) {
-								event.cards.push(resultx.card);
+								cards.push(resultx.card);
 							} else {
 								break;
 							}
 						}
 					}
-					if (event.cards.length) {
-						await player.gain(event.cards, "gain2");
+					if (cards.length) {
+						await player.gain(cards, "gain2");
 					}
 				},
 				ai: {

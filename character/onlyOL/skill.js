@@ -657,16 +657,33 @@ const skills = {
 				async cost(event, trigger, player) {
 					const name = event.triggername;
 					if (name == "useCardToPlayer") {
-						event.result = await player
-							.chooseToDiscard(`###${get.prompt(event.skill, trigger.player)}###弃置一张牌，为${get.translation(trigger.card)}重新指定目标（无距离限制）<br><span class=bluetext>原目标：${get.translation(trigger.target)}[${trigger.target.getSeatNum()}]</span>`, "chooseonly", "he")
-							.set("ai", card => {
+						const targets = game.filterPlayer(target => lib.filter.targetEnabled2(trigger.card, trigger.player, target));
+						const next = player.chooseCardTarget({
+							prompt: `###${get.prompt(event.skill, trigger.player)}###弃置一张牌，为${get.translation(trigger.card)}重新指定目标（无距离限制）`,
+							filterCard: lib.filter.cardDiscardable,
+							position: "he",
+							filterTarget(card, player, target) {
+								return get.event().targets.includes(target);
+							},
+							ai1(card) {
 								if (get.event().goon) {
 									return 7 - get.value(card);
 								}
 								return 0;
-							})
-							.set("goon", Math.max(...game.filterPlayer(target => target != trigger.target && lib.filter.targetEnabled2(trigger.card, trigger.player, target)).map(target => get.effect(target, trigger.card, trigger.player, player))) > get.effect(trigger.target, trigger.card, trigger.player, player))
-							.forResult();
+							},
+							ai2(target) {
+								return get.effect(target, get.event().getTrigger().card, get.event().getTrigger().player, get.player());
+							},
+							targets: targets,
+							goon: Math.max(...targets.filter(target => target != trigger.target).map(target => get.effect(target, trigger.card, trigger.player, player))) > get.effect(trigger.target, trigger.card, trigger.player, player),
+						});
+						next.targetprompt2.add(target => {
+							if (!target.isIn() || target != get.event().getTrigger().target) {
+								return false;
+							}
+							return "原目标";
+						});
+						event.result = await next.forResult();
 					} else {
 						event.result = {
 							bool: true,
@@ -676,30 +693,8 @@ const skills = {
 				async content(event, trigger, player) {
 					const name = event.triggername;
 					if (name == "useCardToPlayer") {
-						const { cards } = event;
+						const { cards, targets } = event;
 						await player.discard(cards);
-						const next = player
-							.chooseTarget(`倾世：为${get.translation(trigger.card)}重新指定目标（无距离限制）`, true, (card, player, target) => {
-								return get.event().targets.includes(target);
-							})
-							.set(
-								"targets",
-								game.filterPlayer(target => lib.filter.targetEnabled2(trigger.card, trigger.player, target))
-							)
-							.set("ai", target => {
-								return get.effect(target, get.event().getTrigger().card, get.event().getTrigger().player, get.player());
-							});
-						next.targetprompt2.add(target => {
-							if (!target.isIn() || target != get.event().getTrigger().target) {
-								return false;
-							}
-							return "原目标";
-						});
-						const result = await next.forResult();
-						if (!result?.targets?.length) {
-							return;
-						}
-						const { targets } = result;
 						const evt = trigger.getParent();
 						player.line(targets);
 						evt.targets.length = 0;
