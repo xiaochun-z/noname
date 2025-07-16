@@ -2096,6 +2096,126 @@ export class Create {
 		ui.skills3.skills = skills;
 		return ui.skills3;
 	}
+	/**
+	 * 向当前事件注入牌的全选/反选按钮喵
+	 * 这个函数一般在“AI代选”的位置前面调用喵
+	 */
+	cardChooseAll() {
+		const event = get.event();
+		// 如果不是当前玩家、不允许全选或者使用complexCard与complexSelect，则取消注入喵
+		if (!event.isMine() || event.noChooseAll || event.complexCard || event.complexSelect) {
+			return null;
+		}
+		// 这里的条件用的是“AI代选”按钮的条件喵
+		const selectCard = event.selectCard;
+		if (typeof selectCard == "function") {
+			return null;
+		}
+		const range = get.select(selectCard);
+		if (range[1] <= 1) {
+			return null; // 只选一张牌就不使用全选哦喵
+		}
+		return event.cardChooseAll = ui.create.control("全选", function () {
+			// 这个反选要封装喵？
+			// 好像就只有这里用哦
+			const event = get.event();
+			const selecteds = [...ui.selected.cards];
+
+			// 清空选择的牌喵
+			ui.selected.cards.length = 0;
+			game.check();
+
+			const selectables = get.selectableCards();
+			// @ts-expect-error 啊至少垫片函数是接受数组的喵
+			const cards = selecteds.length ? [...new Set(selectables).difference(selecteds)] : selectables;
+			
+			if (cards.length <= range[1]) {
+				// 如果可以就全选喵
+				ui.selected.cards.push(...cards);
+			} else {
+				// 否则随机选择几张喵
+				ui.selected.cards.push(...cards.randomGets(range[1]));
+			}
+
+			// 更新UI喵
+			for (const card of ui.selected.cards) {
+				card.classList.add("selected");
+				card.updateTransform(true, 0);
+			}
+			for (const card of selecteds) {
+				card.classList.remove("selected");
+				card.updateTransform(false, 0);
+			}
+			game.check();
+			if (typeof event.custom?.add?.card == "function") {
+				_status.event.custom.add.card();
+			}
+		});
+	}
+	/**
+	 * 向当前事件注入按钮的全选/反选按钮喵
+	 */
+	buttonChooseAll() {
+		const event = get.event();
+		// 如果不是当前玩家、不允许全选或者使用complexSelect，则取消注入喵
+		if (!event.isMine() || !(event.dialog instanceof lib.element.Dialog) || event.noChooseAll || event.complexSelect) {
+			return null;
+		}
+		// 这里的条件用的是“AI代选”按钮的条件喵
+		const selectButton = event.selectButton;
+		if (typeof selectButton == "function") {
+			return null;
+		}
+		const range = get.select(selectButton);
+		if (range[1] <= 1) {
+			return null; // 只选一个按钮就不使用全选哦喵
+		}
+		// 获取标题来作为按钮的定位喵
+		const caption = event.dialog.content.querySelector(".caption");
+		if (!event.dialog.content.contains(caption)) {
+			return null; // 没有标题那么全选按钮就没有位置添加哦喵
+		}
+		// 创建全选按钮喵
+		const buttonChooseAll = ui.create.div(".select-all.popup.pointerdiv");
+		event.buttonChooseAll = buttonChooseAll;
+		buttonChooseAll.listen(function (e) {
+			const event = get.event();
+			const selecteds = [...ui.selected.buttons];
+
+			// 清空选择的按钮喵
+			ui.selected.buttons.length = 0;
+			game.check();
+			
+			const selectables = get.selectableButtons();
+			// @ts-expect-error 啊至少垫片函数是接受数组的喵
+			const buttons = selecteds.length ? [...new Set(selectables).difference(selecteds)] : selectables;
+			
+			if (buttons.length <= range[1]) {
+				// 如果可以就全选喵
+				ui.selected.buttons.push(...buttons);
+			} else {
+				// 否则随机选择几个喵
+				ui.selected.buttons.push(...buttons.randomGets(range[1]));
+			}
+
+			// 更新UI喵
+			for (const button of ui.selected.buttons) {
+				button.classList.add("selected");
+			}
+			for (const button of selecteds) {
+				button.classList.remove("selected");
+			}
+			game.check();
+			if (typeof event.custom?.add?.button == "function") {
+				_status.event.custom.add.button();
+			}
+
+			// 取消冒泡防止被uncheck喵
+			e.stopPropagation();
+		});
+		event.dialog.content.insertBefore(buttonChooseAll, caption);
+		return buttonChooseAll;
+	}
 	arena() {
 		var i, j;
 		ui.window = ui.create.div("#window.hidden", document.body);
@@ -2417,39 +2537,23 @@ export class Create {
 		ui.sidebar.ontouchmove = ui.click.touchScroll;
 		ui.sidebar.style.webkitOverflowScrolling = "touch";
 
-		let zoom = Number.parseFloat(lib.config.ui_zoom);
+		let zoom = Number.parseInt(lib.config.ui_zoom);
 		if (isNaN(zoom) || zoom < 50 || zoom > 300) {
-			if (zoom < 3 && zoom > 0.5) {
-				zoom = Math.round(100 * zoom);
-			} else {
-				const oldZoomMap = {
-					esmall: 80,
-					vsmall: 90,
-					small: 93,
-					normal: 100,
-					big: 105,
-					vbig: 110,
-					ebig: 120,
-					eebig: 150,
-					eeebig: 180,
-					eeeebig: 200,
-				};
-				zoom = oldZoomMap[lib.config.ui_zoom] || 100;
-			}
+			zoom = 100;
 			game.saveConfig("ui_zoom", `${zoom}%`);
 		}
 
 		game.documentZoom = (game.deviceZoom * zoom) / 100;
 		zoom !== 100 && ui.updatez();
 
-		// if (get.mode() === "doudizhu") {
-		if (typeof get.config("choice_zhu", "doudizhu") !== "number") {
-			game.saveConfig("choice_zhu", 5, "doudizhu");
+		if (get.mode() === "doudizhu") {
+			if (typeof get.config("choice_zhu", "doudizhu") !== "number") {
+				game.saveConfig("choice_zhu", 5, "doudizhu");
+			}
+			if (typeof get.config("choice_fan", "doudizhu") !== "number") {
+				game.saveConfig("choice_fan", 3, "doudizhu");
+			}
 		}
-		if (typeof get.config("choice_fan", "doudizhu") !== "number") {
-			game.saveConfig("choice_fan", 3, "doudizhu");
-		}
-		// }
 
 		ui.system1 = ui.create.div("#system1", ui.system);
 		ui.system2 = ui.create.div("#system2", ui.system);
