@@ -6307,6 +6307,7 @@ export class Library {
 					name: "鏖战背景音乐",
 					item: {
 						disabled: "不启用",
+						shousha: "逐鹿天下",
 						online: "Online",
 						rewrite: "Rewrite",
 						chaoming: "潮鸣",
