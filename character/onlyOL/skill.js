@@ -53,7 +53,7 @@ const skills = {
 			_status.olduoqi_record.add(player);
 			game.broadcastAll(record => {
 				_status.olduoqi_record = record;
-			}, _status.olduoqi_record)
+			}, _status.olduoqi_record);
 			const next = player.insertPhase();
 			next._noTurnOver = true;
 			next.set("phaseList", ["phaseUse"]);
@@ -314,7 +314,7 @@ const skills = {
 		hiddenCard(player, name) {
 			return (name == "juedou" && player.hasCard(card => get.type2(card) == "trick", "hes")) || (name == "sha" && player.hasCard(card => get.type2(card) == "equip", "hes"));
 		},
-		locked: false,
+		/*locked: false,
 		mod: {
 			playerEnabled(card, player, target) {
 				if (!card.storage?.olgangquan || get.name(card) != "sha" || player._olgangquanCheck) {
@@ -329,7 +329,7 @@ const skills = {
 					return false;
 				}
 			},
-		},
+		},*/
 		onChooseToUse(event) {
 			if (game.online || event?.olgangquan) {
 				return;
@@ -381,14 +381,17 @@ const skills = {
 						return lib.filter.filterTarget.apply(this, arguments);
 					},
 					selectTarget() {
-						if (get.card()?.name == "sha") {
+						/*if (get.card()?.name == "sha") {
 							if ([player.getNext(), player.getPrevious()].some(target => {
 								return target?.isIn() && !player.canUse(get.card(), target, null, true);
 							})) {
 								return 1;
 							}
-						}
+						}*/
 						return get.info("olgangquan_backup").choice != "sha" ? 1 : -1;
+					},
+					filterOk() {
+						return ui.selected.targets?.length > 0;
 					},
 					popname: true,
 				};

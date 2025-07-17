@@ -4352,10 +4352,10 @@ const skills = {
 				return { bool: true, cards: suits.slice(0, limit).reduce((list, suit) => list.addArray(player.getCards("h", { suit: suit })), []) };
 			};
 			if (event.isMine()) {
-				next = chooseOneSuitCard(player, player, null, limit, str, ai);
+				next = chooseOneSuitCard(player, player, null, limit, str, ai());
 			} else if (player.isOnline()) {
 				let { promise, resolve } = Promise.withResolvers();
-				player.send(chooseOneSuitCard, player, player, null, limit, str, ai);
+				player.send(chooseOneSuitCard, player, player, null, limit, str, ai());
 				player.wait(result => {
 					if (result == "ai") {
 						result = ai();
@@ -13416,19 +13416,19 @@ const skills = {
 			} else {
 				if (player.getStorage("mbdanggu").length) {
 					player.logSkill("mbmowang");
-					game.broadcastAll(function () {
+					/*game.broadcastAll(function () {
 						if (lib.config.background_speak) {
 							game.playAudio("die", "shichangshiRest");
 						}
-					});
+					});*/
 					//煞笔十常侍
 					trigger.restMap = {
 						type: "round",
 						count: 1,
+						audio: "shichangshiRest",
 					};
 					trigger.excludeMark.add("mbdanggu");
-					trigger.noDieAudio = true;
-
+					//trigger.noDieAudio = true;
 					trigger.includeOut = true;
 				} else {
 					player.changeSkin("mbmowang", "shichangshi_dead");

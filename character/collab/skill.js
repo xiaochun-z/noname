@@ -91,6 +91,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const [target] = event.targets;
+			await player.draw();
 			target.addMark(event.name);
 			if (target.countMark(event.name) >= 3 && !target.hasSkill(event.name + "_debuff")) {
 				target.clearMark(event.name);
@@ -162,7 +163,7 @@ const skills = {
 				},
 				onremove(player, skill) {
 					delete player.storage[skill];
-					game.log(player, "站立了过来");
+					game.log("读秒结束，", player, "站立了过来");
 				},
 				marktext: "💫",
 				intro: {

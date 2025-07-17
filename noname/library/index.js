@@ -13495,6 +13495,9 @@ export class Library {
 			forceOut: true,
 			filter(event, player) {
 				const map = _status._rest_return?.[player.playerid];
+				if (map?.count < 0) {
+					return false;
+				}
 				if (map?.type == "round" && event.player != player) {
 					return false;
 				}
@@ -13502,9 +13505,11 @@ export class Library {
 			},
 			async content(event, trigger, player) {
 				const map = _status._rest_return?.[player.playerid];
-				game.broadcastAll(map => {
-					map.count--;
-				}, map);
+				if (map?.count > 0) {
+					game.broadcastAll(map => {
+						map.count--;
+					}, map);
+				}
 				trigger._rest_return = true;
 				if (!map.count) {
 					//trigger._rest_return = true;
@@ -13514,6 +13519,7 @@ export class Library {
 					game.log(player, "移回了游戏");
 					delete _status._rest_return[player.playerid];
 					await player.recoverTo(player.maxHp);
+					//生成restEnd时机
 					const next = game.createEvent("restEnd", false);
 					next.setContent("emptyEvent");
 					next.player = player;

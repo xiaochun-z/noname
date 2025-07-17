@@ -30466,17 +30466,18 @@ const skills = {
 			}
 			return true;
 		},
-		content() {
-			"step 0";
-			if (player.storage.fanghun) {
-				player.draw(player.storage.fanghun);
+		async content(event, trigger, player) {
+			let num = player.storage.fanghun;
+			if (num) {
+				await player.draw(num);
 			}
-			player.removeMark("fanghun", player.storage.fanghun);
-			event.num = Math.max(2, player.storage.fanghun2 || 0);
-			var list;
+			player.removeMark("fanghun", num);
+			player.awakenSkill(event.name);
+			num = Math.max(2, player.storage.fanghun2 || 0);
+			let list;
 			if (_status.characterlist) {
 				list = [];
-				for (var i = 0; i < _status.characterlist.length; i++) {
+				for (let i = 0; i < _status.characterlist.length; i++) {
 					var name = _status.characterlist[i];
 					if (lib.character[name][1] == "shu") {
 						list.push(name);
@@ -30492,7 +30493,7 @@ const skills = {
 				});
 			}
 			var players = game.players.concat(game.dead);
-			for (var i = 0; i < players.length; i++) {
+			for (let i = 0; i < players.length; i++) {
 				list.remove(players[i].name);
 				list.remove(players[i].name1);
 				list.remove(players[i].name2);
@@ -30500,26 +30501,20 @@ const skills = {
 			list.remove("zhaoyun");
 			list.remove("re_zhaoyun");
 			list.remove("ol_zhaoyun");
-			// var dialog=ui.create.dialog();
-			// dialog.add([list.randomGets(5),'character']);
-			player
+			const result = await player
 				.chooseButton(true)
 				.set("ai", function (button) {
 					return get.rank(button.link, true) - lib.character[button.link][2];
 				})
-				.set("createDialog", ["将武将牌替换为一名角色", [list.randomGets(5), "character"]]);
-			player.awakenSkill(event.name);
-			"step 1";
-			event.num = Math.min(event.num, 8);
-			player.reinitCharacter(get.character(player.name2, 3).includes("fuhan") ? player.name2 : player.name1, result.links[0]);
-			"step 2";
-			var num = event.num - player.maxHp;
-			if (num > 0) {
-				player.gainMaxHp(num);
-			} else {
-				player.loseMaxHp(-num);
+				.set("createDialog", ["将武将牌替换为一名角色", [list.randomGets(5), "character"]])
+				.forResult();
+			if (result?.links?.length) {
+				num = Math.min(num, 8);
+				await player.reinitCharacter(get.character(player.name2, 3).includes("fuhan") ? player.name2 : player.name1, result.links[0]);
+				num = num - player.maxHp;
+				await player[num > 0 ? "gainMaxHp" : "loseMaxHp"](Math.abs(num));
+				await player.recover();
 			}
-			player.recover();
 		},
 		ai: {
 			combo: "fanghun",
@@ -30534,7 +30529,196 @@ const skills = {
 		filter(event, player) {
 			return player.countMark("fanghun") > 0;
 		},
-		content() {
+		async content(event, trigger, player) {
+			const num = player.countMark("fanghun");
+			if (num) {
+				await player.draw(num);
+			}
+			player.removeMark("fanghun", num);
+			player.awakenSkill(event.name);
+			let list;
+			if (_status.characterlist) {
+				list = [];
+				for (let i = 0; i < _status.characterlist.length; i++) {
+					const name = _status.characterlist[i];
+					if (lib.character[name][1] == "shu") {
+						list.push(name);
+					}
+				}
+			} else if (_status.connectMode) {
+				list = get.charactersOL(function (i) {
+					return lib.character[i][1] != "shu";
+				});
+			} else {
+				list = get.gainableCharacters(function (info) {
+					return info[1] == "shu";
+				});
+			}
+			const players = game.players.concat(game.dead);
+			for (let i = 0; i < players.length; i++) {
+				list.remove(players[i].name);
+				list.remove(players[i].name1);
+				list.remove(players[i].name2);
+			}
+			list.remove("zhaoyun");
+			list.remove("re_zhaoyun");
+			list.remove("ol_zhaoyun");
+			list = list.randomGets(Math.max(4, game.countPlayer()));
+			const skills = [];
+			for (const i of list) {
+				skills.addArray(
+					(lib.character[i][3] || []).filter(function (skill) {
+						const info = get.info(skill);
+						return info && !info.zhuSkill && !info.limited && !info.juexingji && !info.hiddenSkill && !info.charlotte && !info.dutySkill;
+					})
+				);
+			}
+			if (!list.length || !skills.length) {
+				return;
+			}
+			await Promise.all(event.next);
+			event.videoId = lib.status.videoId++;
+			if (player.isUnderControl()) {
+				game.swapPlayerAuto(player);
+			}
+			const chooseCharacterSkills = function (player, list, skills, force = false, num, ai = { bool: false }) {
+				const { promise, resolve } = Promise.withResolvers();
+				const event = _status.event;
+				//初始化result
+				event._result ??= {};
+				event._result.skills = [];
+				event.selectedSkills ??= event._result.skills;
+				//创建对话框
+				let dialog = ui.create.dialog(`请选择获得至多${get.cnNumber(num)}个技能`, [list, "character"], "hidden");
+				event.dialog = dialog;
+				//创建确定按钮
+				event.control_ok = ui.create.control("ok", link => {
+					_status.imchoosing = false;
+					event.dialog.close();
+					event.control_ok?.close();
+					event.control_cancel?.close();
+					event._result = {
+						bool: true,
+						skills: event.selectedSkills,
+					};
+					resolve(event._result);
+					game.resume();
+				});
+				//event.control_ok.classList.add("disabled");
+				//如果是非强制的，才创建取消按钮
+				if (!force) {
+					event.control_cancel = ui.create.control("cancel", link => {
+						_status.imchoosing = false;
+						event.dialog.close();
+						event.control_ok?.close();
+						event.control_cancel?.close();
+						event._result = {
+							bool: false,
+						};
+						resolve(event._result);
+						game.resume();
+					});
+				}
+				event.switchToAuto = function () {
+					_status.imchoosing = false;
+					event.dialog?.close();
+					event.control_ok?.close();
+					event.control_cancel?.close();
+					event._result = ai;
+					resolve(event._result);
+					game.resume();
+				};
+				//创建用于选择的技能按钮（tdnodes样式）
+				const table = document.createElement("div");
+				table.classList.add("add-setting");
+				table.style.margin = "0";
+				table.style.width = "100%";
+				table.style.position = "relative";
+				for (let i = 0; i < skills.length; i++) {
+					const td = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode");
+					td.link = skills[i];
+					table.appendChild(td);
+					td.innerHTML = "<span>" + get.translation(skills[i]) + "</span>";
+					//给按钮添加监听
+					td.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
+						if (_status.dragged) {
+							return;
+						}
+						if (_status.justdragged) {
+							return;
+						}
+						_status.tempNoButton = true;
+						setTimeout(function () {
+							_status.tempNoButton = false;
+						}, 500);
+						const link = this.link;
+						if (!this.classList.contains("bluebg")) {
+							//限制选择数量
+							if (event.selectedSkills.length >= num) {
+								return;
+							}
+							event.selectedSkills.add(link);
+							this.classList.add("bluebg");
+						} else {
+							this.classList.remove("bluebg");
+							event.selectedSkills.remove(link);
+						}
+						//event.control_ok.classList[event.selectedSkills.length >= 0 ? "remove" : "add"]("disabled");
+					});
+				}
+				dialog.content.appendChild(table);
+				dialog.add("　　");
+				dialog.open();
+
+				//点亮所有按钮（包括角色的）
+				for (let i = 0; i < event.dialog.buttons.length; i++) {
+					event.dialog.buttons[i].classList.add("selectable");
+				}
+				game.pause();
+				_status.imchoosing = true;
+				return promise;
+			};
+			const ai = function () {
+				return { bool: true, skills: skills.sort((a, b) => get.skillRank(b, "inout") - get.skillRank(a, "inout")).slice(0, 2) };
+			};
+			let next;
+			if (event.isMine()) {
+				next = chooseCharacterSkills(player, list, skills, true, 2, ai());
+			} else if (player.isOnline()) {
+				let { promise, resolve } = Promise.withResolvers();
+				player.send(chooseCharacterSkills, player, list, skills, true, 2, ai());
+				player.wait(result => {
+					if (result == "ai") {
+						result = ai();
+					}
+					resolve(result);
+				});
+				next = promise;
+			} else {
+				next = Promise.resolve(ai());
+			}
+			const result = await next;
+			if (result?.skills?.length) {
+				await player.addSkills(result.skills);
+			}
+			game.broadcastAll(function (list) {
+				game.expandSkills(list);
+				for (const i of list) {
+					var info = lib.skill[i];
+					if (!info) {
+						continue;
+					}
+					if (!info.audioname2) {
+						info.audioname2 = {};
+					}
+					info.audioname2.zhaoxiang = "fuhan";
+				}
+			}, result.skills);
+			if (player.isMinHp()) {
+				await player.recover();
+			}
+		},
+		/*content() {
 			"step 0";
 			if (player.storage.fanghun) {
 				player.draw(player.storage.fanghun);
@@ -30695,7 +30879,7 @@ const skills = {
 			if (player.isMinHp()) {
 				player.recover();
 			}
-		},
+		},*/
 		ai: {
 			combo: "refanghun",
 		},
@@ -35515,9 +35699,12 @@ const skills = {
 					if (source.getStorage("jilei2").includes(type)) {
 						return 0;
 					}
-					if (type == "trick" && source.countCards("h", card => {
-						return get.type(card, null, source) == "trick" && source.hasValueTarget(card);
-					})) {
+					if (
+						type == "trick" &&
+						source.countCards("h", card => {
+							return get.type(card, null, source) == "trick" && source.hasValueTarget(card);
+						})
+					) {
 						return 3;
 					}
 					return ["equip", "trick", "basic"].indexOf(type);

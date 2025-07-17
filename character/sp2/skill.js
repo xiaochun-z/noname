@@ -350,7 +350,7 @@ const skills = {
 					return true;
 				},
 				check(event, player) {
-					return !get.tag(event.card, "norepeat") ^ (event.targets?.reduce((sum, i) => sum + get.effect(event.card, i, player, player), 0) < 0);
+					return !get.tag(event.card, "norepeat") ^ (event.targets?.reduce((sum, i) => sum + get.effect(i, event.card, player, player), 0) < 0);
 				},
 				prompt2(event, player) {
 					return "进行一次判定，若判定结果为" + player.countMark("stardangchen_buff") + "的倍数，则" + get.translation(event.card) + "额外结算一次";
