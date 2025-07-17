@@ -28688,7 +28688,7 @@ const skills = {
 		silent: true,
 		sourceSkill: "xianfu",
 		filter(event, player) {
-			return event.player == player || (player.storage.xianfu2 && player.storage.xianfu2.includes(player));
+			return event.player == player || (player.storage.xianfu2 && player.storage.xianfu2.includes(event.player));
 		},
 		content() {
 			if (player == trigger.player) {
