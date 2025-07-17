@@ -8128,10 +8128,10 @@ export class Player extends HTMLDivElement {
 	/**
 	 * 令玩家死亡或进入休整状态
 	 * @param { GameEvent | GameEventPromise } reason 导致角色死亡的事件
-	 * @param { Boolean } restMap 进入休整状态状态相关的参数
+	 * @param { Boolean } restMap 进入休整状态状态相关的参数（type是休整的计数方式，"round"代表在你的回合开始前才计数，"phase"是每回合都计数；count是休整多少轮或者多少回合；audio是休整播放的语音）
 	 * @returns { GameEventPromise }
 	 */
-	die(reason, restMap = { type: null, count: null }) {
+	die(reason, restMap = { type: null, count: null, audio: null }) {
 		var next = game.createEvent("die");
 		next.player = this;
 		next.reason = reason;

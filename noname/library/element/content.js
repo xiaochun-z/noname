@@ -1998,7 +1998,7 @@ player.removeVirtualEquip(card);
 					}
 				};
 
-				var updateSelectAllButtons = function() {
+				var updateSelectAllButtons = function () {
 					const buttons = Array.from(event.dialog.querySelectorAll(".select-all"));
 
 					for (const button of buttons) {
@@ -2009,11 +2009,11 @@ player.removeVirtualEquip(card);
 
 				/**
 				 * 移除所有符合条件的选中按钮
-				 * 
-				 * @param { ((button: HTMLDivElement) => boolean)? } filter 
+				 *
+				 * @param { ((button: HTMLDivElement) => boolean)? } filter
 				 */
 				var clearSelected = function (filter) {
-					for(let i = ui.selected.buttons.length; i--; ) {
+					for (let i = ui.selected.buttons.length; i--; ) {
 						const button = ui.selected.buttons[i];
 
 						if (!filter || filter(button)) {
@@ -2028,8 +2028,8 @@ player.removeVirtualEquip(card);
 				/**
 				 * 选中所有传入的按钮
 				 * 只能多选相同容器的按钮
-				 * 
-				 * @param { HTMLDivElement[] } button 
+				 *
+				 * @param { HTMLDivElement[] } button
 				 */
 				var selectButtons = function (...buttons) {
 					if (!buttons.length) {
@@ -2050,11 +2050,11 @@ player.removeVirtualEquip(card);
 
 				/**
 				 * 切换按钮的选中状态
-				 * 
-				 * @param {HTMLElement} button 
+				 *
+				 * @param {HTMLElement} button
 				 * @returns {boolean}
 				 */
-				var toggleButton = function(button) {
+				var toggleButton = function (button) {
 					const nextState = !button.classList.contains("glow2");
 
 					if (!nextState) {
@@ -2070,8 +2070,8 @@ player.removeVirtualEquip(card);
 
 				/**
 				 * 反转容器中所有按钮的选择状态
-				 * 
-				 * @param { HTMLDivElement } container 
+				 *
+				 * @param { HTMLDivElement } container
 				 */
 				var revertSelection = function (container) {
 					const selecteds = new Set(ui.selected.buttons.filter(button => button.parentElement === container));
@@ -2225,7 +2225,7 @@ player.removeVirtualEquip(card);
 					}
 
 					const isDragging = ui.selected.buttons.length === 1 && document.contains(ui.selected.buttons[0]?.copy);
-					
+
 					buttonss.forEach(btn => {
 						Array.from(btn.children).forEach(element => {
 							if (element.copy && ui.window.contains(element.copy)) {
@@ -2298,7 +2298,7 @@ player.removeVirtualEquip(card);
 							const buttons2 = curCard.parentElement;
 							const pos1 = card.nextElementSibling || "last";
 							const pos2 = curCard.nextElementSibling || "last";
-							
+
 							// 执行动画喵
 							aniamtionPromise = game.$elementSwap(curCard, card);
 						}
@@ -11470,22 +11470,23 @@ player.removeVirtualEquip(card);
 		async (event, trigger, player) => {
 			const { reason, source, restMap } = event;
 			event.forceDie = true;
-			const bool = typeof restMap.type == "string" && typeof restMap.count == "number";
-			if (_status.roundStart == player) {
+			//判断当前事件是否是休整（同时确保各个参数的合法性）
+			event.reserveOut = ["phase", "round"].includes(restMap.type) && typeof restMap.count == "number";
+			//只有真正死亡才会影响每轮起始的角色（注意：不是每个模式都有这个属性，只有个别几个模式有，身份22斗地主都是判断的onround来决定是否进入下一轮）
+			if (_status.roundStart == player && !event.reserveOut) {
 				_status.roundStart = player.next || player.getNext() || game.players[0];
-				if (bool) {
-					player.when("restEnd").then(() => (_status.roundStart = player));
-				}
 			}
 			if (ui.land && ui.land.player == player) {
 				game.addVideo("destroyLand");
 				ui.land.destroy();
 			}
+			//因为隐匿等原因看不到武将牌的需要展示出来
 			let unseen = false;
 			if (player.classList.contains("unseen")) {
 				player.classList.remove("unseen");
 				unseen = true;
 			}
+			//加载侧边的历史记录烂关于这次死亡事件的信息
 			const logvid = game.logv(player, "die", source);
 			event.logvid = logvid;
 			if (unseen) {
@@ -11511,9 +11512,9 @@ player.removeVirtualEquip(card);
 					}
 				}
 			}*/
-			if (bool) {
+			//休整的流程
+			if (event.reserveOut) {
 				if (player.isIn() && !_status._rest_return?.[player.playerid]) {
-					event.reserveOut = true;
 					game.log(player, "进入了修整状态");
 					game.log(player, "移出了游戏");
 					//game.addGlobalSkill('_rest_return');
@@ -11526,6 +11527,7 @@ player.removeVirtualEquip(card);
 					event.finish();
 				}
 			}
+			//正常死亡流程
 			if (!event.reserveOut) {
 				game.broadcastAll(function (player) {
 					player.classList.add("dead");
@@ -11544,20 +11546,30 @@ player.removeVirtualEquip(card);
 				}, player);
 			}
 
-			if (!event.noDieAudio) {
+			//播放阵亡语音或特殊的休整语音（沟槽的十常侍），休整语音也请放到跟死亡语音一起
+			if (typeof restMap.audio == "string") {
+				game.broadcastAll(function (audio) {
+					if (lib.config.background_speak) {
+						game.playAudio("die", audio);
+					}
+				}, restMap.audio);
+			} else if (!event.noDieAudio) {
 				game.tryDieAudio(player);
 			}
+			//添加死亡动画（包括录像的）
 			if (!event.reserveOut) {
 				game.addVideo("diex", player);
 				if (event.animate !== false) {
 					player.$die(source);
 				}
 			}
+			//将体力值修改为0
 			if (!game.countPlayer()) {
 				game.over();
 			} else if (player.hp != 0) {
 				await player.changeHp(0 - player.hp, false).set("forceDie", true);
 			}
+			//休整时解除连环和翻面状态
 			if (event.reserveOut) {
 				game.broadcastAll(function (player) {
 					if (player.isLinked()) {
@@ -11577,6 +11589,7 @@ player.removeVirtualEquip(card);
 		},
 		async (event, trigger, player) => {
 			const { source, restMap } = event;
+			//休整不执行展示身份牌和击杀奖惩的操作
 			if (player.dieAfter && !event.reserveOut) {
 				player.dieAfter(source);
 			}
@@ -11590,6 +11603,7 @@ player.removeVirtualEquip(card);
 		async (event, trigger, player) => {
 			const { reason, source, restMap } = event;
 			if (player.isDead() || event.reserveOut) {
+				//死亡移除武将牌的标记显示，有些不想移除的可以放进excludeMark排除（比如十常侍的常侍标记）
 				if (!game.reserveDead) {
 					const exclude = event.excludeMark;
 					for (const mark in player.marks) {
@@ -11622,6 +11636,7 @@ player.removeVirtualEquip(card);
 					);
 					player.removeTip();
 				}
+				//移除临时技能
 				for (const i in player.tempSkills) {
 					player.removeSkill(i);
 				}
@@ -11631,6 +11646,7 @@ player.removeVirtualEquip(card);
 						player.removeSkill(skills[i]);
 					}
 				}
+				//武将牌返回武将牌堆
 				if (_status.characterlist && !event.reserveOut) {
 					if (lib.character[player.name] && !player.name.startsWith("gz_shibing") && !player.name.startsWith("gz_jun_")) {
 						_status.characterlist.add(player.name);
@@ -11642,6 +11658,7 @@ player.removeVirtualEquip(card);
 						_status.characterlist.add(player.name2);
 					}
 				}
+				//死亡弃置所有牌包括s和x区域的
 				event.cards = player.getCards("hejsx");
 				if (event.cards.length) {
 					await player.discard(event.cards).set("forceDie", true);
@@ -11651,6 +11668,7 @@ player.removeVirtualEquip(card);
 		},
 		async (event, trigger, player) => {
 			const { source, restMap } = event;
+			//休整不执行展示身份牌和击杀奖惩的操作
 			if (player.dieAfter2 && !event.reserveOut) {
 				player.dieAfter2(source);
 			}
@@ -11658,6 +11676,7 @@ player.removeVirtualEquip(card);
 		async (event, trigger, player) => {
 			const { reason, source, restMap } = event;
 			if (!event.reserveOut) {
+				//真正的死亡才会显示再战那些按钮，以及隐藏一些按钮什么的
 				game.broadcastAll(function (player) {
 					if (game.online && player == game.me && !_status.over && !game.controlOver && !ui.exit) {
 						if (lib.mode[lib.configOL.mode].config.dierestart) {
@@ -11695,6 +11714,7 @@ player.removeVirtualEquip(card);
 					}
 				}
 			} else {
+				//休整时将角色移出游戏
 				game.broadcastAll(function (player) {
 					player.classList.add("out");
 				}, player);
