@@ -4392,11 +4392,20 @@ const skills = {
 			player.logSkill("mbzhuji", null, null, null, [num >= es ? get.rand(1, 2) : get.rand(3, 4)]);
 			if (num >= es) {
 				const result = await player
-					.chooseButton(["筑墼：选择一项执行", [[
-						["draw", "摸两张牌"],
-						["recover", "回复1点体力"],
-						["hujia", "获得1点护甲"],
-					], "textbutton"]], true)
+					.chooseButton(
+						[
+							"筑墼：选择一项执行",
+							[
+								[
+									["draw", "摸两张牌"],
+									["recover", "回复1点体力"],
+									["hujia", "获得1点护甲"],
+								],
+								"textbutton",
+							],
+						],
+						true
+					)
 					.set("filterButton", button => {
 						const player = get.player();
 						if (button.link == "recover") {
@@ -4417,7 +4426,7 @@ const skills = {
 				if (!result?.bool || !result.links?.length) {
 					return;
 				}
-				switch(result.links[0]) {
+				switch (result.links[0]) {
 					case "draw": {
 						await player.draw(2);
 						break;
