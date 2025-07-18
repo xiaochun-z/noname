@@ -10046,7 +10046,7 @@ player.removeVirtualEquip(card);
 		}
 		event.sourceSkill = logInfo.sourceSkill;
 		event.type = logInfo.type;
-		if (info.log !== false) {
+		if (!info.direct && info.log !== false) {
 			player.getHistory("useSkill").push(logInfo);
 			event.trigger("useSkill");
 		}

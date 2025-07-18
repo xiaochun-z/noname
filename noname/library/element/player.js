@@ -364,7 +364,7 @@ export class Player extends HTMLDivElement {
 	 * @type {Map<string,HTMLDivElement>}
 	 */
 	tips;
-	
+
 	/**
 	 * 获取一名角色的名字翻译
 	 * @returns { string }
@@ -6989,10 +6989,10 @@ export class Player extends HTMLDivElement {
 		return next;
 	}
 	randomDiscard() {
-		var position = "he",
+		let position = "he",
 			num = 1,
 			delay = null;
-		for (var i = 0; i < arguments.length; i++) {
+		for (let i = 0; i < arguments.length; i++) {
 			if (typeof arguments[i] == "number") {
 				num = arguments[i];
 			} else if (get.itemtype(arguments[i]) == "position") {
@@ -7001,14 +7001,12 @@ export class Player extends HTMLDivElement {
 				delay = arguments[i];
 			}
 		}
-		var cards = this.getCards(position).randomGets(num);
-		if (cards.length) {
-			var next = this.discard(cards, "notBySelf");
-			if (typeof delay == "boolean") {
-				next.delay = delay;
-			}
+		const cards = this.getDiscardableCards(this, position).randomGets(num);
+		const next = this.discard(cards, "notBySelf");
+		if (typeof delay == "boolean") {
+			next.delay = delay;
 		}
-		return cards;
+		return next;
 	}
 	randomGain() {
 		var position = "he",
@@ -7062,7 +7060,7 @@ export class Player extends HTMLDivElement {
 				next.notBySelf = true;
 			}
 		}
-		if (next.cards == undefined) {
+		if (get.itemtype(next.cards) !== "cards") {
 			_status.event.next.remove(next);
 			next.resolve();
 		}
