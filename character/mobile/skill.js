@@ -1394,6 +1394,10 @@ const skills = {
 					player.awakenSkill(event.name.slice(0, -8));
 					game.log(player, "成功完成使命");
 					player.changeSkin("potzhongao", "pot_weiyan_achieve");
+        			game.broadcastAll(() => {
+        				_status.tempMusic = "effect_yinzhanBGM";
+        				game.playBackgroundMusic();
+        			});
 					player.setStorage("potkuanggu", 1);
 					const num1 = player.countMark("potzhuangshi_limit"),
 						num2 = player.countMark("potzhuangshi_directHit");
@@ -1424,6 +1428,10 @@ const skills = {
 					player.awakenSkill(event.name.slice(0, -5));
 					game.log(player, "使命失败");
 					player.changeSkin("potzhongao", "pot_weiyan_fail");
+        			game.broadcastAll(() => {
+        				_status.tempMusic = "effect_tuishouBGM";
+        				game.playBackgroundMusic();
+        			});
 					await player.changeSkills(["kunfen"], ["potzhuangshi"]);
 				},
 			},
