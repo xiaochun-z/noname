@@ -9402,7 +9402,7 @@ player.removeVirtualEquip(card);
 				}
 			}
 			if (targets.length && !event.hideTargets) {
-				var str = targets.length == 1 && targets[0] == player ? "#b自己" : targets;
+				var str = targets.length == 1 && targets[0] == player ? "#b自己" : targets.sortBySeat();
 				if (cards.length && !event.card.isCard) {
 					if (event.addedTarget) {
 						game.log(player, "对", str, "使用了", event.card, "（", cards, "，指向", event.addedTargets, "）");
@@ -10046,8 +10046,10 @@ player.removeVirtualEquip(card);
 		}
 		event.sourceSkill = logInfo.sourceSkill;
 		event.type = logInfo.type;
-		player.getHistory("useSkill").push(logInfo);
-		event.trigger("useSkill");
+		if (info.log !== false) {
+			player.getHistory("useSkill").push(logInfo);
+			event.trigger("useSkill");
+		}
 		"step 1";
 		var info = get.info(event.skill);
 		if (info && info.contentBefore) {
@@ -11358,6 +11360,7 @@ player.removeVirtualEquip(card);
 	damage: function () {
 		"step 0";
 		event.forceDie = true;
+		event.includeOut = true;
 		if (event.unreal) {
 			event.goto(4);
 			return;

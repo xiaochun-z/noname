@@ -120,6 +120,30 @@ const skills = {
 		},
 	},
 	//三娘
+	mbshuyong: {
+		audio: "xinfu_xushen",
+		trigger: {
+			player: ["useCard", "respond"],
+		},
+		filter(event, player) {
+			return event.card.name == "sha";
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
+					return target.countGainableCards(player, "hej") && target != player;
+				})
+				.set("ai", target => get.effect(target, { name: "shunshou_copy" }, get.player(), get.player()))
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const [target] = event.targets;
+			await player.gainPlayerCard(target, "hej", true);
+			if (player.getRoundHistory("gain", evt => evt.getParent(2).name == event.name && evt.getParent(2).targets.includes(target)).length > 1) {
+				await target.draw();
+			}
+		},
+	},
 	mbxushen: {
 		limited: true,
 		audio: "xinfu_xushen",
@@ -190,6 +214,7 @@ const skills = {
 		subSkill: {
 			effect: {
 				charlotte: true,
+				forced: true,
 				trigger: { player: "dyingAfter" },
 				filter(event, player) {
 					const evt2 = event.getParent(2);
@@ -1394,10 +1419,10 @@ const skills = {
 					player.awakenSkill(event.name.slice(0, -8));
 					game.log(player, "成功完成使命");
 					player.changeSkin("potzhongao", "pot_weiyan_achieve");
-        			game.broadcastAll(() => {
-        				_status.tempMusic = "effect_yinzhanBGM";
-        				game.playBackgroundMusic();
-        			});
+					game.broadcastAll(() => {
+						_status.tempMusic = "effect_yinzhanBGM";
+						game.playBackgroundMusic();
+					});
 					player.setStorage("potkuanggu", 1);
 					const num1 = player.countMark("potzhuangshi_limit"),
 						num2 = player.countMark("potzhuangshi_directHit");
@@ -1428,10 +1453,10 @@ const skills = {
 					player.awakenSkill(event.name.slice(0, -5));
 					game.log(player, "使命失败");
 					player.changeSkin("potzhongao", "pot_weiyan_fail");
-        			game.broadcastAll(() => {
-        				_status.tempMusic = "effect_tuishouBGM";
-        				game.playBackgroundMusic();
-        			});
+					game.broadcastAll(() => {
+						_status.tempMusic = "effect_tuishouBGM";
+						game.playBackgroundMusic();
+					});
 					await player.changeSkills(["kunfen"], ["potzhuangshi"]);
 				},
 			},
