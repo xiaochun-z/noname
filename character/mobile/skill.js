@@ -8263,7 +8263,7 @@ const skills = {
 				result: { index },
 			} = await player
 				.chooseControl()
-				.set("choiceList", [`摸两张牌，然后令${str}视为对自己使用【杀】或弃置自己场上一张牌`, `令${str}摸两张牌，然后视为对其使用【杀】或弃置其场上一张牌`])
+				.set("choiceList", [`摸两张牌，然后令${str}视为对自己使用【杀】或获得自己场上一张牌`, `令${str}摸两张牌，然后视为对其使用【杀】或获得其场上一张牌`])
 				.set("ai", () => {
 					const evt = _status.event.getParent(),
 						player = evt.player,
@@ -12509,12 +12509,12 @@ const skills = {
 			}
 			return "laishou3.mp3";
 		},
-		content() {
+		async content(event, trigger, player) {
 			if (trigger.name == "damage") {
-				player.gainMaxHp(trigger.num);
+				await player.gainMaxHp(trigger.num);
 				trigger.cancel();
 			} else {
-				player.die();
+				await player.die();
 			}
 		},
 	},
@@ -12528,11 +12528,9 @@ const skills = {
 		contentBefore() {
 			player.line(game.filterPlayer(current => current.countCards("h")));
 		},
-		content() {
-			"step 0";
-			var targets = game.filterPlayer(current => current.countCards("h")).sortBySeat();
-			event.targets = targets;
-			var next = player
+		async content(event, trigger, player) {
+			const targets = game.filterPlayer(current => current.countCards("h")).sortBySeat();
+			const next = player
 				.chooseCardOL(targets, "乱群：请选择要展示的牌", true)
 				.set("ai", function (card) {
 					return -get.value(card);
@@ -12543,45 +12541,23 @@ const skills = {
 				return { bool: true, cards: [hs.randomGet()] };
 			};
 			next._args.remove("glow_result");
-			"step 1";
-			var cards = [];
-			event.videoId = lib.status.videoId++;
-			for (var i = 0; i < targets.length; i++) {
-				cards.push(result[i].cards[0]);
-			}
-			event.cards = cards;
-			game.log(player, "展示了", targets, "的", cards);
-			game.broadcastAll(
-				function (targets, cards, id, player) {
-					var dialog = ui.create.dialog(get.translation(player) + "发动了【乱群】", cards);
-					dialog.videoId = id;
-					var getName = function (target) {
-						if (target._tempTranslate) {
-							return target._tempTranslate;
-						}
-						var name = target.name;
-						if (lib.translate[name + "_ab"]) {
-							return lib.translate[name + "_ab"];
-						}
-						return get.translation(name);
-					};
-					for (var i = 0; i < targets.length; i++) {
-						dialog.buttons[i].querySelector(".info").innerHTML = getName(targets[i]) + get.translation(cards[i].suit);
+			const result = await next.forResult();
+			const cards = result.map(i => i.cards[0]);
+			await player
+				.showCards(cards, get.translation(player) + "发动了【乱群】")
+				.set("customButton", button => {
+					const target = get.owner(button.link);
+					if (target) {
+						button.node.gaintag.innerHTML = target.getName();
 					}
-				},
-				targets,
-				cards,
-				event.videoId,
-				player
-			);
-			game.delay(4);
-			"step 2";
-			game.broadcastAll("closeDialog", event.videoId);
-			var card = cards[targets.indexOf(player)];
-			var cardx = cards.filter(cardy => cardy != card && get.color(cardy, targets[cards.indexOf(cardy)]) == get.color(card, player));
+				})
+				.set("delay_time", 4)
+				.set("showers", targets);
+			const card = cards[targets.indexOf(player)];
+			const cardx = cards.filter(cardy => cardy != card && get.color(cardy, targets[cards.indexOf(cardy)]) == get.color(card, player));
 			if (cardx.length) {
 				const num = get.mode() == "identity" ? 4 : 2;
-				player
+				const result = await player
 					.chooseButton(["乱群：是否获得其中至多" + get.cnNumber(num) + "张牌", cardx])
 					.set("forceAuto", true)
 					.set("ai", function (button) {
@@ -12594,20 +12570,16 @@ const skills = {
 						return get.value(button.link, player);
 					})
 					.set("selectButton", [1, num])
-					.set("list", [cards, targets]);
-			} else {
-				event.goto(4);
+					.set("list", [cards, targets])
+					.forResult();
+				if (result?.links?.length) {
+					await player.gain(result.links, "give");
+				}
 			}
-			"step 3";
-			if (result.bool) {
-				player.gain(result.links, "give");
-			}
-			"step 4";
-			var card = cards[targets.indexOf(player)];
-			targets = targets.filter(target => get.color(cards[targets.indexOf(target)], target) != get.color(card, player));
-			if (targets.length) {
-				player.line(targets);
-				targets.forEach(target => {
+			const targetsx = targets.filter(target => get.color(cards[targets.indexOf(target)], target) != get.color(card, player));
+			if (targetsx.length) {
+				player.line(targetsx);
+				targetsx.forEach(target => {
 					target.addTempSkill("luanqun_effect", { player: "phaseUseAfter" });
 					target.markAuto("luanqun_effect", [player]);
 					target.addTempSkill("luanqun_directHit", { player: "phaseEnd" });

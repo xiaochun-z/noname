@@ -6169,34 +6169,16 @@ const skills = {
 					gains.push([[player, target][i], result[0]]);
 				}
 			}
-			const videoId = lib.status.videoId++;
-			game.broadcastAll(
-				(gains, id, player) => {
-					const dialog = ui.create.dialog(
-						get.translation(player) + "发动了【节言】",
-						gains.map(i => i[1])
-					);
-					dialog.videoId = id;
-					const getName = target => {
-						if (target._tempTranslate) {
-							return target._tempTranslate;
-						}
-						const name = target.name;
-						if (lib.translate[name + "_ab"]) {
-							return lib.translate[name + "_ab"];
-						}
-						return get.translation(name);
-					};
-					for (let i = 0; i < gains.length; i++) {
-						dialog.buttons[i].querySelector(".info").innerHTML = getName(gains[i][0]);
+			await player
+				.showCards(gains.map(i => i[1]).flat(), `${get.translation(player)}发动了【节言】`)
+				.set("customButton", button => {
+					const target = get.owner(button.link);
+					if (target) {
+						button.node.gaintag.innerHTML = target.getName();
 					}
-				},
-				gains,
-				videoId,
-				player
-			);
-			await game.delay(3);
-			game.broadcastAll("closeDialog", videoId);
+				})
+				.set("delay_time", 3)
+				.set("showers", [player, target]);
 			if (
 				gains
 					.map(i => i[1])
@@ -13182,7 +13164,6 @@ const skills = {
 	olchenshuo: {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
-		direct: true,
 		filter(event, player) {
 			return player.countCards("h") > 0;
 		},
@@ -13198,7 +13179,51 @@ const skills = {
 			}
 			return info.length == get.cardNameLength(card);
 		},
-		content() {
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseCard("h", get.prompt("olchenshuo"), "展示一张手牌，然后展示并获得牌堆顶的牌")
+				.set("ai", function (card) {
+					if (get.type(card) == "basic") {
+						return 1 + Math.random();
+					}
+					return Math.random();
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const [card] = event.cards;
+			await player.showCards([card], get.translation(player) + "发动了【谶说】");
+			const cardInfo = {
+				type: get.type2(card, player),
+				suit: get.suit(card, player),
+				number: get.number(card, player),
+				length: get.cardNameLength(card),
+			};
+			event.forceDie = true;
+			event.includeOut = true;
+			const cards = [];
+			while (true) {
+				const judgestr = get.translation(player) + "展示的第" + get.cnNumber(cards.length + 1, true) + "张【谶说】牌";
+				const cardsx = get.cards();
+				const result = await player
+					.showCards(cardsx, judgestr, true)
+					.set("clearArena", false)
+					.set("log", (cards, player) => [player, "亮出了牌堆顶的", cards])
+					.forResult();
+				if (!result?.cards) {
+					return;
+				}
+				cards.addArray(result.cards);
+				if (cards.length >= 3 || !player.isIn() || cards.some(cardx => !lib.skill.olchenshuo.hasSame(cardInfo, cardx))) {
+					game.broadcastAll(function () {
+						ui.clear();
+					});
+					await player.gain(cards, "gain2");
+					break;
+				}
+			}
+		},
+		/*content() {
 			"step 0";
 			player.chooseCard("h", get.prompt("olchenshuo"), "展示一张手牌，然后展示并获得牌堆顶的牌").set("ai", function (card) {
 				if (get.type(card) == "basic") {
@@ -13279,7 +13304,7 @@ const skills = {
 				});
 				player.gain(cards, "gain2");
 			}
-		},
+		},*/
 	},
 	//OL文钦
 	olguangao: {
@@ -30529,6 +30554,7 @@ const skills = {
 		filter(event, player) {
 			return player.countMark("fanghun") > 0;
 		},
+		check: () => true,
 		async content(event, trigger, player) {
 			const num = player.countMark("fanghun");
 			if (num) {

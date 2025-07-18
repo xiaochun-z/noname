@@ -307,10 +307,12 @@ game.import("card", function () {
 									event.getParent().orderingCards.remove(event.card);
 								}
 							});
+							judgeEvent.set("clearArena", false);
 							const resultx = await judgeEvent.forResult();
 							if (resultx?.bool && resultx?.card) {
 								cards.push(resultx.card);
 							} else {
+								game.broadcastAll(ui.clear);
 								break;
 							}
 						}
