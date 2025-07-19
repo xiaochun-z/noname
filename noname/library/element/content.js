@@ -7512,16 +7512,20 @@ player.removeVirtualEquip(card);
 		async (event, _trigger, player, result) => {
 			//处理ai的选择结果
 			if (event.result == "ai") {
-				game.check();
-				if (ai.basic.chooseButton(event.ai1) || event.forced) {
-					if ((ai.basic.chooseTarget(event.ai2) || event.forced) && (!event.filterOk || event.filterOk())) {
-						ui.click.ok();
-						_status.event._aiexclude.length = 0;
+				if (event.processAI) {
+					event.result = event.processAI();
+				} else {
+					game.check();
+					if (ai.basic.chooseButton(event.ai1) || event.forced) {
+						if ((ai.basic.chooseTarget(event.ai2) || event.forced) && (!event.filterOk || event.filterOk())) {
+							ui.click.ok();
+							_status.event._aiexclude.length = 0;
+						} else {
+							ui.click.cancel();
+						}
 					} else {
 						ui.click.cancel();
 					}
-				} else {
-					ui.click.cancel();
 				}
 			}
 		},
