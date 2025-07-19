@@ -38569,11 +38569,12 @@ const skills = {
 		filterCard: true,
 		position: "he",
 		logAudio: () => 1,
-		content() {
-			player.gainPlayerCard(target, true, "h", target.countCards("h"));
-			player.turnOver();
+		async content(event, trigger, player) {
+			const { target } = event;
+			await player.gainPlayerCard(target, true, "h", target.countCards("h"));
+			await player.turnOver();
 			player.addSkill("lihun2");
-			player.storage.lihun = target;
+			player.markAuto("lihun2",target);
 		},
 		check(card) {
 			return 8 - get.value(card);
@@ -38602,21 +38603,24 @@ const skills = {
 		forced: true,
 		audio: "lihun2.mp3",
 		sourceSkill: "lihun",
-		content() {
-			"step 0";
-			var cards = player.getCards("he");
-			player.removeSkill("lihun2");
-			if (player.storage.lihun.classList.contains("dead") || player.storage.lihun.hp <= 0 || cards.length == 0) {
-				event.finish();
-			} else {
-				if (cards.length < player.storage.lihun.hp) {
-					event._result = { bool: true, cards: cards };
-				} else {
-					player.chooseCard("he", true, player.storage.lihun.hp, "离魂：选择要交给" + get.translation(player.storage.lihun) + "的牌");
+		onremove: true,
+		async content(event, trigger, player) {
+			player.storage.lihun2 = player.storage.lihun2.sortBySeat();
+			for (let i of player.storage.lihun2) {
+				if (!i.isIn() || i.hp <= 0) {
+					continue;
 				}
+				if (!player.countCards("he")) {
+					break;
+				}
+				let cards = player.getCards("he");
+				if (cards.length > i.hp) {
+					const next = await player.chooseCard("he", true, i.hp, "离魂：选择要交给" + get.translation(i) + "的牌").forResult();
+					cards = next.cards;
+				}
+				await player.give(cards, i);
 			}
-			"step 1";
-			player.give(result.cards, player.storage.lihun);
+			player.removeSkill("lihun2");
 		},
 	},
 	yuanhu: {
