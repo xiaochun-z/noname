@@ -38603,7 +38603,7 @@ const skills = {
 		forced: true,
 		audio: "lihun2.mp3",
 		sourceSkill: "lihun",
-		onremove:true,
+		onremove: true,
 		async content(event, trigger, player) {
 			player.storage.lihun2 = player.storage.lihun2.sortBySeat();
 			for (let i of player.storage.lihun2) {
