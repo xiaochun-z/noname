@@ -8567,7 +8567,6 @@ player.removeVirtualEquip(card);
 					}
 				}
 			}
-			console.log(event.show_map);
 			if (!event.str) {
 				event.str = get.translation(player.name) + "展示的牌";
 			}
@@ -8608,7 +8607,6 @@ player.removeVirtualEquip(card);
 
 				const createDialog = function (cards2, id, customButton) {
 					const dialog = get.idDialog(id);
-					console.log(dialog);
 					dialog.forcebutton = true;
 					//处理隐藏牌（这东西有人用过？）
 					if (cards2) {
