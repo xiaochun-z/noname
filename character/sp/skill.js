@@ -38574,10 +38574,7 @@ const skills = {
 			await player.gainPlayerCard(target, true, "h", target.countCards("h"));
 			await player.turnOver();
 			player.addSkill("lihun2");
-			if (!player.storage.lihun) {
-				player.storage.lihun = [];
-			}
-			player.storage.lihun.push(target);
+			player.markAuto("lihun2",target);
 		},
 		check(card) {
 			return 8 - get.value(card);
@@ -38606,10 +38603,11 @@ const skills = {
 		forced: true,
 		audio: "lihun2.mp3",
 		sourceSkill: "lihun",
+		onremove:true,
 		async content(event, trigger, player) {
-			player.storage.lihun = player.storage.lihun.sortBySeat();
-			for (let i of player.storage.lihun) {
-				if (i.isDead() || i.hp <= 0) {
+			player.storage.lihun2 = player.storage.lihun2.sortBySeat();
+			for (let i of player.storage.lihun2) {
+				if (!i.isIn() || i.hp <= 0) {
 					continue;
 				}
 				if (!player.countCards("he")) {
@@ -38623,7 +38621,6 @@ const skills = {
 				await player.give(cards, i);
 			}
 			player.removeSkill("lihun2");
-			delete player.storage.lihun;
 		},
 	},
 	yuanhu: {
