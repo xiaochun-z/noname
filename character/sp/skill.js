@@ -38574,7 +38574,9 @@ const skills = {
 			await player.gainPlayerCard(target, true, "h", target.countCards("h"));
 			await player.turnOver();
 			player.addSkill("lihun2");
-			if (!player.storage.lihun) player.storage.lihun = [];
+			if (!player.storage.lihun) {
+				player.storage.lihun = [];
+			}
 			player.storage.lihun.push(target);
 		},
 		check(card) {
@@ -38607,8 +38609,12 @@ const skills = {
 		async content(event, trigger, player) {
 			player.storage.lihun = player.storage.lihun.sortBySeat();
 			for (let i of player.storage.lihun) {
-				if (i.isDead() || i.hp <= 0) continue;
-				if (!player.countCards("he")) break;
+				if (i.isDead() || i.hp <= 0) {
+					continue;
+				}
+				if (!player.countCards("he")) {
+					break;
+				}
 				let cards = player.getCards("he");
 				if (cards.length > i.hp) {
 					const next = await player.chooseCard("he", true, i.hp, "离魂：选择要交给" + get.translation(i) + "的牌").forResult();
