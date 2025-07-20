@@ -375,8 +375,11 @@ const skills = {
 					position: "hes",
 					selectCard: 1,
 					filterTarget(card, player, target) {
-						if (get.info("olgangquan_backup").choice == "sha" && ![player.getPrevious(), player.getNext()].includes(target)) {
-							return false;
+						if (get.info("olgangquan_backup").choice == "sha") {
+							if (![player.getPrevious(), player.getNext()].includes(target)) {
+								return false;
+							}
+							return lib.filter.targetEnabled.apply(this, arguments);
 						}
 						return lib.filter.filterTarget.apply(this, arguments);
 					},
