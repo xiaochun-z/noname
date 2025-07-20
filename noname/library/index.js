@@ -3894,11 +3894,11 @@ export class Library {
 						map.show_time.show();
 						map.watchface.hide();
 					}
-					if (lib.config.show_deckMonitor) {
+					/*if (lib.config.show_deckMonitor) {
 						map.show_deckMonitor_online.show();
 					} else {
 						map.show_deckMonitor_online.hide();
-					}
+					}*/
 					if (lib.config.show_extensionmaker) {
 						map.show_extensionshare.show();
 					} else {
@@ -4473,7 +4473,7 @@ export class Library {
 						}
 					},
 				},
-				show_deckMonitor_online: {
+				/*show_deckMonitor_online: {
 					name: "联机显示记牌器",
 					intro: "如果你是房主，此设置对所有人生效",
 					init: false,
@@ -4490,7 +4490,7 @@ export class Library {
 							game.saveConfig("show_deckMonitor_online", bool);
 						}
 					},
-				},
+				},*/
 				show_wuxie: {
 					name: "显示无懈按钮",
 					intro: "在右上角显示不询问无懈",
@@ -13650,7 +13650,7 @@ export class Library {
 			 */
 			init(version, config, banned_info) {
 				var show_deckMonitor = false;
-				if (lib.config.show_deckMonitor && lib.config.show_deckMonitor_online) {
+				if (lib.config.show_deckMonitor) {// && lib.config.show_deckMonitor_online
 					show_deckMonitor = true;
 				}
 				this.send(function (show_deckMonitor) {

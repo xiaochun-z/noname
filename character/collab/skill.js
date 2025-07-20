@@ -7,7 +7,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
-			return event.targets.some(target => target != player) && get.color(event.card) == "black" && event.isFirstTarget;
+			return event.targets.some(target => target != player) && event.isFirstTarget; //&& get.color(event.card) == "black"
 		},
 		forced: true,
 		async content(event, trigger, player) {
