@@ -367,6 +367,10 @@ export class Library {
 
 	objectURL = new Map();
 	hookmap = {};
+	//共联时机的map
+	relatedTrigger = {
+		loseAsync: ["lose", "gain", "addToExpansion", "addJudge", "eqiup"],
+	};
 	/**
 	 * @type { { character?: SMap<importCharacterConfig>, card?: SMap<importCardConfig>, mode?: SMap<importModeConfig>, player?: SMap<importPlayerConfig>, extension?: SMap<importExtensionConfig>, play?: SMap<importPlayConfig> } }
 	 */
@@ -10844,10 +10848,25 @@ export class Library {
 					if (role != "global" && player != event[role]) {
 						return false;
 					}
-					if (Array.isArray(info.trigger[role])) {
-						return info.trigger[role].includes(triggername);
+					const list = [];
+					if (typeof info.trigger[role] == "string") {
+						list.add(info.trigger[role]);
+					} else if (Array.isArray(info.trigger[role])) {
+						list.addArray(info.trigger[role]);
 					}
-					return info.trigger[role] == triggername;
+					if (list.includes(triggername)) {
+						return true;
+					}
+					const names = Object.keys(lib.relatedTrigger),
+						map = lib.relatedTrigger;
+					for (const trigger of list.slice()) {
+						for (const name of names) {
+							if (trigger.startsWith(name)) {
+								list.addArray(map[name].map(i => i + trigger.slice(name.length)));
+							}
+						}
+					}
+					return list.includes(triggername);
 				})
 			) {
 				return false;
@@ -13413,24 +13432,26 @@ export class Library {
 			forceOut: true,
 			filter(event, player) {
 				const map = _status._rest_return?.[player.playerid];
-				if (map?.count < 0) {
+				if (!map?.count || map?.count < 0) {
 					return false;
 				}
 				if (map?.type == "round" && event.player != player) {
 					return false;
 				}
+				if (player.isIn()) {
+					delete _status._rest_return?.[player.playerid];
+				}
 				return !event._rest_return && player.isOut();
 			},
 			async content(event, trigger, player) {
 				const map = _status._rest_return?.[player.playerid];
-				if (map?.count > 0) {
+				if (map?.count && map?.count > 0) {
 					game.broadcastAll(map => {
 						map.count--;
 					}, map);
 				}
 				trigger._rest_return = true;
 				if (!map.count) {
-					//trigger._rest_return = true;
 					game.broadcastAll(function (player) {
 						player.classList.remove("out");
 					}, player);
@@ -13650,7 +13671,8 @@ export class Library {
 			 */
 			init(version, config, banned_info) {
 				var show_deckMonitor = false;
-				if (lib.config.show_deckMonitor) {// && lib.config.show_deckMonitor_online
+				if (lib.config.show_deckMonitor) {
+					// && lib.config.show_deckMonitor_online
 					show_deckMonitor = true;
 				}
 				this.send(function (show_deckMonitor) {
