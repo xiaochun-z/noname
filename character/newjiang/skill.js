@@ -46,7 +46,7 @@ const skills = {
 					const cardsx = evt.getd(target, "cards2").filterInD("d");
 					if (cardsx.length) {
 						cards.addArray(cardsx);
-						if(target!=player) {
+						if (target != player) {
 							cards2.addArray(cardsx);
 						}
 					}
@@ -91,8 +91,7 @@ const skills = {
 					if (cards2.includes(card)) {
 						break;
 					}
-				}
-				else {
+				} else {
 					break;
 				}
 			}
