@@ -10677,7 +10677,14 @@ const skills = {
 		async cost(event, trigger, player) {
 			const list = ["弃置至多两名其他角色的合计两张牌"];
 			const choices = ["选项一"];
-			if (get.info(event.skill).canMoveCard(player)) {
+			if (
+				player.canMoveCard(
+					null,
+					true,
+					game.filterPlayer(target => target != player),
+					game.filterPlayer(target => target != player)
+				)
+			) {
 				list.push("将一名其他角色装备区内的一张牌移动到另一名角色的装备区内");
 				choices.push("选项二");
 			}
@@ -10725,153 +10732,26 @@ const skills = {
 					}
 				}
 			}
-			if (index > 0 && get.info(event.name).canMoveCard(player)) {
-				const next = player.chooseTarget(2, function (card, player, target) {
-					if (player == target) {
-						return false;
-					}
-					if (ui.selected.targets.length) {
-						var from = ui.selected.targets[0];
-						if (target.isMin()) {
-							return false;
-						}
-						var es = from.getCards("e");
-						for (var i = 0; i < es.length; i++) {
-							if (target.canEquip(es[i])) {
-								return true;
-							}
-						}
-						return false;
-					} else {
-						return target.countCards("e") > 0;
-					}
-				});
-				next.set("ai", function (target) {
-					var player = _status.event.player;
-					var att = get.attitude(player, target);
-					var sgnatt = get.sgn(att);
-					if (ui.selected.targets.length == 0) {
-						if (att > 0) {
-							if (
-								target.countCards("e", function (card) {
-									return (
-										get.value(card, target) < 0 &&
-										game.hasPlayer(function (current) {
-											return current != player && current != target && get.attitude(player, current) < 0 && current.canEquip(card) && get.effect(current, card, player, player) > 0;
-										})
-									);
-								}) > 0
-							) {
-								return 9;
-							}
-						} else if (att < 0) {
-							if (
-								game.hasPlayer(function (current) {
-									if (current != target && current != player && get.attitude(player, current) > 0) {
-										var es = target.getCards("e");
-										for (var i = 0; i < es.length; i++) {
-											if (get.value(es[i], target) > 0 && current.canEquip(es[i]) && get.effect(current, es[i], player, player) > 0) {
-												return true;
-											}
-										}
-									}
-								})
-							) {
-								return -att;
-							}
-						}
-						return 0;
-					}
-					var es = ui.selected.targets[0].getCards("e");
-					var i;
-					var att2 = get.sgn(get.attitude(player, ui.selected.targets[0]));
-					for (i = 0; i < es.length; i++) {
-						if (sgnatt != 0 && att2 != 0 && sgnatt != att2 && get.sgn(get.value(es[i], ui.selected.targets[0])) == -att2 && get.sgn(get.value(es[i], target)) == sgnatt && target.canEquip(es[i])) {
-							return Math.abs(att);
-						}
-					}
-					if (i == es.length) {
-						return 0;
-					}
-					return -att * get.attitude(player, ui.selected.targets[0]);
-				});
-				next.set("multitarget", true);
-				next.set("targetprompt", ["被移走", "移动目标"]);
-				next.set("prompt", event.prompt || "移动场上的一张装备牌");
-				next.set("forced", true);
-				const result = await next.forResult();
-				if (result?.targets?.length) {
-					const targets = result.targets;
-					player.line2(targets, "green");
-					const resultx = await player
-						.choosePlayerCard(
-							"e",
-							true,
-							function (button) {
-								var player = _status.event.player;
-								var targets0 = _status.event.targets0;
-								var targets1 = _status.event.targets1;
-								if (get.attitude(player, targets0) > get.attitude(player, targets1)) {
-									if (get.value(button.link, targets0) < 0) {
-										return get.effect(targets1, button.link, player, player);
-									}
-									return 0;
-								} else {
-									return get.value(button.link, targets0) * get.effect(targets1, button.link, player, player);
-								}
-							},
-							targets[0]
-						)
-						.set("targets0", targets[0])
-						.set("targets1", targets[1])
-						.set("filterButton", function (button) {
-							var targets1 = _status.event.targets1;
-							return targets1.canEquip(button.link);
-						})
-						.forResult();
-					if (resultx?.bool && resultx?.cards?.length) {
-						const card = resultx.cards[0];
-						targets[0].$give(card, targets[1]);
-						await targets[1].equip(card);
-						await game.delay();
-					}
-				}
+			if (
+				index > 0 &&
+				player.canMoveCard(
+					null,
+					true,
+					game.filterPlayer(target => target != player),
+					game.filterPlayer(target => target != player)
+				)
+			) {
+				await player
+					.moveCard(
+						true,
+						game.filterPlayer(target => target != player),
+						game.filterPlayer(target => target != player)
+					)
+					.set("noJudge", true);
 			}
 			if (index == 2) {
 				await player.chooseToDisable();
 			}
-		},
-		canMoveCard(player, withatt) {
-			return game.hasPlayer(function (current) {
-				if (player == current) {
-					return false;
-				}
-				var att = get.sgn(get.attitude(player, current));
-				if (!withatt || att != 0) {
-					var es = current.getCards("e");
-					for (var i = 0; i < es.length; i++) {
-						if (
-							game.hasPlayer(function (current2) {
-								if (player == current2) {
-									return false;
-								}
-								if (withatt) {
-									if (get.sgn(get.value(es[i], current)) != -att) {
-										return false;
-									}
-									var att2 = get.sgn(get.attitude(player, current2));
-									if (att == att2 || att2 != get.sgn(get.value(es[i], current2))) {
-										return false;
-									}
-								}
-								return current != current2 && !current2.isMin() && current2.canEquip(es[i]);
-							})
-						) {
-							return true;
-						}
-					}
-				}
-			});
 		},
 		ai: {
 			effect: {
