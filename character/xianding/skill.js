@@ -82,34 +82,35 @@ const skills = {
 							return Infinity;
 						}
 					},
-					forced: true,
-					popup: false,
-					charlotte: true,
-					trigger: {
-						player: "useCard1",
-					},
-					filter(event, player) {
-						return (
-							event.addCount !== false &&
-							event.card.isCard &&
-							event.cards.length == 1 &&
-							player.hasHistory("lose", evt => {
-								if (evt.relatedEvent || evt.getParent() !== event) {
-									return false;
-								}
-								return evt.hs.length == 1 && Object.values(evt.gaintag_map).flat().includes("dcjunmou_sha");
-							})
-						);
-					},
-					async content(event, trigger, player) {
-						trigger.addCount = false;
-						const stat = player.getStat().card,
-							name = trigger.card.name;
-						if (typeof stat[name] == "number") {
-							stat[name]--;
-						}
-						game.log(trigger.card, "不计入次数");
-					},
+				},
+				forced: true,
+				popup: false,
+				charlotte: true,
+				firstDo: true,
+				trigger: {
+					player: "useCard1",
+				},
+				filter(event, player) {
+					return (
+						event.addCount !== false &&
+						event.card.isCard &&
+						event.cards?.length == 1 &&
+						player.hasHistory("lose", evt => {
+							if ((evt.relatedEvent || evt.getParent()) !== event) {
+								return false;
+							}
+							return evt.hs.length == 1 && Object.values(evt.gaintag_map).flat().includes("dcsbjunmou_sha");
+						})
+					);
+				},
+				async content(event, trigger, player) {
+					trigger.addCount = false;
+					const stat = player.getStat().card,
+						name = trigger.card.name;
+					if (typeof stat[name] == "number") {
+						stat[name]--;
+					}
+					game.log(trigger.card, "不计入次数");
 				},
 			},
 			change: {
@@ -249,12 +250,15 @@ const skills = {
 					const damage = resultx.targets;
 					await player.discard(resultx.cards);
 					player.line(damage, "fire");
-					await game.doAsyncInOrder(damage, async (target, i) => {
-						await target.damage("fire");
+					const damaged = [];
+					await game.doAsyncInOrder(damage, async target => {
+						const next = target.damage("fire");
+						await next;
+						damaged.addArray(targets.filter(i => i.hasHistory("damage", evt => (evt.getParent()?.getTrigger() || evt) == next)));
 					});
-					if (damage.length != targets.length) {
+					if (damaged.length != event.targets.length) {
 						targets.forEach(target => {
-							if (!damage.includes(target)) {
+							if (!damaged.includes(target)) {
 								target.chat("☝🤓唉，没打着");
 								target.throwEmotion(player, ["egg", "shoe"].randomGet());
 							}
