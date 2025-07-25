@@ -139,10 +139,10 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "wood",
 		filter(event, player) {
-			return game.hasPlayer(target => target.isLinked());
+			return game.hasPlayer(target => target.isLinked() && target != player);
 		},
 		filterTarget(card, player, target) {
-			return target.isLinked();
+			return target.isLinked() && target != player;
 		},
 		selectTarget: [1, Infinity],
 		multitarget: true,

@@ -1065,8 +1065,8 @@ export class GameEvent {
 				});
 
 			if (lib.config.compatiblemode) {
-				const names = Object.keys(lib.relatedTrigger),
-					map = lib.relatedTrigger;
+				const map = lib.relatedTrigger,
+					names = Object.keys(map);
 				doing.addList(
 					game.expandSkills(player.getSkills("invisible").concat(lib.skill.global)).filter(skill => {
 						const info = get.info(skill);

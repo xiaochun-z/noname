@@ -9813,8 +9813,8 @@ export class Player extends HTMLDivElement {
 					lib.hook[name].add(skill);
 					lib.hookmap[evt] = true;
 				};
-				const names = Object.keys(lib.relatedTrigger),
-					map = lib.relatedTrigger;
+				const map = lib.relatedTrigger,
+					names = Object.keys(map);
 				for (const role in info.trigger) {
 					let evts = info.trigger[role];
 					if (!Array.isArray(evts)) {
@@ -10401,8 +10401,8 @@ export class Player extends HTMLDivElement {
 						delete lib.hook[name];
 					}
 				};
-				const names = Object.keys(lib.relatedTrigger),
-					map = lib.relatedTrigger;
+				const map = lib.relatedTrigger,
+					names = Object.keys(map);
 				for (const role in info.trigger) {
 					let evts = info.trigger[role];
 					if (!Array.isArray(evts)) {
