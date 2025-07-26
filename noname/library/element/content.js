@@ -7372,6 +7372,14 @@ player.removeVirtualEquip(card);
 	},
 	chooseCardTarget: function () {
 		"step 0";
+		const skills = player.getSkills("invisible").concat(lib.skill.global);
+		game.expandSkills(skills);
+		for (let i = 0; i < skills.length; i++) {
+			const info = lib.skill[skills[i]];
+			if (info?.onChooseCardTarget) {
+				info.onChooseCardTarget(event, player);
+			}
+		}
 		if (event.isMine()) {
 			if (event.hsskill && !event.forced && _status.prehidden_skills.includes(event.hsskill)) {
 				ui.click.cancel();
@@ -7419,6 +7427,14 @@ player.removeVirtualEquip(card);
 	//该事件目前采用async contents的写法
 	chooseButtonTarget: [
 		async (event, _trigger, player) => {
+			const skills = player.getSkills("invisible").concat(lib.skill.global);
+			game.expandSkills(skills);
+			for (let i = 0; i < skills.length; i++) {
+				const info = lib.skill[skills[i]];
+				if (info?.onChooseButtonTarget) {
+					info.onChooseButtonTarget(event, player);
+				}
+			}
 			//根据player.chooseButtonTarget获取到的dialog信息创建对话框，也支持createDialog
 			if (typeof event.dialog == "number") {
 				event.dialog = get.idDialog(event.dialog);
