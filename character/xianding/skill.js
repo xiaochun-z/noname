@@ -203,36 +203,54 @@ const skills = {
 				} else {
 					update(id, suits);
 				}
-				const resultx = await player
-					.chooseCardTarget({
-						prompt: false,
-						dialog: get.idDialog(id),
-						filterCard(card) {
-							if (!get.event().suits.includes(get.suit(card, get.player()))) {
-								return false;
+				const nextx = player.chooseCardTarget({
+					prompt: false,
+					dialog: get.idDialog(id),
+					filterCard(card) {
+						if (!get.event().suits.includes(get.suit(card, get.player()))) {
+							return false;
+						}
+						return lib.filter.cardDiscardable.apply(this, arguments);
+					},
+					selectCard: [1, Infinity],
+					filterTarget(card, player, target) {
+						const selected = ui.selected.cards;
+						if (!selected.length) {
+							return false;
+						}
+						const suits = selected.map(card => get.suit(card, player)).unique();
+						return suits.includes(get.suit(get.event().cards[get.event().targets.indexOf(target)], target));
+					},
+					//complexTarget: true,
+					selectTarget: -1,
+					suits: suits,
+					cards: cards,
+					targets: targets,
+					position: "he",
+					ai1(card) {
+						return 10 - get.value(card);
+					},
+				});
+				nextx.set(
+					"targetprompt2",
+					nextx.targetprompt2.concat([
+						target => {
+							const evt = get.event();
+							if (!target.isIn() || !evt.filterTarget(null, get.player(), target)) {
+								return;
 							}
-							return lib.filter.cardDiscardable.apply(this, arguments);
-						},
-						selectCard: [1, Infinity],
-						filterTarget(card, player, target) {
-							const selected = ui.selected.cards;
-							if (!selected.length) {
-								return false;
+							const card = evt.cards[evt.targets.indexOf(target)];
+							if (!card) {
+								return;
 							}
-							const suits = selected.map(card => get.suit(card, player)).unique();
-							return suits.includes(get.suit(get.event().cards[get.event().targets.indexOf(target)], target));
+							const suit = get.suit(card, target);
+							const color = get.color(card, target);
+							const str = get.translation(suit);
+							return `<span style = "color:${color};font-weight:bold;font-size: 200%">${str}</span>`;
 						},
-						//complexTarget: true,
-						selectTarget: -1,
-						suits: suits,
-						cards: cards,
-						targets: targets,
-						position: "he",
-						ai1(card) {
-							return 10 - get.value(card);
-						},
-					})
-					.forResult();
+					])
+				);
+				const resultx = await nextx.forResult();
 				game.broadcastAll("closeDialog", id);
 				if (resultx?.cards?.length && resultx.targets?.length) {
 					const damage = resultx.targets;
@@ -270,25 +288,6 @@ const skills = {
 				forced: true,
 				trigger: {
 					global: "loseAsyncAfter",
-				},
-				onChooseCardTarget(event, player) {
-					if (event.getParent().name != "dcsbzhanyan") {
-						return false;
-					}
-					event.targetprompt2.add(target => {
-						const evt = get.event();
-						if (!target.isIn() || !evt.filterTarget(null, get.player(), target)) {
-							return;
-						}
-						const card = evt.cards[evt.targets.indexOf(target)];
-						if (!card) {
-							return;
-						}
-						const suit = get.suit(card, target);
-						const color = get.color(card, target);
-						const str = get.translation(suit);
-						return `<span style = "color:${color};font-weight:bold;font-size: 200%">${str}</span>`;
-					});
 				},
 				filter(event, player) {
 					return event.getl?.(player)?.cards2?.length;
