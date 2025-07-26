@@ -1093,19 +1093,8 @@ const skills = {
 				filter(event, player) {
 					return player.getStorage("olmiluo_clear").some(target => target.isIn());
 				},
-				onChooseTarget(event, player) {
-					if (event.getParent().skill != "olmiluo_end") {
-						return false;
-					}
-					event.targetprompt2.add(target => {
-						if (!target.isIn() || !get.event().filterTarget(null, get.player(), target)) {
-							return false;
-						}
-						return target.countCards("h", card => card.hasGaintag("olmiluo")) ? "回复体力" : "失去体力";
-					});
-				},
 				async cost(event, trigger, player) {
-					event.result = await player
+					const next = player
 						.chooseTarget(`###${get.prompt(event.skill)}###令一名没有“迷落”牌的角色失去1点体力，或令一名有“迷落”牌的角色回复1点体力。`, (card, player, target) => {
 							return player.getStorage("olmiluo_clear").includes(target);
 						})
@@ -1115,8 +1104,19 @@ const skills = {
 								return get.recoverEffect(target, player, player);
 							}
 							return get.effect(target, { name: "loseHp" }, player, player);
-						})
-						.forResult();
+						});
+					next.set(
+						"targetprompt2",
+						next.targetprompt2.concat([
+							target => {
+								if (!target.isIn() || !get.event().filterTarget(null, get.player(), target)) {
+									return false;
+								}
+								return target.countCards("h", card => card.hasGaintag("olmiluo")) ? "回复体力" : "失去体力";
+							},
+						])
+					);
+					event.result = await next.forResult();
 				},
 				async content(event, trigger, player) {
 					const target = event.targets[0];
