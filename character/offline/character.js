@@ -1,4 +1,10 @@
 const characters = {
+	eu_Caesar: {
+		sex: "male",
+		group: "western",
+		hp: 4,
+		skills: ["eu_ducai", "eu_zhitong", "eu_jiquan"],
+	},
 	pe_xiahouxuan: {
 		sex: "male",
 		group: "wei",

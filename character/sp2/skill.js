@@ -7107,6 +7107,7 @@ const skills = {
 			event.result = await player
 				.chooseToDiscard(
 					"he",
+					"chooseonly",
 					function (card, player) {
 						return get.color(card, player) == "black";
 					},
@@ -7125,6 +7126,7 @@ const skills = {
 		},
 		popup: false,
 		async content(event, trigger, player) {
+			await player.discard(event.cards);
 			player.addTempSkill("tianze_block");
 			if (get.mode() != "identity" || player.identity != "nei") {
 				player.addExpose(0.2);
@@ -7211,14 +7213,17 @@ const skills = {
 					})()
 				)
 				.set("cards", cards)
+				.set("chooseonly", true)
 				.forResult();
 			event.result = {
 				bool: result.bool,
+				cards: result.cards,
 				cost_data: tricks,
 			};
 		},
 		usable: 1,
 		async content(event, trigger, player) {
+			await player.discard(event.cards);
 			let list = lib.inpile.filter(function (i) {
 				return get.type2(i, false) == "trick";
 			});

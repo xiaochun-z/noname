@@ -11750,7 +11750,7 @@ player.removeVirtualEquip(card);
 				player.classList.remove("unseen");
 				unseen = true;
 			}
-			//加载侧边的历史记录烂关于这次死亡事件的信息
+			//加载侧边的历史记录栏关于这次死亡事件的信息
 			const logvid = game.logv(player, "die", source);
 			event.logvid = logvid;
 			if (unseen) {
@@ -11828,9 +11828,10 @@ player.removeVirtualEquip(card);
 				}
 			}
 			//将体力值修改为0
-			if (!game.countPlayer()) {
+			/*if (event.reserveOut && !game.countPlayer()) {
 				game.over();
-			} else if (player.hp != 0) {
+			} else */
+			if (player.hp != 0) {
 				await player.changeHp(0 - player.hp, false).set("forceDie", true);
 			}
 			//休整时解除连环和翻面状态
