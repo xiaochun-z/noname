@@ -1696,7 +1696,7 @@ const skills = {
 		derivation: ["olyintian", "olbiri"],
 	},
 	olyintian: {
-		audio: 2,
+		audio: 1,
 		trigger: { global: "recoverEnd" },
 		filter(event, player) {
 			if (player.hasSkill("olyintian_effect")) {
@@ -1729,7 +1729,7 @@ const skills = {
 		},
 	},
 	olbiri: {
-		audio: 2,
+		audio: 1,
 		trigger: { global: ["gainAfter", "loseAsyncAfter"] },
 		filter(event, player) {
 			return (
@@ -6517,32 +6517,31 @@ const skills = {
 							}
 						}
 					},
-					ai: {
-						result: {
-							target(player, target) {
-								let max = 0;
-								if (get.attitude(player, target) > 0 && (target == player || target.hasDisabledSlot())) {
-									max++;
-								}
-								if (get.recoverEffect(target, player, player) > 0) {
-									max++;
-								}
-								if (
-									target.countCards("h") > 0 &&
-									target
-										.getCards("h", card => {
-											return lib.filter.cardDiscardable(card, target);
-										})
-										.reduce((sum, card) => {
-											return sum + get.value(card, target);
-										}, 0) <=
-										get.effect(target, { name: "draw" }, player, player) * 4
-								) {
-									max++;
-								}
-								return max;
-							},
-						},
+					ai1: () => 1,
+					ai2(target) {
+						game.log(target);
+						let max = 0,
+							player = get.player();
+						if (get.attitude(player, target) > 0 && (target == player || target.hasDisabledSlot())) {
+							max++;
+						}
+						if (get.recoverEffect(target, player, player) > 0) {
+							max++;
+						}
+						if (
+							target.countCards("h") > 0 &&
+							target
+								.getCards("h", card => {
+									return lib.filter.cardDiscardable(card, target);
+								})
+								.reduce((sum, card) => {
+									return sum + get.value(card, target);
+								}, 0) <=
+								get.effect(target, { name: "draw" }, player, player) * 4
+						) {
+							max++;
+						}
+						return max;
 					},
 				};
 			},
@@ -36222,6 +36221,7 @@ const skills = {
 		check(event, player) {
 			return get.attitude(player, event.target) >= 0;
 		},
+		preHidden: true,
 		logTarget: "target",
 		content() {
 			"step 0";
@@ -36585,6 +36585,7 @@ const skills = {
 			return false;
 		},
 		frequent: true,
+		preHidden: true,
 		content() {
 			"step 0";
 			if (trigger.delay == false) {
