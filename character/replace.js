@@ -415,5 +415,5 @@ window.noname_character_replace = {
 	sunjun: ["mb_sunjun", "jsrg_sunjun"],
 	zhangqiying: ["zhangqiying", "x_dc_zhangqiying", "y_dc_zhangqiying"],
 	yj_zhanghuan: ["yj_zhanghuan", "jsrg_zhanghuan"],
-	kaisa: ["kaisa", "eu_Caesar"],
+	kaisa: ["kaisa", "eu_kaisa"],
 };

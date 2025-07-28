@@ -47,7 +47,7 @@ const skills = {
 				inherit: "baiban",
 				intro: {
 					content(storage, player, skill) {
-						let str = "<li>不能使用或打出牌";
+						let str = "<li>不能使用牌";
 						const list = player.getSkills(null, false, false).filter(function (i) {
 							return lib.skill.baiban.skillBlocker(i, player);
 						});
@@ -62,9 +62,6 @@ const skills = {
 						return false;
 					},
 					cardSavable(card) {
-						return false;
-					},
-					cardRespondable(card) {
 						return false;
 					},
 				},

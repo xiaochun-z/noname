@@ -1,6 +1,6 @@
 const translates = {
-	eu_Caesar: "欧陆凯撒",
-	eu_Caesar_prefix: "欧陆",
+	eu_kaisa: "欧陆凯撒",
+	eu_kaisa_prefix: "欧陆",
 	eu_ducai: "独裁",
 	eu_ducai_info: "持恒技，你的回合内使用牌无距离次数限制，其他角色不能使用牌且所有技能失效。",
 	eu_zhitong: "治统",

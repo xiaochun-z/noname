@@ -25,7 +25,7 @@ const characterSort = {
 	offline_shichangshi: ["ps_zhangrang", "ps_zhaozhong", "ps_sunzhang", "ps_bilan", "ps_xiayun", "ps_hankui", "ps_lisong", "ps_duangui", "ps_guosheng", "ps_gaowang"],
 	offline_qingshi: ["chenshou", "hs_liuxuan", "hs_caohuan", "hs_liuxie", "hs_sunhao"],
 	offline_fengyun: ["ps_caocao", "ps_liubei", "ps_sunquan"],
-	offline_Europe: ["eu_Caesar"],
+	offline_Europe: ["eu_kaisa"],
 	//offline_others: [],
 };
 
