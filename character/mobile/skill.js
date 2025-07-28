@@ -614,7 +614,7 @@ const skills = {
 				}
 				return count;
 			};
-			return count(player) >= 0 && !game.hasPlayer(current => count(current) > count(player));
+			return count(player) >= 1 && !game.hasPlayer(current => count(current) > count(player));
 		},
 		marktext: "业",
 		intro: {
@@ -630,31 +630,23 @@ const skills = {
 					recover: "red",
 				};
 			list = list.map(i => map[i]);
-			if (list.length > 1) {
-				list.push("cancel2");
-				const result = await player
-					.chooseControl(list)
-					.set("prompt", get.prompt(event.skill))
-					.set("prompt2", "将牌堆顶一种颜色的首张牌置于武将牌上，称为“业”")
-					.set("ai", () => [0, 1].randomGet())
-					.forResult();
-				event.result = {
-					bool: result.control != "cancel2",
-					cost_data: result.control,
-				};
-			} else {
-				event.result = await player
-					.chooseBool(get.prompt(event.skill))
-					.set("prompt2", `将牌堆顶首张${get.translation(list[0])}牌置于武将牌上，称为“业”`)
-					.forResult();
-				event.result.cost_data = list[0];
-			}
+			event.result = await player
+				.chooseBool(get.prompt(event.skill))
+				.set("prompt2", `将牌堆顶首张${list.map(i => get.translation(i)).join("和")}牌置于武将牌上，称为“业”`)
+				.forResult();
+			event.result.cost_data = list;
 		},
 		async content(event, trigger, player) {
-			const color = event.cost_data,
-				card = get.cardPile2(card => get.color(card) == color);
-			if (card) {
-				const next = player.addToExpansion(card, "gain2");
+			const colors = event.cost_data,
+				cards = [];
+			for (let color of colors) {
+				const card = get.cardPile2(card => get.color(card) == color);
+				if (card) {
+					cards.push(card);
+				}
+			}
+			if (cards?.length) {
+				const next = player.addToExpansion(cards, "gain2");
 				next.gaintag.add(event.name);
 				await next;
 			}
@@ -711,7 +703,7 @@ const skills = {
 				dialog.add([
 					[
 						["red", "获得所有黑色“业”，然后对一名角色造成等量伤害"],
-						["black", "获得所有红色“业”，然后令一名角色增加1点体力上限并恢复等量体力"],
+						["black", "获得所有红色“业”，然后令一名角色增加等量点体力上限并恢复等量体力"],
 						["all", "背水！同时执行两项"],
 					],
 					"textbutton",
@@ -762,6 +754,7 @@ const skills = {
 							return;
 						}
 						await player.gain(cards, "gain2");
+						player.changeSkin({ characterName: "mb_zerong"}, `mb_zerong_${choice}`);
 						const count = color => cards?.filter(card => get.color(card) == color)?.length,
 							black = count("black"),
 							red = count("red");
@@ -781,7 +774,7 @@ const skills = {
 						}
 						if (choice != "red" && red > 0) {
 							const result = await player
-								.chooseTarget(`净土：令一名角色增加1点体力上限并恢复${red}点体力`)
+								.chooseTarget(`净土：令一名角色增加${red}点体力上限并恢复${red}点体力`)
 								.set("ai", target => {
 									const player = get.player();
 									return get.recoverEffect(target, player, player);
@@ -790,7 +783,7 @@ const skills = {
 							if (result.bool) {
 								const target = result.targets[0];
 								player.line(target, "green");
-								await target.gainMaxHp();
+								await target.gainMaxHp(red);
 								await target.recover(player, red);
 							}
 						}
@@ -877,7 +870,7 @@ const skills = {
 			const cards = game.createFakeCards(player.getExpansions("mbfutu"));
 			player.directgains(cards, null, "mbjiebian");
 			const result = await player.chooseToCompare(target).set("mbjiebian", true).set("position", "hs").forResult();
-			if (result.tie || !result.winner) {
+			if (result.tie || result.winner != player) {
 				return;
 			}
 			const winner = result.winner,
@@ -889,7 +882,7 @@ const skills = {
 						[
 							[
 								["damage", `对${get.translation(loser)}造成1点伤害`],
-								["recover", `获得${get.translation(loser)}两张牌，然后令其恢复1点体力并摸一张牌`],
+								["recover", `令${get.translation(loser)}恢复1点体力并摸一张牌，然后获得其两张牌`],
 							],
 							"textbutton",
 						],
@@ -907,9 +900,9 @@ const skills = {
 				if (result2?.links[0] == "damage") {
 					await loser.damage(winner);
 				} else {
-					await winner.gainPlayerCard(loser, "he", 2, true);
 					await loser.recover(winner);
 					await loser.draw();
+					await winner.gainPlayerCard(loser, "he", 2, true);
 				}
 			}
 		},
@@ -979,7 +972,7 @@ const skills = {
 			return (
 				list?.includes(get.color(card, player)) &&
 				player.hasHistory("lose", evtx => {
-					const evt2 = evt.relatedEvent || evt.getParent();
+					const evt2 = evtx.relatedEvent || evtx.getParent();
 					return evtx.hs?.length && evt2 == evt;
 				})
 			);
@@ -1476,6 +1469,9 @@ const skills = {
 					const player = get.player();
 					let num = Math.floor(player.countCards("h") / 2);
 					if (ui.selected.cards.length < num) {
+						if (get.tag(card, "damage")) {
+							return 0.1;
+						}
 						return 7 - get.value(card);
 					}
 					return 0;
@@ -1557,6 +1553,14 @@ const skills = {
 				onremove(player, skill) {
 					player.clearMark(skill, false);
 					player.removeTip(skill);
+				},
+				ai: {
+					presha: true,
+					skillTagFilter(player, tag, arg) {
+						if (!player.hasMark("potzhuangshi_limit")) {
+							return false;
+						}
+					},
 				},
 			},
 			directHit: {
