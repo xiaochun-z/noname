@@ -4,6 +4,7 @@ const characters = {
 		group: "western",
 		hp: 4,
 		skills: ["eu_ducai", "eu_zhitong", "eu_jiquan"],
+		isZhugong: true,
 	},
 	pe_xiahouxuan: {
 		sex: "male",

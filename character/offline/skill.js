@@ -118,7 +118,7 @@ const skills = {
 		zhuSkill: true,
 		forced: true,
 		filter(event, player) {
-			return event.player?.group === "western" && event.player?.isIn() && player.hasZhuSkill("wu_jiquan");
+			return event.player?.group === "western" && event.player?.isIn();
 		},
 		async content(event, trigger, player) {
 			await player.recover();
