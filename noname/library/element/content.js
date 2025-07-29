@@ -1929,6 +1929,8 @@ player.removeVirtualEquip(card);
 				const list = event.list;
 				const filterMove = event.filterMove;
 				const filterOk = event.filterOk;
+				// 如果只有一行那么多选一般来说就没什么意义喵
+				const canMultiselect = list.length > 1 || !lib.config.choose_all_button || event.noChooseAll;
 
 				//_status.imchoosing = true;
 				event.settleed = false;
@@ -2130,6 +2132,9 @@ player.removeVirtualEquip(card);
 						ui.selected.buttons.remove(button);
 						updateSelectAllButtons();
 					} else {
+						if (!canMultiselect) {
+							clearSelected(); // 对于不能多选就要清空之前的选择喵
+						}
 						selectButtons(button); // 这里要使用selectButtons排除其他容器的按钮喵
 					}
 
@@ -2312,8 +2317,8 @@ player.removeVirtualEquip(card);
 					const clientY = e.clientY / game.documentZoom;
 					let aniamtionPromise = null;
 
-					// 如果是拖动移动，我们走原来的代码喵
-					if (isDragging) {
+					// 如果是拖动移动或者非多选的情况下，我们走原来的代码喵
+					if (isDragging || (!canMultiselect && ui.selected.buttons.length === 1)) {
 						const curCard = ui.selected.buttons[0];
 						// 鼠标当前处于哪个元素上
 						const target = document.elementFromPoint(clientX * game.documentZoom, clientY * game.documentZoom);
@@ -2421,14 +2426,11 @@ player.removeVirtualEquip(card);
 					currentElement = null;
 				};
 
-				// 检查当前配置和当前事件是否允许全选喵
-				const noChooseAll = !lib.config.choose_all_button || event.noChooseAll;
-
 				// 根据数据创建区域
 				for (var i = 0; i < list.length; i++) {
 					var tex = event.dialog.add('<div class="text center">' + list[i][0] + "</div>");
 					tex.classList.add("choosetomove");
-					if (!noChooseAll) {
+					if (canMultiselect) {
 						const selectAll = ui.create.div(".select-all.popup.pointerdiv", event.dialog.content);
 						selectAll.innerHTML = "全选";
 						selectAll.listen(e => {
