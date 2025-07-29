@@ -90,7 +90,12 @@ const skills = {
 			const bool = player.storage?.eu_zhitong;
 			return (bool && event.targets.some(current => current !== player)) || (!bool && event.targets.includes(player));
 		},
-		frequent: true,
+		check(event, player) {
+			if (!player.storage?.eu_zhitong) {
+				return true;
+			}
+			return event.targets.filter(target => target != player).reduce((eff, target) => eff + get.damageEffect(target, player, player), 0) > 0;
+		},
 		async content(event, trigger, player) {
 			player.changeZhuanhuanji(event.name);
 			if (player.storage?.eu_zhitong) {

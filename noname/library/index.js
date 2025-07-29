@@ -367,9 +367,9 @@ export class Library {
 
 	objectURL = new Map();
 	hookmap = {};
-	//共联时机的map
+	//共联时机的map（目前有很大的兼容问题，请不要使用）
 	relatedTrigger = {
-		loseAsync: ["lose", "gain", "addToExpansion", "addJudge", "eqiup"],
+		//loseAsync: ["lose", "gain", "addToExpansion", "addJudge", "eqiup"],
 	};
 	/**
 	 * @type { { character?: SMap<importCharacterConfig>, card?: SMap<importCardConfig>, mode?: SMap<importModeConfig>, player?: SMap<importPlayerConfig>, extension?: SMap<importExtensionConfig>, play?: SMap<importPlayConfig> } }
