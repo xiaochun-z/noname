@@ -1998,6 +1998,63 @@ player.removeVirtualEquip(card);
 					}
 				};
 
+				/**
+				 * 计算可以批量移动的按钮
+				 * 
+				 * @param {Button[]} buttonList 
+				 * @param {HTMLDivElement} buttonsDiv 
+				 * @param {"first"|"last"} position
+				 */
+				var filterBatchMove = function (buttonList, buttonsDiv, position) {
+					const parent = buttonList[0]?.parentElement;
+
+					if (!parent) {
+						return [];
+					}
+
+					const original = Array.from(parent.children);
+					const filtered = [];
+					const movedButtons = new Set();
+					const eventMoved = Object.assign({}, event.moved);
+					const addChildren = position === "first" ? b => buttonsDiv.insertBefore(b, buttonsDiv.firstChild) : b => buttonsDiv.appendChild(b);
+					const addMovedList = position === "first" ? l => event.moved[buttonsDiv._link].unshift(l) : l => event.moved[buttonsDiv._link].push(l);
+
+					for (const button of buttonList) {
+						if (button.parentElement !== parent) {
+							continue;
+						}
+
+						if (!filterMove(button, buttonsDiv._link, event.moved)) {
+							continue;
+						}
+
+						filtered.push(button);
+						movedButtons.add(button);
+						addChildren(button);
+						addMovedList(button.link);
+					}
+
+					let previous = null;
+
+					for (const button of original) {
+						if (!movedButtons.has(button)) {
+							previous = button;
+							continue;
+						}
+
+						if (!previous) {
+							parent.insertBefore(button, parent.firstChild);
+						} else {
+							parent.insertBefore(button, previous.nextSibling);
+						}
+
+						previous = button;
+					}
+
+					Object.assign(event.moved, eventMoved);
+					return filtered;
+				};
+
 				var updateSelectAllButtons = function () {
 					const buttons = Array.from(event.dialog.querySelectorAll(".select-all"));
 
@@ -2330,9 +2387,10 @@ player.removeVirtualEquip(card);
 							position = "last";
 						}
 
+						const selected = filterBatchMove(ui.selected.buttons, buttons, position !== "last" ? "first" : "last");
 						const subPromises = [];
 
-						for (const element of ui.selected.buttons) {
+						for (const element of selected) {
 							subPromises.push(game.$elementGoto(element, buttons, position));
 						}
 
