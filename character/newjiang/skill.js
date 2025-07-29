@@ -36,61 +36,47 @@ const skills = {
 			});
 		},
 		async content(event, trigger, player) {
-			const history = game.getGlobalHistory("cardMove", evt => {
+			const cards = [],
+				cards2 = [];
+			game.checkGlobalHistory("cardMove", evt => {
 				if (evt.type != "discard" || evt.getlx === false) {
 					return false;
 				}
-				return evt.getd().someInD("d");
-			});
-			const map = {};
-			for (const evt of history) {
 				game.filterPlayer2().forEach(target => {
-					const cards = evt.getd(target, "cards2").filterInD("d");
-					if (cards.length) {
-						map[target.playerid] ??= [];
-						map[target.playerid].addArray(cards);
+					const cardsx = evt.getd(target, "cards2").filterInD("d");
+					if (cardsx.length) {
+						cards.addArray(cardsx);
+						if (target != player) {
+							cards2.addArray(cardsx);
+						}
 					}
 				});
-			}
-			const cards = Object.values(map).flat().unique();
-			const goon = () => cards.some(card => player.hasUseTarget(card, true, false));
+			});
+			const goon = () => cards.some(card => player.hasUseTarget(card, true, false) && get.position(card) == "d");
 			while (goon()) {
 				const videoId = lib.status.videoId++;
-				const func = (id, map, cards) => {
+				const func = (id, cards, cards2) => {
 					const dialog = ui.create.dialog("戍国：请选择要使用的牌");
 					dialog.add(cards);
-					const getName = function (target) {
-						if (target._tempTranslate) {
-							return target._tempTranslate;
+					for (const button of dialog.buttons) {
+						if (!cards2.includes(button.link)) {
+							continue;
 						}
-						let name = target.name;
-						if (lib.translate[name + "_ab"]) {
-							return lib.translate[name + "_ab"];
+						if (!button.node.gaintag.innerHTML) {
+							button.node.gaintag.innerHTML = "";
 						}
-						return get.translation(name) + `[${target.getSeatNum()}]`;
-					};
-					for (const id in map) {
-						const target = (_status.connectMode ? lib.playerOL : game.playerMap)[id];
-						for (const card of map[id]) {
-							const button = dialog.buttons.find(i => i.link == card);
-							if (button) {
-								if (!button.node.gaintag.innerHTML) {
-									button.node.gaintag.innerHTML = "";
-								}
-								button.node.gaintag.innerHTML += `${getName(target)}<br>`;
-							}
-						}
+						button.node.gaintag.innerHTML += `其他角色`;
 					}
 					dialog.videoId = id;
 					return dialog;
 				};
 				if (player.isOnline2()) {
-					player.send(func, videoId, map, cards);
+					player.send(func, videoId, cards, cards2);
 				} else {
-					func(videoId, map, cards);
+					func(videoId, cards, cards2);
 				}
 				const result = await player
-					.chooseButton(true)
+					.chooseButton()
 					.set("dialog", get.idDialog(videoId))
 					.set("filterButton", button => get.player().hasUseTarget(button.link, true, false))
 					.set("ai", button => {
@@ -98,13 +84,15 @@ const skills = {
 					})
 					.forResult();
 				game.broadcastAll("closeDialog", videoId);
-				if (result?.links) {
+				if (result?.bool && result.links?.length) {
 					const card = result.links[0];
 					cards.remove(card);
 					await player.chooseUseTarget(card, true);
-					if (Object.keys(map).some(id => player.playerid != id && map[id].includes(card))) {
+					if (cards2.includes(card)) {
 						break;
 					}
+				} else {
+					break;
 				}
 			}
 			if (!player.isMaxHandcard(true)) {
@@ -669,20 +657,20 @@ const skills = {
 			if (get.type(card) != "basic" && (!info || info.type != "trick" || info.notarget || (info.selectTarget && info.selectTarget != 1))) {
 				return false;
 			}
-			if (targets && !info.multitarget) {
-				return game.hasPlayer(current => !targets.includes(current) && lib.filter.targetEnabled2(card, player, current) && get.distance(player, current) == get.distance(current, player));
+			if (targets && targets.length == 1 && !info.multitarget) {
+				return game.hasPlayer(current => !targets.includes(current) && lib.filter.targetEnabled2(card, player, current) && get.distance(player, current) == get.distance(player, targets[0]));
 			}
 			return false;
 		},
 		async cost(event, trigger, player) {
 			const { card, targets } = trigger;
-			const prompt2 = "为" + get.translation(card) + "增加任意个你与其距离相等的目标";
+			const prompt2 = `为${get.translation(card)}增加任意个你与其距离为${get.distance(player, targets[0])}的目标`;
 			event.result = await player
 				.chooseTarget(
-					get.prompt(event.name.slice(0, -5)),
+					get.prompt(event.skill),
 					(card, player, target) => {
 						const { card: cardx, targets } = get.event();
-						return !targets.includes(target) && lib.filter.targetEnabled2(cardx, get.player(), target) && get.distance(player, target) == get.distance(target, player);
+						return !targets.includes(target) && lib.filter.targetEnabled2(cardx, get.player(), target) && get.distance(player, target) == get.distance(player, targets[0]);
 					},
 					[1, Infinity]
 				)
@@ -2130,13 +2118,11 @@ const skills = {
 					videoId,
 					player
 				);
-				await game.delay(4);
-				game.broadcastAll("closeDialog", videoId);
 				let cards = result.reduce((list, evt) => {
 					list.addArray(evt.cards);
 					return list;
 				}, []);
-				await player.showCards(cards).setContent(() => {});
+				await player.showCards(cards).set("dialog", videoId).set("delay_time", 4).set("showers", targets);
 				const suits = cards.reduce((list, card) => list.add(get.suit(card)), []);
 				switch (suits.length) {
 					case 1:

@@ -1041,7 +1041,7 @@ const skills = {
 			damage: {
 				sub: true,
 				trigger: { global: "damageBegin1" },
-				audio: 2,
+				audio: "xinbenxi",
 				forced: true,
 				filter(event, player) {
 					return event.card && player.storage.xinbenxi_damage.includes(event.card);
@@ -9909,6 +9909,7 @@ const skills = {
 		audio: 2,
 		audioname2: {
 			guansuo: "zhiman_guansuo",
+			gz_guansuo: "zhiman_guansuo",
 		},
 		trigger: { source: "damageBegin2" },
 		check(event, player) {

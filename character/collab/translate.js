@@ -274,7 +274,7 @@ const translates = {
 	wild_liru: "狂李儒",
 	wild_liru_prefix: "狂",
 	olhuaquan: "花拳",
-	olhuaquan_info: "锁定技，你使用黑色牌指定其他角色后，为此牌秘密选择一个效果：1.重拳，造成的伤害+1；2.轻拳，使用后你摸一张牌。然后其他目标角色依次猜测你选择的效果。",
+	olhuaquan_info: "锁定技，你使用牌指定其他角色后，为此牌秘密选择一个效果：1.重拳，造成的伤害+1；2.轻拳，使用后你摸一张牌。然后其他目标角色依次猜测你选择的效果。",
 	olhuaquan_heavy: "重拳",
 	olhuaquan_heavy_bg: "重拳",
 	olhuaquan_heavy_info: "造成的伤害+1",

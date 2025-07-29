@@ -130,6 +130,7 @@ game.import("card", function () {
 				fullskin: true,
 				type: "trick",
 				enable: true,
+				manualConfirm: true,
 				filterTarget(card, player, target) {
 					return target == player && player.maxHp > 1;
 				},
@@ -232,6 +233,19 @@ game.import("card", function () {
 				reverseOrder: true,
 				global: ["jiaoyou_skill"],
 				async content(event, trigger, player) {
+					if (!_status.postReconnect.jiaoyou) {
+						_status.postReconnect.jiaoyou = [
+							function (list) {
+								for (const tag of list) {
+									if (!lib.skill[tag]) {
+										lib.skill[tag] = {};
+										lib.translate[tag] = "浇油+" + tag.slice(7);
+									}
+								}
+							},
+							[],
+						];
+					}
 					const { target } = event;
 					const cards = target.getCards("h", card => get.tag(card, "damage") > 0.5),
 						name = event.name;
@@ -243,6 +257,7 @@ game.import("card", function () {
 								target.removeGaintag(tag, [card]);
 							}
 							tag = tag ? name + parseFloat(parseInt(tag.slice(name.length)) + 1) : "jiaoyou1";
+							_status.postReconnect.jiaoyou[1].add(tag);
 							if (!lib.skill[tag]) {
 								game.broadcastAll(
 									(tag, str) => {
@@ -307,10 +322,12 @@ game.import("card", function () {
 									event.getParent().orderingCards.remove(event.card);
 								}
 							});
+							judgeEvent.set("clearArena", false);
 							const resultx = await judgeEvent.forResult();
 							if (resultx?.bool && resultx?.card) {
 								cards.push(resultx.card);
 							} else {
+								game.broadcastAll(ui.clear);
 								break;
 							}
 						}
@@ -435,7 +452,7 @@ game.import("card", function () {
 							i.popup("不抢", "wood");
 						}
 					}
-					await game.asyncDelay();
+					await game.delayx();
 					if (!fathers.length) {
 						return;
 					}
@@ -443,15 +460,11 @@ game.import("card", function () {
 					if (first && first.isIn()) {
 						game.log(first, "第一个抢到了“义父”标记");
 						const son = targets.find(targetx => targetx != first);
-						await game.asyncDelay();
+						await game.delayx();
 						game.log(first, "成为了", son, "的义父");
 						game.log(son, "成为了", first, "的义子");
-						first.chat("儿啊！");
-						first.throwEmotion(son, ["flower", "wine"].randomGet(), false);
-						first.addSkill("yifu_skill");
+						first.addTempSkill("yifu_skill", "neverEnd");
 						first.markAuto("yifu_skill", son);
-						son.chat("我吃柠檬");
-						son.throwEmotion(first, ["egg", "shoe"].randomGet(), false);
 						son.markAuto("yifu_skill_son", first);
 					}
 				},
@@ -1030,14 +1043,10 @@ game.import("card", function () {
 							}, card);
 						});
 					}
-					let count = 0;
+					let target;
 					while (true) {
-						const target = targets[count];
-						count++;
-						if (count >= targets.length) {
-							count = 0;
-						}
-						if (!target?.isAlive()) {
+						target = target?.getNext() || player;
+						if (!target?.isIn()) {
 							continue;
 						}
 						const { result } = await target
@@ -1103,22 +1112,18 @@ game.import("card", function () {
 						}
 						_status.nisiwohuo.push(event);
 					}, event);
-					let count = 0,
-						num = 0;
+					let count = 0;
 					const goon = function () {
 						if (!_status.nisiwohuo?.includes(event)) {
 							return false;
 						}
 						return true;
 					};
+					let target = player;
 					while (goon() && count < 100) {
-						const target = targets[num];
 						count++;
-						num++;
-						if (num >= targets.length) {
-							num = 0;
-						}
-						if (!target?.isIn()) {
+						target = target.getNext();
+						if (!target?.isIn() || target == player) {
 							continue;
 						}
 						const { result } = await target
@@ -2093,24 +2098,15 @@ game.import("card", function () {
 				mark: true,
 				trigger: { global: "phaseZhunbeiBegin" },
 				filter(event, player) {
-					return player.getStorage("yifu_skill").includes(event.player);
+					return player.getStorage("yifu_skill").includes(event.player) && event.player.countCards("he");
 				},
 				logTarget: "player",
 				async content(event, trigger, player) {
 					const target = trigger.player;
-					if (!target.countCards("he")) {
-						player.chat("你这个不孝子！");
-						player.throwEmotion(target, ["egg", "shoe"].randomGet(), false);
-						return;
-					}
-					const result = await target
+					await target
 						.chooseToGive(true, "he", player)
 						.set("prompt", "义父：选择一张牌孝敬给" + get.translation(player))
 						.forResult();
-					if (!result.bool) {
-						return;
-					}
-					player.chat(`不愧是我的好孩子${target.nickname || get.translation(target)}，真是孝顺啊！`);
 				},
 				subSkill: {
 					son: {

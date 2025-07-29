@@ -375,8 +375,11 @@ const skills = {
 					position: "hes",
 					selectCard: 1,
 					filterTarget(card, player, target) {
-						if (get.info("olgangquan_backup").choice == "sha" && ![player.getPrevious(), player.getNext()].includes(target)) {
-							return false;
+						if (get.info("olgangquan_backup").choice == "sha") {
+							if (![player.getPrevious(), player.getNext()].includes(target)) {
+								return false;
+							}
+							return lib.filter.targetEnabled.apply(this, arguments);
 						}
 						return lib.filter.filterTarget.apply(this, arguments);
 					},
@@ -1102,12 +1105,17 @@ const skills = {
 							}
 							return get.effect(target, { name: "loseHp" }, player, player);
 						});
-					next.targetprompt2.add(target => {
-						if (!target.isIn() || !get.event().filterTarget(null, get.player(), target)) {
-							return false;
-						}
-						return target.countCards("h", card => card.hasGaintag("olmiluo")) ? "回复体力" : "失去体力";
-					});
+					next.set(
+						"targetprompt2",
+						next.targetprompt2.concat([
+							target => {
+								if (!target.isIn() || !get.event().filterTarget(null, get.player(), target)) {
+									return false;
+								}
+								return target.countCards("h", card => card.hasGaintag("olmiluo")) ? "回复体力" : "失去体力";
+							},
+						])
+					);
 					event.result = await next.forResult();
 				},
 				async content(event, trigger, player) {
@@ -1170,6 +1178,7 @@ const skills = {
 			}
 			return false;
 		},
+		ignoreMod: true,
 		position: "h",
 		viewAs(cards, player) {
 			if (cards.length) {
@@ -1203,14 +1212,12 @@ const skills = {
 					player: "showCardsAfter",
 				},
 				filter(event, player) {
-					const hs = player.getCards("h"),
-						cards = event.cards.filter(card => hs.includes(card)),
-						map = lib.skill.oljueyan_draw.getFirstShow(player);
+					const map = lib.skill.oljueyan_draw.getFirstShow(player);
 					return (
-						cards.length &&
+						event.getShown(player, "hs").length &&
 						Object.values(map)
 							.flat()
-							.filter(evt => evt == event).length > 0
+							.some(evt => evt == event)
 					);
 				},
 				getFirstShow(player) {
@@ -1220,20 +1227,21 @@ const skills = {
 						return map;
 					}
 					for (let i = history.length - 1; i >= 0; i--) {
-						const evts = history[i]["everything"].filter(evt => {
-							if (evt.name !== "showCards") {
-								return false;
-							}
-							return evt.player == player;
-						});
-						if (evts.length) {
-							for (let j = evts.length - 1; j >= 0; j--) {
-								evts[j].cards
-									.map(card => get.suit(card))
-									.unique()
-									.forEach(suit => (map[suit] = evts[j]));
-							}
-						}
+						history[i]["everything"]
+							.slice()
+							.reverse()
+							.forEach(evt => {
+								if (evt.name !== "showCards") {
+									return false;
+								}
+								const cards = evt.getShown(player, "hs");
+								if (cards.length) {
+									cards
+										.map(card => get.suit(card))
+										.unique()
+										.forEach(suit => (map[suit] = evt));
+								}
+							});
 						if (history[i].isRound) {
 							break;
 						}

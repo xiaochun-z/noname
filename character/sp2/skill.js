@@ -279,7 +279,7 @@ const skills = {
 		forced: true,
 		logTarget: "player",
 		async content(event, trigger, player) {
-			await trigger.player.randomDiscard();
+			await trigger.player.randomDiscard("h");
 			if (
 				trigger.player.getHp() < player.getHp() &&
 				player.getRoundHistory("sourceDamage", evt => {
@@ -3460,7 +3460,7 @@ const skills = {
 				);
 			"step 3";
 			if (result.bool) {
-				target.damage(result.cards.length);
+				target.damage(result.cards.length, "nocard");
 			} else {
 				var cards = target.getCards("h", { suit: get.suit(card) });
 				if (cards.length) {
