@@ -2421,8 +2421,8 @@ player.removeVirtualEquip(card);
 					currentElement = null;
 				};
 
-				// 检查当前事件是否允许全选喵
-				const noChooseAll = event.noChooseAll;
+				// 检查当前配置和当前事件是否允许全选喵
+				const noChooseAll = !lib.config.choose_all_button || event.noChooseAll;
 
 				// 根据数据创建区域
 				for (var i = 0; i < list.length; i++) {
