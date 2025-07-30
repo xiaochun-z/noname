@@ -2,6 +2,27 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//TW甄姬
+	twjiwei: {
+		inherit: "mbjiwei",
+		audio: "mbjiwei",
+		getNum(event, player) {
+			let num = 0;
+			if (game.countPlayer2(current => current.hasHistory("lose")) >= 1) {
+				num++;
+			}
+			if (game.countPlayer2(current => current.hasHistory("damage")) >= 1) {
+				num++;
+			}
+			if (event.name == "phase") {
+				return num * 2;
+			}
+			if (game.hasPlayer2(current => !current.isAlive())) {
+				return 114514;
+			}
+			return 5;
+		},
+	},
 	//TW朱治
 	twanguo: {
 		audio: "sbanguo",

@@ -754,7 +754,7 @@ const skills = {
 							return;
 						}
 						await player.gain(cards, "gain2");
-						player.changeSkin({ characterName: "mb_zerong"}, `mb_zerong_${choice}`);
+						player.changeSkin({ characterName: "mb_zerong" }, `mb_zerong_${choice}`);
 						const count = color => cards?.filter(card => get.color(card) == color)?.length,
 							black = count("black"),
 							red = count("red");
@@ -14839,7 +14839,7 @@ const skills = {
 		locked: false,
 		logAudio: () => 2,
 		content() {
-			lib.skill.spdaming.change(player, 1);
+			lib.skill.spdaming.change(player, 3);
 		},
 		intro: {
 			name: "达命值",
@@ -15001,6 +15001,12 @@ const skills = {
 		mod: {
 			maxHandcardBase(player, num) {
 				return Math.min(Math.max(0, player.countMark("spdaming")), player.hp);
+			},
+			cardUsable(card, player, num) {
+				if (card.name == "sha") {
+					const numx = Math.max(player.countMark("spdaming"), player.hp) - num;
+					return num + numx;
+				}
 			},
 		},
 		ai: {
