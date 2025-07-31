@@ -904,7 +904,7 @@ const skills = {
 			if (result?.targets?.length) {
 				const target = result.targets[0];
 				player.line(target);
-				const targets = game.filterPlayer(current => current != player && current.inRange(target)).sortBySeat();
+				const targets = game.filterPlayer(current => current.inRange(target)).sortBySeat();//current != player && 
 				if (!targets.length) {
 					return;
 				}

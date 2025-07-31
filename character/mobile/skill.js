@@ -10621,7 +10621,7 @@ const skills = {
 					await target.recover(num);
 				}
 			}
-			if (num > 0) {
+			if (delt > 0) {
 				await target.changeHujia(num + (player == target ? 2 : 0), null, true);
 			} else if (player == target) {
 				await target.changeHujia(2, null, true);
