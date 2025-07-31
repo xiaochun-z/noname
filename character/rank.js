@@ -78,6 +78,7 @@ window.noname_character_rank = {
 		"sxrm_caocao",
 	],
 	a: [
+		"mark_shen_machao",
 		"tw_zhenji",
 		"pe_xiahouxuan",
 		"mb_zerong",
@@ -2372,6 +2373,7 @@ window.noname_character_rank = {
 			"renwan",
 		],
 		epic: [
+			"mark_shen_machao",
 			"tw_zhenji",
 			"dc_sb_lunxun",
 			"yj_zhangyan",
