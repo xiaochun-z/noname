@@ -140,9 +140,13 @@ const skills = {
 			    },
 			    trigger: { player: "useCard0" },
 			    filter(event, player) {
-				    if (event.addCount === false) return false;
+				    if (event.addCount === false) {
+    				    return false;
+					}
 				    return player.hasHistory("lose", evt => {
-					    if (evt.getParent() !== event) return false;
+					    if (evt.getParent() !== event) {
+    					    return false;
+						}
 					    return Object.values(evt.gaintag_map).flat().includes("pejixin_effect");
 				    });
 			    },
@@ -153,14 +157,20 @@ const skills = {
 				    trigger.addCount = false;
 				    const stat = player.getStat().card,
 					    name = trigger.card.name;
-				    if (typeof stat[name] == "number") stat[name]--;
+				    if (typeof stat[name] == "number") {
+    				    stat[name]--;
+					}
 			    },
 				mod: {
 					targetInRange(card, player, target) {
-						if (get.number(card) === "unsure" || card.cards?.every(card => card.hasGaintag("pejixin_effect"))) return true;
+						if (get.number(card) === "unsure" || card.cards?.every(card => card.hasGaintag("pejixin_effect"))) {
+    						return true;
+						}
 					},
 				    cardUsable(card, player, num) {
-					    if (get.number(card) === "unsure" || card.cards?.every(card => card.hasGaintag("pejixin_effect"))) return Infinity;
+					    if (get.number(card) === "unsure" || card.cards?.every(card => card.hasGaintag("pejixin_effect"))) {
+    					    return Infinity;
+					    }
 				    },
         			ignoredHandcard(card, player) {
         				if (card.hasGaintag("pejixin_effect")) {
