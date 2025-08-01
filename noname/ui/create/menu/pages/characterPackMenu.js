@@ -162,7 +162,7 @@ export const characterPackMenu = function (connectMenu) {
 				}
 				list.push(i);
 				if (Boolean(boolAI) !== lib.config.forbidai_user.includes(i)) {
-					lib.config.forbidai_user[Boolean(boolAI) ? "add" : "remove"](i);
+					lib.config.forbidai_user[boolAI ? "add" : "remove"](i);
 					game.saveConfig("forbidai_user", lib.config.forbidai_user);
 				}
 				for (var j = 0; j < characterInfo.skills.length; j++) {
