@@ -9222,7 +9222,7 @@ player.removeVirtualEquip(card);
 					event.lose_map.noowner.add(cards_ow.shift());
 				}
 			}
-			player.#useCard?.(event, trigger, player);
+			player.useCardAnimateBefore?.(event, trigger, player);
 			if (event.animate != false && event.throw !== false) {
 				let throw_cards = event.cards;
 				let virtualCard_str = false;
@@ -10414,7 +10414,7 @@ player.removeVirtualEquip(card);
 					event.lose_map.noowner.add(cards_ow.shift());
 				}
 			}
-			player.#respond?.(event, trigger, player);
+			player.respondAnimateBefore?.(event, trigger, player);
 			if (event.animate != false && event.throw !== false) {
 				let throw_cards = cards;
 				let virtualCard_str = false;
