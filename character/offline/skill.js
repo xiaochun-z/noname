@@ -274,10 +274,12 @@ const skills = {
 			}
 		},
 		trigger: {
-			player: "phaseBegin",
+			player: "phaseBeginStart",
 		},
 		persevereSkill: true,
 		forced: true,
+		firstDo: true,
+		priority: Infinity,
 		async content(event, trigger, player) {
 			get.info(event.name).init(player, event.name);
 		},
