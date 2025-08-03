@@ -5842,7 +5842,16 @@ player.removeVirtualEquip(card);
 					return filterCard.call(this, card, player);
 				};
 			})(event);
-			if (!player.getCards(event.position).filter(card => event.filterCard(card, player)).length) {
+			const skills = player.getSkills("invisible").concat(lib.skill.global);
+			game.expandSkills(skills);
+			const hasSkill = skills.some(skill=> {
+				const info = lib.skill[skill];
+				return info?.enable?.includes(event.name) || info?.enable == event.name;
+			})
+			if (_status.noclearcountdown !== "direct") {
+				_status.noclearcountdown = true;
+			}
+			if (!player.getCards(event.position).filter(card => event.filterCard(card, player)).length && !hasSkill) {
 				event.result = {
 					bool: false,
 					cards: [],
@@ -5980,6 +5989,21 @@ player.removeVirtualEquip(card);
 			if (typeof event.promptdiscard?.close == "function") {
 				event.promptdiscard.close();
 			}
+			if (event.result) {
+				/*if (event.result._sendskill) {
+					lib.skill[event.result._sendskill[0]] = event.result._sendskill[1];
+				}*/
+				if (event.result.skill) {
+					const info = get.info(event.result.skill);
+					if (info && info.content && !game.online) {
+						const next = game.createEvent(event.result.skill);
+						next.setContent(info.content);
+						next.set("result", event.result);
+						next.set("player", player);
+						await next;
+					}
+				}
+			}
 		},
 		async (event, trigger, player) => {
 			if (event.result.bool && event.result.cards?.length && !game.online && event.autodelay && !event.isMine()) {
@@ -5991,6 +6015,7 @@ player.removeVirtualEquip(card);
 			}
 		},
 		async (event, trigger, player) => {
+			delete _status.noclearcountdown;
 			if (typeof event.dialog?.close == "function") {
 				event.dialog.close();
 			}
@@ -6001,13 +6026,19 @@ player.removeVirtualEquip(card);
 					player.logSkill.apply(player, event.logSkill);
 				}
 			}
+			/*if (event._sendskill) {
+				event.result._sendskill = event._sendskill;
+			}*/
 			if (!game.online && !event.chooseonly) {
-				event.done = player.discard(event.result.cards);
+				event.done ??= player.discard(event.result.cards);
 				if (typeof event.delay == "boolean") {
 					event.done.delay = event.delay;
 				}
 				event.done.discarder = player;
 				await event.done;
+			}
+			if (!_status.noclearcountdown) {
+				game.stopCountChoose();
 			}
 		},
 	],

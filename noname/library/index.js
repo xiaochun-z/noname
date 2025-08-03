@@ -200,6 +200,23 @@ export class Library {
 	 * @type { Function[] | undefined }
 	 */
 	arenaReady = [
+		//增加ui.window的监听
+		function () {
+			ui.window.addEventListener(lib.config.touchscreen ? "touchstart" : "click", function (event) {
+				const target = event.target.closest("poptip");
+				if (!target) {
+					return;
+				}
+				const id = target.getAttribute("id");
+				const index = parseInt(target.getAttribute("tip-index"));
+				//清除原来的对话框
+				game.closePoptipDialog();
+				if (id && typeof index == "number") {
+					return get.poptipIntro(id, index, event);
+				}
+				return;
+			});
+		},
 		//预处理技能拥有者
 		function () {
 			_status.skillOwner = {};
@@ -368,9 +385,12 @@ export class Library {
 	objectURL = new Map();
 	hookmap = {};
 	//共联时机的map（目前有很大的兼容问题，请不要使用）
-	relatedTrigger = {
+	#relatedTrigger = {
 		//loseAsync: ["lose", "gain", "addToExpansion", "addJudge", "eqiup"],
 	};
+	get relatedTrigger() {
+		return this.#relatedTrigger;
+	}
 	/**
 	 * @type { { character?: SMap<importCharacterConfig>, card?: SMap<importCardConfig>, mode?: SMap<importModeConfig>, player?: SMap<importPlayerConfig>, extension?: SMap<importExtensionConfig>, play?: SMap<importPlayConfig> } }
 	 */
@@ -811,6 +831,28 @@ export class Library {
 		//也可以放函数
 		khquanjiu: ["jiu", (card, player) => get.number(card, player) == 9],
 	};
+
+	/**
+	 * the map of pop tips
+	 *
+	 * 为特殊名词进行解释的map
+	 * 要添加请用game.addPoptip添加
+	 */
+	#poptipMap = new Map([
+		["乘势", "乘势：若达成所有选项，则可以执行后续效果"],
+		["背水", "背水：依次执行所有选项，然后支付代价"],
+	]);
+	get poptipMap() {
+		return this.#poptipMap;
+	}
+	set poptipMap(map) {
+		if (map instanceof Map) {
+			for (const [key, value] of map) {
+				this.#poptipMap.set(key, value);
+			}
+		}
+	}
+
 	characterDialogGroup = {
 		收藏: function (name, capt) {
 			return lib.config.favouriteCharacter.includes(name) ? capt : null;
@@ -14030,6 +14072,55 @@ export class Library {
 				// }
 			},
 			/**
+			 * 用于代替exec进行主机许可的请求喵
+			 *
+			 * @this {import("./element/client.js").Client}
+			 * @param {{ type: "card" | "skill", name: string, key: string, args: [], timeout: number|null }} subject 从`get.info(type == "card" ? { name } : name).sync.key`调用函数
+			 * @param {string|null} id 本次请求id，如果给出了请求id代表服务器应该进行响应
+			 */
+			dataSync(subject, id) {
+				if (lib.node.observing.includes(this)) {
+					return;
+				}
+
+				function parseSubject(subject) {
+					switch (subject.type) {
+						default:
+							return null;
+						case "card":
+							return get.info({ name: subject.name }, false)?.sync?.[subject.key];
+						case "skill":
+							return get.info(subject.name, false)?.sync?.[subject.key];
+					}
+				}
+
+				const parsed = parseSubject(subject);
+
+				if (typeof parsed === "function") {
+					const args = Array.isArray(subject.args) ? subject.args : [];
+					const timeout = Number.isFinite(subject.timeout) && subject.timeout >= 0 ? subject.timeout : 5000;
+					const result = parsed.call(null, lib.playerOL[this.id], ...args, timeout);
+
+					if (!id) {
+						return;
+					}
+
+					// 简单检查一下异步结果喵
+					if (result instanceof Promise) {
+						result.then(result => {
+							this.send("dataReply", { ok: true, id, result });
+						});
+					}
+
+					this.send("dataReply", { ok: true, id, result });
+					return;
+				}
+
+				if (id) {
+					this.send("dataReply", { ok: false, id });
+				}
+			},
+			/**
 			 * @this {import("./element/client.js").Client}
 			 */
 			log() {
@@ -14902,6 +14993,22 @@ export class Library {
 				if (key) {
 					game.onlineKey = key;
 					localStorage.setItem(lib.configprefix + "key", game.onlineKey);
+				}
+			},
+			/**
+			 * 当服务器响应通过dataSync发送的请求时走这里喵
+			 *
+			 * @param {{ ok: boolean, id: string|null, result: any }} data
+			 */
+			dataReply(data) {
+				// 需要提前注册响应回调喵
+				if (data.id && game.requestMap && data.id in game.requestMap) {
+					const callback = game.requestMap[data.id];
+					delete game.requestMap[data.id];
+
+					if (typeof callback === "function") {
+						callback(data.ok, data.result);
+					}
 				}
 			},
 			denied: function (reason) {
@@ -15938,7 +16045,7 @@ export class Library {
 		["brown", [195, 161, 223]],
 		["legend", [233, 131, 255]],
 	]);
-	selectGroup = ["shen", "devil"];//"western", 
+	selectGroup = ["shen", "devil"]; //"western",
 	phaseName = ["phaseZhunbei", "phaseJudge", "phaseDraw", "phaseUse", "phaseDiscard", "phaseJieshu"];
 	quickVoice = ["我从未见过如此厚颜无耻之人！", "这波不亏", "请收下我的膝盖", "你咋不上天呢", "放开我的队友，冲我来", "你随便杀，闪不了算我输", "见证奇迹的时刻到了", "能不能快一点啊，兵贵神速啊", "主公，别开枪，自己人", "小内再不跳，后面还怎么玩儿啊", "你们忍心，就这么让我酱油了？", "我，我惹你们了吗", "姑娘，你真是条汉子", "三十六计，走为上，容我去去便回", "人心散了，队伍不好带啊", "昏君，昏君啊！", "风吹鸡蛋壳，牌去人安乐", "小内啊，您老悠着点儿", "不好意思，刚才卡了", "你可以打得再烂一点吗", "哥们，给力点儿行嘛", "哥哥，交个朋友吧", "妹子，交个朋友吧"];
 	other = {
