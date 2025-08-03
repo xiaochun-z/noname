@@ -9222,47 +9222,7 @@ player.removeVirtualEquip(card);
 					event.lose_map.noowner.add(cards_ow.shift());
 				}
 			}
-			if (event.cards.length) {
-				const ownerCards = event.cards.filter(card => get.owner(card)),
-					directDiscard = event.cards.filter(card => !get.owner(card));
-				if (ownerCards.length) {
-					const ownerx = get.owner(cards.find(card => get.owner(card) !== false));
-					if (
-						cards.some(card => {
-							const owner = get.owner(card);
-							if (owner === false) {
-								return false;
-							}
-							return owner != ownerx;
-						})
-					) {
-						await game.loseAsync({ player: player, cards: ownerCards }).setContent(async (event, trigger, player) => {
-							let cards = event.cards;
-							let cards_noowner = [];
-							while (cards.length) {
-								const owner = get.owner(cards[0]);
-								if (!owner) {
-									cards_noowner.add(cards.shift());
-								} else {
-									const id = owner.playerid;
-									let onLoseCards = cards.filter(card => get.owner(card) == owner);
-									event.cards.removeArray(onLoseCards);
-									await owner.lose(onLoseCards, "visible", ui.ordering).set("relatedEvent", event.getParent()).set("getlx", false).set("type", "use");
-								}
-							}
-							if (cards_noowner.length) {
-								await game.cardsGotoOrdering(cards_noowner).set("relatedEvent", event.getParent());
-							}
-						});
-					} else {
-						await ownerx.lose(ownerCards, "visible", ui.ordering).set("type", "use");
-					}
-				}
-				if (directDiscard.length) {
-					event.lose_map.noowner.addArray(directDiscard);
-					await game.cardsGotoOrdering(directDiscard);
-				}
-			}
+			player.useCardAnimateBefore?.(event, trigger, player);
 			if (event.animate != false && event.throw !== false) {
 				let throw_cards = event.cards;
 				let virtualCard_str = false;
@@ -9355,6 +9315,47 @@ player.removeVirtualEquip(card);
 						}
 						delete event.waitingForTransition;
 					});
+				}
+			}
+			if (event.cards.length) {
+				const ownerCards = event.cards.filter(card => get.owner(card)),
+					directDiscard = event.cards.filter(card => !get.owner(card));
+				if (ownerCards.length) {
+					const ownerx = get.owner(cards.find(card => get.owner(card) !== false));
+					if (
+						cards.some(card => {
+							const owner = get.owner(card);
+							if (owner === false) {
+								return false;
+							}
+							return owner != ownerx;
+						})
+					) {
+						await game.loseAsync({ player: player, cards: ownerCards }).setContent(async (event, trigger, player) => {
+							let cards = event.cards;
+							let cards_noowner = [];
+							while (cards.length) {
+								const owner = get.owner(cards[0]);
+								if (!owner) {
+									cards_noowner.add(cards.shift());
+								} else {
+									const id = owner.playerid;
+									let onLoseCards = cards.filter(card => get.owner(card) == owner);
+									event.cards.removeArray(onLoseCards);
+									await owner.lose(onLoseCards, "visible", ui.ordering).set("relatedEvent", event.getParent()).set("getlx", false).set("type", "use");
+								}
+							}
+							if (cards_noowner.length) {
+								await game.cardsGotoOrdering(cards_noowner).set("relatedEvent", event.getParent());
+							}
+						});
+					} else {
+						await ownerx.lose(ownerCards, "visible", ui.ordering).set("type", "use");
+					}
+				}
+				if (directDiscard.length) {
+					event.lose_map.noowner.addArray(directDiscard);
+					await game.cardsGotoOrdering(directDiscard);
 				}
 			}
 			//player.using=cards;
@@ -10413,47 +10414,7 @@ player.removeVirtualEquip(card);
 					event.lose_map.noowner.add(cards_ow.shift());
 				}
 			}
-			if (cards.length) {
-				const ownerCards = cards.filter(card => get.owner(card)),
-					directDiscard = cards.filter(card => !get.owner(card));
-				if (ownerCards.length) {
-					const ownerx = get.owner(cards.find(card => get.owner(card) !== false));
-					if (
-						cards.some(card => {
-							const owner = get.owner(card);
-							if (owner === false) {
-								return false;
-							}
-							return owner != ownerx;
-						})
-					) {
-						await game.loseAsync({ player: player, cards: ownerCards }).setContent(async (event, trigger, player) => {
-							let cards = event.cards;
-							let cards_noowner = [];
-							while (cards.length) {
-								const owner = get.owner(cards[0]);
-								if (!owner) {
-									cards_noowner.add(cards.shift());
-								} else {
-									const id = owner.playerid;
-									let onLoseCards = cards.filter(card => get.owner(card) == owner);
-									event.cards.removeArray(onLoseCards);
-									await owner.lose(onLoseCards, "visible", ui.ordering).set("relatedEvent", event.getParent()).set("getlx", false).set("type", "use");
-								}
-							}
-							if (cards_noowner.length) {
-								await game.cardsGotoOrdering(cards_noowner).set("relatedEvent", event.getParent());
-							}
-						});
-					} else {
-						await ownerx.lose(ownerCards, "visible", ui.ordering).set("type", "use");
-					}
-				}
-				if (directDiscard.length) {
-					event.lose_map.noowner.addArray(directDiscard);
-					await game.cardsGotoOrdering(directDiscard);
-				}
-			}
+			player.respondAnimateBefore?.(event, trigger, player);
 			if (event.animate != false && event.throw !== false) {
 				let throw_cards = cards;
 				let virtualCard_str = false;
@@ -10552,6 +10513,47 @@ player.removeVirtualEquip(card);
 							}
 						}
 					}, throw_cards);
+				}
+			}
+			if (cards.length) {
+				const ownerCards = cards.filter(card => get.owner(card)),
+					directDiscard = cards.filter(card => !get.owner(card));
+				if (ownerCards.length) {
+					const ownerx = get.owner(cards.find(card => get.owner(card) !== false));
+					if (
+						cards.some(card => {
+							const owner = get.owner(card);
+							if (owner === false) {
+								return false;
+							}
+							return owner != ownerx;
+						})
+					) {
+						await game.loseAsync({ player: player, cards: ownerCards }).setContent(async (event, trigger, player) => {
+							let cards = event.cards;
+							let cards_noowner = [];
+							while (cards.length) {
+								const owner = get.owner(cards[0]);
+								if (!owner) {
+									cards_noowner.add(cards.shift());
+								} else {
+									const id = owner.playerid;
+									let onLoseCards = cards.filter(card => get.owner(card) == owner);
+									event.cards.removeArray(onLoseCards);
+									await owner.lose(onLoseCards, "visible", ui.ordering).set("relatedEvent", event.getParent()).set("getlx", false).set("type", "use");
+								}
+							}
+							if (cards_noowner.length) {
+								await game.cardsGotoOrdering(cards_noowner).set("relatedEvent", event.getParent());
+							}
+						});
+					} else {
+						await ownerx.lose(ownerCards, "visible", ui.ordering).set("type", "use");
+					}
+				}
+				if (directDiscard.length) {
+					event.lose_map.noowner.addArray(directDiscard);
+					await game.cardsGotoOrdering(directDiscard);
 				}
 			}
 			await event.trigger("respond");
