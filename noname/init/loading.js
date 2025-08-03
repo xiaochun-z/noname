@@ -216,27 +216,6 @@ export function loadCharacter(character) {
 							} else if (key === "character") {
 								lib.character[key2] = value2;
 							} else {
-								if (key === "translate" && key2.endsWith("_info")) {
-									const list = value2.split("&");
-									if (list.length > 0) {
-										const newList = list.slice();
-										const originList = list.slice();
-										for (let i = 0; i < list.length; i++) {
-											const str = list[i];
-											const listx = str.split("=");
-											if (listx.length == 2) {
-												if (listx[0] == "poptip") {
-													newList[i] = get.poptipLink(...listx[1].split("|"));
-													originList[i] = listx[1].split("|")[0];
-												}
-											}
-										}
-										value[key2] = newList.join("");
-										const origin = new DOMParser().parseFromString(originList.join(""), "text/html");
-										value[key2 + "_origin"] = origin.body.textContent || "";
-										Object.defineProperty(lib[key], key2 + "_origin", Object.getOwnPropertyDescriptor(character[key], key2 + "_origin"));
-									}
-								}
 								// @ts-expect-error ignore
 								Object.defineProperty(lib[key], key2, Object.getOwnPropertyDescriptor(character[key], key2));
 							}
