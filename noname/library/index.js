@@ -200,7 +200,23 @@ export class Library {
 	 * @type { Function[] | undefined }
 	 */
 	arenaReady = [
-		
+		//增加ui.window的监听
+		function () {
+			ui.window.addEventListener(lib.config.touchscreen ? "touchstart" : "click", function (event) {
+				const target = event.target.closest("poptip");
+				if (!target) {
+					return;
+				}
+				const id = target.getAttribute("id");
+				const index = parseInt(target.getAttribute("tip-index"));
+				//清除原来的对话框
+				game.closePoptipDialog();
+				if (id && typeof index == "number") {
+					return get.poptipIntro(id, index, event);
+				}
+				return;
+			});
+		},
 		//预处理技能拥有者
 		function () {
 			_status.skillOwner = {};
@@ -816,7 +832,26 @@ export class Library {
 		khquanjiu: ["jiu", (card, player) => get.number(card, player) == 9],
 	};
 
-	
+	/**
+	 * the map of pop tips
+	 *
+	 * 为特殊名词进行解释的map
+	 * 要添加请用game.addPoptip添加
+	 */
+	#poptipMap = new Map([
+		["乘势", "乘势：若达成所有选项，则可以执行后续效果"],
+		["背水", "背水：依次执行所有选项，然后支付代价"],
+	]);
+	get poptipMap() {
+		return this.#poptipMap;
+	}
+	set poptipMap(map) {
+		if (map instanceof Map) {
+			for (const [key, value] of map) {
+				this.#poptipMap.set(key, value);
+			}
+		}
+	}
 
 	characterDialogGroup = {
 		收藏: function (name, capt) {

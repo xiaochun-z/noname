@@ -10419,7 +10419,34 @@ export class Game extends GameCompatible {
 		}
 		return other;
 	}
-	
+	/**
+	 * 用于向lib.poptipMap添加名词解释便于调用
+	 *
+	 * @param { String[] | Map } map 需要添加的名词解释对，可以是单独一个一/二维数组，也可以是Map，不管哪种格式都应该遵循先键后值的写法
+	 * @returns { Map } 返回最后添加进lib.poptipMap的map
+	 */
+	addPoptip(map) {
+		if (Array.isArray(map)) {
+			if (!Array.isArray(map[0])) {
+				map = [map];
+			}
+			map = new Map(map);
+		} else if (!(map instanceof Map)) {
+			return new Map();
+		}
+		lib.poptipMap = map;
+		return map;
+	}
+	/**
+	 * 删除当前的poptip对话框
+	 */
+	closePoptipDialog() {
+		if (_status.poptip?.length) {
+			_status.poptip[0].delete();
+			_status.poptip[1].remove();
+			delete _status.poptip;
+		}
+	}
 }
 
 export let game = new Game();
