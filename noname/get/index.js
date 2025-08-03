@@ -5922,7 +5922,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		if (lib.config.touchscreen) {
 			lib.setScroll(uiintro.contentContainer);
 		}
-		
+
 		uiintro.style.maxHeight = "15%";
 		lib.placePoppedDialog(uiintro, event);
 		const layer = ui.create.div(".poplayer", ui.window);
@@ -6998,13 +6998,12 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 * 生成一个特殊名词的超链接格式用于dialog中点击查看解释
 	 * @param {string} name 特殊名词
 	 * @param {string} explain 对应解释，可不填，不填的话需要在lib.poptipMap中添加；若lib.poptipMap不存在命名为name的键，会自动添加
-	 * @param {string} style 字体的样式，可不填，默认为"color:yellow"
+	 * @param {string} style 字体的样式，可不填，默认为"color:unset"
 	 * @returns {string}
 	 */
-	poptipLink(name, explain, style = "color:yellow") {
+	poptipLink(name, explain, style = "color:unset") {
 		let index = -1;
-		const crypto = require("crypto");
-		const id = crypto.randomBytes(4).toString("hex");
+		const id = get.id();
 		const keys = Array.from(lib.poptipMap.keys());
 		if (explain?.length && explain !== "null") {
 			const str = get.poptip(name) || get.poptip(`${name}|${id}`);
