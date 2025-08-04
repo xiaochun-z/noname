@@ -265,11 +265,14 @@ const skills = {
 		intro: {
 			content: "观看牌数-#",
 		},
-		trigger: { player: ["phaseBegin"] }, //"chooseToDiscardBegin"
+		trigger: { player: "phaseBegin" },
 		forced: true,
 		locked: false,
+		silent: true,
 		async content(event, trigger, player) {
 			player.addTempSkill(event.name + "_view");
+			const func = target => target.markSkill("olsbzhitian_view", null, null, true);
+			event.isMine() ? func(player) : player.isOnline2() && player.send(func, player);
 		},
 		getCards(player) {
 			let cards = [];
