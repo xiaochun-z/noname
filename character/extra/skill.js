@@ -4111,7 +4111,7 @@ const skills = {
 							node.node.range.style.width = "100%";
 							node.node.range.style.right = "0%";
 							node.node.range.style.textAlign = "center";
-							node._link = node.link = [,,item];
+							node._link = node.link = [, , item];
 							node._customintro = [node => `五禽戏：${node.link[2]}`, node => lib.skill.wuling.wuqinxiMap[lib.skill.wuling.wuqinxi.indexOf(node.link[2])].slice(2)];
 							return node;
 						},
