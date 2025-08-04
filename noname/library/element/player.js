@@ -11768,6 +11768,9 @@ export class Player extends HTMLDivElement {
 		}
 		return false;
 	}
+	isMine() {
+		return this == game.me && !_status.auto && !this.isMad() && !game.notMe;
+	}
 	isOnline() {
 		if (this.ws && lib.node && !this.ws.closed && this.ws.inited && !this.isAuto) {
 			return true;
