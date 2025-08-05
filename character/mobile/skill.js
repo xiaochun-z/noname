@@ -7118,11 +7118,13 @@ const skills = {
 					return get.event().eff * get.sgn(att) + att / 114514;
 				})
 				.set("eff", num1 >= num2 && num1 > 0 ? 1 : -1);
-			player.line(target);
-			await target.draw(num1);
-			await target.chooseToDiscard("he", true, num2);
-			if (target.countCards("h") === 0) {
-				player.addSkill("mbfunan_rewrite");
+			if (target) {
+				player.line(target);
+				await target.draw(num1);
+				await target.chooseToDiscard("he", true, num2);
+				if (target.countCards("h") === 0) {
+					player.addSkill("mbfunan_rewrite");
+				}
 			}
 		},
 		subSkill: {
