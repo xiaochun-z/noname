@@ -254,7 +254,6 @@ const skills = {
 	//谋诸葛亮
 	olsbzhitian: {
 		audio: 2,
-		intro: { content: "观看牌数-#" },
 		clickableFilter(player) {
 			return _status.currentPhase === player;
 		},
@@ -302,7 +301,7 @@ const skills = {
 		mark: true,
 		marktext: "牌",
 		intro: {
-			mark(dialog, content, player, event, skill) {
+			mark(dialog, count = 0, player, event, skill) {
 				const intronode = ui.create.div(".menubutton.pointerdiv", "点击发动", function () {
 					if (!this.classList.contains("disabled")) {
 						this.classList.add("disabled");
@@ -314,6 +313,7 @@ const skills = {
 					intronode.classList.add("disabled");
 					intronode.style.opacity = 0.5;
 				}
+				dialog.addText(`观看牌数-${count}`);
 				dialog.add(intronode);
 			},
 		},
