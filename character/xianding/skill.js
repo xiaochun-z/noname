@@ -4546,7 +4546,7 @@ const skills = {
 				}, get.translation(event.name) + "：是否对" + get.translation(target) + "使用一张手牌？")
 				.set("filterTarget", function (card, player, target) {
 					const source = get.event().sourcex;
-					if (target !== source && !ui.selected.targets.includes(source)) {
+					if (target !== source) {
 						return false;
 					}
 					return lib.filter.filterTarget.apply(this, arguments);
@@ -27754,7 +27754,7 @@ const skills = {
 					if (!target.hasFriend()) {
 						return 1;
 					}
-					return [1, 0.8 * ds];
+					return [1, 0.5 * ds];
 				},
 			},
 		},

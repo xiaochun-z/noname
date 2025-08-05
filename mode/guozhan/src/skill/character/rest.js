@@ -31,7 +31,7 @@ export default {
 			}
 		},
 		ai: {
-			threaten: 2,
+			threaten: 114514,
 		},
 	},
 	//辛宪英
@@ -9213,7 +9213,7 @@ export default {
 		locked: false,
 		filter(event, player) {
 			return (
-				game.countPlayer() > 4 &&
+				game.countPlayer() >= 4 &&
 				game.hasPlayer(function (current) {
 					return player.sieged(current) && player.canUse("sha", current, false);
 				})
