@@ -10,30 +10,23 @@ const skills = {
 			player: "damageEnd",
 		},
 		filter(event, player, name) {
-			if (name == "damageSource") {
-				return player.getHistory("sourceDamage", evt => evt.num > 0).indexOf(event) == 0 && get.info("peqinyi").getList(player).length;
-			}
-			if (name == "damageEnd") {
-				return player.getHistory("damage", evt => evt.num > 0).indexOf(event) == 0 && get.info("peqinyi").getList(player).length;
-			}
-			return false;
+			const evt = name === "damageSource" ? "sourceDamage" : "damage";
+			return player.getHistory(evt).indexOf(event) == 0 || get.info("peqinyi").getList(player).length > 0;
 		},
-        getList(player) {
-            const list = get.inpileVCardList(info => {
+		getList(player) {
+			const list = get.inpileVCardList(info => {
 				if (!["basic", "trick"].includes(info[0]) || player.getStorage("peqinyi").includes(info[2])) {
 					return false;
 				}
 				const card = new lib.element.VCard({ name: info[2], nature: info[3], isCard: true });
 				return player.hasUseTarget(card) || (get.info(card).notarget && lib.filter.cardEnabled(card, player));
 			});
-            return list;
-        },
+			return list;
+		},
 		async cost(event, trigger, player) {
 			const list = get.info(event.skill).getList(player);
 			if (!list.length) {
-    			event.result = {
-    				bool: false,
-    			};
+				event.result = { bool: false };
 				return;
 			}
 			const links = await player
@@ -51,141 +44,125 @@ const skills = {
 		async content(event, trigger, player) {
 			const [[taofen, lulu, name, nature]] = event.cost_data;
 			const card = new lib.element.VCard({ name: name, nature: nature, isCard: true });
-			if ((!get.info(card).notarget || !lib.filter.cardEnabled(card, player)) && !player.hasUseTarget(card)) {
-    			return;
+			if (player.hasUseTarget(card) || (get.info(card).notarget && lib.filter.cardEnabled(card, player))) {
+				player.markAuto("peqinyi", name);
+				await player.chooseUseTarget(`${get.translation(event.name)}：请选择${get.translation(card)}的目标`, card, true, false);
 			}
-			player.markAuto("peqinyi", name);
-			await player.chooseUseTarget(`请选择${get.translation(card)}的目标`, card, true, false)
 		},
 		marktext: "艺",
-		intro: {
-			content: "已以此法使用过$",
-		},
+		intro: { content: "已以此法使用过$" },
 	},
 	//武鹿可以直接撕了
 	pejixin: {
-        trigger: {
-            player: "useCardAfter",
-        },
-        filter(event, player) {
-            return !get.info("pejixin").getList(player, event).includes(event.card.name);
-        },
-        getList(player, event) {
-            const list = player.getAllHistory("useCard", evt => evt != event && evt.card.name)
-                .map(evt2 => evt2.card.name)
-                .unique()
-                .toUniqued();
-            return list;
-        },
-        frequent: true,
+		trigger: { player: "useCardAfter" },
+		filter(event, player) {
+			const name = event.card.name;
+			return name && player.getAllHistory("useCard", evt => evt.card.name === event.card.name).indexOf(event) === 0;
+		},
+		frequent: true,
 		async content(event, trigger, player) {
-			var skill = "pejixin_count";
-			player.addSkill(skill);
-			player
-				.when({ global: "roundStart" })
-				.step(async (event, trigger, player) => player.removeSkill(skill));
+			const skill = "pejixin_count";
+			player.addTempSkill(skill, "roundStart");
 			player.addMark(skill, 1, false);
-            const num = player.getRoundHistory("useSkill", evt => evt.skill == event.name).length;
-            const result = player.draw(num);
-            result.gaintag.add("pejixin_effect");
-            const cards = await result.forResult();
-            await player.showCards(get.translation(player) + "发动了【技新】", cards);
-            player.addSkill("pejixin_effect");
-        },
-        init(player, skill) {
+			const num = player.countMark(skill);
+			const result = player.draw(num);
+			result.gaintag.add("pejixin_effect");
+			const cards = await result.forResult();
+			await player.showCards(get.translation(player) + "发动了【技新】", cards);
+			player.addSkill("pejixin_effect");
+		},
+		init(player, skill) {
 			player.addSkill("pejixin_mark");
-			const num1 = get.info(skill).getList(player).length,
-    			num2 = player.getRoundHistory("useSkill", evt => evt.skill == skill).length;
+			const num1 = player
+					.getAllHistory("useCard")
+					.map(evt => evt.card.name)
+					.unique(),
+				num2 = player.getRoundHistory("useSkill", evt => evt.skill == skill).length;
 			if (num1 > 0) {
-    			player.setStorage(skill, num1, true);
+				player.setStorage(`${skill}_mark`, num1, true);
 			}
 			if (num2 > 0) {
-    			player.setStorage("pejixin_count", num2, true);
+				player.setStorage(`${skill}_count`, num2, true);
 			}
 		},
 		onremove(player, skill) {
 			delete player.storage[skill];
-			player.removeSkill("pejixin_mark");
+			player.removeSkill(`${skill}_mark`);
+			player.removeSkill(`${skill}_count`);
 		},
-		marktext: "新",
-		intro: {
-			content: "本局游戏已使用牌名：$",
-		},
-	    subSkill: {
-		    mark: {
-			    charlotte: true,
-			    trigger: { player: "useCard1" },
-			    filter(event, player) {
-				    return event.card.name;
-			    },
-			    silent: true,
-			    direct: true,
-			    firstDo: true,
-			    async content(event, trigger, player) {
-				    player.markAuto("pejixin", [trigger.card.name]);
-			    },
-		    },
-		    count: {
-    	        onremove: true,
-    	        mark: true,
-    	        marktext: "技",
-    			intro: {
-        			content: "本轮已发动过$次〖技新〗",
-    			},
-		    },
+		subSkill: {
+			mark: {
+				charlotte: true,
+				onremove: true,
+				trigger: { player: "useCard1" },
+				forced: true,
+				silent: true,
+				async content(event, trigger, player) {
+					player.markAuto(event.name, [trigger.card.name]);
+				},
+				marktext: "新",
+				intro: { content: "本局游戏已使用牌名：$" },
+			},
+			count: {
+				charlotte: true,
+				onremove: true,
+				mark: true,
+				marktext: "技",
+				intro: { content: "本轮已发动过$次〖技新〗" },
+			},
 			effect: {
-			    charlotte: true,
-			    onremove(player, skill) {
-				    player.removeGaintag(skill);
-			    },
-			    trigger: { player: "useCard0" },
-			    filter(event, player) {
-				    if (event.addCount === false) {
-    				    return false;
+				charlotte: true,
+				onremove(player, skill) {
+					player.removeGaintag(skill);
+				},
+				trigger: { player: "useCard0" },
+				filter(event, player) {
+					if (event.addCount === false) {
+						return false;
 					}
-				    return player.hasHistory("lose", evt => {
-					    if (evt.getParent() !== event) {
-    					    return false;
+					return player.hasHistory("lose", evt => {
+						if (evt.getParent() !== event) {
+							return false;
 						}
-					    return Object.values(evt.gaintag_map).flat().includes("pejixin_effect");
-				    });
-			    },
-			    forced: true,
-			    popup: false,
-			    firstDo: true,
-			    async content(event, trigger, player) {
-				    trigger.addCount = false;
-				    const stat = player.getStat().card,
-					    name = trigger.card.name;
-				    if (typeof stat[name] == "number") {
-    				    stat[name]--;
+						return Object.values(evt.gaintag_map).flat().includes("pejixin_effect");
+					});
+				},
+				forced: true,
+				popup: false,
+				firstDo: true,
+				async content(event, trigger, player) {
+					trigger.addCount = false;
+					const stat = player.getStat().card,
+						name = trigger.card.name;
+					if (typeof stat[name] == "number") {
+						stat[name]--;
 					}
-			    },
+				},
 				mod: {
 					targetInRange(card, player, target) {
 						if (get.number(card) === "unsure" || card.cards?.every(card => card.hasGaintag("pejixin_effect"))) {
-    						return true;
+							return true;
 						}
 					},
-				    cardUsable(card, player, num) {
-					    if (get.number(card) === "unsure" || card.cards?.every(card => card.hasGaintag("pejixin_effect"))) {
-    					    return Infinity;
-					    }
-				    },
-        			ignoredHandcard(card, player) {
-        				if (card.hasGaintag("pejixin_effect")) {
-        					return true;
-        				}
-        			},
-        			cardDiscardable(card, player, name) {
-        				if (name == "phaseDiscard" && card.hasGaintag("pejixin_effect")) {
-        					return false;
-        				}
-        			},
-			    },
-		    },
-	    },
-    },
+					cardUsable(card, player, num) {
+						if (get.number(card) === "unsure" || card.cards?.every(card => card.hasGaintag("pejixin_effect"))) {
+							return Infinity;
+						}
+					},
+					ignoredHandcard(card, player) {
+						if (card.hasGaintag("pejixin_effect")) {
+							return true;
+						}
+					},
+					cardDiscardable(card, player, name) {
+						if (name == "phaseDiscard" && card.hasGaintag("pejixin_effect")) {
+							return false;
+						}
+					},
+				},
+			},
+		},
+	},
 	pejiwei: {
 		init() {
 			if (!_status.pejiweiList) {
@@ -194,21 +171,21 @@ const skills = {
 					game.initCharacterList();
 				}
 				for (const name of _status.characterlist) {
-					if (!lib.character[name][3] || lib.character[name][1] != "wei") {
-						continue;
-					}
-					const skills = lib.character[name][3].filter(skill => {
-    					const info = get.info(skill);
-    					return info && info.zhuSkill && (!info.ai || !info.ai.combo);
-					});
-					if (skills.length) {
-    					skills.forEach(skill => _status.pejiweiList.add(skill));
+					let { group, skills, doubleGroup } = get.character(name);
+					if (group === "wei" || doubleGroup.includes("wei")) {
+						skills = skills.filter(skill => {
+							const info = get.info(skill);
+							return info?.zhuSkill && !info.ai?.combo;
+						});
+						if (skills.length) {
+							skills.forEach(skill => _status.pejiweiList.add(skill));
+						}
 					}
 				}
 			}
 		},
 		trigger: {
-    		global: "phaseEnd",
+			global: "phaseEnd",
 		},
 		isFirst(target) {
 			if (game.hasPlayer2(current => current.getSeatNum() > 0, true)) {
@@ -221,37 +198,33 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "thunder",
 		filter(event, player) {
-    		const taofen = game.findPlayer2(current => get.info("pejiwei").isFirst(current), true);
-    		if (!taofen) {
-        		return false;
-    		}
-			return player.getRoundHistory("useSkill", evt => evt.skill == "pejixin").length >= taofen.getHp(true);
+			const taofen = game.findPlayer2(current => get.info("pejiwei").isFirst(current), true);
+			return taofen && player.countMark("pejixin_count") >= taofen.getHp();
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			await player.gainMaxHp();
 			await player.recoverTo(player.maxHp);
 			if (!_status.pejiweiList) {
-    			get.info(event.name).init();
+				get.info(event.name).init();
 			}
-			await game.asyncDelayx();
+			await game.delayx();
 			const list = _status.pejiweiList.slice().filter(skill => !player.hasSkill(skill, null, false, false));
 			if (!list.length) {
 				return;
 			}
 			const num = Math.min(5, list.length);
-			const links = await player.chooseButton([`继魏：你可任选${num}个魏势力主公技获得`, [list, "skill"]], num)
-    			.set("ai", button => get.skillRank(button.link[0], "inout"))
-    			.forResultLinks();
+			const links = await player
+				.chooseButton([`继魏：是否选择并获得${num}个魏势力主公技？`, [list, "skill"]], num)
+				.set("ai", button => get.skillRank(button.link[0], "inout"))
+				.forResultLinks();
 			if (links) {
-    			await game.asyncDelayx();
-			    player.chat(`${get.cnNumber(num, true)}灵威力，变身！`);
-			    player.addSkills(links);
+				await game.delayx();
+				player.chat(`${get.cnNumber(num, true)}灵威力，变身！`);
+				player.addSkills(links);
 			}
 		},
-		ai: {
-			combo: "pejixin",
-		},
+		ai: { combo: "pejixin" },
 	},
 	//欧陆凯撒
 	eu_ducai: {
