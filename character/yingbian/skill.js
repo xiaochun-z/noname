@@ -2183,6 +2183,24 @@ const skills = {
 			}
 			return [];
 		},
+		mark: true,
+		marktext: "牌",
+		intro: {
+			mark(dialog, content, player, event, skill) {
+				const intronode = ui.create.div(".menubutton.pointerdiv", "点击发动", function () {
+					if (!this.classList.contains("disabled")) {
+						this.classList.add("disabled");
+						this.style.opacity = 0.5;
+						lib.skill[skill].clickable(player);
+					}
+				});
+				if (!_status.gameStarted || !player.isUnderControl(true) || !lib.skill[skill].clickableFilter(player)) {
+					intronode.classList.add("disabled");
+					intronode.style.opacity = 0.5;
+				}
+				dialog.add(intronode);
+			},
+		},
 	},
 	xiongzhi: {
 		audio: 2,
@@ -3386,11 +3404,13 @@ const skills = {
 			return player != event.player && event.num < event.player.hp;
 		},
 		check(event, player) {
-			if (event.player.hasSkillTag("nodamage", null, {
-				source: player,
-				card: event.card,
-				natures: get.natureList(event),
-			})) {
+			if (
+				event.player.hasSkillTag("nodamage", null, {
+					source: player,
+					card: event.card,
+					natures: get.natureList(event),
+				})
+			) {
 				return false;
 			}
 			let tj = player.countCards("hs", function (card) {

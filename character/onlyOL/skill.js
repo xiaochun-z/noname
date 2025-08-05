@@ -299,6 +299,24 @@ const skills = {
 				return [];
 			},
 		},
+		mark: true,
+		marktext: "牌",
+		intro: {
+			mark(dialog, content, player, event, skill) {
+				const intronode = ui.create.div(".menubutton.pointerdiv", "点击发动", function () {
+					if (!this.classList.contains("disabled")) {
+						this.classList.add("disabled");
+						this.style.opacity = 0.5;
+						lib.skill[skill].clickable(player);
+					}
+				});
+				if (!_status.gameStarted || !player.isUnderControl(true) || !lib.skill[skill].clickableFilter(player)) {
+					intronode.classList.add("disabled");
+					intronode.style.opacity = 0.5;
+				}
+				dialog.add(intronode);
+			},
+		},
 		group: ["olsbzhitian_huogong"],
 		subSkill: {
 			huogong: {

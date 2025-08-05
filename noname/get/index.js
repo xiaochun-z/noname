@@ -5278,7 +5278,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				}
 			}
 			if (typeof info.mark == "function") {
-				var stint = info.mark(uiintro, player.storage[node.skill], player, evt);
+				var stint = info.mark(uiintro, player.storage[node.skill], player, evt, node.skill);
 				if (stint instanceof Promise) {
 					uiintro.hide();
 					stint.then(() => {
