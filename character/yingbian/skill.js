@@ -2150,7 +2150,7 @@ const skills = {
 			return player.isPhaseUsing();
 		},
 		clickable(player) {
-			if (player.isMine()) {
+			if (player.isUnderControl(true)) {
 				const cards = lib.skill.smyyingshi.getCards(player);
 				function createDialogWithControl(result) {
 					const dialog = ui.create.dialog("鹰视");

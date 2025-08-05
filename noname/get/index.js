@@ -4885,7 +4885,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 						}
 						underlinenode.link = skills[i];
 						underlinenode.listen(ui.click.autoskill2);
-					} else if (lib.skill[skills[i]].clickable && node.isIn() && node.isMine()) {
+					} else if (lib.skill[skills[i]].clickable && node.isIn() && node.isUnderControl(true)) {
 						var intronode = uiintro.add('<div><div class="skill">' + translation + "</div><div>" + get.skillInfoTranslation(skills[i], node) + '<br><div class="menubutton skillbutton" style="position:relative;margin-top:5px">点击发动</div></div></div>').querySelector(".skillbutton");
 						if (!_status.gameStarted || (lib.skill[skills[i]].clickableFilter && !lib.skill[skills[i]].clickableFilter(node))) {
 							intronode.classList.add("disabled");
