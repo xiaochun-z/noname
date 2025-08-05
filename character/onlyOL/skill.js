@@ -256,7 +256,7 @@ const skills = {
 		audio: 2,
 		intro: { content: "观看牌数-#" },
 		clickableFilter(player) {
-			return player.isPhaseUsing();
+			return _status.currentPhase === player;
 		},
 		clickable(player) {
 			if (player.isUnderControl(true)) {
