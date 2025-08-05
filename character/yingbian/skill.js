@@ -2135,7 +2135,7 @@ const skills = {
 		hiddenSkill: true,
 		filter(event, player) {
 			var target = _status.currentPhase;
-			return event.toShow?.some(i => get.character(i).skills?.includes("buchen")) && target && target != player && target.countGainableCards(player, "he") > 0;
+			return event.toShow?.some(i => get.character(i).skills?.includes("buchen")) && target?.isIn() && target != player && target.countGainableCards(player, "he") > 0;
 		},
 		direct: true,
 		content() {
@@ -2145,21 +2145,30 @@ const skills = {
 	},
 	smyyingshi: {
 		audio: 2,
-		trigger: { player: "phaseUseBegin" },
-		forced: true,
-		silent: true,
-		async content(event, trigger, player) {
-			player.addTempSkill(`${event.name}_view`, "phaseUseEnd");
-			const func = target => target.markSkill("smyyingshi_view", null, null, true);
-			event.isMine() ? func(player) : player.isOnline2() && player.send(func, player);
+		locked: true,
+		clickableFilter(player) {
+			return player.isPhaseUsing();
 		},
-		init(player, skill) {
-			if (player.isPhaseUsing()) {
-				player.addTempSkill(`${skill}_view`, "phaseUseEnd");
+		clickable(player) {
+			if (player.isMine()) {
+				const cards = lib.skill.smyyingshi.getCards(player);
+				function createDialogWithControl(result) {
+					const dialog = ui.create.dialog("鹰视");
+					result.length > 0 ? dialog.add(result, true) : dialog.addText("牌堆顶无牌");
+					const control = ui.create.control("确定", () => dialog.close());
+					dialog._close = dialog.close;
+					dialog.hide = dialog.close = function (...args) {
+						control.close();
+						return dialog._close(...args);
+					};
+					dialog.open();
+				}
+				if (cards instanceof Promise) {
+					cards.then(([ok, result]) => createDialogWithControl(result));
+				} else {
+					createDialogWithControl(cards);
+				}
 			}
-		},
-		onremove(player, skill) {
-			player.removeSkill(`${skill}_view`);
 		},
 		getCards(player) {
 			const num = player.maxHp;
@@ -2173,25 +2182,6 @@ const skills = {
 				}
 			}
 			return [];
-		},
-		subSkill: {
-			view: {
-				charlotte: true,
-				intro: {
-					mark(dialog, content, player) {
-						if (player !== game.me || !player.hasSkill("smyyingshi")) {
-							return;
-						}
-						const cards = lib.skill.smyyingshi.getCards(player);
-						if (cards instanceof Promise) {
-							return cards.then(([ok, result]) => {
-								result.length > 0 ? dialog.add(result) : dialog.addText("牌堆顶无牌");
-							});
-						}
-						cards.length > 0 ? dialog.add(cards) : dialog.addText("牌堆顶无牌");
-					},
-				},
-			},
 		},
 	},
 	xiongzhi: {

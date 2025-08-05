@@ -254,25 +254,30 @@ const skills = {
 	//谋诸葛亮
 	olsbzhitian: {
 		audio: 2,
-		init(player, skill) {
-			if (player == _status.currentPhase) {
-				player.addTempSkill(skill + "_view");
+		intro: { content: "观看牌数-#" },
+		clickableFilter(player) {
+			return player.isPhaseUsing();
+		},
+		clickable(player) {
+			if (player.isMine()) {
+				const cards = lib.skill.olsbzhitian.getCards(player);
+				function createDialogWithControl(result) {
+					const dialog = ui.create.dialog("知天");
+					result.length > 0 ? dialog.add(result, true) : dialog.addText("牌堆顶无牌");
+					const control = ui.create.control("确定", () => dialog.close());
+					dialog._close = dialog.close;
+					dialog.hide = dialog.close = function (...args) {
+						control.close();
+						return dialog._close(...args);
+					};
+					dialog.open();
+				}
+				if (cards instanceof Promise) {
+					cards.then(([ok, result]) => createDialogWithControl(result));
+				} else {
+					createDialogWithControl(cards);
+				}
 			}
-		},
-		onremove(player, skill) {
-			player.removeSkill(skill + "_view");
-		},
-		intro: {
-			content: "观看牌数-#",
-		},
-		trigger: { player: "phaseBegin" },
-		forced: true,
-		locked: false,
-		silent: true,
-		async content(event, trigger, player) {
-			player.addTempSkill(event.name + "_view");
-			const func = target => target.markSkill("olsbzhitian_view", null, null, true);
-			event.isMine() ? func(player) : player.isOnline2() && player.send(func, player);
 		},
 		getCards(player) {
 			let cards = [];
@@ -334,30 +339,6 @@ const skills = {
 				},
 			},
 			tag: {},
-			view: {
-				mark: true,
-				intro: {
-					mark(dialog, content, player, event) {
-						if (player !== game.me) {
-							return get.translation(player) + "观看牌堆中...";
-						}
-						const cards = get.info("olsbzhitian").getCards(player);
-						if (cards instanceof Promise) {
-							return cards.then(([ok, result]) => {
-								if (!result.length) {
-									dialog.addText("牌堆顶无牌");
-								} else {
-									dialog.add(result);
-								}
-							});
-						}
-						if (!cards.length) {
-							return "牌堆顶无牌";
-						}
-						dialog.add(cards);
-					},
-				},
-			},
 		},
 	},
 	olsbliwu: {
