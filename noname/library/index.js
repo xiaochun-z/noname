@@ -1232,17 +1232,69 @@ export class Library {
 					unfrequent: true,
 					intro: "双击武将头像后显示其资料卡",
 				},
-				recent_character_clear: {
-					name: "清除最近选将",
-					intro: "点击此按钮清除最近选将记录",
+				clear_FavoriteCharacter: {
+					name: '清除已收藏武将',
 					clear: true,
 					unfrequent: true,
-					onclick: function () {
-						if (confirm("确定要清除最近选将记录吗？")) {
-							game.saveConfig("recentCharacter", [], true);
-							alert("最近选将记录已清除！");
+					onclick() {
+						if (this.innerHTML == '<span>确认清除</span>') {
+							game.saveConfig('favouriteCharacter', [], true);
+							alert('已清除所有收藏武将');
 						}
-					}
+						else {
+							this.innerHTML = '<span>确认清除</span>';
+							var that = this;
+							setTimeout(function () {
+								that.innerHTML = '<span>清除已收藏武将</span>';
+							}, 1000);
+						}
+					},
+				},
+				clear_BanCharacter: {
+					name: '清除已禁用武将',
+					clear: true,
+					unfrequent: true,
+					onclick() {
+						if (this.innerHTML == '<span>确认清除</span>') {
+							if (confirm("点击确定清除全模式禁用武将，否则清除当前模式禁用武将")) {
+								lib.config.all.mode.forEach(mode => game.saveConfig(`${mode}_banned`, [], mode));
+								alert("全模式禁用武将已清除！");
+								return;
+							}
+							game.saveConfig(`${get.mode()}_banned`, [], true);
+							alert(`${lib.mode[get.mode()]?.name ?? "本"}模式禁用武将已清除！`);
+						}
+						else {
+							this.innerHTML = '<span>确认清除</span>';
+							var that = this;
+							setTimeout(function () {
+								that.innerHTML = '<span>清除已禁用武将</span>';
+							}, 1000);
+						}
+					},
+				},
+				clear_RecentCharacter: {
+					name: '清除最近使用武将',
+					clear: true,
+					unfrequent: true,
+					onclick() {
+						if (this.innerHTML == '<span>确认清除</span>') {
+							if (confirm("点击确定清除全模式最近选将记录，否则清除当前模式最近选将记录")) {
+								lib.config.all.mode.forEach(mode => game.saveConfig("recentCharacter", [], mode));
+								alert("全模式最近选将记录已清除！");
+								return;
+							}
+							game.saveConfig("recentCharacter", [], true);
+							alert(`${lib.mode[get.mode()]?.name ?? "本"}模式最近选将记录已清除！`);
+						}
+						else {
+							this.innerHTML = '<span>确认清除</span>';
+							var that = this;
+							setTimeout(function () {
+								that.innerHTML = '<span>清除最近使用武将</span>';
+							}, 1000);
+						}
+					},
 				},
 				choose_all_button: {
 					name: "启用全选/反选按钮",
