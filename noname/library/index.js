@@ -2412,20 +2412,26 @@ export class Library {
 						default: "默认",
 					},
 					visualBar(node, item, create, switcher) {
-						if (node.created) return;
+						if (node.created) {
+							return;
+						}
 						var button;
 						for (var i = 0; i < node.parentNode.childElementCount; i++) {
 							if (node.parentNode.childNodes[i]._link == "custom") {
 								button = node.parentNode.childNodes[i];
 							}
 						}
-						if (!button) return;
+						if (!button) {
+							return;
+						}
 						node.created = true;
 						ui.create.filediv(".menubutton", "添加图片", node, function (file) {
 							if (file) {
 								game.putDB("image", "cardback_style", file, function () {
 									game.getDB("image", "cardback_style", function (fileToLoad) {
-										if (!fileToLoad) return;
+										if (!fileToLoad) {
+											return;
+										}
 										var fileReader = new FileReader();
 										fileReader.onload = function (fileLoadedEvent) {
 											var data = fileLoadedEvent.target.result;
@@ -2502,7 +2508,9 @@ export class Library {
 						if (link == "custom") {
 							node.classList.add("transparent");
 							game.getDB("image", "cardback_style", function (fileToLoad) {
-								if (!fileToLoad) return;
+								if (!fileToLoad) {
+									return;
+								}
 								var fileReader = new FileReader();
 								fileReader.onload = function (fileLoadedEvent) {
 									var data = fileLoadedEvent.target.result;
