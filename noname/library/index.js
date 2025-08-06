@@ -318,7 +318,6 @@ export class Library {
 						};
 						fileReader.readAsDataURL(fileToLoad, "UTF-8");
 					});
-					break;
 					return;
 				case "default":
 				default:
