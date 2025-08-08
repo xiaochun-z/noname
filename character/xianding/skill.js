@@ -2776,10 +2776,10 @@ const skills = {
 			if (player.hasSkill(event.name + "_double")) {
 				num *= 2;
 			}
-			await player.draw(num).set("gaintag", [event.name]);
-			player.when({ global: "phaseAfter" }).then(() => {
-				player.removeGaintag("dcdianlun");
-			});
+			player.addTempSkill(event.name + "_effect");
+			const next = player.draw(num);
+			next.gaintag.add(event.name);
+			await next;
 		},
 		ai: {
 			order: 10,
@@ -2788,6 +2788,49 @@ const skills = {
 			},
 		},
 		subSkill: {
+			effect: {
+				onremove(player) {
+					player.removeGaintag("dcdianlun");
+				},
+				charlotte: true,
+				forced: true,
+				popup: false,
+				mod: {
+					cardUsable(card) {
+						if (get.number(card) === "unsure" || card.cards?.some(card => card.hasGaintag("dcdianlun"))) {
+							return Infinity;
+						}
+					},
+					targetInRange(card) {
+						if (get.number(card) === "unsure" || card.cards?.some(card => card.hasGaintag("dcdianlun"))) {
+							return Infinity;
+						}
+					},
+				},
+				trigger: {
+					player: "useCard1",
+				},
+				filter(event, player) {
+					return (
+						event.addCount !== false &&
+						player.hasHistory("lose", evt => {
+							if ((evt.relatedEvent || evt.getParent()) !== event) {
+								return false;
+							}
+							return Object.values(evt.gaintag_map).flat().includes("dcdianlun");
+						})
+					);
+				},
+				firstDo: true,
+				content() {
+					trigger.addCount = false;
+					const stat = player.getStat().card,
+						name = trigger.card.name;
+					if (typeof stat[name] === "number") {
+						stat[name]--;
+					}
+				},
+			},
 			double: { charlotte: true },
 		},
 	},
