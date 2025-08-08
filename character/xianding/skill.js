@@ -2803,7 +2803,7 @@ const skills = {
 					},
 					targetInRange(card) {
 						if (get.number(card) === "unsure" || card.cards?.some(card => card.hasGaintag("dcdianlun"))) {
-							return Infinity;
+							return true;
 						}
 					},
 				},
@@ -21824,10 +21824,10 @@ const skills = {
 		audio: 2,
 		trigger: {
 			global: "phaseBefore",
-			player: ["phaseZhunbeiBegin", "enterGame"],
+			player: ["phaseBegin", "enterGame"],
 		},
-		filter(event, player) {
-			if (event.name == "phase" && game.phaseNumber > 0) {
+		filter(event, player, name) {
+			if (name == "phaseBefore" && game.phaseNumber > 0) {
 				return false;
 			}
 			if (player.getEquip("pilitoushiche")) {
