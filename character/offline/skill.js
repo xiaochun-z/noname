@@ -5174,7 +5174,7 @@ const skills = {
 		filter(event, player) {
 			return get
 				.inpileVCardList(info => {
-					return info[0] === "basic" || info[0] === "trick";
+					return ["basic", "trick", "delay"].includes(info[0]);
 				})
 				.some(info =>
 					player.hasCard(cardx => {
@@ -5188,7 +5188,7 @@ const skills = {
 		},
 		chooseButton: {
 			dialog(event, player) {
-				const list = get.inpileVCardList(info => info[0] === "basic" || info[0] === "trick");
+				const list = get.inpileVCardList(info => ["basic", "trick", "delay"].includes(info[0]));
 				return ui.create.dialog("出策", [list, "vcard"]);
 			},
 			filter(button, player) {
@@ -5234,7 +5234,7 @@ const skills = {
 			},
 		},
 		hiddenCard(player, name) {
-			if (!lib.inpile.includes(name) || !["basic", "trick"].includes(get.type(name))) {
+			if (!lib.inpile.includes(name) || !["basic", "trick", "delay"].includes(get.type(name))) {
 				return false;
 			}
 			return player.hasCard(card => {
@@ -5264,7 +5264,7 @@ const skills = {
 				if (arg == "respond") {
 					return false;
 				}
-				if (player.getStat("skill").olsbweilin || !player.countCards("hes")) {
+				if (!player.countCards("hes")) {
 					return false;
 				}
 			},
@@ -18986,7 +18986,26 @@ const skills = {
 	//九鼎-孙权
 	jdsbzhiheng: {
 		audio: "sbzhiheng",
-		inherit: "sbzhiheng",
+		locked: false,
+		mod: {
+			aiOrder(player, card, num) {
+				if (num <= 0 || get.itemtype(card) !== "card" || get.type(card) !== "equip") {
+					return num;
+				}
+				let eq = player.getEquip(get.subtype(card));
+				if (eq && get.equipValue(card) - get.equipValue(eq) < Math.max(1.2, 6 - player.hp)) {
+					return 0;
+				}
+			},
+		},
+		enable: "phaseUse",
+		usable: 1,
+		position: "he",
+		filterCard: lib.filter.cardDiscardable,
+		discard: false,
+		lose: false,
+		delay: false,
+		selectCard: [1, Infinity],
 		check(card) {
 			let player = _status.event.player;
 			if (get.position(card) == "e") {
@@ -19013,6 +19032,24 @@ const skills = {
 			const num = cards.some(card => player.getCards("e").includes(card)) ? 1 : 0;
 			await player.discard(cards);
 			await player.draw(cards.length + num);
+		},
+		ai: {
+			order(item, player) {
+				if (player.hasCard(i => get.value(i) > Math.max(6, 9 - player.hp), "he")) {
+					return 1;
+				}
+				return 10;
+			},
+			result: {
+				player: 1,
+			},
+			nokeep: true,
+			skillTagFilter(player, tag, arg) {
+				if (tag === "nokeep") {
+					return (!arg || (arg && arg.card && get.name(arg.card) === "tao")) && player.isPhaseUsing() && !player.getStat().skill.sbzhiheng && player.hasCard(card => get.name(card) !== "tao", "h");
+				}
+			},
+			threaten: 1.56,
 		},
 	},
 	jdsbtongye: {

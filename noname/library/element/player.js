@@ -3183,7 +3183,7 @@ export class Player extends HTMLDivElement {
 			if (i == "name" && get.mode() == "guozhan") {
 				continue;
 			}
-			if (i == "name1" && this.name === this.name1) {
+			if (i == "name1" && this.name === this.name1 && get.mode() != "guozhan") {
 				continue;
 			}
 			const list = lib.characterSubstitute[this[i]];
@@ -4447,7 +4447,7 @@ export class Player extends HTMLDivElement {
 			max += info.chargeSkill;
 		}
 		max = game.checkMod(this, max, "maxCharge", this);
-		return typeof max == "number" ? max : Infinity;
+		return typeof max == "number" ? Math.max(0, max) : Infinity;
 	}
 	/**
 	 * @deprecated
