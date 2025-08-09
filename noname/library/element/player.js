@@ -1319,10 +1319,10 @@ export class Player extends HTMLDivElement {
 		return Math.max(
 			0,
 			this.countEnabledSlot(type) -
-				this.getVEquips(type).reduce((num, card) => {
-					let types = get.subtypes(card, false);
-					return num + get.numOf(types, type);
-				}, 0)
+			this.getVEquips(type).reduce((num, card) => {
+				let types = get.subtypes(card, false);
+				return num + get.numOf(types, type);
+			}, 0)
 		);
 	}
 	/**
@@ -1354,13 +1354,13 @@ export class Player extends HTMLDivElement {
 		return Math.max(
 			0,
 			this.countEnabledSlot(type) -
-				this.getVEquips(type).reduce((num, card) => {
-					let types = get.subtypes(card, false);
-					if (!lib.filter.canBeReplaced(card, this)) {
-						num += get.numOf(types, type);
-					}
-					return num;
-				}, 0)
+			this.getVEquips(type).reduce((num, card) => {
+				let types = get.subtypes(card, false);
+				if (!lib.filter.canBeReplaced(card, this)) {
+					num += get.numOf(types, type);
+				}
+				return num;
+			}, 0)
 		);
 	}
 	/**
@@ -1749,11 +1749,11 @@ export class Player extends HTMLDivElement {
 	/**
 	 * @deprecated
 	 */
-	$disableEquip() {}
+	$disableEquip() { }
 	/**
 	 * @deprecated
 	 */
-	$enableEquip() {}
+	$enableEquip() { }
 	//装备区End
 	chooseToDebate() {
 		var next = game.createEvent("chooseToDebate");
@@ -1891,6 +1891,10 @@ export class Player extends HTMLDivElement {
 			this,
 			skill
 		);
+		const next = game.createEvent("changeZhuanhuanji", false, get.event());
+		next.player = this;
+		next.skill = skill;
+		next.setContent("emptyEvent");
 	}
 	/**
 	 * @param { string } skill
@@ -2696,10 +2700,10 @@ export class Player extends HTMLDivElement {
 		m = game.checkMod(from, to, m, "attackFrom", from);
 		m = game.checkMod(from, to, m, "attackTo", to);
 		const equips1 = from.getVCards("e", function (card) {
-				return !card.cards?.some(card => {
-					return ui.selected.cards?.includes(card);
-				});
-			}),
+			return !card.cards?.some(card => {
+				return ui.selected.cards?.includes(card);
+			});
+		}),
 			equips2 = to.getVCards("e", function (card) {
 				return !card.cards?.some(card => {
 					return ui.selected.cards?.includes(card);
