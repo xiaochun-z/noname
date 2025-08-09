@@ -8910,7 +8910,7 @@ export class Player extends HTMLDivElement {
 			player.getHistory("useSkill").push(logInfo);
 			//尽可能别往这写插入结算
 			//不能用来终止技能发动！！！
-			var next2 = game.createEvent("logSkillBegin", false);
+			var next2 = game.createEvent("logSkillBegin", false, get.event());
 			next2.player = player;
 			next2.forceDie = true;
 			next2.includeOut = true;
