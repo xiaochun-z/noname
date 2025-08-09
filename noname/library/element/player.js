@@ -1891,6 +1891,12 @@ export class Player extends HTMLDivElement {
 			this,
 			skill
 		);
+		const next = game.createEvent("changeZhuanhuanji", false, get.event());
+		next.player = this;
+		next.skill = skill;
+		next.forceDie = true;
+		next.includeOut = true;
+		next.setContent("emptyEvent");
 	}
 	/**
 	 * @param { string } skill
@@ -4229,7 +4235,7 @@ export class Player extends HTMLDivElement {
 		}
 		this.syncStorage(i);
 		this[this.storage[i] || (lib.skill[i] && lib.skill[i].mark) ? "markSkill" : "unmarkSkill"](i);
-		const next = game.createEvent("removeMark", false);
+		const next = game.createEvent("removeMark", false, get.event());
 		next.player = this;
 		next.num = num;
 		next.markName = i;
@@ -4266,7 +4272,7 @@ export class Player extends HTMLDivElement {
 		}
 		this.syncStorage(i);
 		this.markSkill(i);
-		const next = game.createEvent("addMark", false);
+		const next = game.createEvent("addMark", false, get.event());
 		next.player = this;
 		next.num = num;
 		next.markName = i;
