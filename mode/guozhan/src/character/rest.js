@@ -803,7 +803,7 @@ export default {
 		maxHp: 1,
 		hujia: 0,
 		isUnseen: true,
-		skills: ["scsxiaolu"],
+		skills: ["gz_xiaolu"],
 		trashBin: ["sex:male_castrated"],
 	}),
 	gz_scs_lisong: new Character({
@@ -813,7 +813,7 @@ export default {
 		maxHp: 1,
 		hujia: 0,
 		isUnseen: true,
-		skills: ["scskuiji"],
+		skills: ["gz_kuiji"],
 		trashBin: ["sex:male_castrated"],
 	}),
 	gz_scs_duangui: new Character({
