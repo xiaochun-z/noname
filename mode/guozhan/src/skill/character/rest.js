@@ -430,7 +430,6 @@ export default {
 						}
 					}
 				}
-				player.changeSkin("gz_mowang", changshis[0]);
 				game.broadcastAll((player, name) => {
 					if (player.name1 == "gz_shichangshi") {
 						player.node.name.innerHTML = get.slimName(name);
@@ -439,6 +438,7 @@ export default {
 						player.node.name2.innerHTML = get.slimName(name);
 					}
 				}, player, changshis[0]);
+				player.changeSkin("gz_mowang", changshis[0]);
 				game.log(player, "选择了常侍", "#y" + get.translation(changshis));
 				if (skills.length) {
 					player.addAdditionalSkill("gz_danggu", skills);
@@ -541,7 +541,6 @@ export default {
 				forceDie: true,
 				async content(event, trigger, player) {
 					if (!player.getStorage("gz_danggu").length) {
-						player.changeSkin("gz_mowang", "gz_shichangshi_dead");
 						game.broadcastAll(player => {
 							if (player.name1 == "gz_shichangshi") {
 								player.node.name.innerHTML = get.slimName(player.name1);
@@ -550,6 +549,7 @@ export default {
 								player.node.name2.innerHTML = get.slimName(player.name2);
 							}
 						}, player);
+						player.changeSkin("gz_mowang", "gz_shichangshi");
 						await game.delay();
 					}
 					await player.die();
