@@ -500,7 +500,7 @@ export default {
 					player.changeSkin("gz_mowang", `${player.skin.name}_dead`);
 				}
 				if (player.name2 == "gz_shichangshi") {
-					player.changeSkin("gz_mowang", `${player.skin.name}_dead2`);
+					player.changeSkin("gz_mowang", `${player.skin.name2}_dead`);
 				}
 				return;
 			}
@@ -566,6 +566,14 @@ export default {
 					return event.player == player && player.hasSkill("gz_danggu", null, null, false);
 				},
 				async content(event, trigger, player) {
+					game.broadcastAll(player => {
+						if (player.name1 == "gz_shichangshi") {
+							player.node.name.innerHTML = get.slimName(player.name1);
+						}
+						if (player.name2 == "gz_shichangshi") {
+							player.node.name2.innerHTML = get.slimName(player.name2);
+						}
+					}, player);
 					player.changeSkin("gz_mowang", "gz_shichangshi");
 					delete player.storage.gz_danggu_current;
 					const next = game.createEvent("gz_danggu_clique");
