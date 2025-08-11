@@ -357,7 +357,7 @@ const skills = {
 				.chooseTarget(get.prompt2(event.skill))
 				.set("ai", target => {
 					const player = get.player();
-					if (player.getFriends().includes(target)) {
+					if (player.getFriends(true).includes(target)) {
 						return get.effect(player, { name: "draw" }, player, player) + get.effect(target, { name: "draw" }, player, player) > 0;
 					}
 					return get.effect(target, { name: "guohe_copy2" }, target, player) + get.effect(player, { name: "guohe_copy2" }, player, player) > 0;
@@ -366,7 +366,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			if (player.getFriends().includes(target)) {
+			if (player.getFriends(true).includes(target)) {
 				await game.asyncDraw([player, target]);
 			} else {
 				await player.chooseToDiscard(true, "he");
