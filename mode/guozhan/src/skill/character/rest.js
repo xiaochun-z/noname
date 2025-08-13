@@ -58,9 +58,12 @@ export default {
 			if (!event.card || !player.countExpansions("gz_yuanyu")) {
 				return false;
 			}
-			return event.source?.isIn() && player.getExpansions("gz_yuanyu").some(card => {
-				return get.color(card) == get.color(event.card);
-			});
+			return (
+				event.source?.isIn() &&
+				player.getExpansions("gz_yuanyu").some(card => {
+					return get.color(card) == get.color(event.card);
+				})
+			);
 		},
 		logTarget: "source",
 		check(event, player) {
@@ -70,19 +73,19 @@ export default {
 			const target = event.targets[0];
 			const result = await target
 				.chooseControl()
-				.set("choiceList", [
-					"本回合手牌上限-4",
-					"本回合不能使用基本牌",
-				])
+				.set("choiceList", ["本回合手牌上限-4", "本回合不能使用基本牌"])
 				.set("prompt", "夕颜：请选择一项")
 				.set("ai", () => {
 					const player = get.player();
 					if (player.hasSkill("gz_xiyan_basic")) {
 						return 1;
 					}
-					if (player.countCards("h", card => {
-						return get.type(card) == "basic" && player.hasValueTarget(card);
-					}) >= (player.countCards("h") / 2)) {
+					if (
+						player.countCards("h", card => {
+							return get.type(card) == "basic" && player.hasValueTarget(card);
+						}) >=
+						player.countCards("h") / 2
+					) {
 						return 0;
 					}
 					return 1;
@@ -310,7 +313,7 @@ export default {
 						},
 					};
 				} else {
-					return { 
+					return {
 						audio: "gz_zhilve",
 						async content(event, trigger, player) {
 							await player.loseHp();
@@ -410,13 +413,16 @@ export default {
 		},
 		async contentx(event, trigger, player) {
 			let list = player.getStorage("gz_danggu").slice();
-			const result = list.length == 1 ? {
-				bool: true,
-				links: list,
-			} : await player
-					.chooseButton(["党锢：请选择亮出常侍", [list, "character"]], true)
-					.set("ai", button => Math.random() * 10)
-					.forResult();
+			const result =
+				list.length == 1
+					? {
+							bool: true,
+							links: list,
+					  }
+					: await player
+							.chooseButton(["党锢：请选择亮出常侍", [list, "character"]], true)
+							.set("ai", button => Math.random() * 10)
+							.forResult();
 			if (result?.bool) {
 				const changshis = result.links;
 				const skills = [];
@@ -430,14 +436,18 @@ export default {
 						}
 					}
 				}
-				game.broadcastAll((player, name) => {
-					if (player.name1 == "gz_shichangshi") {
-						player.node.name.innerHTML = get.slimName(name);
-					}
-					if (player.name2 == "gz_shichangshi") {
-						player.node.name2.innerHTML = get.slimName(name);
-					}
-				}, player, changshis[0]);
+				game.broadcastAll(
+					(player, name) => {
+						if (player.name1 == "gz_shichangshi") {
+							player.node.name.innerHTML = get.slimName(name);
+						}
+						if (player.name2 == "gz_shichangshi") {
+							player.node.name2.innerHTML = get.slimName(name);
+						}
+					},
+					player,
+					changshis[0]
+				);
 				player.changeSkin("gz_mowang", changshis[0]);
 				game.log(player, "选择了常侍", "#y" + get.translation(changshis));
 				if (skills.length) {
@@ -465,14 +475,7 @@ export default {
 		ai: {
 			combo: "gz_mowang",
 			nokeep: true,
-			mingzhi_yes: true,
-			skillTagFilter(player, tag) {
-				if (tag !== "mingzhi_yes") {
-					return true;
-				}
-				const event = _status.event;
-				return event?.name === "_mingzhi2" && event._trigger?.skill === "gz_danggu";
-			},
+			mingzhi: true,
 		},
 		intro: {
 			mark(dialog, storage, player) {
@@ -547,6 +550,7 @@ export default {
 				trigger: { player: "phaseAfter" },
 				forced: true,
 				forceDie: true,
+				check: () => false,
 				async content(event, trigger, player) {
 					if (!player.getStorage("gz_danggu").length) {
 						game.broadcastAll(player => {
@@ -939,47 +943,51 @@ export default {
 			if (!num) {
 				return;
 			}
-			const result = num >= 2 ? await player
-				.chooseControl()
-				.set("choiceList", ["将两张手牌交给一名其他角色", "弃置两张手牌"])
-				.set("ai", function () {
-					if (
-						game.hasPlayer(function (current) {
-							return current != player && get.attitude(player, current) > 0;
-						})
-					) {
-						return 0;
-					}
-					return 1;
-				})
-				.forResult() : {
-					index: 1,
-				};
+			const result =
+				num >= 2
+					? await player
+							.chooseControl()
+							.set("choiceList", ["将两张手牌交给一名其他角色", "弃置两张手牌"])
+							.set("ai", function () {
+								if (
+									game.hasPlayer(function (current) {
+										return current != player && get.attitude(player, current) > 0;
+									})
+								) {
+									return 0;
+								}
+								return 1;
+							})
+							.forResult()
+					: {
+							index: 1,
+					  };
 			if (result.index == 0) {
-				const { bool, cards, targets } = await player.chooseCardTarget({
-					position: "h",
-					filterCard: true,
-					selectCard: 2,
-					filterTarget(card, player, target) {
-						return player != target;
-					},
-					ai1(card) {
-						return get.unuseful(card);
-					},
-					ai2(target) {
-						var att = get.attitude(_status.event.player, target);
-						if (target.hasSkillTag("nogain")) {
-							att /= 10;
-						}
-						if (target.hasJudge("lebu")) {
-							att /= 5;
-						}
-						return att;
-					},
-					prompt: "选择两张手牌，交给一名其他角色",
-					forced: true,
-				})
-				.forResult();
+				const { bool, cards, targets } = await player
+					.chooseCardTarget({
+						position: "h",
+						filterCard: true,
+						selectCard: 2,
+						filterTarget(card, player, target) {
+							return player != target;
+						},
+						ai1(card) {
+							return get.unuseful(card);
+						},
+						ai2(target) {
+							var att = get.attitude(_status.event.player, target);
+							if (target.hasSkillTag("nogain")) {
+								att /= 10;
+							}
+							if (target.hasJudge("lebu")) {
+								att /= 5;
+							}
+							return att;
+						},
+						prompt: "选择两张手牌，交给一名其他角色",
+						forced: true,
+					})
+					.forResult();
 				if (bool) {
 					await player.give(cards, targets[0]);
 				}
@@ -1049,13 +1057,15 @@ export default {
 					}
 				}
 				if (list1.length && list2.length) {
-					await game.loseAsync({
-						lose_list: [
-							[player, list1],
-							[target, list2],
-						],
-						discarder: player,
-					}).setContent("discardMultiple");
+					await game
+						.loseAsync({
+							lose_list: [
+								[player, list1],
+								[target, list2],
+							],
+							discarder: player,
+						})
+						.setContent("discardMultiple");
 				} else if (list2.length) {
 					await target.discard(list2);
 				} else {
