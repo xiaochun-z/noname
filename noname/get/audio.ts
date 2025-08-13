@@ -314,7 +314,9 @@ class SkillAudio implements AudioBase {
 				const skin = lib.characterSubstitute[rawName].find(i => i[0] === skinName);
 				const tempCharacter = get.convertedCharacter(["", "", 0, [], skin[1]]);
 				// 如果配置的皮肤设置了tempname，会进行覆盖
-				if (tempCharacter.tempname.length) this.player.tempname = tempCharacter.tempname;
+				if (tempCharacter.tempname.length) {
+					this.player.tempname = tempCharacter.tempname;
+				}
 			}
 		}
 
