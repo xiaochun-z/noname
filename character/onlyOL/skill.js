@@ -4823,7 +4823,7 @@ const skills = {
 					bool: true,
 				};
 			} else {
-				const next = player.chooseToMove("积谷：是否交换“谷”和手牌？");
+				const next = player.chooseToMove("积谷：是否交换“谷”和手牌？", "noChooseAll");
 				next.set("list", [
 					[get.translation(player) + "（你）的“谷”", player.getExpansions("olsbjigu")],
 					["手牌区", player.getCards("h")],

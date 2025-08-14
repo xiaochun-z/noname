@@ -2317,11 +2317,27 @@ player.removeVirtualEquip(card);
 					const clientY = e.clientY / game.documentZoom;
 					let aniamtionPromise = null;
 
-					// 如果是拖动移动或者非多选的情况下，我们走原来的代码喵
-					if (isDragging || (!canMultiselect && ui.selected.buttons.length === 1)) {
+					let spannedSingle = false;
+
+					if (ui.selected.buttons.length === 1) {
+						const curCard = ui.selected.buttons[0];
+						const target = e.target;
+						if (!curCard.contains(target)) {
+							const buttons = buttonss.find(b => {
+								return b.contains(target);
+							});
+							if (buttons && !buttons.contains(curCard)) {
+								// 此时用户点击了第一张牌，并在另一个区域点击了第二张牌喵
+								spannedSingle = true;
+							}
+						}
+					}
+
+					// 如果是拖动移动、非多选或者跨区单个交换的情况下，我们走原来的代码喵
+					if (isDragging || (!canMultiselect && ui.selected.buttons.length === 1) || spannedSingle) {
 						const curCard = ui.selected.buttons[0];
 						// 鼠标当前处于哪个元素上
-						const target = document.elementFromPoint(clientX * game.documentZoom, clientY * game.documentZoom);
+						const target = e.target;
 						// 相当于没移动，让它自己触发后续的click
 						if (curCard.contains(target)) {
 							return;

@@ -16999,7 +16999,7 @@ const skills = {
 					event.cards2 = cards;
 					game.cardsGotoOrdering(cards);
 					var player = trigger.player;
-					var next = player.chooseToMove("铸币：用任意“币”交换牌堆底等量张牌");
+					var next = player.chooseToMove("铸币：用任意“币”交换牌堆底等量张牌", "noChooseAll");
 					var hs = player.getCards("h", card => card.hasGaintag("olzhubi_tag"));
 					next.set("filterMove", function (from, to) {
 						return typeof to != "number";
