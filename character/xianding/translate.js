@@ -905,7 +905,7 @@ const translates = {
 	dcrenshuang: "纫霜",
 	dcrenshuang_info: "锁定技，你的体力值变为1时，复原武将牌并视为使用一张普通锦囊牌（每种牌名每轮限一次）。",
 	x_dc_zhangqiying: "新杀牢张琪瑛",
-	x_dc_zhangqiying_prefix: "新杀牢",
+	x_dc_zhangqiying_prefix: "新杀|牢",
 	x_dc_falu: "法箓",
 	x_dc_falu_info: "①游戏开始时，你记录四个花色。②你成为牌的目标或你的牌因弃置而进入弃牌堆时，若此牌有花色且你未记录，记录之。",
 	x_dc_zhenyi: "真仪",
