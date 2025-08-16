@@ -5851,12 +5851,13 @@ player.removeVirtualEquip(card);
 			if (_status.noclearcountdown !== "direct") {
 				_status.noclearcountdown = true;
 			}
-			if (!player.getCards(event.position).filter(card => event.filterCard(card, player)).length && !hasSkill) {
+			/*if (!player.getCards(event.position).filter(card => event.filterCard(card, player)).length && !hasSkill) {
 				event.result = {
 					bool: false,
 					cards: [],
 				};
-			} else if (event.autochoose()) {
+			} else */
+			if (event.autochoose()) {
 				event.result = {
 					bool: true,
 					autochoose: true,

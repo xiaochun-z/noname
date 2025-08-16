@@ -2865,7 +2865,7 @@ const skills = {
 					filterTarget(card, player, target) {
 						return lib.filter.targetEnabled.apply(this, arguments);
 					},
-					prompt: "清蹈：使用一张手牌",
+					prompt: "清蹈：使用一张手牌（无距离限制）",
 					addCount: false,
 					forced: true,
 				});

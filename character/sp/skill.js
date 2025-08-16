@@ -30730,7 +30730,7 @@ const skills = {
 				return promise;
 			};
 			const ai = function () {
-				return { bool: true, skills: skills.sort((a, b) => get.skillRank(b, "inout") - get.skillRank(a, "inout")).slice(0, 2) };
+				return { bool: true, skills: skills.slice().sort((a, b) => get.skillRank(b, "inout") - get.skillRank(a, "inout")).slice(0, 2) };
 			};
 			let next;
 			if (event.isMine()) {

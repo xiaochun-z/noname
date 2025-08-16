@@ -10693,7 +10693,14 @@ const skills = {
 				.set("choiceList", list)
 				.set("prompt", get.prompt(event.skill))
 				.set("ai", function () {
-					if (lib.skill.rexuanfeng.canMoveCard(player, true)) {
+					if (
+						get.player().canMoveCard(
+							null,
+							true,
+							game.filterPlayer(target => target != player),
+							game.filterPlayer(target => target != player)
+						)
+					) {
 						return 1;
 					}
 					return 0;
