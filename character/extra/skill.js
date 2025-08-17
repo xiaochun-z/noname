@@ -4988,7 +4988,7 @@ const skills = {
 					subtype: "equip1",
 					enable: true,
 					selectTarget: -1,
-					filterCard(card, player, target) {
+					filterTarget(card, player, target) {
 						if (player != target) {
 							return false;
 						}
