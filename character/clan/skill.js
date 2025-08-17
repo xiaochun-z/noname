@@ -1057,8 +1057,8 @@ const skills = {
 						}).length > 1
 					) {
 						let cardsx;
-						if ((target.countCards("h") !== player.countCards("h") && target !== player) || target === player) {
-							const putee = player.countCards("h") > target.countCards("h") || target === player ? player : target;
+						if (target.countCards("h") !== player.countCards("h")) {
+							const putee = player.countCards("h") > target.countCards("h") ? player : target;
 							if (!putee.countCards("he")) {
 								return;
 							}
