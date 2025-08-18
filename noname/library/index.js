@@ -16022,7 +16022,7 @@ export class Library {
 			},
 		],
 		[
-			"忠",
+			"汉",
 			{
 				color: "#ffd700",
 				nature: "metalmm",

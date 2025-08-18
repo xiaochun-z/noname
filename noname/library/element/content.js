@@ -8767,11 +8767,14 @@ player.removeVirtualEquip(card);
 				//这部分是处理亮出牌的，动画效果类似判定，需要另外处理
 				if (!event.noOrdering) {
 					//有noOrdering属性亮出牌就不会把牌丢进处理区
+					//showCards的relatedEvent属性是牌要在某个特定事件之后进入弃牌堆的，比如一些需要多次亮出牌的，因为多个展示牌事件独立，不set的话会在展示牌事件结束后就置入弃牌堆
 					if (ownerLose.values().length > 0) {
-						await game.loseAsync(Array.from(ownerLose.entries())).setContent("chooseToCompareLose");
+						const next = game.loseAsync(Array.from(ownerLose.entries())).set("relatedEvent", event.relatedEvent || null);
+						next.setContent("chooseToCompareLose");
+						await next;
 					}
 					if (directLose.length > 0) {
-						await game.cardsGotoOrdering(directLose);
+						await game.cardsGotoOrdering(directLose).set("relatedEvent", event.relatedEvent || null);
 					}
 				}
 				for (const card of cards) {

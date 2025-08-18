@@ -13231,6 +13231,7 @@ const skills = {
 					.showCards(cardsx, judgestr, true)
 					.set("clearArena", false)
 					.set("log", (cards, player) => [player, "亮出了牌堆顶的", cards])
+					.set("relatedEvent", event)
 					.forResult();
 				if (!result?.cards) {
 					return;
