@@ -8730,7 +8730,7 @@ const skills = {
 		filter(event, player) {
 			if (
 				!game.hasPlayer(target => {
-					return get.distance(player, target) == 1 && target.countCards("h");
+					return get.distance(player, target) == 1 && target.countDiscardableCards(player, "h");
 				}) ||
 				_status.currentPhase === player ||
 				event.olweijie
@@ -8778,7 +8778,7 @@ const skills = {
 						let stop = false;
 						const result = yield player
 							.chooseTarget("请选择一名距离为1的角色", "弃置其一张手牌，若此牌牌名为【" + get.translation(event.result.card.name) + "】，则视为你使用/打出之", (card, player, target) => {
-								return get.distance(player, target) == 1 && target.countCards("h");
+								return get.distance(player, target) == 1 && target.countDiscardableCards(player, "h");
 							})
 							.set("ai", target => 1 - get.sgn(get.attitude(get.event("player"), target)));
 						if (result?.bool) {
