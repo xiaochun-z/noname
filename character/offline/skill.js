@@ -14090,7 +14090,7 @@ const skills = {
 		trigger: { player: "useCard2" },
 		forced: true,
 		filter(event, player) {
-			return event.card.suit == "none";
+			return get.suit(event.card) == "none";
 		},
 		content() {
 			"step 0";

@@ -8781,7 +8781,7 @@ const skills = {
 								return get.distance(player, target) == 1 && target.countCards("h");
 							})
 							.set("ai", target => 1 - get.sgn(get.attitude(get.event("player"), target)));
-						if (result.bool) {
+						if (result?.bool) {
 							const target = result.targets[0];
 							player.logSkill("olweijie", target);
 							player.tempBanSkill("olweijie", null, false);
@@ -8795,7 +8795,7 @@ const skills = {
 									return 1 + Math.random();
 								})
 								.set("namex", event.result.card.name);
-							if (result2.bool) {
+							if (result2?.bool) {
 								const card = result2.cards[0];
 								if (get.name(card, target) == event.result.card.name) {
 									player.popup("洗具");

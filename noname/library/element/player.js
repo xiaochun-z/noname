@@ -6518,16 +6518,16 @@ export class Player extends HTMLDivElement {
 			const event = this;
 			if (get.itemtype(player) != "player") {
 				if (player == "others" && typeof key == "string") {
-					return this.show_map.get("others")[key];
+					return event.show_map?.get?.("others")?.[key] || [];
 				} else if (typeof player == "string") {
-					return this.show_map.get("others")[player];
+					return event.show_map?.get?.("others")?.[player] || [];
 				}
 				return null;
 			}
 			if (!key) {
-				return event.show_map.get(player) || {};
+				return event.show_map?.get?.(player) || {};
 			}
-			return event.show_map.get(player)?.[key] || [];
+			return event.show_map?.get?.(player)?.[key] || [];
 		};
 		next.setContent("showCards");
 		next._args = Array.from(arguments);
