@@ -640,7 +640,7 @@ const skills = {
 			let cards = [];
 			const num = Math.max(1, 7 - player.countMark("olsbzhitian"));
 			if (game.online) {
-				return game.dataRequest("olsbzhitian", "getTopCards", 10000);
+				return game.requestSkillData("olsbzhitian", "getTopCards", 10000);
 			} else {
 				if (ui.cardPile.hasChildNodes !== false) {
 					cards = Array.from(ui.cardPile.childNodes).slice(0, num);
