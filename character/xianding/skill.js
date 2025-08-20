@@ -791,10 +791,11 @@ const skills = {
 						ui.update();
 					}
 				};
-				if (player.isOnline2()) {
-					player.send(update, id, suits);
-				} else {
+				if (player == game.me) {
 					update(id, suits);
+				}
+				else if (player.isOnline()) {
+					player.send(update, id, suits);
 				}
 				const nextx = player.chooseCardTarget({
 					prompt: false,
