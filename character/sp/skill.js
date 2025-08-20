@@ -556,9 +556,10 @@ const skills = {
 			const func = (player, target) => {
 				target.markSkill("olcunze_mark", null, null, true);
 			};
-			if (event.isMine()) {
+			if (player == game.me) {
 				func(player, target);
-			} else if (player.isOnline2()) {
+			}
+			else if (event.isOnline()) {
 				player.send(func, player, target);
 			}
 		},

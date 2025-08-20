@@ -4027,10 +4027,11 @@ const skills = {
 				dialog.videoId = id;
 				return dialog;
 			};
-			if (player.isOnline2()) {
-				player.send(func, videoId, cardMap, list, num);
-			} else {
+			if (event.isMine()) {
 				func(videoId, cardMap, list, num);
+			}
+			else if (player.isOnline2()) {
+				player.send(func, videoId, cardMap, list, num);
 			}
 			const result2 = await player.chooseBool().set("dialog", get.idDialog(videoId)).forResult();
 			game.broadcastAll("closeDialog", videoId);
@@ -7733,9 +7734,10 @@ const skills = {
 				const func = (player, target, skill) => {
 					player.markSkill(skill, null, null, true);
 				};
-				if (event.isMine()) {
+				if (player == game.me) {
 					func(player, target, skill);
-				} else if (player.isOnline2()) {
+				}
+				else if (event.isOnline()) {
 					player.send(func, player, target, skill);
 				}
 				target.addSkill(skill);
