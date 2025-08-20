@@ -2325,6 +2325,8 @@ export class Player extends HTMLDivElement {
 		for (var i = 0; i < arguments.length; i++) {
 			if (typeof arguments[i] == "boolean") {
 				next.forced = arguments[i];
+			} else if (arguments[i] === "noChooseAll") {
+				next.noChooseAll = true;
 			} else if (typeof arguments[i] == "string") {
 				next.prompt = arguments[i];
 			}

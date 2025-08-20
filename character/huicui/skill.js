@@ -13691,7 +13691,7 @@ const skills = {
 						event.finish();
 						return;
 					}
-					var next = player.chooseToMove("寻疠：是否交换“疠”和手牌？");
+					var next = player.chooseToMove("寻疠：是否交换“疠”和手牌？", "noChooseAll");
 					next.set("list", [
 						[get.translation(player) + "（你）的疠", cards],
 						["手牌区", player.getCards("h", card => get.color(card, player) == "black")],
