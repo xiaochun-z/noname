@@ -858,10 +858,11 @@ const skills = {
 					check(card) {
 						return 6 - get.value(card);
 					},
+					log: false,
 					precontent() {
 						const skill = "olxiewei",
 							cards = event.result.cards;
-						//player.logSkill(skill);
+						player.logSkill(skill);
 						if (cards.length < 2) {
 							var evt = event.getParent();
 							evt.set(skill, true);
@@ -887,9 +888,6 @@ const skills = {
 			markcount: "expansion",
 			content: "expansion",
 		},
-		subSkill: {
-			backup: {},
-		},
 	},
 	olyouque: {
 		audio: 2,
@@ -900,7 +898,6 @@ const skills = {
 		delay: false,
 		lose: false,
 		discard: false,
-		//log: false,
 		async precontent(event, trigger, player) {
 			const cards = player.getExpansions("olxiewei");
 			const result = await player
@@ -970,7 +967,7 @@ const skills = {
 				async content(event, trigger, player) {
 					await player.draw(2);
 					if (!player.getExpansions("olxiewei").some(card => get.suit(card) == "spade")) {
-						player.tempBanSkill("olyouque", "phaseUseAfter");
+						player.tempBanSkill("olyouque", ["phaseChange", "phaseUseAfter"]);
 					}
 				},
 			},

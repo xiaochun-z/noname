@@ -2092,14 +2092,47 @@ const skills = {
 	},
 	oljueyan: {
 		enable: "chooseToUse",
-		round: 1,
 		hiddenCard(player, name) {
-			return !player?.hasSkill("oljueyan_round") && player?.countCards("h", card => (get.type(card, player) == "trick" || (get.type(card, player) == "basic" && get.suit(card, player) == "heart")) && get.name(card, player) == name);
+			const storage = player.getStorage("oljueyan_round");
+			return player.hasCard(card => {
+				const type = get.type(card, player);
+				const color = get.color(card, player);
+				if (type == "trick" || (type == "basic" && color == "red")) {
+					return !storage.includes(type) && get.name(card, player) == name;
+				}
+				return false;
+			}, "h");
 		},
 		filter(event, player) {
-			return player.countCards("h", card => {
-				if (get.type(card, player) == "trick" || (get.type(card, player) == "basic" && get.suit(card, player) == "heart")) {
-					return event.filterCard(
+			const storage = player.getStorage("oljueyan_round");
+			return player.hasCard(card => {
+				const type = get.type(card, player);
+				const color = get.color(card, player);
+				if (type == "trick" || (type == "basic" && color == "red")) {
+					return (
+						event.filterCard(
+							get.autoViewAs({
+								name: get.name(card, player),
+								suit: get.suit(card, player),
+								nature: get.nature(card, player),
+								number: get.number(card, player),
+								isCard: true,
+							}),
+							player,
+							event
+						) && !storage.includes(type)
+					);
+				}
+				return false;
+			}, "h");
+		},
+		filterCard(card, player, event) {
+			event = event || _status.event;
+			const storage = player.getStorage("oljueyan_round");
+			const type = get.type(card, player);
+			if (type == "trick" || (type == "basic" && get.color(card, player) == "red")) {
+				return (
+					event._backup.filterCard(
 						get.autoViewAs({
 							name: get.name(card, player),
 							suit: get.suit(card, player),
@@ -2109,24 +2142,7 @@ const skills = {
 						}),
 						player,
 						event
-					);
-				}
-				return false;
-			});
-		},
-		filterCard(card, player, event) {
-			event = event || _status.event;
-			if (get.type(card, player) == "trick" || (get.type(card, player) == "basic" && get.suit(card, player) == "heart")) {
-				return event._backup.filterCard(
-					get.autoViewAs({
-						name: get.name(card, player),
-						suit: get.suit(card, player),
-						nature: get.nature(card, player),
-						number: get.number(card, player),
-						isCard: true,
-					}),
-					player,
-					event
+					) && !storage.includes(type)
 				);
 			}
 			return false;
@@ -2146,9 +2162,12 @@ const skills = {
 			}
 			return null;
 		},
-		prompt: "展示并视为使用手牌中一张普通锦囊牌或红桃基本牌",
+		prompt: "展示并视为使用手牌中一张普通锦囊牌或红色基本牌",
 		async precontent(event, trigger, player) {
 			const cards = event.result.cards;
+			const type = get.type(event.result.card);
+			player.addTempSkill("oljueyan_round", "roundStart");
+			player.markAuto("oljueyan_round", type);
 			await player.showCards(cards, `${get.translation(player)}发动了【绝颜】`);
 			delete event.result.cards;
 		},
@@ -2160,6 +2179,13 @@ const skills = {
 		},
 		group: ["oljueyan_draw"],
 		subSkill: {
+			round: {
+				charlotte: true,
+				onremove: true,
+				intro: {
+					content: "已使用过 $",
+				},
+			},
 			draw: {
 				trigger: {
 					player: "showCardsAfter",
