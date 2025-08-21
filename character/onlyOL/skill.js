@@ -2836,7 +2836,7 @@ const skills = {
 		inherit: "fuhun",
 		position: "hes",
 		global: ["olfuhun_block"],
-		group: ["olfuhun_effect", "olfuhun_mark"],
+		group: ["olfuhun_effect"],
 		prompt: "将两张牌当杀使用或打出",
 		viewAsFilter(player) {
 			return player.countCards("hes") > 1;
@@ -2858,22 +2858,6 @@ const skills = {
 					player.addTempSkills(["new_rewusheng", "olpaoxiao"]);
 				},
 			},
-			mark: {
-				audio: "olfuhun",
-				forced: true,
-				locked: false,
-				trigger: { player: "useCard" },
-				firstDo: true,
-				filter(event, player) {
-					return event.card?.name == "sha" && get.is.convertedCard(event.card);
-				},
-				content() {
-					if (!trigger.card.storage) {
-						trigger.card.storage = {};
-					}
-					trigger.card.storage.olfuhun = true;
-				},
-			},
 			//根据思召剑和谋韩当的弓骑修改
 			block: {
 				mod: {
@@ -2882,7 +2866,7 @@ const skills = {
 						if (evt.name != "chooseToUse") {
 							evt = evt.getParent("chooseToUse");
 						}
-						if (!evt?.respondTo || !evt.respondTo[1]?.storage?.olfuhun) {
+						if (!evt?.respondTo || !evt.respondTo[0].hasSkill("olfuhun") || !get.is.convertedCard(evt.respondTo[1])) {
 							return;
 						}
 						const color1 = get.color(card),

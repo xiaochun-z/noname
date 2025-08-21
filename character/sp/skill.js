@@ -6862,7 +6862,7 @@ const skills = {
 				if (!player || get.event().type != "phase") {
 					return 1;
 				}
-				let names = player.getStorage("olkouchao");
+				let names = player.getStorage("olkouchao").slice();
 				for (let i = 0; i < names.length; i++) {
 					if (player.getStorage("olkouchao_used").includes(i)) {
 						names.splice(i--, 1);

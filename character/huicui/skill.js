@@ -4210,6 +4210,9 @@ const skills = {
 				}
 			}
 		},
+		ai: {
+			combo: "dcqiqin",
+		},
 		group: "dczixi_effect",
 		subSkill: {
 			judge: {
