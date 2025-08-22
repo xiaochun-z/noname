@@ -682,7 +682,7 @@ const skills = {
 				filter(event, player) {
 					return event.getParent().name == "huogong" && get.itemtype(_status.pileTop) == "card";
 				},
-				async content(event, trigger, player) {
+				async precontent(event, trigger, player) {
 					const evt = event.getParent();
 					const cards = await get.info("olsbzhitian").getCards(player);
 					const result = await player
@@ -702,13 +702,8 @@ const skills = {
 						event.result.cards = result.links;
 						evt.done = game.cardsDiscard(cards);
 						player.$throw(cards, 1000);
+						player.logSkill(event.name.slice(4));
 						game.log(player, "弃置了", "#g牌堆", "的", cards);
-						evt.logSkill ??= [];
-						if (typeof evt.logSkill == "string") {
-							evt.logSkill = [evt.logSkill, event.name];
-						} else if (Array.isArray(evt.logSkill)) {
-							evt.logSkill.add(event.name);
-						}
 					} else {
 						evt.goto(0);
 					}
