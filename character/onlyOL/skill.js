@@ -941,7 +941,7 @@ const skills = {
 					const { cards } = event;
 					await player.loseToDiscardpile(cards);
 					let noDamage = true;
-					const viewAs = card => get.autoViewAs({ name: card.name, isCard: true });
+					const viewAs = card => get.autoViewAs({ name: card.name, nature: card.nature, isCard: true });
 					const cardsx = cards.filter(card => ["basic", "trick"].includes(get.type(card)) && player.hasUseTarget(viewAs(card)));
 					if (cardsx.length) {
 						const result = await player
@@ -951,7 +951,7 @@ const skills = {
 							.set("ai", button => {
 								const player = get.player(),
 									card = button.link;
-								return player.getUseValue({ name: card.name, isCard: true });
+								return player.getUseValue({ name: card.name,  nature: card.nature, isCard: true });
 							})
 							.forResult();
 						if (result?.links?.length) {
