@@ -6426,15 +6426,15 @@ const skills = {
 			},
 			backup(links, player) {
 				return {
-					audio: "sbtianxin",
 					control: links[0],
 					filterTarget: lib.filter.notMe,
+					log: false,
 					async content(event, trigger, player) {
 						const { control } = get.info(event.name),
 							{ target } = event;
+						player.logSkill("sbtiaoxin", null, null, null, [control === "all" ? get.rand(3, 4) : null]);
 						if (control == "all") {
 							player.popup("背水", "fire");
-							player.logSkill("sbtiaoxin", null, null, null, [get.rand(3, 4)]);
 							player.addTempSkill("sbtiaoxin_damage");
 							player.addMark("sbtiaoxin_damage", 1, false);
 							target.addTempSkill("sbtiaoxin_damage");
@@ -6698,6 +6698,7 @@ const skills = {
 			backup(links, player) {
 				return {
 					audio: "sbbeifa",
+					logAudio: () => "sbbeifa",
 					viewAs: {
 						name: links[0][2],
 						nature: links[0][3],
@@ -6705,7 +6706,7 @@ const skills = {
 					ai1: card => 7 - get.value(card),
 					async precontent(event, trigger, player) {
 						const name = event.result.card.name;
-						player.logSkill("sbbeifa");
+						player.logSkill("sbbeifa", null, null, null, [get.rand(3, 4)]);
 						player.addSkill("sbbeifa_used");
 						player.markAuto("sbbeifa", name);
 						player.removeCharge(get.cardNameLength(name));
@@ -6764,7 +6765,7 @@ const skills = {
 				},
 			},
 			backflow: {
-				audio: ["sbbeifa3.mp3", "sbbeifa4.mp3"],
+				audio: ["sbbeifa1.mp3", "sbbeifa2.mp3"],
 				trigger: {
 					global: ["loseAfter", "loseAsyncAfter", "useCard", "respond"],
 				},
