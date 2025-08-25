@@ -380,35 +380,28 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			if (!player.storage.dcguying_double) {
-				player.storage.dcguying_double = true;
-			}
+			player.storage.dcguying_double ??= true;
 			const targets = event.targets,
 				skill = "dcguying_effect";
 			player.addTempSkill(skill, { player: "phaseJieshuBegin" });
-			player.storage[skill + "_target"].addArray(targets);
-			targets.forEach(target => target.markAuto(skill, player));
+			player.markAuto(skill, targets);
+			targets.forEach(target => target.markAuto(event.name, player));
+		},
+		intro: {
+			content: `下一次受到伤害后，依次摸体力上限张牌（最多摸5张），然后将超出体力上限的牌数交给<span class=thundertext>$</span>`,
 		},
 		subSkill: {
 			effect: {
 				audio: "dcguying",
 				charlotte: true,
 				forced: true,
-				intro: {
-					content(storage, player) {
-						return `下一次受到伤害后，依次摸体力上限张牌（最多摸5张），然后将超出体力上限的牌数交给<span class=thundertext>${get.translation(storage)}</span>`;
-					},
-				},
-				init(player, skill) {
-					player.storage[skill + "_target"] = [];
-				},
 				onremove(player, skill) {
-					player.storage[skill + "_target"].forEach(target => target.unmarkAuto(skill, player));
-					delete player.storage[skill + "_target"];
+					player.storage[skill].forEach(target => target.unmarkAuto("dcguying", player));
+					delete player.storage[skill];
 				},
 				trigger: { global: "damageEnd" },
 				filter(event, player) {
-					return event.num > 0 && player.storage["dcguying_effect_target"].includes(event.player);
+					return event.num > 0 && player.getStorage("dcguying_effect").includes(event.player);
 				},
 				logTarget: "player",
 				async content(event, trigger, player) {
@@ -416,8 +409,8 @@ const skills = {
 						delete player.storage.dcguying_double;
 					}
 					const target = trigger.player;
-					player.storage["dcguying_effect_target"].remove(target);
-					target.unmarkAuto(event.name, player);
+					player.unmarkAuto(event.name, target);
+					target.unmarkAuto("dcguying", player);
 					await target.draw(Math.min(5, target.maxHp));
 					const num = target.countCards("h") - target.maxHp;
 					if (num > 0 && target != player) {
@@ -4209,6 +4202,9 @@ const skills = {
 					target.addJudge({ name: "dczixi_" + cardname }, [card]);
 				}
 			}
+		},
+		ai: {
+			combo: "dcqiqin",
 		},
 		group: "dczixi_effect",
 		subSkill: {

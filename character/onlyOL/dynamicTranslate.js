@@ -17,14 +17,14 @@ const dynamicTranslates = {
 	olsbzhijue(player) {
 		const bool = player.storage.olsbzhijue;
 		let yang = "出牌阶段，你可将牌堆顶的一张牌当【火攻】使用",
-			yin = "你可将手牌中一种颜色的手牌当【无懈可击】使用（须与上一次阳状态使用牌的颜色不同）";
+			yin = "将一种颜色的手牌置入弃牌堆（每种颜色每回合限一次），然后可视为使用其中一张基本牌或普通锦囊牌";
 		if (bool) {
 			yin = `<span class='bluetext'>${yin}</span>`;
 		} else {
 			yang = `<span class='firetext'>${yang}</span>`;
 		}
 		let start = "转换技，",
-			end = "。若你以此法使用的牌未造成伤害，你令〖知天〗可见牌与观看牌数-1（至少减至1），然后你摸两张牌。";
+			end = "。若你以此法未造成伤害，你令〖知天〗可见牌与观看牌数-1（至少减至1），然后你摸两张牌。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
 	olsbjinming(player) {

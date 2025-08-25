@@ -6778,7 +6778,7 @@ const skills = {
 					if (event.name.indexOf("lose") == 0) {
 						return (
 							event.type == "discard" &&
-							game.hasPlayer(current => {
+							game.hasPlayer2(current => {
 								return event.getl(current)?.cards2?.length;
 							})
 						);

@@ -15,7 +15,7 @@ const characters = {
 		sex: "male",
 		group: "shu",
 		hp: 3,
-		skills: ["olsbzhitian", "olsbliwu", "olsbzhijue"],
+		skills: ["olsbzhitian", "olsbwujing", "olsbzhijue"],
 		names: "诸葛|亮",
 	},
 	ol_sunluban: {

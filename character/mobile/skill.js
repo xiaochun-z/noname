@@ -9897,7 +9897,7 @@ const skills = {
 		selectCard: [-1, -2],
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			const targets = game.filterPlayer(current => current !== player);
+			const targets = game.filterPlayer(current => current !== player).sortBySeat();
 			for (const target of targets) {
 				player.line(target, "thunder");
 				await target.loseHp();

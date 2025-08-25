@@ -6012,9 +6012,9 @@ player.removeVirtualEquip(card);
 				}*/
 				if (event.result.skill) {
 					const info = get.info(event.result.skill);
-					if (info && info.content && !game.online) {
-						const next = game.createEvent(event.result.skill);
-						next.setContent(info.content);
+					if (info && info.precontent && !game.online) {
+						const next = game.createEvent("pre_" + event.result.skill);
+						next.setContent(info.precontent);
 						next.set("result", event.result);
 						next.set("player", player);
 						await next;
@@ -8767,7 +8767,7 @@ player.removeVirtualEquip(card);
 						const targets = event.showers.concat(Array.from(ownerLose.keys()));
 						for (const target of targets.unique().sortBySeat()) {
 							const cardsx = ownerLose.get(target)?.filter(card => !event.hiddenCards?.includes(card));
-							if (cardsx.length) {
+							if (cardsx?.length) {
 								const logList = event.log?.(cardsx, target) || [target, "展示了", cardsx];
 								game.log(...logList);
 							}
@@ -8784,7 +8784,7 @@ player.removeVirtualEquip(card);
 				if (!event.noOrdering) {
 					//有noOrdering属性亮出牌就不会把牌丢进处理区
 					//showCards的relatedEvent属性是牌要在某个特定事件之后进入弃牌堆的，比如一些需要多次亮出牌的，因为多个展示牌事件独立，不set的话会在展示牌事件结束后就置入弃牌堆
-					if (ownerLose.values().length > 0) {
+					if (ownerLose.values()?.length > 0) {
 						const next = game.loseAsync(Array.from(ownerLose.entries())).set("relatedEvent", event.relatedEvent || event.getParent());
 						next.setContent("chooseToCompareLose");
 						await next;
