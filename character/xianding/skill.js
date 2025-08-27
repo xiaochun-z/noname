@@ -6869,7 +6869,7 @@ const skills = {
 				async content(event, trigger, player) {
 					const firstCard = player.getExpansions("dczhengyue")[0];
 					if (get.suit(firstCard) == get.suit(trigger.card) || get.number(firstCard) == get.number(trigger.card) || get.name(firstCard) == get.name(trigger.card)) {
-						await player.discard([firstCard]);
+						await player.loseToDiscardpile(firstCard);
 						await player.draw(2);
 					} else {
 						const puts = trigger.cards.filterInD("ode");
@@ -13241,7 +13241,7 @@ const skills = {
 		audioname: ["dc_sb_zhouyu_shadow"],
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
-			return event.targets?.some(target => target != player);
+			return event.targets?.some(target => target != player && target.isIn());
 		},
 		usable: 1,
 		async cost(event, trigger, player) {
