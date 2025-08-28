@@ -1,6 +1,23 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
+	olsblixian(player) {
+		let names =
+			player
+				.getStorage("olsblixian_names")
+				.map((name, i, arr) => `${i == arr.length - 1 ? "或" : "、"}【${get.translation(name)}】`)
+				.join("") || "";
+		let triggers =
+			player
+				.getStorage("olsblixian_triggers")
+				.map(i => get.translation(i))
+				.join("、") + "或";
+		if (triggers.length < 2) {
+			triggers = "";
+		}
+		console.log(triggers);
+		return `${triggers}当你受到伤害后，你可将一张牌当【无中生有】${names}使用。当你以此法使用过三种不同牌名的锦囊牌后，此技能于你的结束阶段也可发动。`;
+	},
 	olsbqianfu(player) {
 		const bool = player.storage.olsbqianfu;
 		let yang = "你可以将一张黑色牌当【过河拆桥】使用",

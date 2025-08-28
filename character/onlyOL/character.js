@@ -154,7 +154,7 @@ const characters = {
 		sex: "female",
 		group: "shu",
 		hp: 3,
-		skills: ["olsbbingcai", "olsblixian"],
+		skills: ["olsblixian", "olsbbingcai"],
 	},
 	ol_sb_jushou: {
 		sex: "male",
