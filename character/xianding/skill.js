@@ -2763,6 +2763,7 @@ const skills = {
 	},
 	//吴质
 	dcweiti: {
+		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget: true,
@@ -2820,6 +2821,7 @@ const skills = {
 		},
 	},
 	dcyuanrong: {
+		audio: 2,
 		trigger: {
 			player: "phaseEnd",
 		},

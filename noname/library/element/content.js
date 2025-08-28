@@ -9989,7 +9989,6 @@ player.removeVirtualEquip(card);
 			event.includeOut = true;
 		}
 		event._skill = event.skill;
-		game.trySkillAudio(event.skill, player, null, null, null, [event, event.player]);
 		var checkShow = player.checkShow(event.skill);
 		if (info.discard != false && info.lose != false && !info.viewAs) {
 			player.discard(cards).delay = false;
@@ -10060,6 +10059,7 @@ player.removeVirtualEquip(card);
 		}
 		str += "发动了";
 		if (!info.direct && info.log !== false) {
+			game.trySkillAudio(event.skill, player, null, null, null, [event, event.player]);
 			game.log(player, str, "【" + get.skillTranslation(skill, player) + "】");
 			if (info.logv !== false) {
 				game.logv(player, skill, targets);
