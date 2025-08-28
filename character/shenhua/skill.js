@@ -106,8 +106,10 @@ const skills = {
 		discard: false,
 		lose: false,
 		delay: false,
-		viewAs: {
-			name: "tiesuo",
+		viewAs(cards, player) {
+			return {
+				name: "tiesuo",
+			}
 		},
 		prepare: () => true,
 		async precontent(event, trigger, player) {

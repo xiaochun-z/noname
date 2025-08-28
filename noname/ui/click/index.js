@@ -2833,7 +2833,7 @@ export class Click {
 			}
 		} else {
 			ui.selected.targets.add(this);
-			if (_status.event.name == "chooseTarget" || _status.event.name == "chooseToUse" || _status.event.name == "chooseCardTarget") {
+			if (["chooseTarget", "chooseToUse", "chooseCardTarget", "chooseButtonTarget"].includes(_status.event.name)) {
 				var targetprompt = null;
 				if (_status.event.targetprompt) {
 					targetprompt = _status.event.targetprompt;

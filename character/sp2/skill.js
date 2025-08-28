@@ -878,8 +878,7 @@ const skills = {
 	},
 	dcquxian: {
 		audio: 2,
-		enable: "phaseUse",
-		usable: 1,
+		trigger: { player: ["phaseBegin", "phaseEnd"] },
 		async content(event, trigger, player) {
 			const card = get.cardPile2("sha");
 			if (card) {
@@ -904,10 +903,11 @@ const skills = {
 			if (result?.targets?.length) {
 				const target = result.targets[0];
 				player.line(target);
-				const targets = game.filterPlayer(current => current.inRange(target)).sortBySeat();//current != player && 
+				const targets = game.filterPlayer(current => current.inRange(target)).sortBySeat(); //current != player &&
 				if (!targets.length) {
 					return;
 				}
+				player.addTempSkill(event.name + "_draw");
 				const sha = [],
 					nosha = [];
 				while (targets.length) {
@@ -937,10 +937,9 @@ const skills = {
 						nosha.push(current);
 					}
 				}
+				player.removeSkill(event.name + "_draw");
 				if (!target.hasHistory("damage", evt => evt.getParent().type == "card" && evt.getParent(4) == event) && sha.length && nosha.length) {
-					for (const i of nosha) {
-						await i.loseHp(sha.length);
-					}
+					await game.doAsyncInOrder(nosha, async (targetx, i) => targetx.loseHp(sha.length));
 				}
 			}
 		},
@@ -948,6 +947,20 @@ const skills = {
 			order: 5,
 			result: {
 				player: 1,
+			},
+		},
+		subSkill: {
+			draw: {
+				charlotte: true,
+				forced: true,
+				popup: false,
+				trigger: { global: "useCard" },
+				filter(event, player) {
+					return event.getParent(2).name == "dcquxian" && event.getParent(2).player == player && event.card.name == "sha";
+				},
+				async content(event, trigger, player) {
+					await player.draw();
+				},
 			},
 		},
 	},
@@ -15071,7 +15084,7 @@ const skills = {
 				async cost(event, trigger, player) {
 					const targets = player.getStorage(event.skill);
 					for (const target of targets.sortBySeat(_status.currentPhase)) {
-						if (!target.isIn() || trigger.name == "damage" && target != trigger.source) {
+						if (!target.isIn() || (trigger.name == "damage" && target != trigger.source)) {
 							continue;
 						}
 						await target.useSkill(event.skill, [player]);

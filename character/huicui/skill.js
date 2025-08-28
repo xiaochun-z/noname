@@ -15372,7 +15372,7 @@ const skills = {
 									use -= Math.sqrt(Math.abs(val));
 								}
 							});
-							const res = [use, (att - 1) * Math.min(...Object.values(suits)), -event.num];
+							const res = [use, (att - 1) * Math.min(...Object.values(suits)), -num];
 							return res.indexOf(Math.max(...res));
 						})()
 					)
@@ -15380,44 +15380,42 @@ const skills = {
 			} else {
 				result = { index: 0 };
 			}
-			if (result?.control) {
-				switch (result.index) {
-					case 0:
-						target.addTempSkill("yachai_block");
-						await player.draw(2);
-						return;
-					case 1: {
-						await target.showHandcards();
-						const map = {},
-							hs = target.getCards("h");
-						for (const i of hs) {
-							map[get.suit(i, target)] = true;
-						}
-						const list = Object.keys(map).filter(i => lib.suit.includes(i));
-						let result2;
-						if (!list.length) {
-							return;
-						} else if (list.length == 1) {
-							result2 = { control: list[0] };
-						} else {
-							result2 = await target
-								.chooseControl(list)
-								.set("prompt", "将一种花色的牌交给" + get.translation(player))
-								.forResult();
-						}
-						if (result2?.control) {
-							const cards = target.getCards("h", function (card) {
-								return get.suit(card, target) == result2.control && lib.filter.canBeGained(card, player, target, "yachai");
-							});
-							if (cards.length) {
-								await target.give(cards, player, "give");
-							}
-						}
-						return;
+			switch (result?.index) {
+				case 0:
+					target.addTempSkill("yachai_block");
+					await player.draw(2);
+					return;
+				case 1: {
+					await target.showHandcards();
+					const map = {},
+						hs = target.getCards("h");
+					for (const i of hs) {
+						map[get.suit(i, target)] = true;
 					}
-					case 2:
-						await target.chooseToDiscard("h", true, num);
+					const list = Object.keys(map).filter(i => lib.suit.includes(i));
+					let result2;
+					if (!list.length) {
+						return;
+					} else if (list.length == 1) {
+						result2 = { control: list[0] };
+					} else {
+						result2 = await target
+							.chooseControl(list)
+							.set("prompt", "将一种花色的牌交给" + get.translation(player))
+							.forResult();
+					}
+					if (result2?.control) {
+						const cards = target.getCards("h", function (card) {
+							return get.suit(card, target) == result2.control && lib.filter.canBeGained(card, player, target, "yachai");
+						});
+						if (cards.length) {
+							await target.give(cards, player, "give");
+						}
+					}
+					return;
 				}
+				case 2:
+					await target.chooseToDiscard("h", true, num);
 			}
 		},
 		subSkill: {
