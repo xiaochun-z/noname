@@ -1474,6 +1474,7 @@ const skills = {
 					filterTarget: lib.filter.notMe,
 					selectTarget: [1, num],
 					complexCard: true,
+					position: "he",
 					filterOk() {
 						if (!ui.selected.cards.length) {
 							return false;
@@ -2452,7 +2453,7 @@ const skills = {
 							continue;
 						}
 						return skill;
-					} while (true);
+					} while (count < 10);
 					return null;
 				},
 				forced: true,
@@ -4876,7 +4877,9 @@ const skills = {
 			},
 			backup: {
 				log: false,
-				filterCard: true,
+				filterCard(card) {
+					return get.itemtype(card) == "card";
+				},
 				position: "hes",
 				check(card) {
 					return 7 - get.value(card);
