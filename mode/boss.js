@@ -10141,24 +10141,18 @@ export default () => {
 					}
 					player.discard(player.getCards("j"));
 					"step 3";
-					game.resetSkills();
-					_status.paused = false;
 					let evt = _status.event.getParent("phaseLoop", true);
 					if (evt) {
+						game.resetSkills();
 						let evtx = _status.event;
 						while (evtx != evt) {
 							evtx.finish();
 							evtx.untrigger(true);
 							evtx = evtx.getParent();
 						}
-						evtx.player = _status.firstAct.previous;
-						//evtx.step = 0;
+						evtx.player = player;
+						evtx.step = 0;
 					}
-					_status.roundStart = _status.firstAct;
-					game.phaseNumber = 0;
-					game.roundNumber = 0;
-					game.updateRoundNumber();
-					game.gameDraw();
 					if (game.bossinfo) {
 						game.bossinfo.loopType = 1;
 						_status.roundStart = game.boss;

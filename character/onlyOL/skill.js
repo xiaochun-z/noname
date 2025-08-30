@@ -2081,6 +2081,7 @@ const skills = {
 				},
 			},
 			end: {
+				audio: "olmiluo",
 				trigger: {
 					global: "roundEnd",
 				},
@@ -2132,6 +2133,7 @@ const skills = {
 		},
 	},
 	oljueyan: {
+		audio: 2,
 		enable: "chooseToUse",
 		hiddenCard(player, name) {
 			const storage = player.getStorage("oljueyan_round");
@@ -2228,6 +2230,7 @@ const skills = {
 				},
 			},
 			draw: {
+				audio: "oljueyan",
 				trigger: {
 					player: "showCardsAfter",
 				},
@@ -4938,7 +4941,7 @@ const skills = {
 					player.addExpose(0.16);
 				}
 			}
-			if (get.type2(card) == "trick" && player.getStorage("olsblixian_names").length < 3) {
+			if (get.type2(card, player) == "trick" && player.getStorage("olsblixian_names").length < 3) {
 				const list = ["shunshou", "guohe", "tiesuo"].removeArray(player.getStorage("olsblixian_names")).map(i => ["trick", "", i]);
 				let result;
 				list.length == 1

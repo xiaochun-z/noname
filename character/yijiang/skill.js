@@ -12881,7 +12881,7 @@ const skills = {
 				cards.shift().discard();
 			}
 			"step 1";
-			var evt = _status.event.getParent("phase");
+			var evt = _status.event.getParent("phase", true);
 			if (evt) {
 				game.resetSkills();
 				_status.event = evt;
