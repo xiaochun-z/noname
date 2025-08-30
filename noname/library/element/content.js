@@ -1930,7 +1930,7 @@ player.removeVirtualEquip(card);
 				const filterMove = event.filterMove;
 				const filterOk = event.filterOk;
 				// 如果只有一行那么多选一般来说就没什么意义喵
-				const canMultiselect = list.length > 1 || !lib.config.choose_all_button || !event.allowChooseAll;
+				const canMultiselect = list.length > 1 && lib.config.choose_all_button && event.allowChooseAll;
 
 				//_status.imchoosing = true;
 				event.settleed = false;
