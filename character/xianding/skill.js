@@ -8977,7 +8977,7 @@ const skills = {
 				await target.chooseUseTarget(useCard, true);
 			} else {
 				const result = await target
-					.chooseToMove("告谏：是否交换其中任意张牌？", "noChooseAll")
+					.chooseToMove("告谏：是否交换其中任意张牌？")
 					.set("list", [
 						["你的手牌", target.getCards("h"), "dcgaojian_tag"],
 						["展示牌", showCards],
@@ -27051,7 +27051,7 @@ const skills = {
 			var cards = get.bottomCards(3);
 			event.cards2 = cards;
 			game.cardsGotoOrdering(cards);
-			var next = player.chooseToMove("兴作：将三张牌置于牌堆底", "noChooseAll");
+			var next = player.chooseToMove("兴作：将三张牌置于牌堆底");
 			var list = [["牌堆底", cards]],
 				hs = player.getCards("h");
 			if (hs.length) {

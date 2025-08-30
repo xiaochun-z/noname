@@ -6985,6 +6985,7 @@ const skills = {
 				enable: "phaseUse",
 				filterCard: true,
 				selectCard: [1, Infinity],
+				allowChooseAll: true,
 				position: "he",
 				discard: false,
 				lose: false,
@@ -9249,6 +9250,7 @@ const skills = {
 		lose: false,
 		delay: false,
 		selectCard: [1, Infinity],
+		allowChooseAll: true,
 		check(card) {
 			let player = _status.event.player;
 			if (
