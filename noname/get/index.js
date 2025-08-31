@@ -6006,8 +6006,12 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		};
 		if (uiintro._poptipAdjust) {
 			window.removeEventListener("resize", uiintro._poptipAdjust);
-			if (uiintro._poptipObserver) uiintro._poptipObserver.disconnect();
-			if (uiintro._poptipRemoveObserver) uiintro._poptipRemoveObserver.disconnect();
+			if (uiintro._poptipObserver) {
+				uiintro._poptipObserver.disconnect();
+			}
+			if (uiintro._poptipRemoveObserver) {
+				uiintro._poptipRemoveObserver.disconnect();
+			}
 		}
 		uiintro._poptipAdjust = adjust;
 		window.addEventListener("resize", adjust);
