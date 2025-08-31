@@ -5931,7 +5931,6 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			lib.setScroll(uiintro.contentContainer);
 		}
 
-		uiintro.style.maxHeight = "40%";
 		lib.placePoppedDialog(uiintro, event);
 		const layer = ui.create.div(".poplayer", ui.window);
 		_status.poptip = [uiintro, layer];
