@@ -1529,7 +1529,7 @@ const skills = {
 				},
 				firstDo: true,
 				trigger: {
-					player: ["chooseToUseBegin", "useCard1"],
+					player: ["chooseToUseBegin", "useCardAfter"],
 				},
 				filter(event, player) {
 					if (event.name == "chooseToUse") {
