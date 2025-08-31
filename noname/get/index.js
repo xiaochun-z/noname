@@ -1476,9 +1476,9 @@ export class Get extends GetCompatible {
 			}
 			const parser = new DOMParser(),
 				doc = parser.parseFromString(htmlContent || "", "text/html");
-			
+
 			// 初始化poptip名称
-			doc.querySelectorAll("noname-poptip").forEach((poptip) => {
+			doc.querySelectorAll("noname-poptip").forEach(poptip => {
 				Object.setPrototypeOf(poptip, HTMLPoptipElement.prototype);
 				//@ts-expect-error ignore
 				poptip.createdCallback();
@@ -5915,7 +5915,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	/**
 	 *
 	 * 弹出特殊名词的解释窗口
-	 * @param {string} info 对应解释在lib.poptipMap的键
+	 * @param {string} info 对应解释在lib.poptip的值
 	 * @param {PointerEvent|TouchEvent} event 点击事件
 	 */
 	poptipIntro(info, event) {
@@ -5970,6 +5970,65 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			uiintro.listen(clickintro);
 		}
 		uiintro._close = clicklayer;
+
+		const adjust = function () {
+			const margin = 8; //上下最小间距
+			uiintro.style.maxHeight = "none";
+			uiintro.style.overflowY = "";
+			if (uiintro._poptipOriginalTransform === undefined) {
+				uiintro._poptipOriginalTransform = uiintro.style.transform || "";
+			}
+			const rect = uiintro.getBoundingClientRect();
+			const top = rect.top;
+			const naturalHeight = uiintro.scrollHeight;
+			const winH = window.innerHeight;
+			const availableBelow = winH - top - margin;
+			const allowedFull = winH - margin * 2;
+			if (naturalHeight <= availableBelow) {
+				uiintro.style.transform = uiintro._poptipOriginalTransform || "";
+				uiintro.style.maxHeight = "none";
+				uiintro.style.overflowY = "";
+				uiintro._poptipTranslate = 0;
+				return;
+			}
+			const desiredTop = Math.max(margin, Math.min(top, winH - margin - naturalHeight));
+			const lift = top - desiredTop;
+			const baseTransform = uiintro._poptipOriginalTransform || "";
+			uiintro._poptipTranslate = lift;
+			uiintro.style.transform = baseTransform + ` translateY(${-lift}px)`;
+			if (naturalHeight > allowedFull) {
+				uiintro.style.maxHeight = allowedFull + "px";
+				uiintro.style.overflowY = "auto";
+			} else {
+				uiintro.style.maxHeight = "none";
+				uiintro.style.overflowY = "";
+			}
+		};
+		if (uiintro._poptipAdjust) {
+			window.removeEventListener("resize", uiintro._poptipAdjust);
+			if (uiintro._poptipObserver) uiintro._poptipObserver.disconnect();
+			if (uiintro._poptipRemoveObserver) uiintro._poptipRemoveObserver.disconnect();
+		}
+		uiintro._poptipAdjust = adjust;
+		window.addEventListener("resize", adjust);
+		const mo = new MutationObserver(adjust);
+		mo.observe(uiintro, { childList: true, subtree: true, characterData: true });
+		uiintro._poptipObserver = mo;
+		const removeObserver = new MutationObserver(mutations => {
+			for (const m of mutations) {
+				for (const node of m.removedNodes) {
+					if (node === uiintro) {
+						window.removeEventListener("resize", adjust);
+						mo.disconnect();
+						removeObserver.disconnect();
+						return;
+					}
+				}
+			}
+		});
+		removeObserver.observe(document.body, { childList: true, subtree: true });
+		uiintro._poptipRemoveObserver = removeObserver;
+		requestAnimationFrame(adjust);
 		return uiintro;
 	}
 	groups() {
