@@ -5686,7 +5686,7 @@ export default {
 					(get.suit(card) == "spade" && player.getHp() == 1) ||
 					(get.suit(card) == "club" && get.tag(cardx, "damage") && player.countCards("h") - (get.position(card) == "h" ? 1 : 0) - (get.position(cardx) == "h" ? 1 : 0) == 0)
 				) {
-					return 1 / (getvalue(card) || 0.5);
+					return 1 / (get.value(card) || 0.5);
 				}
 			}
 			return 0;

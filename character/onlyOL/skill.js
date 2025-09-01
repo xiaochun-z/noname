@@ -1474,6 +1474,7 @@ const skills = {
 					filterTarget: lib.filter.notMe,
 					selectTarget: [1, num],
 					complexCard: true,
+					position: "he",
 					filterOk() {
 						if (!ui.selected.cards.length) {
 							return false;
@@ -1528,7 +1529,7 @@ const skills = {
 				},
 				firstDo: true,
 				trigger: {
-					player: ["chooseToUseBegin", "useCard1"],
+					player: ["chooseToUseBegin", "useCardAfter"],
 				},
 				filter(event, player) {
 					if (event.name == "chooseToUse") {
@@ -2080,6 +2081,7 @@ const skills = {
 				},
 			},
 			end: {
+				audio: "olmiluo",
 				trigger: {
 					global: "roundEnd",
 				},
@@ -2131,6 +2133,7 @@ const skills = {
 		},
 	},
 	oljueyan: {
+		audio: 2,
 		enable: "chooseToUse",
 		hiddenCard(player, name) {
 			const storage = player.getStorage("oljueyan_round");
@@ -2227,6 +2230,7 @@ const skills = {
 				},
 			},
 			draw: {
+				audio: "oljueyan",
 				trigger: {
 					player: "showCardsAfter",
 				},
@@ -2452,7 +2456,7 @@ const skills = {
 							continue;
 						}
 						return skill;
-					} while (true);
+					} while (count < 10);
 					return null;
 				},
 				forced: true,
@@ -4876,7 +4880,9 @@ const skills = {
 			},
 			backup: {
 				log: false,
-				filterCard: true,
+				filterCard(card) {
+					return get.itemtype(card) == "card";
+				},
 				position: "hes",
 				check(card) {
 					return 7 - get.value(card);
@@ -4935,7 +4941,7 @@ const skills = {
 					player.addExpose(0.16);
 				}
 			}
-			if (get.type2(card) == "trick" && player.getStorage("olsblixian_names").length < 3) {
+			if (get.type2(card, player) == "trick" && player.getStorage("olsblixian_names").length < 3) {
 				const list = ["shunshou", "guohe", "tiesuo"].removeArray(player.getStorage("olsblixian_names")).map(i => ["trick", "", i]);
 				let result;
 				list.length == 1
