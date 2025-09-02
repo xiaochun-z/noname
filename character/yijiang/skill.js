@@ -450,7 +450,7 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "water",
 		filter(event, player) {
-			return player != event.player && !player.storage.rejueqing_rewrite;
+			return player != event.player && !player.storage.rejueqing_rewrite && event.notLink();
 		},
 		prompt2(event, player) {
 			var num = get.cnNumber(2 * event.num, true);
@@ -474,7 +474,17 @@ const skills = {
 		content() {
 			player.loseHp(trigger.num);
 			trigger.num *= 2;
-			player.storage.rejueqing_rewrite = true;
+			const next = game.createEvent("rejueqing_rewrite", false);
+			next.player = player;
+			next.setContent(() => {
+				if (!player.storage.rejueqing_rewrite) {
+					game.log(player, "修改了", "#g【绝情】");
+					player.popup("绝情");
+					player.storage.rejueqing_rewrite = true;
+				}
+			});
+			event.next.remove(next);
+			trigger.after.push(next);
 		},
 		derivation: "rejueqing_rewrite",
 		group: "rejueqing_rewrite",
@@ -12881,7 +12891,7 @@ const skills = {
 				cards.shift().discard();
 			}
 			"step 1";
-			var evt = _status.event.getParent("phase");
+			var evt = _status.event.getParent("phase", true);
 			if (evt) {
 				game.resetSkills();
 				_status.event = evt;

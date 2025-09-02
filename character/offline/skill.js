@@ -9735,7 +9735,7 @@ const skills = {
 			player.awakenSkill(event.name);
 			player.addTempSkill(event.name + "_buff");
 		},
-		ai: {
+		/*ai: {
 			order(item, player) {
 				if (
 					game.hasPlayer(current => {
@@ -9757,7 +9757,7 @@ const skills = {
 					return player.hasCard(card => get.tag(card, "damage") > 0.5 && player.hasValueTarget(card), "hs") ? 1 : 0;
 				},
 			},
-		},
+		},*/
 		subSkill: {
 			buff: {
 				trigger: { player: ["useCard", "phaseJieshuBegin"] },
@@ -9771,7 +9771,7 @@ const skills = {
 				charlotte: true,
 				async content(event, trigger, player) {
 					if (trigger.name == "useCard") {
-						trigger.directHit.addArray(game.filterPlayer2());
+						trigger.customArgs.default.directHit2 = true;
 					} else {
 						await player.die();
 					}

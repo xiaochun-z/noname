@@ -933,12 +933,13 @@ const skills = {
 						.forResultBool();
 					if (bool) {
 						sha.push(current);
-					} else {
+					} else if (current != player) {
 						nosha.push(current);
 					}
 				}
 				player.removeSkill(event.name + "_draw");
 				if (!target.hasHistory("damage", evt => evt.getParent().type == "card" && evt.getParent(4) == event) && sha.length && nosha.length) {
+					player.line(nosha, "green");
 					await game.doAsyncInOrder(nosha, async (targetx, i) => targetx.loseHp(sha.length));
 				}
 			}
