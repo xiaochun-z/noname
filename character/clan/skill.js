@@ -889,6 +889,7 @@ const skills = {
 	},
 	//族荀爽 —— by 刘巴
 	clanyangji: {
+		audio: 2,
 		trigger: {
 			player: "phaseZhunbeiBegin",
 			global: lib.phaseName.map(name => name + "End"),
@@ -968,6 +969,7 @@ const skills = {
 		},
 	},
 	clandandao: {
+		audio: 2,
 		trigger: { player: "judgeAfter" },
 		forced: true,
 		filter(event, player) {
@@ -995,6 +997,7 @@ const skills = {
 		},
 	},
 	clanqingli: {
+		audio: 2,
 		trigger: { global: "phaseEnd" },
 		forced: true,
 		filter(event, player) {
