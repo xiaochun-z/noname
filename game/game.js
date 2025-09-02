@@ -36,14 +36,13 @@
 	}
 
 	// 必须启用serviceWorker
-	if (!Reflect.has(navigator, "serviceWorker")) {
+	if (!("serviceWorker" in navigator)) {
 		return alert(globalText.SERVICE_WORKER_NOT_SUPPORT);
 	}
 
-	// 检查 window 对象中是否存在 "__core-js_shared__" 属性且webview等级过低
-	const [core, version] = get.coreInfo();
-	if (Reflect.has(window, "__core-js_shared__") && core === "chrome" && !isNaN(version) && version < 135) {
-		// 如果等级低且不存在，则执行以下操作
+	// 检查 window 对象中是否存在 "__core-js_shared__" 属性
+	if (!("__core-js_shared__" in window)) {
+		// 如果不存在，则执行以下操作
 		await new Promise(resolve => {
 			// 创建一个新的 <script> 元素
 			const coreJSBundle = document.createElement("script");
@@ -60,7 +59,7 @@
 	// 检查是否已经显示过GPL许可协议警告
 	if (!localStorage.getItem("gplv3_noname_alerted")) {
 		// 判断游戏是否已经初始化过
-		const gameIntialized = nonameInitialized?.length > 0;
+		const gameIntialized = nonameInitialized && nonameInitialized.length > 0;
 
 		// 如果满足以下条件之一，则显示GPL许可协议警告:
 		// 1. 已经初始化过
@@ -74,7 +73,11 @@
 		}
 	}
 
-	window["bannedExtensions"] = ["\u4fa0\u4e49", "\u5168\u6559\u7a0b", "\u5728\u7EBF\u66F4\u65B0"];
+	window["bannedExtensions"] = [
+		"\u4fa0\u4e49",
+		"\u5168\u6559\u7a0b",
+		"在线更新", //游戏内在线更新方式修改了，不再依赖于在线更新扩展了
+	];
 
 	// 检查是否是Safari浏览器
 	// 通过检查用户代理字符串是否包含 "safari" 且不包含 "chrome"，可以初步判断是不是Safari
@@ -151,42 +154,44 @@
 	}
 
 	// 使serviceWorker加载完成后，再加载entry.js
-	let scope = new URL("./", location.href).toString();
-	let registrations = await navigator.serviceWorker.getRegistrations();
-	let findServiceWorker = registrations.find(registration => {
-		return registration?.active?.scriptURL == `${scope}service-worker.js`;
-	});
+	if ("serviceWorker" in navigator) {
+		let scope = new URL("./", location.href).toString();
+		let registrations = await navigator.serviceWorker.getRegistrations();
+		let findServiceWorker = registrations.find(registration => {
+			return registration && registration.active && registration.active.scriptURL == `${scope}service-worker.js`;
+		});
 
-	try {
-		const registration_1 = await navigator.serviceWorker.register(`${scope}service-worker.js`, {
-			type: "module",
-			updateViaCache: "all",
-			scope,
-		});
-		// 初次加载worker，需要重新启动一次
-		if (!findServiceWorker) {
-			location.reload();
-		}
-		// 接收消息
-		navigator.serviceWorker.addEventListener("message", e => {
-			if (e.data?.type === "reload") {
-				window.location.reload();
+		try {
+			const registration_1 = await navigator.serviceWorker.register(`${scope}service-worker.js`, {
+				type: "module",
+				updateViaCache: "all",
+				scope,
+			});
+			// 初次加载worker，需要重新启动一次
+			if (!findServiceWorker) {
+				location.reload();
 			}
-		});
-		// 发送消息
-		// navigator.serviceWorker.controller.postMessage({ action: "reload" });
-		registration_1.update().catch(e => console.error("worker update失败", e));
-		if (!sessionStorage.getItem("canUseTs")) {
-			await import("./canUse.ts")
-				.then(({ text }) => console.log(text))
-				.catch(() => {
-					sessionStorage.setItem("canUseTs", "1");
-					location.reload();
-				});
+			// 接收消息
+			navigator.serviceWorker.addEventListener("message", e => {
+				if (e.data?.type === "reload") {
+					window.location.reload();
+				}
+			});
+			// 发送消息
+			// navigator.serviceWorker.controller.postMessage({ action: "reload" });
+			registration_1.update().catch(e => console.error("worker update失败", e));
+			if (!sessionStorage.getItem("canUseTs")) {
+				await import("./canUse.ts")
+					.then(({ text }) => console.log(text))
+					.catch(() => {
+						sessionStorage.setItem("canUseTs", "1");
+						location.reload();
+					});
+			}
+		} catch (e_1) {
+			console.log("serviceWorker加载失败: ", e_1);
+			return alert(globalText.SERVICE_WORKER_LOAD_FAILED);
 		}
-	} catch (e_1) {
-		console.log("serviceWorker加载失败: ", e_1);
-		return alert(globalText.SERVICE_WORKER_LOAD_FAILED);
 	}
 
 	// 创建一个新的 <script> 元素
@@ -481,7 +486,7 @@
 				if (typeof navigator.userAgentData != "undefined") {
 					// @ts-expect-error ignore
 					const userAgentData = navigator.userAgentData;
-					if (userAgentData.brands?.length) {
+					if (userAgentData.brands && userAgentData.brands.length) {
 						const brand = userAgentData.brands.find(({ brand }) => {
 							let str = brand.toLowerCase();
 							// 当前支持的浏览器中只有chrome支持userAgentData，故只判断chrome的情况
