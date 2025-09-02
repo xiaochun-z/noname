@@ -212,6 +212,18 @@ class SkillAudio {
 			this.info = {};
 		}
 		this.player = player;
+		if (this.player) {
+			const rawName = this.player.name;
+			const skinName = this.player.skin.name;
+			if (skinName && lib.characterSubstitute[rawName]?.find(i => i[0] === skinName)) {
+				const skin = lib.characterSubstitute[rawName].find(i => i[0] === skinName);
+				const tempCharacter = get.convertedCharacter(["", "", 0, [], skin[1]]);
+				// 如果配置的皮肤设置了tempname，会进行覆盖
+				if (tempCharacter.tempname.length) {
+					this.player.tempname = tempCharacter.tempname;
+				}
+			}
+		}
 		if (!audioname) {
 			this.audioname = [];
 		} else {
@@ -228,13 +240,15 @@ class SkillAudio {
 				this.filteredLogAudio2 = logAudio2;
 				this.useCache = false;
 			}
-		} else if (this.info.audioname2) {
+		}
+		if (this.info.audioname2) {
 			const key = this.getName(name => !!this.info.audioname2?.[name]);
 			const audioname2 = this.info.audioname2[key];
 			if (audioname2 != void 0) {
 				this.filteredAudioName2 = audioname2;
 			}
-		} else if (this.info.logAudio) {
+		}
+		if (this.info.logAudio) {
 			this.useCache = false;
 		}
 	}
