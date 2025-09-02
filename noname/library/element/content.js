@@ -1930,7 +1930,7 @@ player.removeVirtualEquip(card);
 				const filterMove = event.filterMove;
 				const filterOk = event.filterOk;
 				// 如果只有一行那么多选一般来说就没什么意义喵
-				const canMultiselect = list.length > 1 || !lib.config.choose_all_button || event.noChooseAll;
+				const canMultiselect = list.length > 1 && lib.config.choose_all_button && event.allowChooseAll;
 
 				//_status.imchoosing = true;
 				event.settleed = false;
@@ -2319,7 +2319,8 @@ player.removeVirtualEquip(card);
 
 					let spannedSingle = false;
 
-					if (ui.selected.buttons.length === 1) {
+					// 我们要判断是不是跨区的单个交换喵，但是如果是拖拽的情况下一定是单个交换喵，所以没必要进行额外判断喵
+					if (!isDragging && ui.selected.buttons.length === 1) {
 						const curCard = ui.selected.buttons[0];
 						const target = e.target;
 						if (!curCard.contains(target)) {
@@ -2337,7 +2338,7 @@ player.removeVirtualEquip(card);
 					if (isDragging || (!canMultiselect && ui.selected.buttons.length === 1) || spannedSingle) {
 						const curCard = ui.selected.buttons[0];
 						// 鼠标当前处于哪个元素上
-						const target = e.target;
+						const target = document.elementFromPoint(clientX * game.documentZoom, clientY * game.documentZoom);
 						// 相当于没移动，让它自己触发后续的click
 						if (curCard.contains(target)) {
 							return;

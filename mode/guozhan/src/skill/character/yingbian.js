@@ -3213,7 +3213,7 @@ export default {
 			const {
 				result: { bool, moved },
 			} = await player
-				.chooseToMove(get.prompt2("fakequanbian"), "noChooseAll")
+				.chooseToMove(get.prompt2("fakequanbian"))
 				.set("list", [
 					["牌堆顶", cards.slice(0, Math.min(player.maxHp, cards.length)), "fakequanbian_tag"],
 					["手牌", player.getCards("h")],

@@ -1207,6 +1207,7 @@ export default {
 		},
 		filterCard: true,
 		selectCard: [1, Infinity],
+		allowChooseAll: true,
 		discard: false,
 		lose: false,
 		delay: false,
