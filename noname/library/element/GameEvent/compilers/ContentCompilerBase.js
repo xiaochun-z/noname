@@ -8,20 +8,31 @@ export default class ContentCompilerBase {
 	}
 	isPrevented(event) {
 		const { player } = event;
-		if (event.name === "phaseLoop") return false;
-		if (!player) return false;
+		if (event.name === "phaseLoop") {
+			return false;
+		}
+		if (!player) {
+			return false;
+		}
 		if (player.isDead() && !event.forceDie) {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			game.broadcastAll(function () {
 				while (_status.dieClose.length) {
 					_status.dieClose.shift().close();
 				}
 			});
-			if (event._oncancel) event._oncancel();
+			if (event._oncancel) {
+				event._oncancel();
+			}
 		} else if (player.isOut() && !event.includeOut) {
-			if (event.name == "phase" && player == _status.roundStart && !event.skill) _status.roundSkipped = true;
-		} else if (player.removed) void 0;
-		else return false;
+			if (event.name == "phase" && player == _status.roundStart && !event.skill) {
+				_status.roundSkipped = true;
+			}
+		} else if (player.removed) {
+			void 0;
+		} else {
+			return false;
+		}
 		event.finish();
 		return true;
 	}

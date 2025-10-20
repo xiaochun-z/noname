@@ -1,4 +1,28 @@
 const characters = {
+	wild_liru: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["olhuaquan", "olsanou"],
+	},
+	ren_jiangwei: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["renhuoluan", "renguxing"],
+	},
+	ren_dengai: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["renneyan", "renqianyao"],
+	},
+	strong_caochong: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["strongduanti", "stronglianwu", "olchengxiang"],
+	},
 	taipingsangong: {
 		sex: "male",
 		group: "qun",
@@ -123,7 +147,7 @@ const characters = {
 	ol_jsrg_lvbu: {
 		sex: "male",
 		group: "qun",
-		hp: 5,
+		hp: 4,
 		skills: ["olfengzhu", "olyuyu", "ollbzhiji", "oljiejiu"],
 		img: "image/character/jsrg_lvbu.jpg",
 		names: "吕|布",

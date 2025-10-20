@@ -1,4 +1,30 @@
 const characters = {
+	ol_fanyufeng: {
+		sex: "female",
+		group: "qun",
+		hp: 3,
+		skills: ["olzhuoyue", "olqiaowu"],
+		names: "樊|玉凤",
+	},
+	ol_qiaogong: {
+		sex: "male",
+		group: "wu",
+		hp: 3,
+		skills: ["olmeiyan", "olshuoyu", "olzuobao"],
+		names: "桥|null",
+	},
+	zhangqiying: {
+		sex: "female",
+		group: "qun",
+		hp: 3,
+		skills: ["xinfu_falu", "xinfu_dianhua", "xinfu_zhenyi"],
+	},
+	ol_qiaoxuan: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["oltingji", "olxuanliu"],
+	},
 	ol_caizhenji: {
 		sex: "female",
 		group: "wei",
@@ -8,7 +34,7 @@ const characters = {
 	ol_zhangmancheng: {
 		sex: "male",
 		group: "qun",
-		hp: 5,
+		hp: 4,
 		skills: ["olkuangxin", "olleishi"],
 	},
 	ol_guanhai: {
@@ -158,7 +184,7 @@ const characters = {
 		sex: "female",
 		group: "qun",
 		hp: 3,
-		skills: ["olleiluan", "olfuchao"],
+		skills: ["leiluan", "fuchao"],
 	},
 	ol_kebineng: {
 		sex: "male",
@@ -242,6 +268,7 @@ const characters = {
 		group: "wu",
 		hp: 3,
 		skills: ["olxuanzhu", "oljiane"],
+		clans: ["吴郡陆氏"],
 	},
 	liupan: {
 		sex: "male",
@@ -796,7 +823,6 @@ const characters = {
 		hp: 3,
 		skills: ["weicheng", "daoshu"],
 	},
-
 	caoying: {
 		sex: "female",
 		group: "wei",
@@ -814,9 +840,8 @@ const characters = {
 		sex: "female",
 		group: "shu",
 		hp: 4,
-		skills: ["olwuniang", "olxushen"],
+		skills: ["newwuniang", "newzhennan", "newxushen"],
 	},
-
 	yangxiu: {
 		sex: "male",
 		group: "wei",

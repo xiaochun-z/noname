@@ -72,10 +72,12 @@ export class Pagination {
 		pCNameList.forEach(item => {
 			item.addEventListener(state.changePageEvent, (/** @type { Event } */ e) => {
 				/** @type { HTMLElement } */
-				// @ts-ignore
+				// @ts-expect-error ignore
 				const currentPageEle = e.target;
 				// 点击的是当前页数不进行操作
-				if (this.hasClass(currentPageEle, state.activeCName)) return;
+				if (this.hasClass(currentPageEle, state.activeCName)) {
+					return;
+				}
 				let dataNumberAttr = currentPageEle.getAttribute(state.dataNumberAttr);
 				// 点击数字按钮
 				if (dataNumberAttr) {
@@ -114,7 +116,9 @@ export class Pagination {
 		if (state.pageNumber !== pageNumber) {
 			// 清除 active 样式
 			const active = this.selectorEle(`.${state.pCName}.${state.activeCName}`);
-			if (active) this.removeClass(active, state.activeCName);
+			if (active) {
+				this.removeClass(active, state.activeCName);
+			}
 			if (state.activePosition) {
 				let rEllipseSign = state.totalPageCount - (state.maxShowBtnCount - state.activePosition) - 1;
 				// 左边不需要出现省略符号占位
@@ -122,7 +126,7 @@ export class Pagination {
 					if (+(evaNumberLi[1].getAttribute(state.dataNumberAttr) || 0) > 2) {
 						for (let i = 1; i < state.maxShowBtnCount + 1; i++) {
 							let value = String(i + 1);
-							// @ts-ignore
+							// @ts-expect-error ignore
 							evaNumberLi[i].innerText = state.pageNumberForCN?.[parseInt(value) - 1] ?? value;
 							evaNumberLi[i].setAttribute(state.dataNumberAttr, value);
 						}
@@ -138,7 +142,7 @@ export class Pagination {
 					this.hiddenEllipse(".ellipsis-tail", false);
 					for (let i = 1; i < state.maxShowBtnCount + 1; i++) {
 						let value = String(pageNumber + (i - state.activePosition));
-						// @ts-ignore
+						// @ts-expect-error ignore
 						evaNumberLi[i].innerText = state.pageNumberForCN?.[parseInt(value) - 1] ?? value;
 						evaNumberLi[i].setAttribute(state.dataNumberAttr, value);
 					}
@@ -151,13 +155,15 @@ export class Pagination {
 					if (+(evaNumberLi[len - 2].getAttribute(state.dataNumberAttr) || 0) < state.totalPageCount - 1) {
 						for (let i = 1; i < state.maxShowBtnCount + 1; i++) {
 							let value = String(state.totalPageCount - (state.maxShowBtnCount - i) - 1);
-							// @ts-ignore
+							// @ts-expect-error ignore
 							evaNumberLi[i].innerText = state.pageNumberForCN?.[parseInt(value) - 1] ?? value;
 							evaNumberLi[i].setAttribute(state.dataNumberAttr, value);
 						}
 					}
 					const active = Array.from(evaNumberLi).find(item => item.getAttribute(state.dataNumberAttr) === String(pageNumber));
-					if (active) this.addClass(active, state.activeCName);
+					if (active) {
+						this.addClass(active, state.activeCName);
+					}
 				}
 			} else {
 				// 不需要省略符号占位
@@ -198,7 +204,7 @@ export class Pagination {
 
 		if (this.element instanceof HTMLElement && pageContainer.contains(this.element)) {
 			pageContainer.removeChild(this.element);
-			// @ts-ignore
+			// @ts-expect-error ignore
 			this.element = void 0;
 		}
 
@@ -230,35 +236,39 @@ export class Pagination {
 			if (!afterElement || !pageContainer.contains(afterElement)) {
 				console.error(`未根据配置找到兄弟元素，元素将添加到父元素结尾`);
 				pageContainer.insertAdjacentHTML("beforeend", paginationStr);
-				// @ts-ignore
+				// @ts-expect-error ignore
 				this.element = pageContainer.lastElementChild;
 			} else {
 				afterElement.insertAdjacentHTML("afterend", paginationStr);
-				// @ts-ignore
+				// @ts-expect-error ignore
 				this.element = afterElement.nextElementSibling;
-				// @ts-ignore
+				// @ts-expect-error ignore
 				this.element.style.position = "static";
 			}
 		} else {
 			pageContainer.insertAdjacentHTML("beforeend", paginationStr);
-			// @ts-ignore
+			// @ts-expect-error ignore
 			this.element = pageContainer.lastElementChild;
 		}
 
 		// 在dialog中使用分页，将应用shadowed这个css类名以靠近dialog样式
 		let ele = this.element;
 		while (ele !== null) {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			if (ele.classList.contains("dialog")) {
-				// @ts-ignore
+				// @ts-expect-error ignore
 				Array.from(this.element.children).forEach(item => {
-					if (item.classList.contains("number-ellipsis") || item.classList.contains("ellipsis-tail")) return;
+					if (item.classList.contains("number-ellipsis") || item.classList.contains("ellipsis-tail")) {
+						return;
+					}
 					item.classList.add("shadowed");
 				});
 				break;
 			}
-			if (ele === document.body) break;
-			// @ts-ignore
+			if (ele === document.body) {
+				break;
+			}
+			// @ts-expect-error ignore
 			ele = ele.parentNode;
 		}
 		this.switchPage();
@@ -270,7 +280,9 @@ export class Pagination {
 	 */
 	isIllegal(pageNumber) {
 		let { state } = this;
-		if (state.pageRefuseChanged) return true;
+		if (state.pageRefuseChanged) {
+			return true;
+		}
 		return /*state.pageNumber === pageNumber || */ Math.ceil(pageNumber) !== pageNumber || pageNumber > state.totalPageCount || pageNumber < 1 || typeof pageNumber !== "number" || pageNumber !== pageNumber;
 	}
 	/**
@@ -279,7 +291,7 @@ export class Pagination {
 	 **/
 	hiddenEllipse(selector, shouldHidden = true) {
 		/** @type { HTMLElement } */
-		// @ts-ignore
+		// @ts-expect-error ignore
 		const element = this.selectorEle(selector);
 		if (element) {
 			element.style.display = shouldHidden ? "none" : "";

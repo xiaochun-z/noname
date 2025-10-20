@@ -7,7 +7,7 @@
 	 *
 	 * @type {[majorVersion: number, minorVersion: number, patchVersion: number]}
 	 */
-	const minSafariVersion = [15, 0, 0];
+	const minSafariVersion = [16, 4, 0];
 
 	// 获取基础变量
 	/**
@@ -23,9 +23,9 @@
 	// 使用到的文本
 	const globalText = {
 		GPL_ALERT: ["①无名杀是一款基于GPLv3协议的开源软件！", "你可以在遵守GPLv3协议的基础上任意使用，修改并转发《无名杀》，以及所有基于《无名杀》开发的拓展。", "点击“确定”即代表您认可并接受GPLv3协议↓️", "https://www.gnu.org/licenses/gpl-3.0.html", "②无名杀官方发布地址仅有GitHub仓库！", "其他所有的所谓“无名杀”社群（包括但不限于绝大多数“官方”QQ群、QQ频道等）均为玩家自发组织，与无名杀官方无关！"].join("\n"),
-		LOAD_ENTRY_FAILED: ["您使用的浏览器或《无名杀》客户端加载内容失败！", "请检查是否缺少游戏文件！隔版本更新请下载完整包而不是离线包！", "目前使用的浏览器UA信息为: ", userAgentLowerCase, "若您使用的客户端为自带内核的旧版“兼容版”，请及时更新客户端版本！", "若您使用的客户端为手机端的非兼容版《无名杀》，请尝试更新手机的WebView内核，或者更换为1.8.2版本及以上的兼容版！", "若您是直接使用浏览器加载index.html进行游戏，请改为运行文件夹内的“noname-server.exe”（或使用VSCode等工具启动Live Server），以动态服务器的方式启动《无名杀》！", "若您使用的是苹果端，请至少将Safari升级至14.5.0！"].join("\n"),
+		LOAD_ENTRY_FAILED: ["您使用的浏览器或《无名杀》客户端加载内容失败！", "请检查是否缺少游戏文件！隔版本更新请下载完整包而不是离线包！", "目前使用的浏览器UA信息为: ", userAgentLowerCase, "若您使用的客户端为自带内核的旧版“兼容版”，请及时更新客户端版本！", "若您使用的客户端为手机端的非兼容版《无名杀》，请尝试更新手机的WebView内核，或者更换为1.8.2版本及以上的兼容版！", "若您是直接使用浏览器加载index.html进行游戏，请改为运行文件夹内的“noname-server.exe”（或使用VSCode等工具启动Live Server），以动态服务器的方式启动《无名杀》！", "若您使用的是苹果端，请至少将Safari升级至16.4.0！"].join("\n"),
 		REDIRECT_TIP: ["您使用的浏览器或无名杀客户端的版本或内核版本过低，已经无法正常运行无名杀！", "目前使用的浏览器UA信息为: ", userAgentLowerCase, "如果你使用的是浏览器，请更新你的浏览器内核！", "如果你使用的是无名杀客户端，点击“确认”以前往GitHub下载最新版无名杀客户端（可能需要科学上网）。", "（第三方客户端请联系第三方客户端的发布者）"].join("\n"),
-		SAFARI_VERSION_NOT_SUPPORT: ["您使用的Safari浏览器无法支持当前无名杀所需的功能，请至少升级至15.0.0！", "当前浏览器的UA为: ", userAgentLowerCase, "稍后您的无名杀将自动退出（可能的话）"].join("\n"),
+		SAFARI_VERSION_NOT_SUPPORT: ["您使用的Safari浏览器无法支持当前无名杀所需的功能，请至少升级至16.4.0！", "当前浏览器的UA为: ", userAgentLowerCase, "稍后您的无名杀将自动退出（可能的话）"].join("\n"),
 		SERVICE_WORKER_NOT_SUPPORT: ["您使用的客户端或浏览器不支持启用serviceWorker", "请确保您的客户端或浏览器使用http://localhost或https协议打开《无名杀》并且启用serviceWorker！"].join("\n"),
 		SERVICE_WORKER_LOAD_FAILED: ["serviceWorker加载失败！", "游戏内容或许会因此加载失败！"].join("\n"),
 	};
@@ -109,7 +109,7 @@
 				window.__dirname = path.join(path.resolve(), "resources/app");
 			}
 			const oldData = Object.entries(window.require);
-			// @ts-ignore
+			// @ts-expect-error ignore
 			window.require = function (moduleId) {
 				try {
 					return module.require(moduleId);
@@ -123,15 +123,15 @@
 		}
 		// 增加导入ts的逻辑
 		window.require.extensions[".ts"] = function (module, filename) {
-			// @ts-ignore
+			// @ts-expect-error ignore
 			const _compile = module._compile;
-			// @ts-ignore
+			// @ts-expect-error ignore
 			module._compile = function (code, fileName) {
 				/**
 				 *
 				 * @type { import("typescript") }
 				 */
-				// @ts-ignore
+				// @ts-expect-error ignore
 				const ts = require("./game/typescript.js");
 				// 使用ts compiler对ts文件进行编译
 				const result = ts.transpile(
@@ -148,7 +148,7 @@
 				// 使用默认的js编译函数获取返回值
 				return _compile.call(this, result, fileName);
 			};
-			// @ts-ignore
+			// @ts-expect-error ignore
 			module._compile(require("fs").readFileSync(filename, "utf8"), filename);
 		};
 	}
@@ -168,8 +168,10 @@
 				scope,
 			});
 			// 初次加载worker，需要重新启动一次
-			if (!findServiceWorker) location.reload();
-			// 接收消息，暂时没用到
+			if (!findServiceWorker) {
+				location.reload();
+			}
+			// 接收消息
 			navigator.serviceWorker.addEventListener("message", e => {
 				if (e.data?.type === "reload") {
 					window.location.reload();
@@ -241,14 +243,14 @@
 				//electron
 				if (typeof window.process == "object" && typeof window.require == "function") {
 					const versions = window.process.versions;
-					// @ts-ignore
+					// @ts-expect-error ignore
 					const electronVersion = parseFloat(versions.electron);
 					let remote;
 					if (electronVersion >= 14) {
-						// @ts-ignore
+						// @ts-expect-error ignore
 						remote = require("@electron/remote");
 					} else {
-						// @ts-ignore
+						// @ts-expect-error ignore
 						remote = require("electron").remote;
 					}
 					const thisWindow = remote.getCurrentWindow();
@@ -270,7 +272,9 @@
 			 * @returns {Promise<unknown>}
 			 */
 			tryUpdateClient(type, text = "") {
-				if (!compatibleEnvironment && type != UpdateReason.DEBUG) return Promise.resolve();
+				if (!compatibleEnvironment && type != UpdateReason.DEBUG) {
+					return Promise.resolve();
+				}
 
 				/**
 				 * @param {*} url
@@ -281,7 +285,7 @@
 					let fileName = undefined;
 					let progress = createProgress("正在下载最新客户端");
 
-					// @ts-ignore
+					// @ts-expect-error ignore
 					return (
 						request(url, (receivedBytes, total, filename) => {
 							if (typeof filename == "string") {
@@ -296,12 +300,14 @@
 								max = 1000;
 							}
 							received = +(receivedBytes / (1024 * 1024)).toFixed(1);
-							if (received > max) max = received;
+							if (received > max) {
+								max = received;
+							}
 							progress.setProgressMax(max);
 							progress.setProgressValue(received);
 						})
 							.then(result => (progress.remove(), result))
-							// @ts-ignore
+							// @ts-expect-error ignore
 							.then(blob => ((blob.name = fileName), blob))
 					);
 				}
@@ -402,7 +408,7 @@
 							let tips = ["你使用的无名杀客户端版本号未达到最新无名杀需要的要求，未来可能将无法正常运行无名杀！", "目前使用的浏览器UA信息为: ", userAgent, "如果你使用的是第三方客户端，请联系客户端制作者更新或寻求解决方法！", "点击“确认”以前往GitHub下载最新版无名杀客户端（可能需要科学上网）", "稍后游戏将继续正常运行，但我们不保证不会出现任何报错"].join("\n");
 							fallback(tips);
 						}
-						// 使用chrome的，直接提示更新（不是现在还有人用Chrome 85以下的版本吗）
+						// 使用chrome的，直接提示更新
 						else {
 							let tips = ["你使用的浏览器内核已无法达到无名杀的最低要求，未来可能将无法使用！", "请更新你的Google Chrome/Chromium内核！", "稍后游戏将继续正常运行，但我们不保证不会出现任何报错"].join("\n");
 							alert(tips);
@@ -427,7 +433,9 @@
 			 */
 			checkVersion(require, current) {
 				// 防止不存在的意外，提前截断当前版本号的长度
-				if (current.length > require.length) current.length = require.length;
+				if (current.length > require.length) {
+					current.length = require.length;
+				}
 
 				// 考虑到玄学的NaN情况，记录是否存在NaN
 				let flag = false;
@@ -439,11 +447,17 @@
 						continue;
 					}
 					// 如果此时flag为true且current[i]不为NaN，版本号则不合法，直接否
-					if (flag) return false;
+					if (flag) {
+						return false;
+					}
 					// 上位版本号未达到要求，直接否决
-					if (require[i] > current[i]) return false;
+					if (require[i] > current[i]) {
+						return false;
+					}
 					// 上位版本号已超过要求，直接可行
-					if (current[i] > require[i]) return true;
+					if (current[i] > require[i]) {
+						return true;
+					}
 				}
 				return true;
 			}
@@ -468,9 +482,9 @@
 
 				// Chrome/Chromium下的实验性特性，具体可参见
 				// https://developer.mozilla.org/en-US/docs/Web/API/Navigator/userAgentData
-				// @ts-ignore
+				// @ts-expect-error ignore
 				if (typeof navigator.userAgentData != "undefined") {
-					// @ts-ignore
+					// @ts-expect-error ignore
 					const userAgentData = navigator.userAgentData;
 					if (userAgentData.brands && userAgentData.brands.length) {
 						const brand = userAgentData.brands.find(({ brand }) => {
@@ -550,7 +564,7 @@
 
 		const nonameInitialized = localStorage.getItem("noname_inited");
 		const assetURL = "";
-		const userAgent = navigator.userAgent
+		const userAgent = navigator.userAgent;
 		const userAgentLowerCase = userAgent.toLowerCase();
 
 		return {
