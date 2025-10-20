@@ -1,13 +1,18 @@
-FROM --platform=${TARGETPLATFORM} node:alpine
-#FROM node:alpine
-RUN npm install pm2 -g
+FROM --platform=${TARGETPLATFORM} node:20-alpine
+
+ENV NODE_ENV=production
+
+RUN npm install -g pm2
 
 WORKDIR /app
+
 COPY . .
+
+RUN npm install --omit=dev express@4.18.2 minimist ws
+
 RUN rm -rf noname-server.exe .git .github README.md Dockerfile .gitignore .dockerignore
-RUN npm install
 
 EXPOSE 80
 EXPOSE 8080
 
-CMD [ "pm2-runtime", "process.yml" ]
+CMD ["pm2-runtime", "process.yml"]
