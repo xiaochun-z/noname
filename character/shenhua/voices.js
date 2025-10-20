@@ -1,4 +1,6 @@
 export default {
+	"#yingyang1": "此战，我必取胜！",
+	"#yingyang2": "相斗之趣，吾常胜之！",
 	"#liegong_re_huangzhong1": "弓不离手，自有转机。",
 	"#liegong_re_huangzhong2": "箭阵开道，所向无敌！",
 	"#re_huangzhong:die": "把我的弓，拿来，呃。",
@@ -134,8 +136,8 @@ export default {
 	"#hunzi2": "愿承父志，与公瑾共谋天下！",
 	"#yinghun_sunce1": "父亲，助我背水一战！",
 	"#yinghun_sunce2": "孙氏英烈，庇佑江东！",
-	"#zhiba21": "是友是敌，一探便知。",
-	"#zhiba22": "我若怕你，非孙伯符也！",
+	"#zhiba1": "是友是敌，一探便知。",
+	"#zhiba2": "我若怕你，非孙伯符也！",
 	"#sunce:die": "内事不决问张昭，外事不决问周瑜……",
 	"#zhijian1": "请恕老臣直言！",
 	"#zhijian2": "为臣者，当冒死以谏！",

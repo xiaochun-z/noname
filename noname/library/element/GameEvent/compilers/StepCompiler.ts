@@ -7,6 +7,8 @@ import ContentCompiler from "./ContentCompiler.ts";
 import security from "../../../../util/security.js";
 import { CodeSnippet, ErrorManager } from "../../../../util/error.js";
 
+type GeneralFunction = (...args: any[]) => any;
+
 export default class StepCompiler extends ContentCompilerBase {
 	type = "step";
 
@@ -15,7 +17,9 @@ export default class StepCompiler extends ContentCompilerBase {
 	}
 
 	compile(content: EventContent) {
-		if (typeof content != "function") throw new Error("StepCompiler只能接受函数");
+		if (typeof content != "function") {
+			throw new Error("StepCompiler只能接受函数");
+		}
 
 		return new StepParser(content).getResult();
 	}
@@ -34,20 +38,24 @@ class StepParser {
 	 * 但是因为默认沙盒还是可以额外操作东西，
 	 * 故而对不同的运行域做了区分
 	 */
-	functionConstructor: new (...args: string[]) => Function;
+	functionConstructor: new (...args: string[]) => GeneralFunction;
 	str: string;
 	stepHead: string = "";
 	//func中要写步骤的话，必须要写step 0
 	step: number = 0;
-	contents: Function[] = [];
-	originals: Function[] = [];
+	contents: GeneralFunction[] = [];
+	originals: GeneralFunction[] = [];
 
-	constructor(func: Function) {
-		if (typeof func !== "function") throw new TypeError("为确保安全禁止用parsex/parseStep解析非函数");
+	constructor(func: GeneralFunction) {
+		if (typeof func !== "function") {
+			throw new TypeError("为确保安全禁止用parsex/parseStep解析非函数");
+		}
 		// ModAsyncFunction
-		this.functionConstructor = security.getIsolatedsFrom(func)[2];
+		this.functionConstructor = security.getIsolatedsFrom(func)[2] as any;
 		this.str = this.formatFunction(func);
-		if (lib.config.dev) this.replaceDebugger();
+		if (lib.config.dev) {
+			this.replaceDebugger();
+		}
 	}
 
 	getResult(): (e: GameEvent) => Promise<void> {
@@ -102,14 +110,14 @@ class StepParser {
 		ErrorManager.setCodeSnippet(compiled, new CodeSnippet(code, 3)); // 记录编译后函数的原代码片段
 		this.originals.push(compiled);
 		this.contents.push(function (event, trigger, player) {
-			//@ts-ignore
+			// @ts-expect-error ignore
 			return compiled.apply(this, [{ _status, ai, game, get, lib, ui }, event, trigger, player]);
 		});
 	}
 
-	formatFunction(func: Function) {
+	formatFunction(func: GeneralFunction) {
 		// 沙盒在封装函数时，为了保存源代码会另外存储函数的源代码
-		const decompileFunction: (func: Function) => string = security.isSandboxRequired() ? security.importSandbox().Marshal.decompileFunction : Function.prototype.call.bind(Function.prototype.toString);
+		const decompileFunction: (func: GeneralFunction) => string = security.isSandboxRequired() ? security.importSandbox().Marshal.decompileFunction : Function.prototype.call.bind(Function.prototype.toString);
 
 		//移除所有注释
 		const code = decompileFunction(func)
@@ -124,14 +132,16 @@ class StepParser {
 	}
 
 	replaceDebugger() {
-		let regex = /event\.debugger\(\)/;
+		const regex = /event\.debugger\(\)/;
 		// let hasDebugger = false;
-		let insertDebugger = `await event.debugger()`; // yield code=>eval(code) 唔唔不是我干的喵
+		const insertDebugger = `await event.debugger()`; // yield code=>eval(code) 唔唔不是我干的喵
 		let debuggerSkip = 0;
 		let debuggerResult: RegExpMatchArray | null;
 
 		while ((debuggerResult = this.str.slice(debuggerSkip).match(regex)) != null) {
-			if (debuggerResult.index == null) throw new Error("匹配到了debugger但是没有索引值");
+			if (debuggerResult.index == null) {
+				throw new Error("匹配到了debugger但是没有索引值");
+			}
 
 			let debuggerCopy = this.str;
 			debuggerCopy = debuggerCopy.slice(0, debuggerSkip + debuggerResult.index) + insertDebugger + debuggerCopy.slice(debuggerSkip + debuggerResult.index + debuggerResult[0].length, -1);

@@ -12,14 +12,14 @@ export class GameCompatible {
 		//electron
 		if (typeof window.process == "object" && typeof window.require == "function") {
 			const versions = window.process.versions;
-			// @ts-ignore
+			// @ts-expect-error ignore
 			const electronVersion = parseFloat(versions.electron);
 			let remote;
 			if (electronVersion >= 14) {
-				// @ts-ignore
+				// @ts-expect-error ignore
 				remote = require("@electron/remote");
 			} else {
-				// @ts-ignore
+				// @ts-expect-error ignore
 				remote = require("electron").remote;
 			}
 			const thisWindow = remote.getCurrentWindow();
@@ -41,7 +41,9 @@ export class GameCompatible {
 	 * @returns {Promise<unknown>}
 	 */
 	tryUpdateClient(type, text = "") {
-		if (!compatibleEnvironment && type != UpdateReason.DEBUG) return Promise.resolve();
+		if (!compatibleEnvironment && type != UpdateReason.DEBUG) {
+			return Promise.resolve();
+		}
 
 		/**
 		 * @param {*} url
@@ -52,7 +54,7 @@ export class GameCompatible {
 			let fileName = undefined;
 			let progress = createProgress("正在下载最新客户端");
 
-			// @ts-ignore
+			// @ts-expect-error ignore
 			return (
 				request(url, (receivedBytes, total, filename) => {
 					if (typeof filename == "string") {
@@ -67,12 +69,14 @@ export class GameCompatible {
 						max = 1000;
 					}
 					received = +(receivedBytes / (1024 * 1024)).toFixed(1);
-					if (received > max) max = received;
+					if (received > max) {
+						max = received;
+					}
 					progress.setProgressMax(max);
 					progress.setProgressValue(received);
 				})
 					.then(result => (progress.remove(), result))
-					// @ts-ignore
+					// @ts-expect-error ignore
 					.then(blob => ((blob.name = fileName), blob))
 			);
 		}

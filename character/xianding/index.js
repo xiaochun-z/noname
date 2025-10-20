@@ -5,6 +5,7 @@ import pinyins from "./pinyin.js";
 import skills from "./skill.js";
 import translates from "./translate.js";
 import characterIntros from "./intro.js";
+import perfectPairs from "./perfectPairs.js";
 import characterFilters from "./characterFilter.js";
 import dynamicTranslates from "./dynamicTranslate.js";
 import voices from "./voices.js";
@@ -24,6 +25,7 @@ game.import("character", function () {
 			dc_sb_lusu: [["dc_sb_lusu_shadow", []]],
 			dc_sb_jiaxu: [["dc_sb_jiaxu_shadow", []]],
 			dc_sb_xunyu: [["dc_sb_xunyu_shadow", []]],
+			dc_sb_jiangwei: [["dc_sb_jiangwei_shadow", []]],
 		},
 		characterFilter: { ...characterFilters },
 		characterTitle: {
@@ -32,6 +34,7 @@ game.import("character", function () {
 		},
 		dynamicTranslate: { ...dynamicTranslates },
 		characterIntro: { ...characterIntros },
+		perfectPair: { ...perfectPairs },
 		card: { ...cards },
 		skill: { ...skills },
 		translate: { ...translates, ...voices, ...characterSortTranslate },

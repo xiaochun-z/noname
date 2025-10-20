@@ -5,15 +5,17 @@ game.import("play", function () {
 	return {
 		name: "coin",
 		init() {
-			if (lib.config.mode != "chess" || get.config("chess_mode") != "leader") {
+			if (lib.config.mode !== "chess" || get.config("chess_mode") !== "leader") {
 				_status.coin = 0;
 			}
 		},
 		arenaReady() {
-			if (_status.video || _status.connectMode) return;
-			if (lib.config.mode != "chess" || get.config("chess_mode") != "leader") {
+			if (_status.video || _status.connectMode) {
+				return;
+			}
+			if (lib.config.mode !== "chess" || get.config("chess_mode") !== "leader") {
 				var str;
-				if (lib.config.coin_display_playpackconfig == "text") {
+				if (lib.config.coin_display_playpackconfig === "text") {
 					str = "<span>" + lib.config.coin + "</span><span>金</span>";
 				} else {
 					str = '<span style="position:absolute">㉤</span><span style="margin-left:18px;font-family:xinwei;line-height:10px">' + lib.config.coin + "</span>";
@@ -36,11 +38,11 @@ game.import("play", function () {
 						e.stopPropagation();
 					});
 					var clickBuy = function () {
-						if (this.innerHTML == "停止") {
+						if (this.innerHTML === "停止") {
 							game.haveFun[this.name + "Stop"]();
-						} else if (this.innerHTML == "开始") {
+						} else if (this.innerHTML === "开始") {
 							game.haveFun[this.name]();
-						} else if (this.innerHTML.indexOf("金") != -1) {
+						} else if (this.innerHTML.indexOf("金") !== -1) {
 							if (lib.config.coin >= this.content.cost) {
 								this.content.bought = true;
 								game.changeCoin(-this.content.cost);
@@ -84,7 +86,9 @@ game.import("play", function () {
 						uiintro.add('<div class="coin_buy">本局获胜<div class="menubutton">20金</span></div></div>');
 						var bet = uiintro.content.lastChild.lastChild.lastChild;
 						bet.listen(function () {
-							if (_status.betWin) return;
+							if (_status.betWin) {
+								return;
+							}
 							_status.betWin = true;
 							game.changeCoin(-20);
 							this.innerHTML = "已下注";
@@ -104,8 +108,8 @@ game.import("play", function () {
 
 		game: {
 			changeCoin(num, toast, audio) {
-				if (typeof num == "number" && ui.coin) {
-					if (num != 0 && toast !== false) {
+				if (typeof num === "number" && ui.coin) {
+					if (num !== 0 && toast !== false) {
 						ui.create.toast(`${num > 0 ? "获得" : "花费"}&nbsp;${Math.abs(num)}&nbsp;金币`);
 					}
 					if (audio !== false) {
@@ -113,7 +117,7 @@ game.import("play", function () {
 					}
 					game.saveConfig("coin", lib.config.coin + num);
 					var str;
-					if (lib.config.coin_display_playpackconfig == "text") {
+					if (lib.config.coin_display_playpackconfig === "text") {
 						str = "<span>" + lib.config.coin + "</span><span>金</span>";
 					} else {
 						str = '<span style="position:absolute">㉤</span><span style="margin-left:18px;font-family:xinwei;line-height:10px">' + lib.config.coin + "</span>";
@@ -133,7 +137,7 @@ game.import("play", function () {
 						size: "large",
 						control() {
 							var size = ui.create.div(".menubutton");
-							if (game.haveFun.list.snow.size == "small") {
+							if (game.haveFun.list.snow.size === "small") {
 								size.innerHTML = "大雪";
 							} else {
 								size.innerHTML = "小雪";
@@ -156,7 +160,9 @@ game.import("play", function () {
 					game.reload();
 				},
 				blink() {
-					if (game.haveFun.list.blink.running) return;
+					if (game.haveFun.list.blink.running) {
+						return;
+					}
 					game.haveFun.list.blink.running = true;
 					if (game.haveFun.blinkLoop) {
 						game.haveFun.blinkLoop();
@@ -293,7 +299,9 @@ game.import("play", function () {
 					}
 				},
 				star() {
-					if (game.haveFun.list.star.running) return;
+					if (game.haveFun.list.star.running) {
+						return;
+					}
 					game.haveFun.list.star.running = true;
 					if (game.haveFun.starLoop) {
 						game.haveFun.starLoop();
@@ -373,7 +381,9 @@ game.import("play", function () {
 							}
 
 							angle(angle, magnitude) {
-								if (angle && magnitude) return Vector.fromAngle(angle, magnitude);
+								if (angle && magnitude) {
+									return Vector.fromAngle(angle, magnitude);
+								}
 								return atan2(this.y, this.x);
 							}
 
@@ -420,8 +430,12 @@ game.import("play", function () {
 									const vectorX = field.pos.x - this.pos.x;
 									const vectorY = field.pos.y - this.pos.y;
 									const distance = this.pos.distance(field.pos);
-									if (distance < 1) field.grow(this);
-									if (distance < 100) this.doubleSize = true;
+									if (distance < 1) {
+										field.grow(this);
+									}
+									if (distance < 100) {
+										this.doubleSize = true;
+									}
 									const force = G(this.forceBetween(field, distance));
 									totalAccelerationX += vectorX * force;
 									totalAccelerationY += vectorY * force;
@@ -432,7 +446,9 @@ game.import("play", function () {
 								totalAccelerationY = 0;
 								for (let i = 0; i < particles.length; i++) {
 									const field = particles[i];
-									if (field === this || !field.alive) continue;
+									if (field === this || !field.alive) {
+										continue;
+									}
 									const vectorX = field.pos.x - this.pos.x;
 									const vectorY = field.pos.y - this.pos.y;
 									const distance = this.pos.distance(field.pos);
@@ -443,8 +459,12 @@ game.import("play", function () {
 												this.alive = false;
 												this.nova = true;
 												collidedMass += this.mass;
-											} else this.grow(field);
-										} else this.alive = false;
+											} else {
+												this.grow(field);
+											}
+										} else {
+											this.alive = false;
+										}
 									}
 									if (this.alive) {
 										const force = G(this.forceBetween(field, distance));
@@ -470,14 +490,20 @@ game.import("play", function () {
 							}
 
 							breakApart(minMass, maxParts) {
-								if (!minMass) minMass = 1;
-								if (!maxParts) maxParts = 2;
+								if (!minMass) {
+									minMass = 1;
+								}
+								if (!maxParts) {
+									maxParts = 2;
+								}
 								let remainingMass = this.mass;
 								let num = 0;
 								while (remainingMass > 0) {
 									const np = new Particle(this.pos.clone().random(this.mass), new Vector(0, 0));
 									np.mass = 1 + Math.random() * (remainingMass - 1);
-									if (num >= maxParts - 1) np.mass = remainingMass;
+									if (num >= maxParts - 1) {
+										np.mass = remainingMass;
+									}
 									np.mass = np.mass < minMass ? minMass : np.mass;
 									remainingMass -= np.mass;
 									num++;
@@ -508,7 +534,7 @@ game.import("play", function () {
 								const angle = this.vc.angle() + this.ang - Math.random() * this.ang * 2;
 								const magnitude = this.vc.magnitude();
 								const position = this.pos.clone();
-								position.add(new Vector(~~ (Math.random() * 100 - 50) * drawScale, ~~ (Math.random() * 100 - 50) * drawScale));
+								position.add(new Vector(~~(Math.random() * 100 - 50) * drawScale, ~~(Math.random() * 100 - 50) * drawScale));
 								const velocity = Vector.fromAngle(angle, magnitude);
 								return new Particle(position, velocity);
 							}
@@ -583,9 +609,9 @@ game.import("play", function () {
 						};
 
 						var ctr = 0;
-						var c = ["rgba(255,255,255,", "rgba(0,150,255,", "rgba(255,255,128,", "rgba(255,255,255,", ];
+						var c = ["rgba(255,255,255,", "rgba(0,150,255,", "rgba(255,255,128,", "rgba(255,255,255,"];
 						var rndc = function () {
-							return c[~~ (Math.random() * c.length - 1)];
+							return c[~~(Math.random() * c.length - 1)];
 						};
 						var c2 = "rgba(255,64,32,";
 						var addNewParticles = function () {
@@ -594,8 +620,8 @@ game.import("play", function () {
 								for (var i = 0; i < emitters.length; i++) {
 									for (var j = 0; j < emissionRate; j++) {
 										var p = emitters[i].emit();
-										p.color = ctr % 10 === 0 ? Math.random() * 5 <= 1 ? c2 : rndc() : rndc();
-										p.mass = ~~ (Math.random() * 5);
+										p.color = ctr % 10 === 0 ? (Math.random() * 5 <= 1 ? c2 : rndc()) : rndc();
+										p.mass = ~~(Math.random() * 5);
 										particles.push(p);
 										ret += p.mass;
 										ctr++;
@@ -609,7 +635,9 @@ game.import("play", function () {
 									collidedMass = collidedMass < 0 ? 0 : collidedMass;
 								}
 							}
-							if (particles.length > maxParticles) return;
+							if (particles.length > maxParticles) {
+								return;
+							}
 							_emit();
 						};
 
@@ -626,7 +654,9 @@ game.import("play", function () {
 							for (var i = 0; i < particles.length; i++) {
 								var particle = particles[i];
 								particle.reactToForces(forces);
-								if (!isPositionAliveAndAdjust(particle)) continue;
+								if (!isPositionAliveAndAdjust(particle)) {
+									continue;
+								}
 								particle.move();
 								currentParticles.push(particle);
 							}
@@ -635,17 +665,27 @@ game.import("play", function () {
 						var offscreenCache = {};
 						var renderParticle = function (p) {
 							var position = p.pos;
-							if (!p.size) p.size = Math.floor(p.mass / 100);
-
-							if (!p.opacity) p.opacity = 0.05;
-							if (p.velocity > 0) {
-								if (p.opacity <= 0.18) p.opacity += 0.04;
+							if (!p.size) {
+								p.size = Math.floor(p.mass / 100);
 							}
-							if (p.opacity > 0.08) p.opacity -= 0.02;
+
+							if (!p.opacity) {
+								p.opacity = 0.05;
+							}
+							if (p.velocity > 0) {
+								if (p.opacity <= 0.18) {
+									p.opacity += 0.04;
+								}
+							}
+							if (p.opacity > 0.08) {
+								p.opacity -= 0.02;
+							}
 
 							var actualSize = p.size / drawScale;
 							actualSize = actualSize < minParticleSize ? minParticleSize : actualSize;
-							if (p.mass > 8) actualSize *= 2;
+							if (p.mass > 8) {
+								actualSize *= 2;
+							}
 							if (p.nova) {
 								actualSize *= 4;
 								p.nova = false;
@@ -765,7 +805,7 @@ game.import("play", function () {
 
 							// 开始下雪
 							start() {
-								if (this.status == 1 || this.status == 4) {
+								if (this.status === 1 || this.status === 4) {
 									// 已经在下雪则不作处理
 									return false;
 								}
@@ -781,7 +821,7 @@ game.import("play", function () {
 
 							// 停止下雪
 							stop() {
-								if (this.status == 2 || this.status == 0 || !this.canvas) {
+								if (this.status === 2 || this.status === 0 || !this.canvas) {
 									return false;
 								}
 								// 停止动画循环
@@ -794,7 +834,7 @@ game.import("play", function () {
 
 							// 暂停下雪
 							pause() {
-								if (this.status == 3) {
+								if (this.status === 3) {
 									return false;
 								}
 								this.status = 3;
@@ -803,7 +843,7 @@ game.import("play", function () {
 
 							// 继续下雪
 							resume() {
-								if (this.status == 3 && this.canvas) {
+								if (this.status === 3 && this.canvas) {
 									this.status = 4;
 									// 动画的计时控制
 									const that = this;
@@ -929,7 +969,7 @@ game.import("play", function () {
 							snow.stop();
 						};
 						game.haveFun.snowSize = function () {
-							if (game.haveFun.list.snow.size == "large") {
+							if (game.haveFun.list.snow.size === "large") {
 								game.haveFun.list.snow.size = "small";
 								snow.maxFlake = 80;
 								snow.flakeSize = 3;
@@ -956,7 +996,9 @@ game.import("play", function () {
 					}
 				},
 				firework() {
-					if (game.haveFun.list.firework.running) return;
+					if (game.haveFun.list.firework.running) {
+						return;
+					}
 					game.haveFun.list.firework.running = true;
 					if (game.haveFun.fireworkLoop) {
 						game.haveFun.fireworkLoop();

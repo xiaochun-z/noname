@@ -1,4 +1,60 @@
 const characters = {
+	mb_caohong: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["mbyuanhu"],
+		dieAudios: ["caohong"],
+	},
+	pot_xinxianying: {
+		sex: "female",
+		group: "wei",
+		hp: 3,
+		skills: ["potjiejie", "potqingshi"],
+	},
+	mb_chenzhi: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["mbquanchong", "mbrenxing"],
+	},
+	sy_baosanniang: {
+		sex: "female",
+		group: "shu",
+		hp: 3,
+		skills: ["mbshuyong", "mbxushen", "mbzhennan"],
+		dieAudios: ["baosanniang"],
+	},
+	fx_baosanniang: {
+		sex: "female",
+		group: "shu",
+		hp: 3,
+		skills: ["mbfangxu", "mbzhuguan", "mblisuo"],
+	},
+	mb_zerong: {
+		sex: "male",
+		hp: 4,
+		group: "qun",
+		skills: ["mbfutu", "mbjingtu", "mbjiebian"],
+	},
+	pot_lusu: {
+		sex: "male",
+		hp: 3,
+		group: "wu",
+		skills: ["pothaoshi", "potdimeng"],
+	},
+	mb_sunjun: {
+		sex: "male",
+		hp: 3,
+		group: "wu",
+		skills: ["mbxiongtu", "mbxianshuai"],
+	},
+	pot_weiyan: {
+		hp: 4,
+		sex: "male",
+		group: "shu",
+		skills: ["potzhongao", "potzhuangshi", "potyinzhan"],
+	},
 	mb_mengda: {
 		sex: "male",
 		group: "qun",
@@ -80,6 +136,7 @@ const characters = {
 		hp: 4,
 		skills: ["mbtanfeng"],
 		dieAudios: ["tw_xiahoushang"],
+		img: "image/character/tw_xiahoushang.jpg",
 		names: "夏侯|尚",
 	},
 	sunsháo: {
@@ -100,7 +157,6 @@ const characters = {
 		hp: 3,
 		skills: ["mbxiezheng", "mbqiantun", "mbweisi", "mbzhaoxiong"],
 		names: "司马|昭",
-		img: "image/character/jsrg_simazhao.jpg",
 		dieAudios: ["jsrg_simazhao"],
 		groupBorder: "jin",
 	},
@@ -579,7 +635,7 @@ const characters = {
 		sex: "male",
 		group: "qun",
 		hp: 3,
-		skills: ["huantu", "bihuo"],
+		skills: ["twhuantu", "twbihuo"],
 	},
 	mayuanyi: {
 		sex: "male",
