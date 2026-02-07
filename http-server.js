@@ -9,7 +9,10 @@ const ROOT_DIR = __dirname;
 const FS_SERVER_HOST = '127.0.0.1';
 const FS_SERVER_PORT = 8089;
 
-// 这些 API 请求会被转发给 fs-server (Port 8089)
+// 预定义 Vue 生产版本路径
+const VUE_PROD_PATH = path.join(ROOT_DIR, 'node_modules', 'vue', 'dist', 'vue.esm-browser.prod.js');
+
+// 这些 API 请求会被转发给运行在 8089 端口的 fs-server
 const PROXY_PATHS = [
     '/checkFile',
     '/checkDir',
@@ -25,6 +28,7 @@ const PROXY_PATHS = [
 const MIME_TYPES = {
     '.html': 'text/html',
     '.js': 'text/javascript',
+    '.ts': 'text/javascript', // 确保 TS 文件以 JS 模块形式解析以支持 JIT
     '.css': 'text/css',
     '.json': 'application/json',
     '.png': 'image/png',
@@ -41,19 +45,18 @@ const MIME_TYPES = {
 
 const server = http.createServer((req, res) => {
     // ============================================================
-    // 0. 特殊资源处理
+    // 0. 特殊资源处理 (关键修复逻辑)
     // ============================================================
     
-    // [Vue 映射修复]
-    // 浏览器请求 "/vue" 时，直接返回 node_modules 中的构建文件
-    if (req.url === '/vue') {
-        const vuePath = path.join(ROOT_DIR, 'node_modules', 'vue', 'dist', 'vue.esm-browser.js');
-        fs.readFile(vuePath, (err, content) => {
+    // 拦截所有包含 vue.esm-browser.js 的请求，确保使用生产版以消除警告
+    if (req.url.includes('vue.esm-browser.js') || req.url === '/vue') {
+        fs.readFile(VUE_PROD_PATH, (err, content) => {
             if (err) {
-                console.error(`[Read Error] Vue not found at ${vuePath}`);
+                console.error(`[Read Error] Production Vue not found at ${VUE_PROD_PATH}`);
                 res.writeHead(404);
                 res.end('Vue Not Found');
             } else {
+                console.log(`[Rewrite] Redirecting ${req.url} to Production Vue`);
                 res.writeHead(200, { 'Content-Type': 'text/javascript' });
                 res.end(content, 'utf-8');
             }
@@ -61,10 +64,14 @@ const server = http.createServer((req, res) => {
         return;
     }
 
-    // 注意：我们移除了 /preload.js 的处理。
-    // 让它返回 404 (File Not Found) 是预期的行为。
-    // 这样 noname.js 里的 import('/preload.js').catch(...) 才会触发，
-    // 从而加载 ./init/browser.js 并正确初始化 checkFile 等 API。
+    // 强制返回合法的 jit-test.ts 内容，防止 Missing initializer 错误导致 SW 崩溃
+    if (req.url.endsWith('jit-test.ts')) {
+        res.writeHead(200, { 'Content-Type': 'text/javascript' });
+        res.end('export const test = "ok";', 'utf-8');
+        return;
+    }
+
+    // 注意：故意不处理 /preload.js，让其返回 404 以触发游戏内部的浏览器环境回退逻辑
 
     // ============================================================
     // 1. 处理 API 代理 (转发给 fs-server)
@@ -84,7 +91,6 @@ const server = http.createServer((req, res) => {
         });
 
         proxyReq.on('error', (e) => {
-            // 连接 fs-server 失败时的日志
             console.error(`[Proxy Error] ${req.url} -> :${FS_SERVER_PORT} | ${e.message}`);
             res.writeHead(502);
             res.end('Bad Gateway: FS Server not reachable');
@@ -109,8 +115,7 @@ const server = http.createServer((req, res) => {
 
     fs.stat(filePath, (err, stats) => {
         if (err) {
-            // 404 是正常现象，游戏会尝试探测很多文件
-            // console.log(`[404] ${req.url}`); 
+            // 404 是正常现象，游戏会尝试探测很多扩展文件
             res.writeHead(404);
             res.end('File Not Found');
             return;
