@@ -9,10 +9,10 @@ const ROOT_DIR = __dirname;
 const FS_SERVER_HOST = '127.0.0.1';
 const FS_SERVER_PORT = 8089;
 
-// 预定义 Vue 生产版本路径
+// Production Vue path
 const VUE_PROD_PATH = path.join(ROOT_DIR, 'node_modules', 'vue', 'dist', 'vue.esm-browser.prod.js');
 
-// 这些 API 请求会被转发给运行在 8089 端口的 fs-server
+// FS API proxy endpoints
 const PROXY_PATHS = [
     '/checkFile',
     '/checkDir',
@@ -28,35 +28,40 @@ const PROXY_PATHS = [
 const MIME_TYPES = {
     '.html': 'text/html',
     '.js': 'text/javascript',
-    '.ts': 'text/javascript', // 确保 TS 文件以 JS 模块形式解析以支持 JIT
+    '.mjs': 'text/javascript',
+    '.ts': 'text/javascript',
     '.css': 'text/css',
     '.json': 'application/json',
     '.png': 'image/png',
     '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
     '.gif': 'image/gif',
     '.svg': 'image/svg+xml',
+    '.ico': 'image/x-icon',
     '.wav': 'audio/wav',
     '.mp3': 'audio/mpeg',
     '.ogg': 'audio/ogg',
     '.ttf': 'font/ttf',
     '.woff': 'font/woff',
-    '.woff2': 'font/woff2'
+    '.woff2': 'font/woff2',
+    '.wasm': 'application/wasm',
+    '.map': 'application/json'
 };
 
 const server = http.createServer((req, res) => {
-    // ============================================================
-    // 0. 特殊资源处理 (关键修复逻辑)
-    // ============================================================
-    
-    // 拦截所有包含 vue.esm-browser.js 的请求，确保使用生产版以消除警告
-    if (req.url.includes('vue.esm-browser.js') || req.url === '/vue') {
+    const urlPath = req.url.split('?')[0];
+
+    // ========================================================================
+    // Vue Production Build Redirect
+    // ========================================================================
+    // Force production Vue build to eliminate development warnings
+    if (urlPath.includes('vue.esm-browser.js') || urlPath === '/vue' || urlPath.startsWith('/vue/')) {
         fs.readFile(VUE_PROD_PATH, (err, content) => {
             if (err) {
-                console.error(`[Read Error] Production Vue not found at ${VUE_PROD_PATH}`);
+                console.error(`[Vue Error] Production Vue not found at ${VUE_PROD_PATH}`);
                 res.writeHead(404);
                 res.end('Vue Not Found');
             } else {
-                console.log(`[Rewrite] Redirecting ${req.url} to Production Vue`);
                 res.writeHead(200, { 'Content-Type': 'text/javascript' });
                 res.end(content, 'utf-8');
             }
@@ -64,19 +69,68 @@ const server = http.createServer((req, res) => {
         return;
     }
 
-    // 强制返回合法的 jit-test.ts 内容，防止 Missing initializer 错误导致 SW 崩溃
-    if (req.url.endsWith('jit-test.ts')) {
+    // ========================================================================
+    // Mode File Smart Resolution
+    // ========================================================================
+    // Game tries mode/xxx/index.js first, then falls back to mode/xxx.js
+    // This proactively resolves the correct file to avoid unnecessary 404s
+    const modeMatch = urlPath.match(/^\/mode\/([^/]+)\/index\.js$/);
+    if (modeMatch) {
+        const modeName = modeMatch[1];
+        const indexJsPath = path.join(ROOT_DIR, 'mode', modeName, 'index.js');
+        const modeJsPath = path.join(ROOT_DIR, 'mode', `${modeName}.js`);
+
+        // Try mode/xxx/index.js first (directory-based mode like guozhan)
+        fs.stat(indexJsPath, (err, stats) => {
+            if (!err && stats.isFile()) {
+                fs.readFile(indexJsPath, (err, content) => {
+                    if (err) {
+                        res.writeHead(404);
+                        res.end('File Not Found');
+                    } else {
+                        res.writeHead(200, { 'Content-Type': 'text/javascript' });
+                        res.end(content, 'utf-8');
+                    }
+                });
+                return;
+            }
+
+            // Fall back to mode/xxx.js (single-file mode like chess, identity)
+            fs.stat(modeJsPath, (err, stats) => {
+                if (!err && stats.isFile()) {
+                    console.log(`[Mode] ${urlPath} -> /mode/${modeName}.js`);
+                    fs.readFile(modeJsPath, (err, content) => {
+                        if (err) {
+                            res.writeHead(404);
+                            res.end('File Not Found');
+                        } else {
+                            res.writeHead(200, { 'Content-Type': 'text/javascript' });
+                            res.end(content, 'utf-8');
+                        }
+                    });
+                } else {
+                    res.writeHead(404);
+                    res.end('File Not Found');
+                }
+            });
+        });
+        return;
+    }
+
+    // ========================================================================
+    // JIT Test Virtual File
+    // ========================================================================
+    // Provides a virtual ES module for JIT TypeScript compilation detection
+    if (urlPath.endsWith('jit-test.ts')) {
         res.writeHead(200, { 'Content-Type': 'text/javascript' });
         res.end('export const test = "ok";', 'utf-8');
         return;
     }
 
-    // 注意：故意不处理 /preload.js，让其返回 404 以触发游戏内部的浏览器环境回退逻辑
-
-    // ============================================================
-    // 1. 处理 API 代理 (转发给 fs-server)
-    // ============================================================
-    if (PROXY_PATHS.some(p => req.url.startsWith(p))) {
+    // ========================================================================
+    // FS API Proxy
+    // ========================================================================
+    if (PROXY_PATHS.some(p => urlPath.startsWith(p))) {
         const options = {
             hostname: FS_SERVER_HOST,
             port: FS_SERVER_PORT,
@@ -100,13 +154,12 @@ const server = http.createServer((req, res) => {
         return;
     }
 
-    // ============================================================
-    // 2. 处理静态文件 (Web Server)
-    // ============================================================
-    let urlPath = req.url.split('?')[0];
-    let filePath = path.join(ROOT_DIR, urlPath === '/' ? 'index.html' : urlPath);
-    
-    // 安全检查：防止目录遍历
+    // ========================================================================
+    // Static File Serving
+    // ========================================================================
+    const filePath = path.join(ROOT_DIR, urlPath === '/' ? 'index.html' : urlPath);
+
+    // Security check: prevent directory traversal
     if (!filePath.startsWith(ROOT_DIR)) {
         res.writeHead(403);
         res.end('Forbidden');
@@ -115,7 +168,6 @@ const server = http.createServer((req, res) => {
 
     fs.stat(filePath, (err, stats) => {
         if (err) {
-            // 404 是正常现象，游戏会尝试探测很多扩展文件
             res.writeHead(404);
             res.end('File Not Found');
             return;
@@ -143,6 +195,6 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-    console.log(`HTTP Static Server running at http://localhost:${PORT}/`);
-    console.log(`> Proxying FS API to ${FS_SERVER_HOST}:${FS_SERVER_PORT}`);
+    console.log(`HTTP server running at http://localhost:${PORT}/`);
+    console.log(`Proxying FS API to ${FS_SERVER_HOST}:${FS_SERVER_PORT}`);
 });

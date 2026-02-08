@@ -1,12 +1,12 @@
-# ==========================================
-# Stage 1: 构建阶段 (Builder)
-# ==========================================
+# ========================================================================
+# Stage 1: Build Stage
+# ========================================================================
 FROM node:20 AS builder
 
 RUN npm install -g pnpm@9
 WORKDIR /app
 
-# 1. 复制依赖定义
+# Copy package definitions
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/core/package.json ./apps/core/
 COPY apps/electron/package.json ./apps/electron/
@@ -15,21 +15,21 @@ COPY packages/fs/package.json ./packages/fs/
 COPY packages/jit/package.json ./packages/jit/
 COPY packages/server/package.json ./packages/server/
 
-# 2. 安装所有依赖
+# Install dependencies
 RUN pnpm install --frozen-lockfile
 
-# 3. 复制源码
+# Copy source code
 COPY . .
 
-# 4. 构建核心
+# Build core application (full mode)
 RUN pnpm build:full
 
-# 5. 构建文件服务
+# Build file server package
 RUN cd packages/fs && pnpm build
 
-# ==========================================
-# Stage 2: 运行阶段 (Runner)
-# ==========================================
+# ========================================================================
+# Stage 2: Runtime Stage
+# ========================================================================
 FROM node:20-alpine
 
 ENV NODE_ENV=production
@@ -37,33 +37,35 @@ ENV NODE_ENV=production
 RUN npm install -g pm2
 WORKDIR /app
 
-# 1. 复制核心构建产物
+# Copy core build artifacts
 COPY --from=builder /app/apps/core/dist ./
 
-# 2. 复制文件服务构建产物
+# Copy file server build artifacts
 COPY --from=builder /app/packages/fs/dist ./packages/fs/dist
 COPY --from=builder /app/packages/fs/package.json ./packages/fs/package.json
 
-# 3. 复制并重命名大厅服务
+# Copy and rename game lobby server (from .js to .cjs for direct execution)
 COPY --from=builder /app/server.js ./server.cjs
 
-# 4. 复制脚本
+# Copy configuration scripts
 COPY process.yml ./
 COPY http-server.js ./
 
-# 5. 准备运行环境
+# Prepare runtime environment
 RUN echo '{"type": "module"}' > package.json
 
-# 6. 安装运行时依赖
+# Install runtime dependencies
 RUN npm install --omit=dev ws fastify @fastify/cors @fastify/static minimist vue@^3.5.27
 
-# 7. 创建 vue 软链接
-RUN ln -s node_modules/vue vue
+# Create Vue symlink for importmap compatibility
+RUN ln -s node_modules/vue/dist/vue.esm-browser.prod.js vue.js || \
+    ln -s node_modules/vue/dist/vue.esm-browser.js vue.js
 
-# 8. 调试：列出 mode 目录结构，帮助排查 missing file 问题
-# (这会在构建日志中显示 /app/mode 下到底有什么文件)
-RUN echo "=== Listing /app/mode contents ===" && \
-    ls -R /app/mode || echo "Mode directory missing"
+# Debug: list directory structure for troubleshooting
+RUN echo "=== Listing /app/src ===" && \
+    ls -la /app/src || echo "src directory missing" && \
+    echo "=== Listing /app/ ===" && \
+    ls -la /app/
 
 EXPOSE 80
 EXPOSE 8080
