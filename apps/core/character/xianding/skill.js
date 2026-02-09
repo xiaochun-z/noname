@@ -1180,6 +1180,10 @@ const skills = {
 				return cards.length > target.countCards("h");
 			});
 		},
+		prompt2(event, player) {
+			const targets = get.info("dcsbyinmou").getTargets();
+			return `${get.skillInfoTranslation("dcsbyinmou", player, false)}<br><span class=bluetext>可选目标：${get.translation(targets)}</span>`
+		},
 		check(event, player) {
 			const targets = get.info("dcsbyinmou").getTargets();
 			let sgn = 1;
@@ -1218,6 +1222,7 @@ const skills = {
 				links: [card],
 				targets: [target],
 			} = result;
+			player.line(target, "green");
 			target.addSkill(`${event.name}_effect`);
 			game.log(player, "将牌堆顶的一张牌交给了", target);
 			const next = target.gain(card, "draw");

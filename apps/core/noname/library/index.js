@@ -14523,6 +14523,13 @@ export class Library {
 				},
 			},
 		],
+		[
+			"缘",
+			{
+				color: "#e8a0b7",
+				nature: "woodmm",
+			}
+		]
 	]);
 	groupnature = {
 		shen: "shen",

@@ -182,6 +182,8 @@ const skills = {
 				.loseAsync({
 					gain_list: targets.map((target, i) => [target, cards[i]]),
 					giver: player,
+					player: player,
+					cards: cards,
 					gaintag: [event.name],
 					animate: "giveAuto",
 				})

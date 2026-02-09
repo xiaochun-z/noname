@@ -1923,7 +1923,7 @@ game.import("card", function () {
 						return false;
 					}
 					const evt = event;
-					if (evt?.card !== event.card || evt.cards?.length !== 1) {
+					if (evt?.card !== event.card || evt.cards?.length !== 1 || !get.is.damageCard(event.card)) {
 						return false;
 					}
 					return player.hasHistory(

@@ -8440,7 +8440,7 @@ const skills = {
 			result: { target: -1 },
 		},
 		async contentx(event) {
-			const { card } = event.judgeResult.card;
+			const { card } = event.judgeResult;
 			const { player, target } = event.getParent(2);
 			if (get.position(card, true) == "o") {
 				await player.gain(card, "gain2");
