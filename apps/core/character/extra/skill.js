@@ -8412,7 +8412,7 @@ const skills = {
 				for (const target of targets) {
 					const num = Math.max(1, target.countCards("h", "shan"));
 					const next = target.damage(num, "thunder");
-					event.push(next);
+					events.push(next);
 				}
 
 				await Promise.all(events);
