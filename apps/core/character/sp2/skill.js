@@ -94,6 +94,45 @@ const skills = {
 	starjixian: {
 		audio: 2,
 		trigger: {
+			player: "phaseDiscardAfter",
+		},
+		filter(event, player) {
+			const evt = game.getGlobalHistory("everything", evt => evt.name == "phaseUse" && evt.player == player)[0];
+			if (!evt || _status.currentPhase != player) {
+				return false;
+			}
+			return !player.hasHistory("useCard", evtx => evtx.getParent("phaseUse") == evt && ["basic", "trick"].includes(get.type2(evtx.card)));
+		},
+		forced: true,
+		locked: false,
+		async content(event, trigger, player) {
+			const evt = trigger.getParent("phase", true);
+			if (evt) {
+				evt.phaseList.splice(evt.num + 1, 0, `phaseUse|${event.name}`);
+				player
+					.when("phaseUseBegin")
+					.filter(evt => evt._extraPhaseReason == event.name)
+					.step(async (event, trigger, player) => {
+						player.addTempSkill(`starjixian_limit`, "phaseChange");
+					});
+			}
+		},
+		subSkill: {
+			limit: {
+				charlotte: true,
+				mod: {
+					cardEnabled(card, player) {
+						if (get.type(card) == "equip") {
+							return false;
+						}
+					},
+				},
+			},
+		},
+	},
+	old_starjixian: {
+		audio: 2,
+		trigger: {
 			player: "phaseBegin",
 		},
 		forced: true,

@@ -670,7 +670,9 @@ const translates = {
 	starjunxi: "峻袭",
 	starjunxi_info: "出牌阶段开始时，你可选择一名其他角色并记录你的手牌数；此阶段结束时，该角色须弃置任意张牌并失去任意点体力（弃置牌数与体力值之和为X），若X等于0，你弃置两张牌（X为你当前手牌数与记录值的差值）。",
 	starjixian: "机先",
-	starjixian_info: "锁定技，回合开始时，你须调整本回合额定阶段的顺序（不可与上回合相同）。",
+	starjixian_info: "若你回合的第一个出牌阶段没有使用基本和锦囊牌，则弃牌阶段结束后你可以执行一个额外的出牌阶段，此阶段你不能使用装备牌。",
+	old_starjixian: "机先",
+	old_starjixian_info: "锁定技，回合开始时，你须调整本回合额定阶段的顺序（不可与上回合相同）。",
 };
 
 export default translates;
