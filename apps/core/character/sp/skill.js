@@ -402,6 +402,8 @@ const skills = {
 					list.remove(name)
 				);
 				if (card) {
+					player.addSkill(`${event.name}_destroy`);
+					player.markAuto(`${event.name}_destroy`, card);
 					player.$gain2(card);
 					await player.equip(card);
 					await game.delayx();
@@ -410,6 +412,37 @@ const skills = {
 		},
 		group: "olzhuangrong_count",
 		subSkill: {
+			destroy: {
+				trigger: { global: "loseBegin" },
+				forced: true,
+				charlotte: true,
+				popup: false,
+				onremove: true,
+				filter(event, player) {
+					const storage = player.getStorage("olzhuangrong_destroy");
+					if (!storage) {
+						return false;
+					}
+					for (const i of event.cards) {
+						if (storage.includes(i)) {
+							return true;
+						}
+					}
+					return false;
+				},
+				async content(event, trigger, player) {
+					const storage = player.getStorage(event.name);
+					for (const card of trigger.cards) {
+						if (storage.includes(card)) {
+							player.unmarkAuto(event.name, card);
+							card._destroy = true;
+						}
+					}
+					if (!storage.length) {
+						player.removeSkill("olzhuangrong_destroy");
+					}
+				},
+			},
 			count: {
 				audio: "olzhuangrong",
 				trigger: {
@@ -494,9 +527,9 @@ const skills = {
 		round: 1,
 		enable: "chooseToUse",
 		filter(event, player) {
-			if (player.countCards("h") == player.hp) {
+			/*if (player.countCards("h") == player.hp) {
 				return false;
-			}
+			}*/
 			return get.inpileVCardList(info => {
 				if (info[0] !== "basic") {
 					return false;
@@ -7024,7 +7057,7 @@ const skills = {
 		audio: 2,
 		mod: {
 			inRange(from, to) {
-				if (!to.isDamaged()) {
+				if (_status.currentPhase == from && !to.isDamaged()) {
 					return true;
 				}
 			},

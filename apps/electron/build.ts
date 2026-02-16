@@ -8,16 +8,12 @@ async function main(targets: PackagerOptions["targets"], config: Partial<Configu
 			appId: "com.libnoname.noname",
 			productName: "noname",
 			directories: {
-				output: "output",
+				output: "../../output",
 			},
 			files: [
 				{ from: "dist", to: "" },
-				{
-					from: "../core/dist",
-					to: "",
-					filter: ["**/*", "!./package.json"],
-				},
-				{ from: "../core/dist/node_modules", to: "node_modules" },
+				{ from: "../../dist", to: "" },
+				{ from: "../../dist/node_modules", to: "node_modules" },
 				"package.json",
 			],
 			extraMetadata: {
@@ -34,7 +30,7 @@ await buildVite();
 
 switch (process.argv[2]) {
 	case "win":
-		main(Platform.WINDOWS.createTarget("nsis", Arch.x64, Arch.ia32), {
+		main(Platform.WINDOWS.createTarget("nsis", Arch.x64), {
 			win: {
 				verifyUpdateCodeSignature: false,
 				icon: "noname.ico",
