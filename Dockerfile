@@ -27,6 +27,9 @@ RUN pnpm build:full
 # 5. 构建文件服务
 RUN cd packages/fs && pnpm build
 
+# 6. 构建大厅服务
+RUN pnpm -F @noname/server build
+
 # ==========================================
 # Stage 2: 运行阶段 (Runner)
 # ==========================================
@@ -44,8 +47,8 @@ COPY --from=builder /app/apps/core/dist ./
 COPY --from=builder /app/packages/fs/dist ./packages/fs/dist
 COPY --from=builder /app/packages/fs/package.json ./packages/fs/package.json
 
-# 3. 复制并重命名大厅服务
-COPY --from=builder /app/server.js ./server.cjs
+# 3. 复制大厅服务
+COPY --from=builder /app/packages/server/dist ./packages/server/dist
 
 # 4. 复制脚本
 COPY process.yml ./
