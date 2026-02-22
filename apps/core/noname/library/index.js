@@ -5779,6 +5779,7 @@ export class Library {
 						zhong: "明忠",
 						stratagem: "谋攻",
 						purple: "3v3v2",
+						kaihei: "开黑",
 					},
 					restart: true,
 					frequent: true,

@@ -2414,6 +2414,10 @@ export default () => {
 					game.chooseCharacterStratagemOL();
 					return;
 				}
+				else if (_status.mode == "kaihei" && !_status.kaiheiMap) {
+					game.chooseCharacterKaiheiOL();
+					return;
+				}
 				var next = game.createEvent("chooseCharacter");
 				next.setContent(function () {
 					"step 0";
@@ -2836,6 +2840,135 @@ export default () => {
 					}, 500);
 				});
 			},
+			// 👇 ====== 新增：开黑模式专属 GUI 控制流 ======
+			chooseCharacterKaiheiOL: function() {
+				var next = game.createEvent("chooseCharacterKaihei");
+				next.setContent(function() {
+					"step 0";
+					ui.arena.classList.add("choose-character");
+					var identityList = get.identityList(game.players.length);
+					var idTranslation = { zhu: "主公", zhong: "忠臣", fan: "反贼", nei: "内奸", commoner: "平民" };
+
+					// game.players[0] 通常是1号位房主，由房主进行GUI分配
+					if (game.me === game.players[0]) {
+						var dialog = ui.create.dialog("【开黑模式】请为各玩家手动分配身份");
+						var reqStr = identityList.map(id => idTranslation[id] || id).sort().join(", ");
+						dialog.add("<div class='text center' style='color:#888'>本局游戏必须包含以下身份：<br>" + reqStr + "</div>");
+
+						var table = document.createElement("div");
+						// 强制使用 Flex 垂直流式布局，覆盖无名杀底层的绝对定位
+						table.style.position = "relative";
+						table.style.display = "flex";
+						table.style.flexDirection = "column";
+						table.style.alignItems = "center";
+						table.style.width = "100%";
+						table.style.marginTop = "10px";
+						table.style.maxHeight = "350px"; 
+						table.style.overflowY = "auto";
+						event.selections = {};
+
+						var uniqueIds = [];
+						for(var i=0; i<identityList.length; i++) {
+							if (!uniqueIds.includes(identityList[i])) uniqueIds.push(identityList[i]);
+						}
+
+						for(var i = 0; i < game.players.length; i++) {
+							var p = game.players[i];
+							// 弃用 ui.create.div，改用原生 div 彻底阻断底层样式污染
+							var node = document.createElement("div"); 
+							node.innerHTML = "<span>" + (p.nickname || p.name || p.playerid) + "</span>";
+							node.style.position = "relative";
+							node.style.display = "flex";
+							node.style.justifyContent = "space-between";
+							node.style.alignItems = "center";
+							node.style.width = "80%";
+							node.style.margin = "5px 0";
+							node.style.padding = "8px 15px";
+							node.style.border = "1px solid rgba(255, 255, 255, 0.4)";
+							node.style.borderRadius = "6px";
+							node.style.backgroundColor = "rgba(0, 0, 0, 0.3)";
+							node.style.color = "white";
+							node.style.boxSizing = "border-box";
+							
+							var sel = document.createElement("select");
+							sel.style.padding = "3px 8px";
+							sel.style.color = "#333";
+							sel.style.fontSize = "16px";
+							sel.style.borderRadius = "4px";
+							sel.style.cursor = "pointer";
+							
+							uniqueIds.forEach(id => {
+								var opt = document.createElement("option");
+								opt.value = id;
+								opt.innerHTML = idTranslation[id] || id;
+								sel.appendChild(opt);
+							});
+							
+							sel.value = identityList[i]; 
+							node.appendChild(sel);
+							table.appendChild(node);
+							event.selections[p.playerid] = sel;
+						}
+						
+						// 使用 dialog.add 代替 appendChild，让无名杀框架自动适应对话框高度
+						dialog.add(table);
+
+						// 确认按钮
+						var btn = ui.create.control("确认分配", function() {
+							var currentIds = [];
+							var finalMap = {};
+							for(var i = 0; i < game.players.length; i++) {
+								var v = event.selections[game.players[i].playerid].value;
+								currentIds.push(v);
+								finalMap[game.players[i].playerid] = v;
+							}
+							
+							// 校验房主的分配是否符合当前的身份牌要求
+							var sortedTarget = identityList.slice().sort().join(",");
+							var sortedCurrent = currentIds.sort().join(",");
+							if (sortedTarget !== sortedCurrent) {
+								alert("身份分配不符合要求！\\n需要：" + sortedTarget + "\\n当前：" + sortedCurrent);
+								return;
+							}
+
+							// 验证通过，向所有人广播分配结果
+							game.broadcastAll(function(map) {
+								_status.kaiheiMap = map;
+								game.resume();
+							}, finalMap);
+							dialog.close();
+							btn.close();
+						});
+						game.pause();
+					} else {
+						// 不是房主的其他玩家显示等待界面
+						event.waitDialog = ui.create.dialog("正在等待房主为您分配身份...");
+						game.pause();
+					}
+
+					"step 1";
+					// 收到房主的结果后，关闭等待界面
+					if (event.waitDialog) event.waitDialog.close();
+
+					// 极其优雅的“移花接木”：挂载临时拦截器，将系统的打乱数组直接替换为房主的配置
+					var origSort = Array.prototype.randomSort;
+					Array.prototype.randomSort = function() {
+						var res = origSort.apply(this, arguments);
+						if (this.includes('zhu') && this.includes('fan') && this.length === game.players.length) {
+							for(var i = 0; i < game.players.length; i++) {
+								this[i] = _status.kaiheiMap[game.players[i].playerid];
+							}
+							// 替换完毕即刻自我销毁，毫不影响后续其他业务
+							Array.prototype.randomSort = origSort;
+						}
+						return res;
+					};
+
+					// 重新调用标准选将流程。此时有了 _status.kaiheiMap 护体，将会自动跳过开黑拦截，无缝进入正常游戏！
+					game.chooseCharacterOL();
+				});
+			},
+			// 👆 ==========================================================
 			stratagemCamouflage: function () {
 				var next = game.createEvent("stratagemCamouflage");
 				next.players = game.players.slice();
