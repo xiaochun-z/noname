@@ -69,6 +69,6 @@ RUN echo "=== Listing /app/mode contents ===" && \
     ls -R /app/mode || echo "Mode directory missing"
 
 EXPOSE 80
-EXPOSE 8080
+EXPOSE 8082
 
 CMD ["pm2-runtime", "process.yml"]
