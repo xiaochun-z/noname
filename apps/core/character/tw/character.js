@@ -1,10 +1,24 @@
 const characters = {
+	tw_shen_guanyu: {
+		sex: "male",
+		group: "shen",
+		hp: 4,
+		skills: ["twwushen", "twwuhun"],
+		groupInGuozhan: "shu",
+	},
+	tw_shen_lvmeng: {
+		sex: "male",
+		group: "shen",
+		hp: 3,
+		skills: ["twshelie", "twgongxin"],
+		groupInGuozhan: "wu",
+		dieAudios: ["shen_lvmeng"],
+	},
 	tw_huangfusong: {
 		sex: "male",
 		group: "qun",
 		hp: 4,
 		skills: ["twtaoluan", "twshiji", "twzhengjun"],
-		img: "image/character/sp_huangfusong.jpg",
 		dieAudios: ["sp_huangfusong"],
 	},
 	tw_jsrg_wangyun: {

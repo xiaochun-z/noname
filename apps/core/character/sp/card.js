@@ -2,17 +2,17 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 const cards = {
 	//曹婴三种类型
-	caoying_basic: { 
+	caoying_basic: {
 		fullskin: true,
-		noname: true, 
+		noname: true,
 	},
-	caoying_trick: { 
+	caoying_trick: {
 		fullskin: true,
-		noname: true, 
+		noname: true,
 	},
-	caoying_equip: { 
+	caoying_equip: {
 		fullskin: true,
-		noname: true, 
+		noname: true,
 	},
 	//蒲元衍生
 	sanlve: {
@@ -312,7 +312,10 @@ const cards = {
 		skills: ["zhuangshu_basic"],
 		forceDie: true,
 		onLose() {
-			if ((!event.getParent(2) || event.getParent(2).name != "swapEquip") && (event.getParent().type != "equip" || event.getParent().swapEquip)) {
+			if (
+				(!event.getParent(2) || event.getParent(2).name != "swapEquip") &&
+				(event.getParent().type != "equip" || event.getParent().swapEquip)
+			) {
 				cards.forEach(card => {
 					card.fix();
 					card.remove();
@@ -340,7 +343,10 @@ const cards = {
 		forceDie: true,
 		skills: ["zhuangshu_trick"],
 		onLose() {
-			if ((!event.getParent(2) || event.getParent(2).name != "swapEquip") && (event.getParent().type != "equip" || event.getParent().swapEquip)) {
+			if (
+				(!event.getParent(2) || event.getParent(2).name != "swapEquip") &&
+				(event.getParent().type != "equip" || event.getParent().swapEquip)
+			) {
 				cards.forEach(card => {
 					card.fix();
 					card.remove();
@@ -363,7 +369,10 @@ const cards = {
 		forceDie: true,
 		inherit: "zhuangshu_basic",
 		onLose() {
-			if ((!event.getParent(2) || event.getParent(2).name != "swapEquip") && (event.getParent().type != "equip" || event.getParent().swapEquip)) {
+			if (
+				(!event.getParent(2) || event.getParent(2).name != "swapEquip") &&
+				(event.getParent().type != "equip" || event.getParent().swapEquip)
+			) {
 				cards.forEach(card => {
 					card.fix();
 					card.remove();
@@ -374,6 +383,38 @@ const cards = {
 		},
 		equipDelay: false,
 		loseDelay: false,
+	},
+	//霹雳车
+	ol_piliche: {
+		fullskin: true,
+		derivation: "ol_liuye",
+		cardcolor: "diamond",
+		type: "equip",
+		subtype: "equip1",
+		distance: {
+			attackFrom: -8,
+		},
+		async onLose(event, trigger, player) {
+			const { cards } = event;
+			if (
+				(!event.getParent(2) || event.getParent(2).name != "swapEquip") &&
+				(event.getParent().type != "equip" || event.getParent().swapEquip)
+			) {
+				cards.forEach(card => {
+					card.fix();
+					card.remove();
+					card.destroyed = true;
+					game.log(card, "被销毁了");
+				});
+			}
+		},
+		skills: ["ol_piliche"],
+		ai: {
+			equipValue: 5,
+			basic: {
+				equipValue: 5,
+			},
+		},
 	},
 };
 export default cards;

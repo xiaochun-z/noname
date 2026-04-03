@@ -3205,7 +3205,8 @@ export class Click {
 		}
 		game.uncheck();
 		if (typeof event.custom?.add?.confirm == "function") {
-			event.custom.add.confirm(true);
+			//event.custom.add.confirm(true);
+			event.custom.add.confirm(false);
 		}
 		game.resume();
 	}
@@ -4193,7 +4194,7 @@ export class Click {
 								intro.appendChild(currentSkinsContainer);
 							}
 
-							game.callHook("refreshSkin", [skinButtonList[0], this.name]);
+							game.callHook("refreshSkin", [skinButtonList[0], this.name, sourcenode, avatar]);
 						});
 						skinButton.name = skinName;
 						skinButton.style.width = "80px";

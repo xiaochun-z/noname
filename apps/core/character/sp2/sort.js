@@ -15,7 +15,7 @@ const characterSort = {
 	sp2_fenghuo: ["re_nanhualaoxian", "tongyuan", "zhangning", "re_pangdegong"],
 	sp2_huangjin: ["liuhong", "zhujun", "re_hansui", "xushao"],
 	sp2_fadong: ["ol_dingyuan", "wangrong", "re_quyi", "hanfu"],
-	sp2_xuzhou: ["re_taoqian", "caosong", "zhangmiao", "qiuliju"],
+	sp2_xuzhou: ["caobao", "re_taoqian", "caosong", "zhangmiao", "qiuliju"],
 	sp2_zhongyuan: ["re_hucheer", "re_zoushi", "caoanmin", "re_dongcheng"],
 	sp2_xiaohu: ["haomeng", "yanfuren", "yanrou", "dc_zhuling"],
 	sp2_qunxiong: ["dc_yanxiang", "chezhou", "hansong", "matie"],
@@ -23,7 +23,7 @@ const characterSort = {
 	sp2_yuheng: ["star_caoren", "star_zhangchunhua", "star_jiangwan", "star_zhanghe"],
 	sp2_kaiyang: ["star_sunjian", "star_taishici"],
 	sp2_yaoguang: ["star_sunshangxiang", "star_dingfeng", "star_wenchou", "star_yanliang"],
-	sp2_tianxuan: ["star_xunyu", "star_fazheng", "star_zhangzhao"],
+	sp2_tianxuan: ["star_xunyu", "star_fazheng", "star_zhangzhao", "star_zhangsong"],
 	sp2_waitforsort: ["caobuxing", "re_maliang", "dc_jikang"],
 };
 

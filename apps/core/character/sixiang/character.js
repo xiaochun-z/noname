@@ -1,4 +1,49 @@
 const characters = {
+	std_kebineng: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["stdkoujing"],
+		names: "科比|罐头",
+	},
+	std_niujin: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["stdcuorui"],
+	},
+	std_ganfuren: {
+		sex: "female",
+		group: "shu",
+		hp: 3,
+		skills: ["stdzhijie", "stdshushenx"],
+		names: "甘|null",
+	},
+	std_wangshen: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["stdanran", "stdgaobian"],
+	},
+	std_caojinyu: {
+		sex: "female",
+		group: "wei",
+		hp: 3,
+		skills: ["stdyuqi", "stdshanshen"],
+	},
+	std_lvboshe: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["stdfushi"],
+	},
+	std_wuke: {
+		sex: "female",
+		group: "wu",
+		hp: 3,
+		skills: ["stdanda", "stdzhuguo"],
+		img: "image/character/wuke.jpg",
+	},
 	std_huangwudie: {
 		sex: "female",
 		group: "shu",

@@ -1,6 +1,19 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const dynamicTranslates = {
+	olfenyue(player, skill) {
+		const bool = player.storage[skill];
+		let yang = "摸两张牌",
+			yin = "使用一张【杀】";
+		if (!bool) {
+			yang = `<span class=firetext>${yang}</span>`;
+		} else {
+			yin = `<span class=bluetext>${yin}</span>`;
+		}
+		const start = "转换技，每回合结束时，若本回合有角色受到过属性伤害，你可以：",
+			end = "。";
+		return `${start}阳：${yang}；阴：${yin}${end}`;
+	},
 	olchunhui(player, skill) {
 		const bool = player.storage[`${skill}_rewrite`];
 		return `锁定技，每轮首张牌被使用后，若此牌为: ${bool? "黑色" : "红色"}，你回复1点体力；黑色，你摸一张牌。`;
@@ -18,7 +31,7 @@ const dynamicTranslates = {
 			limit = 1 + player.countMark("olwenyi_limit");
 		return info.replace("一", get.cnNumber(limit));
 	},
-	olqiaowu(player){
+	/*olqiaowu(player){
 		const bool = player.storage.olqiaowu;
 		let yang = "摸一张牌",
 			yin = "选择是否使用一张【杀】";
@@ -30,7 +43,7 @@ const dynamicTranslates = {
 		const start = "转换技，每回合限一次，当你使用的【杀】或【闪】结算完毕后，你可令所有处于【酒】状态的角色：",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
-	},
+	},*/
 	shanduan(player) {
 		if (player.storage.shanduan) {
 			return "锁定技。①摸牌/出牌/弃牌阶段开始时，你为本回合摸牌阶段摸牌数/攻击范围和使用【杀】的限制次数/手牌上限的默认值从数组R=[" + get.translation(player.storage.shanduan) + "]中分配数值。②当你于回合外受到伤害后，你令下回合〖善断①〗以此法分配的数值集合R中的最小值+1。";

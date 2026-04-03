@@ -1,4 +1,51 @@
 const characters = {
+	o_tadun: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["youlve", "lianxi"],
+	},
+	o_chenlan: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["jujun"],
+	},
+	o_meicheng: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["bixian"],
+	},
+	o_guanyu: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["mbwusheng", "mbyijue"],
+	},
+	o_sunquan: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["mbshizhong", "mbcaowei"],
+	},
+	mb_tw_zhangji: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["mbdingzhen", "twyouye"],
+		dieAudios: ["tw_zhangji"],
+	},
+	xin_simayi: {
+		sex: "male",
+		group: "shen",
+		hp: 4,
+		skills: ["xinrenjie", "xinbaiyin", "xinlianpo"],
+		tempname: ["new_simayi"],
+		groupInGuozhan: "wei",
+		names: "司马|懿",
+		dieAudios: ["new_simayi"],
+	},
 	o_tanshihuai: {
 		sex: "male",
 		group: "qun",

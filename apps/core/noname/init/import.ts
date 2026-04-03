@@ -6,8 +6,8 @@ export async function importCardPack(name: string) {
 }
 
 export async function importCharacterPack(name: string) {
-	const alreadyModernCharacterPack = lib.config.moderned_chracters || [];
-	const path = alreadyModernCharacterPack.includes(name) ? `/character/${name}/index` : `/character/${name}`;
+	const alreadyModernCharacterPack = lib.config.moderned_characters || [];
+	const path = import.meta.env.DEV || !alreadyModernCharacterPack.includes(name) ? `/character/${name}/index` : `/character/${name}`;
 	await importFunction("character", path).catch(e => {
 		console.error(`武将包《${name}》加载失败`, e);
 		// 		alert(`武将包《${name}》加载失败
@@ -101,6 +101,7 @@ export async function createEmptyExtension(name: string) {
 		config: {},
 		help: {},
 		package: {
+			translation : extensionInfo.translation,
 			nopack: true,
 			intro: extensionInfo.intro ? extensionInfo.intro.replace("${assetURL}", lib.assetURL) : "",
 			author: extensionInfo.author ?? "未知",

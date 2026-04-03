@@ -3698,13 +3698,11 @@ const skills = {
 					} else {
 						trigger.ai = card => {
 							const { player, target } = get.event();
-							if (get.recoverEffect(target, player, player) > 0 && get.suit(card) == "heart") {
-								return 10;
-							}
+							const recover = get.suit(card) == "heart" ? get.recoverEffect(target, player, player) : 0;
 							if (get.attitude(player, target) > 0) {
-								return get.value(card);
+								return recover + get.value(card);
 							}
-							return 6 - get.value(card);
+							return recover + 6 - get.value(card);
 						};
 					}
 				},
@@ -7328,6 +7326,7 @@ const skills = {
 	},
 	//张郃
 	jsrgqiongtu: {
+		audio: 2,
 		enable: "chooseToUse",
 		groupSkill: "qun",
 		viewAs: {
@@ -7412,6 +7411,7 @@ const skills = {
 		},
 	},
 	jsrgxianzhu: {
+		audio: 2,
 		enable: "chooseToUse",
 		filter(event, player) {
 			return (

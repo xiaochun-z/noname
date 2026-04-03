@@ -1,4 +1,17 @@
 const characters = {
+	caobao: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		maxHp: 5,
+		skills: ["yanjiu", "poyin"],
+	},
+	star_zhangsong: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["starxisong", "starfanglang"],
+	},
 	star_zhanghe: {
 		sex: "male",
 		group: "qun",

@@ -5966,7 +5966,7 @@ const skills = {
 					return get.color(card) == "black";
 				},
 				viewAsFilter(player) {
-					return player.getExpansions("jieyue").length && player.countCards("hs", { color: "black" }) > 0;
+					return player.countExpansions("jieyue") > 0 && player.countCards("hs", { color: "black" }) > 0;
 				},
 				position: "hs",
 				viewAs: { name: "wuxie" },
@@ -5984,7 +5984,7 @@ const skills = {
 				position: "hs",
 				viewAs: { name: "shan" },
 				viewAsFilter(player) {
-					return player.getExpansions("jieyue").length && player.countCards("hs", { color: "red" }) > 0;
+					return player.countExpansions("jieyue") > 0 && player.countCards("hs", { color: "red" }) > 0;
 				},
 				prompt: "将一张红色手牌当闪使用或打出",
 				check: () => 1,
@@ -10088,6 +10088,7 @@ const skills = {
 		audioname2: {
 			dc_guansuo: "zhiman_guansuo",
 			guansuo: "zhiman_guansuo",
+			re_baosanniang: "zhiman_re_baosanniang",
 		},
 		trigger: { source: "damageBegin2" },
 		filter(event, player) {
@@ -14048,45 +14049,49 @@ const skills = {
 		audio: 2,
 		audioname: ["re_manchong"],
 		trigger: { player: "damageEnd" },
-		direct: true,
 		filter(event, player) {
 			return player.countCards("h") > 0;
 		},
-		content() {
-			"step 0";
-			var next = player.chooseCard(get.prompt2("yuce"));
-			next.set("ai", function (card) {
-				if (get.type(card) == "basic") {
-					return 1;
-				}
-				return Math.abs(get.value(card)) + 1;
-			});
-			"step 1";
-			if (result.bool) {
-				player.logSkill("yuce");
-				player.showCards(result.cards);
-				var type = get.type(result.cards[0], "trick");
-				if (trigger.source) {
-					trigger.source
-						.chooseToDiscard("弃置一张不为" + get.translation(type) + "牌的牌或令" + get.translation(player) + "回复1点体力", function (card) {
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseCard({
+					prompt: get.prompt2(event.skill),
+					ai(card) {
+						if (get.type(card) == "basic") {
+							return 1;
+						}
+						return Math.abs(get.value(card)) + 1;
+					}
+				})
+				.forResult();
+		},
+		logTarget: "source",
+		async content(event, trigger, player) {
+			const { cards: [card], targets } = event;
+			await player.showCards(card, get.translation(player) + "发动了【御策】");
+			const type = get.type2(card);
+			let result;
+			if (targets?.length && targets[0]?.isIn()) {
+				result = await targets[0]
+					.chooseToDiscard({
+						prompt: "弃置一张不为" + get.translation(type) + "牌的牌或令" + get.translation(player) + "回复1点体力",
+						filterCard(card) {
 							return get.type(card, "trick") != _status.event.type;
-						})
-						.set("ai", function (card) {
+						},
+						ai(card) {
 							if (get.recoverEffect(_status.event.getParent().player, _status.event.player, _status.event.player) < 0) {
 								return 7 - get.value(card);
 							}
 							return 0;
-						})
-						.set("type", type);
-				} else {
-					event.recover = true;
-				}
+						}
+					})
+					.set("type", type)
+					.forResult();
 			} else {
-				event.finish();
+				result = { bool: false };
 			}
-			"step 2";
-			if (event.recover || !result.bool) {
-				player.recover(event.recover ? null : trigger.source);
+			if (!result.bool) {
+				await player.recover({ source: targets?.[0] });
 			}
 		},
 		ai: {

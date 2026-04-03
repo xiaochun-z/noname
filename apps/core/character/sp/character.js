@@ -1,4 +1,30 @@
 const characters = {
+	ol_huangfusong: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["olyanjing", "olfenyue"],
+		names: "皇甫|嵩",
+	},
+	pangji: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["olbiguo", "oldouyu"],
+	},
+	ol_dongguiren: {
+		sex: "female",
+		group: "qun",
+		hp: 3,
+		skills: ["olhexu", "olzeguang", "olchengen"],
+		names: "董|null",
+	},
+	ol_liuye: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["olpingyuan", "olliaoyi"],
+	},
 	ol_caojinyu: {
 		sex: "female",
 		group: "wei",
@@ -847,7 +873,6 @@ const characters = {
 		hp: 3,
 		skills: ["yuxu", "xjshijian"],
 	},
-
 	jianggan: {
 		sex: "male",
 		group: "wei",
@@ -858,7 +883,7 @@ const characters = {
 		sex: "female",
 		group: "wei",
 		hp: 4,
-		skills: ["xinfu_lingren", "fujian"],
+		skills: ["ollingren", "olfujian"],
 	},
 	simahui: {
 		sex: "male",

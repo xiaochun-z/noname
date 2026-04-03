@@ -1502,6 +1502,16 @@ export default {
 				}
 			}
 		},
+		ai: {
+			noLink: true,
+			effect: {
+				target(card) {
+					if (card.name == "tiesuo") {
+						return "zeroplayertarget";
+					}
+				},
+			},
+		},
 		global: "gz_jieying_global",
 		subSkill: {
 			global: {
@@ -3419,8 +3429,8 @@ export default {
 		},
 	},
 	gz_liyu: {
-		audio: ["wushuang", "liyu"],
-		logAudio: () => ["liyu"],
+		audio: ["sbwushuang", "sbliyu"],
+		logAudio: () => ["sbliyu"],
 		trigger: {
 			player: "phaseUseBegin",
 		},
@@ -3458,7 +3468,7 @@ export default {
 		subSkill: {
 			wushuang: {
 				audio: "gz_liyu",
-				logAudio: () => ["wushuang"],
+				logAudio: () => ["sbwushuang"],
 				trigger: {
 					player: "useCardToPlayered",
 				},
