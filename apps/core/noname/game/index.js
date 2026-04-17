@@ -10207,7 +10207,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 	}
 	/**
 	 * @overload
-	 * @param { (player: Player) => boolean } func
+	 * @param { (player: Player) => boolean } [func]
 	 * @param { Player[] } [list]
 	 * @param { boolean } [includeOut]
 	 * @returns { Player[] }
@@ -10279,7 +10279,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 	 * 此方法用于对所有targets按顺序执行一个async函数。
 	 *
 	 * @param { Player[] } targets 需要执行async方法的目标
-	 * @param { (player: Player, i: number) => Promise<any | void> } asyncFunc 需要执行的async方法
+	 * @param { (player: Player, i: number) => PromiseLike<any | void> |  } asyncFunc 需要执行的async方法
 	 * @param { (a: Player, b: Player) => number } [sort] 排序器，默认为lib.sort.seat
 	 */
 	async doAsyncInOrder(targets, asyncFunc, sort) {
@@ -10459,9 +10459,6 @@ ${e instanceof Error ? e.stack : String(e)}`);
 	syncHandcard(player, id_list) {
 		game.broadcastAll(
 			(player, id_list) => {
-				if (game.me == player) {
-					return;
-				}
 				const sortFunc = (a, b) => id_list.indexOf(a.cardid) - id_list.indexOf(b.cardid);
 				player.sortHandcard(sortFunc);
 			},
