@@ -1,7 +1,7 @@
 # ========================================================================
 # Stage 1: Build Stage
 # ========================================================================
-FROM node:20 AS builder
+FROM node:24 AS builder
 
 RUN npm install -g pnpm@9
 WORKDIR /app
@@ -16,21 +16,24 @@ COPY packages/jit/package.json ./packages/jit/
 COPY packages/server/package.json ./packages/server/
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
 
 # Copy source code
 COPY . .
 
-# Build core application (full mode)
-RUN pnpm build:full
+# Build core application
+RUN pnpm build
 
 # Build file server package
 RUN cd packages/fs && pnpm build
 
+# Build ws server package
+RUN cd packages/server && pnpm build
+
 # ========================================================================
 # Stage 2: Runtime Stage
 # ========================================================================
-FROM node:20-alpine
+FROM node:24-alpine
 
 ENV NODE_ENV=production
 
@@ -44,12 +47,20 @@ COPY --from=builder /app/apps/core/dist ./
 COPY --from=builder /app/packages/fs/dist ./packages/fs/dist
 COPY --from=builder /app/packages/fs/package.json ./packages/fs/package.json
 
+# Copy ws server build artifacts
+COPY --from=builder /app/packages/server/dist ./packages/server/dist
+COPY --from=builder /app/packages/server/package.json ./packages/server/package.json
+
 # Copy and rename game lobby server (from .js to .cjs for direct execution)
 COPY --from=builder /app/server.js ./server.cjs
 
 # Copy configuration scripts
 COPY process.yml ./
 COPY http-server.js ./
+COPY apps/core/image/ ./image/
+COPY apps/core/audio/ ./audio/
+COPY apps/core/font/ ./font/
+COPY apps/core/extension/ ./extension/
 
 # Prepare runtime environment
 RUN echo '{"type": "module"}' > package.json

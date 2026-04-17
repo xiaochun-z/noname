@@ -17,5 +17,11 @@ apps:
     cwd: '/app'
     env:
       NODE_ENV: 'production'
-      # 确保它监听 8089 (通常是默认值，如有需要可配置)
       PORT: 8089
+
+  - name: 'ws-server'
+    script: './packages/server/dist/index.cjs'
+    cwd: '/app'
+    env:
+      NODE_ENV: 'production'
+      PORT: 8082
