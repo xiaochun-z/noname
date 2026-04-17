@@ -862,222 +862,424 @@ const skills = {
 		},
 	},
 	rende: {
-		audio: 2,
-		enable: "phaseUse",
-		filterCard: true,
-		selectCard: [1, Infinity],
-		allowChooseAll: true,
-		discard: false,
-		lose: false,
-		delay: 0,
-		filterTarget(card, player, target) {
-			return player != target;
-		},
-		check(card) {
-			if (ui.selected.cards.length > 1) {
-				return 0;
-			}
-			if (ui.selected.cards.length && ui.selected.cards[0].name == "du") {
-				return 0;
-			}
-			if (!ui.selected.cards.length && card.name == "du") {
-				return 20;
-			}
-			const player = get.owner(card);
-			let num = 0;
-			const evt2 = _status.event.getParent();
-			player.getHistory("lose", evt => {
-				if (evt.getParent().skill == "rende" && evt.getParent(3) == evt2) {
-					num += evt.cards.length;
-				}
-			});
-			if (player.hp == player.maxHp || num > 1 || player.countCards("h") <= 1) {
-				if (ui.selected.cards.length) {
-					return -1;
-				}
-				const players = game.filterPlayer();
-				for (let i = 0; i < players.length; i++) {
-					if (players[i].hasSkill("haoshi") && !players[i].isTurnedOver() && !players[i].hasJudge("lebu") && get.attitude(player, players[i]) >= 3 && get.attitude(players[i], player) >= 3) {
-						return 11 - get.value(card);
-					}
-				}
-				if (player.countCards("h") > player.hp) {
-					return 10 - get.value(card);
-				}
-				if (player.countCards("h") > 2) {
-					return 6 - get.value(card);
-				}
-				return -1;
-			}
-			return 10 - get.value(card);
-		},
-		async content(event, trigger, player) {
-			const evt2 = event.getParent(3);
-			let num = 0;
-			player.getHistory("lose", evt => {
-				if (evt.getParent(2).name == "rende" && evt.getParent(5) == evt2) {
-					num += evt.cards.length;
-				}
-			});
-			player.give(event.cards, event.target);
-			if (num < 2 && num + event.cards.length > 1) {
-				player.recover();
-			}
-		},
-		ai: {
-			order(skill, player) {
-				if (player.hp < player.maxHp && player.storage.rende < 2 && player.countCards("h") > 1) {
-					return 10;
-				}
-				return 1;
-			},
-			result: {
-				target(player, target) {
-					if (target.hasSkillTag("nogain")) {
-						return 0;
-					}
-					if (ui.selected.cards.length && ui.selected.cards[0].name == "du") {
-						return target.hasSkillTag("nodu") ? 0 : -10;
-					}
-					if (target.hasJudge("lebu")) {
-						return 0;
-					}
-					const nh = target.countCards("h");
-					const np = player.countCards("h");
-					if (player.hp == player.maxHp || player.storage.rende < 0 || player.countCards("h") <= 1) {
-						if (nh >= np - 1 && np <= player.hp && !target.hasSkill("haoshi")) {
-							return 0;
-						}
-					}
-					return Math.max(1, 5 - nh);
-				},
-			},
-			effect: {
-				target_use(card, player, target) {
-					if (player == target && get.type(card) == "equip") {
-						if (player.countCards("e", { subtype: get.subtype(card) })) {
-							const players = game.filterPlayer();
-							for (let i = 0; i < players.length; i++) {
-								if (players[i] != player && get.attitude(player, players[i]) > 0) {
-									return 0;
-								}
-							}
-						}
-					}
-				},
-			},
-			threaten: 0.8,
-		},
-	},
-	rende1: {
-		trigger: { player: "phaseUseBegin" },
-		silent: true,
-		sourceSkill: "rende",
-		async content(event, trigger, player) {
-			player.storage.rende = 0;
-		},
-	},
-	jijiang: {
-		audio: "jijiang1",
-		audioname: ["liushan", "re_liubei", "re_liushan", "ol_liushan"],
-		audioname2: {
-			pe_jun_liubei: "sbjijiang",
-		},
-		group: ["jijiang1"],
-		zhuSkill: true,
-		filter(event, player) {
-			if (!player.hasZhuSkill("jijiang") || !game.hasPlayer(current => current != player && current.group == "shu")) {
-				return false;
-			}
-			return !event.jijiang && (event.type != "phase" || !player.hasSkill("jijiang3"));
-		},
-		enable: ["chooseToUse", "chooseToRespond"],
-		viewAs: { name: "sha" },
-		filterCard() {
-			return false;
-		},
-		selectCard: -1,
-		ai: {
-			order() {
-				return get.order({ name: "sha" }) + 0.3;
-			},
-			respondSha: true,
-			skillTagFilter(player) {
-				if (!player.hasZhuSkill("jijiang") || !game.hasPlayer(current => current != player && current.group == "shu")) {
-					return false;
-				}
-			},
-		},
-	},
-	jijiang1: {
-		audio: 2,
-		audioname: ["liushan", "re_liubei", "re_liushan", "ol_liushan"],
-		audioname2: {
-			pe_jun_liubei: "sbjijiang",
-		},
-		trigger: { player: ["useCardBegin", "respondBegin"] },
-		logTarget: "targets",
-		sourceSkill: "jijiang",
-		filter(event, player) {
-			return event.skill == "jijiang";
-		},
-		forced: true,
-		async content(event, trigger, player) {
-			delete trigger.skill;
-			trigger.getParent().set("jijiang", true);
-			while (true) {
-				if (event.current == undefined) {
-					event.current = player.next;
-				}
-				if (event.current == player) {
-					player.addTempSkill("jijiang3");
-					trigger.cancel();
-					trigger.getParent().goto(0);
-					return;
-				} else if (event.current.group == "shu") {
-					const chooseToRespondEvent = event.current.chooseToRespond("是否替" + get.translation(player) + "打出一张杀？", { name: "sha" });
-					chooseToRespondEvent.set("ai", () => {
-						const event = _status.event;
-						return get.attitude(event.player, event.source) - 2;
-					});
-					chooseToRespondEvent.set("source", player);
-					chooseToRespondEvent.set("jijiang", true);
-					chooseToRespondEvent.set("skillwarn", "替" + get.translation(player) + "打出一张杀");
-					chooseToRespondEvent.noOrdering = true;
-					chooseToRespondEvent.autochoose = lib.filter.autoRespondSha;
-					const { bool, card, cards } = await chooseToRespondEvent.forResult();
-					if (bool) {
-						trigger.card = card;
-						trigger.cards = cards;
-						trigger.throw = false;
-						if (typeof event.current.ai.shown == "number" && event.current.ai.shown < 0.95) {
-							event.current.ai.shown += 0.3;
-							if (event.current.ai.shown > 0.95) {
-								event.current.ai.shown = 0.95;
-							}
-						}
-						return;
-					} else {
-						event.current = event.current.next;
-					}
-				} else {
-					event.current = event.current.next;
-				}
-			}
-		},
-	},
-	jijiang3: {
-		trigger: { global: ["useCardAfter", "useSkillAfter", "phaseAfter"] },
-		silent: true,
-		charlotte: true,
-		sourceSkill: "jijiang",
-		filter(event) {
-			return event.skill != "jijiang" && event.skill != "qinwang";
-		},
-		async content(event, trigger, player) {
-			player.removeSkill("jijiang3");
-		},
-	},
+        audio: 2,
+        enable: "phaseUse",
+        filterCard: true,
+        selectCard: [1, Infinity],
+        allowChooseAll: true,
+        discard: false,
+        lose: false,
+        delay: 0,
+        group: ["rende_farm_ai", "rende1"], 
+        filterTarget(card, player, target) {
+            return player != target;
+        },
+        check(card) {
+            if (ui.selected.cards.length > 1) return 0; 
+            if (ui.selected.cards.length && ui.selected.cards[0].name == "du") return 0;
+            if (!ui.selected.cards.length && card.name == "du") return 20;
+            
+            const player = get.owner(card);
+            let num = player.storage.rende || 0;
+
+            let farmCount = player.storage.rende_farm_count || 0;
+            let hasXunYu = game.hasPlayer(current => (current.hasSkill('jieming') || current.hasSkill('yiji') || current.hasSkill('fangzhu')) && get.attitude(player, current) > 0 && current.hp > 1);
+            let hasLuSu = game.hasPlayer(current => current.hasSkill('dimeng') && get.attitude(player, current) > 0);
+            let hasYueYing = game.hasPlayer(current => current.hasSkill('jizhi') && get.attitude(player, current) > 0);
+            let hasShu = game.hasPlayer(current => current.group == 'shu' && get.attitude(player, current) > 0 && current != player);
+            let hasEquipHungryAlly = game.hasPlayer(current => current != player && get.attitude(player, current) >= 3 && (current.hasSkill('jieyin') || current.hasSkill('xuanfeng') || current.hasSkill('xiaoji')));
+            
+            let hasEnyuanAlly = game.hasPlayer(current => current != player && get.attitude(player, current) >= 3 && current.hasSkill('enyuan'));
+
+            let dyingAlly = game.hasPlayer(current => current != player && current.hp <= 1 && get.attitude(player, current) >= 3);
+            if (dyingAlly && (card.name == 'tao' || card.name == 'jiu')) {
+                return 30; 
+            }
+
+            if (hasYueYing && get.type(card) == 'trick' && !get.info(card).delay) return 30;
+            if (player.hp < player.maxHp && num < 2 && hasShu && card.name == 'sha') return 25;
+
+            if (farmCount < 2 && hasXunYu) {
+                let damageCards = player.getCards('h', c => ['sha', 'nanman', 'wanjian', 'juedou'].includes(c.name));
+                if (damageCards.length === 1 && damageCards[0] == card) return -100; 
+            }
+
+            if ((player.hp < player.maxHp && num < 2) || hasEnyuanAlly) {
+                if (player.countCards("h") >= 2 && ui.selected.cards.length === 1) {
+                    let val = 20 - get.value(card);
+                    if (!hasEnyuanAlly && ['shan', 'tao', 'jiu'].includes(card.name) && player.countCards("h") <= 3) val -= 15;
+                    return val;
+                }
+            }
+
+            let canTriggerEnyuan = hasEnyuanAlly && player.countCards("h") >= 2;
+
+            if (!canTriggerEnyuan && (player.hp == player.maxHp || num > 1 || player.countCards("h") <= 1)) {
+                if (ui.selected.cards.length) return -1;
+                const players = game.filterPlayer();
+                for (let i = 0; i < players.length; i++) {
+                    if (players[i].hasSkill("haoshi") && !players[i].isTurnedOver() && !players[i].hasJudge("lebu") && get.attitude(player, players[i]) >= 3 && get.attitude(players[i], player) >= 3) {
+                        return 11 - get.value(card);
+                    }
+                }
+                if (player.countCards("h") > player.hp) return 10 - get.value(card);
+                if (player.countCards("h") > 2) return 6 - get.value(card);
+                return -1;
+            }
+
+            let val = 10 - get.value(card);
+            
+            if (!hasLuSu && !dyingAlly && (player.hp <= 2 || player.countCards("h") <= 3) && (card.name == 'shan' || card.name == 'tao' || card.name == 'jiu')) {
+                val -= 15; 
+            }
+            
+            if (get.type(card) == 'equip') {
+                val += 2;
+                if (hasEquipHungryAlly) val += 20; 
+            }
+            
+            if (canTriggerEnyuan && !['shan', 'tao', 'jiu'].includes(card.name)) {
+                val += 5;
+            }
+
+            return val;
+        },
+        async content(event, trigger, player) {
+            let num = player.storage.rende || 0;
+            player.storage.rende = num + event.cards.length;
+
+            await player.give(event.cards, event.target);
+            
+            if (num < 2 && player.storage.rende > 1) {
+                player.recover();
+            }
+        },
+        ai: {
+            order(skill, player) {
+                let dyingAlly = game.hasPlayer(current => current != player && current.hp <= 1 && get.attitude(player, current) >= 3);
+                if (dyingAlly && player.hasCard(c => c.name == 'tao' || c.name == 'jiu', 'h')) return 13.5;
+
+                let hasEquipHungryAlly = game.hasPlayer(current => current != player && get.attitude(player, current) >= 3 && (current.hasSkill('jieyin') || current.hasSkill('xuanfeng') || current.hasSkill('xiaoji')));
+                if (hasEquipHungryAlly && player.hasCard(c => get.type(c) == 'equip', 'h')) {
+                    return 13; 
+                }
+
+                let hasEnyuanAlly = game.hasPlayer(current => current != player && get.attitude(player, current) >= 3 && current.hasSkill('enyuan'));
+                if (hasEnyuanAlly && player.countCards('h') >= 2) {
+                    return 12.8;
+                }
+
+                if (player.hasCard(c => get.subtype(c) == 'equip1' || get.subtype(c) == 'equip3', 'h')) {
+                    let shortRangeAlly = game.hasPlayer(current => current != player && get.attitude(player, current) >= 3 && current.getAttackRange() <= 1);
+                    if (shortRangeAlly) return 12.5; 
+                }
+
+                let hasYueYing = game.hasPlayer(current => current.hasSkill('jizhi') && get.attitude(player, current) > 0);
+                if (hasYueYing && player.hasCard(c => get.type(c) == 'trick' && !get.info(c).delay, 'h')) return 12;
+
+                let hasShu = game.hasPlayer(current => current.group == 'shu' && get.attitude(player, current) > 0 && current != player);
+                if (hasShu && player.hp < player.maxHp && player.storage.rende < 2 && player.countCards("h") > 1 && player.hasCard('sha', 'h')) return 12;
+
+                let farmCount = player.storage.rende_farm_count || 0;
+                let hasXunYu = game.hasPlayer(current => (current.hasSkill('jieming') || current.hasSkill('yiji') || current.hasSkill('fangzhu')) && get.attitude(player, current) > 0 && current.hp > 1);
+                let hasLuSu = game.hasPlayer(current => current.hasSkill('dimeng') && get.attitude(player, current) > 0);
+
+                if (hasLuSu && player.countCards('h') > 0) return 11;
+                if (farmCount < 2 && hasXunYu) {
+                    let hasDamageCard = player.hasCard(c => ['sha', 'nanman', 'wanjian', 'juedou'].includes(c.name), 'h');
+                    if (hasDamageCard && player.countCards('h') > 1) return 11; 
+                }
+
+                if (player.hp < player.maxHp && player.storage.rende < 2 && player.countCards("h") > 1) return 10;
+                return 1;
+            },
+            result: {
+                target(player, target) {
+                    if (target.hasSkillTag("nogain")) return 0;
+                    if (ui.selected.cards.length && ui.selected.cards[0].name == "du") return target.hasSkillTag("nodu") ? 0 : -10;
+                    if (target.hasJudge("lebu")) return 0;
+
+                    const nh = target.countCards("h");
+                    const np = player.countCards("h");
+
+                    if (player.hp == player.maxHp || player.storage.rende < 0 || player.countCards("h") <= 1) {
+                        if (nh >= np - 1 && np <= player.hp && !target.hasSkill("haoshi") && !target.hasSkill("enyuan")) return 0;
+                    }
+
+                    let score = Math.max(1, 5 - nh);
+                    const cards = ui.selected.cards;
+
+                    if (target.hasSkill('enyuan') && get.attitude(player, target) >= 3 && player.countCards("h") >= 2) {
+                        score += 30;
+                    }
+
+                    if (cards && cards.length > 0) {
+                        for (let i = 0; i < cards.length; i++) {
+                            let card = cards[i];
+                            let suit = get.suit(card);
+                            let number = get.number(card);
+                            let type = get.type(card);
+                            let subtype = get.subtype(card);
+
+                            if ((card.name == 'tao' || card.name == 'jiu') && target.hp <= 1) score += 20; 
+
+                            if (subtype == 'equip1' || subtype == 'equip3') {
+                                if (target.getAttackRange() <= 1) {
+                                    if (target.hasSkill('paoxiao') || target.hasSkill('longdan') || target.hasSkill('wusheng') || target.hasSkill('tieji') || target.hasSkill('liegong')) {
+                                        score += 12;
+                                    } else {
+                                        score += 6;
+                                    }
+                                }
+                            }
+
+                            if (type == 'equip' && (target.hasSkill('jieyin') || target.hasSkill('xuanfeng') || target.hasSkill('xiaoji'))) {
+                                score += 15;
+                            }
+                            
+                            if (suit == 'diamond' && target.hasSkill('guose')) score += 6;
+                            if ((suit == 'heart' || suit == 'diamond') && target.hasSkill('jijiu')) score += 5;
+                            
+                            if (type == 'trick' && !get.info(card).delay && target.hasSkill('jizhi')) score += 15; 
+                            if (card.name == 'sha' && target.group == 'shu') score += 10; 
+                            if (card.name == 'sha' && (target.hasSkill('paoxiao') || target.hasSkill('longdan'))) score += 5;
+                            
+                            if (target.hasSkill('guicai') || target.hasSkill('guidao')) {
+                                let hasLightning = game.hasPlayer(current => current.hasJudge('shandian'));
+                                if (hasLightning) {
+                                    if (suit == 'spade' && number >= 2 && number <= 9) score += 15; 
+                                    else score += 3;  
+                                }
+                            }
+                        }
+                    } else {
+                        if (target.hasSkill('paoxiao') || target.hasSkill('jijiu') || target.hasSkill('jieyin') || target.hasSkill('jizhi')) score += 3.5;
+                    }
+
+                    if (target.hasSkill("haoshi")) score += 5;
+                    if (target.hp <= 1) score += 4;
+                    else if (target.hp == 2) score += 1.5;
+
+                    if (nh >= target.hp + 1 && !target.hasSkill('paoxiao') && !target.hasSkill('keji') && !target.hasSkill('qingnang')) {
+                        score -= 4; 
+                    }
+
+                    return score;
+                },
+            },
+            effect: {
+                target_use(card, player, target) {
+                    if (player == target && get.type(card) == "equip") {
+                        if (player.countCards("e", { subtype: get.subtype(card) })) {
+                            const players = game.filterPlayer();
+                            for (let i = 0; i < players.length; i++) {
+                                if (players[i] != player && get.attitude(player, players[i]) > 0) return 0;
+                            }
+                        }
+                    }
+                },
+            },
+            threaten: 0.8,
+        },
+    },
+    rende_farm_ai: {
+        charlotte: true,
+        ai: {
+            effect: {
+                target(card, player, target, current) {
+                    let farmCount = player.storage.rende_farm_count || 0;
+                    if (farmCount >= 2) return;
+                    if (get.attitude(player, target) <= 0) return;
+
+                    if (['sha', 'juedou'].includes(card.name)) {
+                        if (['jieming', 'yiji', 'fangzhu'].some(s => target.hasSkill(s)) && target.hp > 1) {
+                            if (player.countCards('h') <= 2) {
+                                return [1, 5]; 
+                            }
+                        }
+                    }
+
+                    if (['nanman', 'wanjian'].includes(card.name)) {
+                        if (['jieming', 'yiji'].some(s => target.hasSkill(s)) && target.hp > 1) {
+                            let isSafe = true;
+                            const allies = game.filterPlayer(c => get.attitude(player, c) > 0 && c != target);
+                            let huaTuo = game.filterPlayer(c => c.hasSkill('jijiu') && get.attitude(player, c) > 0)[0];
+                            
+                            for (let ally of allies) {
+                                if (ally.hp <= 1) {
+                                    let hasSave = ally.countCards('h', c => c.name == 'tao' || c.name == 'jiu') > 0;
+                                    let huatuoCanSave = huaTuo && huaTuo.countCards('he', {color: 'red'}) > 0;
+                                    if (!hasSave && !huatuoCanSave) {
+                                        isSafe = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (isSafe && player.countCards('h') <= 2) {
+                                return [1, 5];
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        trigger: { 
+            source: "damageEnd",
+            player: "chooseCardBefore" 
+        },
+        forced: true,
+        silent: true,
+        filter(event, player, name) {
+            if (name === "damageEnd") {
+                let cards = ['sha', 'nanman', 'wanjian', 'juedou'];
+                let skills = ['jieming', 'yiji', 'fangzhu'];
+                return event.card && cards.includes(event.card.name) &&
+                       get.attitude(player, event.player) > 0 &&
+                       skills.some(s => event.player.hasSkill(s));
+            }
+            if (name === "chooseCardBefore") {
+                let pEvent = event.getParent();
+                return pEvent && pEvent.name === 'chooseToPindian' &&
+                       pEvent.target === player &&
+                       pEvent.player && get.attitude(player, pEvent.player) > 0;
+            }
+            return false;
+        },
+        content(event, trigger, player) {
+            if (event.triggername === "damageEnd") {
+                player.storage.rende_farm_count = (player.storage.rende_farm_count || 0) + 1;
+            }
+            if (event.triggername === "chooseCardBefore") {
+                trigger.ai = function(card) {
+                    let pEvent = trigger.getParent();
+                    let source = pEvent.player;
+                    let wantToLose = true; 
+                    
+                    if (card.name === 'tao' || card.name === 'jiu') return -100;
+
+                    if (source.hasSkill('quhu')) {
+                        let maxJiemingDraw = 0;
+                        let allies = game.filterPlayer(c => get.attitude(player, c) > 0);
+                        for (let i = 0; i < allies.length; i++) {
+                            let draw = allies[i].maxHp - allies[i].countCards('h');
+                            if (draw > maxJiemingDraw) maxJiemingDraw = draw;
+                        }
+                        if (maxJiemingDraw >= 3) {
+                            wantToLose = false; 
+                        }
+                    }
+
+                    let val = 10 - get.value(card); 
+                    let num = get.number(card);     
+
+                    if (wantToLose) {
+                        return val - num * 2; 
+                    } else {
+                        return val + num * 3; 
+                    }
+                };
+            }
+        }
+    },
+    rende1: {
+        trigger: { player: "phaseUseBegin" },
+        silent: true,
+        sourceSkill: "rende",
+        async content(event, trigger, player) {
+            player.storage.rende = 0;
+        },
+    },
+    jijiang: {
+        audio: "jijiang1",
+        audioname: ["liushan", "re_liubei", "re_liushan", "ol_liushan"],
+        audioname2: {
+            pe_jun_liubei: "sbjijiang",
+        },
+        group: ["jijiang1"],
+        zhuSkill: true,
+        filter(event, player) {
+            if (!player.hasZhuSkill("jijiang") || !game.hasPlayer(current => current != player && current.group == "shu")) return false;
+            if (event.jijiang || (event.type == "phase" && player.hasSkill("jijiang3"))) return false;
+
+            if (get.mode() != "guozhan" && !player.isUnderControl()) {
+                const canRespond = game.hasPlayer(current => {
+                    if (current == player || current.group != 'shu' || get.attitude(player, current) <= 0) return false;
+                    return current.countCards('h') > 0 || current.hasSkill('wusheng') || current.hasSkill('longdan');
+                });
+                if (!canRespond) return false;
+            }
+            return true;
+        },
+        enable: ["chooseToUse", "chooseToRespond"],
+        viewAs: { name: "sha" },
+        filterCard() { return false; },
+        selectCard: -1,
+        ai: {
+            order() { return get.order({ name: "sha" }) + 0.3; },
+            respondSha: true,
+            skillTagFilter(player) {
+                if (!player.hasZhuSkill("jijiang")) return false;
+                return game.hasPlayer(current => current != player && current.group == "shu");
+            },
+        },
+    },
+    jijiang1: {
+        audio: 2,
+        audioname: ["liushan", "re_liubei", "re_liushan", "ol_liushan"],
+        audioname2: { pe_jun_liubei: "sbjijiang" },
+        trigger: { player: ["useCardBegin", "respondBegin"] },
+        logTarget: "targets",
+        sourceSkill: "jijiang",
+        filter(event, player) { return event.skill == "jijiang"; },
+        forced: true,
+        async content(event, trigger, player) {
+            delete trigger.skill;
+            trigger.getParent().set("jijiang", true);
+            while (true) {
+                if (event.current == undefined) event.current = player.next;
+                if (event.current == player) {
+                    player.addTempSkill("jijiang3");
+                    trigger.cancel();
+                    trigger.getParent().goto(0);
+                    return;
+                } else if (event.current.group == "shu") {
+                    const chooseToRespondEvent = event.current.chooseToRespond("是否替" + get.translation(player) + "打出一张杀？", { name: "sha" });
+                    chooseToRespondEvent.set("ai", () => {
+                        const event = _status.event;
+                        return get.attitude(event.player, event.source) - 2;
+                    });
+                    chooseToRespondEvent.set("source", player);
+                    chooseToRespondEvent.set("jijiang", true);
+                    chooseToRespondEvent.set("skillwarn", "替" + get.translation(player) + "打出一张杀");
+                    chooseToRespondEvent.noOrdering = true;
+                    chooseToRespondEvent.autochoose = lib.filter.autoRespondSha;
+                    const { bool, card, cards } = await chooseToRespondEvent.forResult();
+                    if (bool) {
+                        trigger.card = card;
+                        trigger.cards = cards;
+                        trigger.throw = false;
+                        if (typeof event.current.ai.shown == "number" && event.current.ai.shown < 0.95) {
+                            event.current.ai.shown += 0.3;
+                            if (event.current.ai.shown > 0.95) event.current.ai.shown = 0.95;
+                        }
+                        return;
+                    } else {
+                        event.current = event.current.next;
+                    }
+                } else {
+                    event.current = event.current.next;
+                }
+            }
+        },
+    },
+    jijiang3: {
+        trigger: { global: ["useCardAfter", "useSkillAfter", "phaseAfter"] },
+        silent: true,
+        charlotte: true,
+        sourceSkill: "jijiang",
+        filter(event) { return event.skill != "jijiang" && event.skill != "qinwang"; },
+        async content(event, trigger, player) { player.removeSkill("jijiang3"); },
+    },
 	wusheng: {
 		audio: 2,
 		audioname2: {
