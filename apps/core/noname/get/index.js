@@ -1,5 +1,5 @@
 import { Is } from "./is.js";
-import { Promises } from "./promises.js";
+import { Promises } from "./promises";
 import { rootURL, game, lib, _status, ui } from "noname";
 import * as pinyinPro from "pinyin-pro";
 import NonameDictionary from "./pinyins/noname-dict.js";
@@ -20,6 +20,34 @@ export class Get {
 	is = new Is();
 	promises = new Promises();
 	Audio = Audio;
+	/**
+	 * 获取一张延时锦囊牌实际占用的延时栏
+	 *
+	 * @param { string | Card | VCard | CardBaseUIData } obj
+	 * @param { false | Player } [player]
+	 * @returns { string[] }
+	 */
+	judgeSlots(obj, player) {
+		if (typeof obj == "string") {
+			obj = { name: obj };
+		}
+		if (typeof obj != "object" || obj === null) {
+			return [];
+		}
+		const name = get.name(obj, player);
+		if (!lib.card[name]) {
+			return [];
+		}
+		const list = [name];
+		if (Array.isArray(obj.judgeSlots)) {
+			return get.copy(obj.judgeSlots).addArray(list);
+		}
+		if (lib.card[name].judgeSlots) {
+			const judgeSlots = get.copy(lib.card[name].judgeSlots);
+			list.addArray(Array.isArray(judgeSlots) ? judgeSlots : [judgeSlots]);
+		}
+		return list;
+	}
 	/**
 	 * 将一组卡牌按花色或颜色分组，生成最终可用于dialog.addNewRow方法的参数列表，用于使用#Player.chooseButton/Player.chooseButtonTarget使用createDialog创建对话框的需要从一组卡牌中选择所有某种颜色/花色的牌的技能，用法可参考手杀曹髦/手杀陆郁生
 	 * @param {Card[]} cards 要分组的卡牌
@@ -835,6 +863,9 @@ export class Get {
 		if (info.feedPigSkill) {
 			list.add("威主技");
 		}
+		if (get.is.qidingSkill(skill, player)) {
+			list.add("契定技");
+		}
 		if (info.categories) {
 			list.addArray(info.categories(skill, player));
 		}
@@ -868,8 +899,8 @@ export class Get {
 	/**
 	 * 用于获取武将的姓氏和名字
 	 * @param { string } str 武将ID
-	 * @param { string | undefined } defaultSurname 默认姓氏
-	 * @param { string | undefined } defaultName 默认名字，为空则设“某”
+	 * @param { string | undefined } [defaultSurname] 默认姓氏
+	 * @param { string | undefined } [defaultName] 默认名字，为空则设“某”
 	 * @returns { Array } 返回由[姓氏, 名字]组成的数组
 	 */
 	characterSurname(str, defaultSurname, defaultName) {
@@ -1076,12 +1107,19 @@ export class Get {
 		}
 		return str;
 	}
+	/**
+	 * 设置事件的提示文本；已有主提示时写入副提示。
+	 *
+	 * @param { GameEvent } next - 需要设置提示文本的事件
+	 * @param { string } str - 提示文本；以"###"开头时可拆分为prompt和prompt2
+	 * @returns { void }
+	 */
 	evtprompt(next, str) {
 		if (next.prompt) {
 			next.set("prompt2", str);
 		} else {
 			if (str.startsWith("###")) {
-				var prompts = str.slice(3).split("###");
+				const prompts = str.slice(3).split("###");
 				if (prompts[0]) {
 					next.set("prompt", prompts[0]);
 				}
@@ -1093,6 +1131,14 @@ export class Get {
 			}
 		}
 	}
+	/**
+	 * 将一张牌或虚拟牌数据转为对应的虚拟牌。
+	 *
+	 * @param { Card | VCard | CardBaseUIData } card - 要转换的牌或虚拟牌数据
+	 * @param { Card[] } [cards] - 组成虚拟牌的实体牌
+	 * @param { Player | false } [owner] - 获取牌面信息时参考的玩家
+	 * @returns { VCard } 转换后的虚拟牌；单参数传入VCard时直接返回原对象
+	 */
 	autoViewAs(card, cards, owner) {
 		if (arguments.length === 1 && card instanceof lib.element.VCard) {
 			return card;
@@ -1153,55 +1199,113 @@ export class Get {
 			return card;
 		}
 	}
-	max(list, func, type) {
-		list = list.slice(0);
-		if (typeof func == "string") {
-			var key = func;
-			func = function (item) {
-				return item[key];
-			};
+	/**
+	 * 用于`get.max`和`get.min`的内部函数，感谢Javascript已经有了真正的私有化。
+	 *
+	 * 考虑到该函数不会暴露出去，干脆不考虑命名规范了，怎么申必怎么来。
+	 *
+	 * @param { any[] } list
+	 * @param { string | ((item: any) => number)} func
+	 * @param { "item" | "list" | undefined } type
+	 * @param { number } sign - 正为max，负为min
+	 */
+	static #_extreme(list, func, type, sign) {
+		if (typeof func === "string") {
+			const key = func;
+			func = item => item[key];
 		}
-		list.sort(function (a, b) {
-			return func(b) - func(a);
-		});
-		if (type == "list") {
-			var list2 = [];
-			for (var i = 0; i < list.length; i++) {
-				if (func(list[i]) == func(list[0])) {
-					list2.push(list[i]);
+
+		if (!list.length) {
+			if (type === "list") {
+				return [];
+			}
+			if (type === "item") {
+				return undefined;
+			}
+			return func(undefined);
+		}
+
+		let result = list[0];
+		let extreme = func(result);
+
+		if (type === "list") {
+			const resultList = [result];
+			for (let i = 1; i < list.length; i++) {
+				const item = list[i];
+				const value = func(item);
+				const compared = sign * (value - extreme);
+				if (compared > 0) {
+					extreme = value;
+					resultList.length = 0;
+					resultList.push(item);
+				} else if (value == extreme) {
+					resultList.push(item);
 				}
 			}
-			return list2;
-		} else if (type == "item") {
-			return list[0];
-		} else {
-			return func(list[0]);
+			return resultList;
 		}
+
+		for (let i = 1; i < list.length; i++) {
+			const item = list[i];
+			const value = func(item);
+			if (sign * (value - extreme) > 0) {
+				result = item;
+				extreme = value;
+			}
+		}
+		return type === "item" ? result : extreme;
 	}
+	/**
+	 * 获取列表中指定数值最大的结果。
+	 *
+	 * @template T
+	 * @overload
+	 * @param { T[] } list - 待比较的列表
+	 * @param { string | ((item: T) => number) } func - 用于取数值的属性名或函数
+	 * @returns { number | undefined }
+	 *
+	 * @template T
+	 * @overload
+	 * @param { T[] } list - 待比较的列表
+	 * @param { string | ((item: T) => number) } func - 用于取数值的属性名或函数
+	 * @param { "item" } type - 返回最大项
+	 * @returns { T | undefined }
+	 *
+	 * @template T
+	 * @overload
+	 * @param { T[] } list - 待比较的列表
+	 * @param { string | ((item: T) => number) } func - 用于取数值的属性名或函数
+	 * @param { "list" } type - 返回所有并列最大项
+	 * @returns { T[] }
+	 */
+	max(list, func, type) {
+		return Get.#_extreme(list, func, type, 1);
+	}
+	/**
+	 * 获取列表中指定数值最小的结果。
+	 *
+	 * @template T
+	 * @overload
+	 * @param { T[] } list - 待比较的列表
+	 * @param { string | ((item: T) => number) } func - 用于取数值的属性名或函数
+	 * @returns { number | undefined }
+	 *
+	 * @template T
+	 * @overload
+	 * @param { T[] } list - 待比较的列表
+	 * @param { string | ((item: T) => number) } func - 用于取数值的属性名或函数
+	 * @param { "item" } type - 返回最小项
+	 * @returns { T | undefined }
+	 *
+	 * @template T
+	 * @overload
+	 * @param { T[] } list - 待比较的列表
+	 * @param { string | ((item: T) => number) } func - 用于取数值的属性名或函数
+	 * @param { "list" } type - 返回所有并列最小项
+	 * @returns { T[] }
+	 */
 	min(list, func, type) {
-		list = list.slice(0);
-		if (typeof func == "string") {
-			var key = func;
-			func = function (item) {
-				return item[key];
-			};
-		}
-		list.sort(function (a, b) {
-			return func(a) - func(b);
-		});
-		if (type == "list") {
-			var list2 = [];
-			for (var i = 0; i < list.length; i++) {
-				if (func(list[i]) == func(list[0])) {
-					list2.push(list[i]);
-				}
-			}
-			return list2;
-		} else if (type == "item") {
-			return list[0];
-		} else {
-			return func(list[0]);
-		}
+		return Get.#_extreme(list, func, type, -1);
 	}
 	/**
 	 * 获取一张装备牌的兵主
@@ -1403,24 +1507,39 @@ export class Get {
 				return Math.min(max, num);
 		}
 	}
+	/**
+	 * 返回发动技能时的询问提示文本。
+	 *
+	 * @param { string } skill - 技能名
+	 * @param { Player } [target] - 技能目标
+	 * @param { Player } [player] - 发动技能的玩家，默认取当前事件玩家
+	 * @returns { string }
+	 */
 	prompt(skill, target, player) {
-		player = player || _status.event.player;
+		player ??= get.player();
 		if (target) {
-			var str = get.translation(target);
-			if (target == player) {
+			let str = get.translation(target);
+			if (target === player) {
 				str += "（你）";
 			}
-			return "是否对" + str + "发动【" + get.skillTranslation(skill, player) + "】？";
-		} else {
-			return "是否发动【" + get.skillTranslation(skill, player) + "】？";
+			return `是否对${str}发动【${get.skillTranslation(skill, player)}】？`;
 		}
+		return `是否发动【${get.skillTranslation(skill, player)}】？`;
 	}
+	/**
+	 * 返回发动技能时的询问提示文本，并在存在技能描述时附加描述。
+	 *
+	 * @param { string } skill - 技能名
+	 * @param { Player } [target] - 技能目标
+	 * @param { Player } [player] - 发动技能的玩家，默认取当前事件玩家
+	 * @returns { string }
+	 */
 	prompt2(skill, target, player) {
-		var str = get.prompt.apply(this, arguments);
-		if (!lib.translate[skill + "_info"]) {
+		const str = get.prompt(skill, target, player);
+		if (!lib.translate[`${skill}_info`]) {
 			return str;
 		}
-		return "###" + str + "###" + lib.translate[skill + "_info"];
+		return `###${str}###${lib.translate[`${skill}_info`]}`;
 	}
 	url(master) {
 		var url = lib.config.updateURL || lib.updateURL;
@@ -1490,8 +1609,9 @@ export class Get {
 	 * 此方法仅用作将技能/卡牌代码转为字符串，返回值无法直接进行反序列化
 	 * @param { any } obj
 	 * @param { number } [level = 0]
+	 * @param { boolean } [keepMethodSyntax = false] 是否保留对象方法的语法
 	 */
-	stringify(obj, level = 0) {
+	stringify(obj, level = 0, keepMethodSyntax = false) {
 		let indent = "";
 		for (let i = 0; i < level; i++) {
 			indent += "    ";
@@ -1501,8 +1621,9 @@ export class Get {
 				let str = "{\n";
 				for (const key in obj) {
 					let keyString = (/[^a-zA-Z]/.test(key) ? `"${key}"` : key) + ": ";
-					const valueString = get.stringify(obj[key], level + 1);
-					if (get.is.functionMethod(obj, key)) {
+					const isFunctionMethod = get.is.functionMethod(obj, key);
+					const valueString = get.stringify(obj[key], level + 1, isFunctionMethod);
+					if (isFunctionMethod) {
 						keyString = "";
 					}
 					str += indent + "    " + keyString + valueString + ",\n";
@@ -1511,6 +1632,17 @@ export class Get {
 				return str;
 			} else if (typeof obj === "function") {
 				let str = obj.toString().replace(/\t/g, "    ");
+				if (!keepMethodSyntax) {
+					if (obj instanceof AsyncGeneratorFunction) {
+						str = str.replace(/^async\s*\*\s*(?=[\w$]+\s*\()/, "async function* ");
+					} else if (obj instanceof GeneratorFunction) {
+						str = str.replace(/^\*\s*(?=[\w$]+\s*\()/, "function* ");
+					} else if (obj instanceof AsyncFunction) {
+						str = str.replace(/^async\s+(?!function\b)(?=[\w$]+\s*\()/, "async function ");
+					} else if (!/^(?:function|class)\b/.test(str)) {
+						str = str.replace(/^(?:get|set)\s+(?=[\w$]+\s*\()/, "function ").replace(/^(?=[\w$]+\s*\()/, "function ");
+					}
+				}
 				let lastLine = str.slice(str.lastIndexOf("\n"));
 				let originIndent = Math.floor((/\S/.exec(lastLine)?.index ?? lastLine.length) / 4);
 				for (let i = 0; i < Math.abs(originIndent - level); i++) {
@@ -3106,7 +3238,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			if (obj.every(p => p instanceof lib.element.Card)) {
 				return "cards";
 			}
-			if (obj.every(p => p instanceof lib.element.VCard)) {
+			if (obj.every(p => p instanceof lib.element.VCard || (get.is.object(p) && p.name && p.name in lib.card))) {
 				return "vcards";
 			}
 			if (obj.length == 2) {
@@ -3469,6 +3601,23 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		return [];
 	}
 	/**
+	 * 获取一名角色的勾玉颜色（构思玩意）
+	 * @param {import("@/library/index.js").Player | { hp: number, maxHp: number}} player
+	 * @return {string}
+	 */
+	hpColor(player) {
+		let color;
+		const { hp, maxHp } = player;
+		if (hp > Math.round(maxHp / 2) || hp === maxHp) {
+			color = "green";
+		} else if (hp > Math.floor(maxHp / 3)) {
+			color = "yellow";
+		} else {
+			color = "red";
+		}
+		return color;
+	}
+	/**
 	 * 返回牌堆顶的牌
 	 * @param { number } [num = 1] 默认为1
 	 * @param { boolean } [putBack] 是否放回牌堆顶
@@ -3636,7 +3785,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 * @overload
 	 * @param { Card | VCard | CardBaseUIData } item
 	 * @param { Player | false } [player]
-	 * @returns { any }
+	 * @returns { CardInfo | void }
 	 */
 	info(item, player) {
 		if (typeof item == "string" || typeof item == "symbol") {
@@ -4137,14 +4286,13 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	}
 	/**
 	 * 遍历子元素
-	 * @param {HTMLElement} node
+	 * @param {...HTMLElement} elements
 	 * @returns {Iterable<HTMLElement>} 迭代器
 	 */
-	*iterableChildNodes(node) {
-		for (let i = 0; i < arguments.length; i++) {
-			let arg = arguments[i];
-			for (let j = 0; j < arg.childElementCount; j++) {
-				yield arg.childNodes[j];
+	*iterableChildNodes(...elements) {
+		for (const element of elements) {
+			for (const child of element.children) {
+				yield child;
 			}
 		}
 	}
@@ -4206,29 +4354,37 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		}
 		return skills;
 	}
+	/**
+	 * 返回所有可获得的技能列表（遍历所有武将并排除禁将、Boss、隐藏等特殊武将，同时支持自定义筛选和combo技能前置校验）
+	 *
+	 * @param { ((info: object, skill: string, character: string) => boolean) } [func] - 自定义筛选函数，返回falsy则排除该技能
+	 * @param { Player } [player] - 当前玩家，用于校验combo技能的前置条件
+	 * @returns { string[] } 可获得的技能名数组
+	 */
 	gainableSkills(func, player) {
-		var list = [];
-		for (var i in lib.character) {
+		const list = [];
+		for (const i in lib.character) {
 			if (lib.filter.characterDisabled(i)) {
 				continue;
 			}
 			if (lib.filter.characterDisabled2(i)) {
 				continue;
 			}
-			if (lib.character[i].isBoss) {
+			const character = lib.character[i];
+			if (character.isBoss) {
 				continue;
 			}
-			if (lib.character[i].isHiddenBoss) {
+			if (character.isHiddenBoss) {
 				continue;
 			}
-			if (lib.character[i].isMinskin) {
+			if (character.isMinskin) {
 				continue;
 			}
-			if (lib.character[i].isUnseen) {
+			if (character.isUnseen) {
 				continue;
 			}
-			for (var skill of lib.character[i].skills) {
-				var info = lib.skill[skill];
+			for (const skill of character.skills) {
+				const info = lib.skill[skill];
 				if (lib.filter.skillDisabled(skill)) {
 					continue;
 				}
@@ -4240,7 +4396,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 					if (!Array.isArray(skills)) {
 						skills = [skills];
 					}
-					if (!skills.every(skill => player.hasSkill(skill, null, null, false))) {
+					if (!skills.every(comboSkill => player.hasSkill(comboSkill, null, null, false))) {
 						continue;
 					}
 				}
@@ -4249,42 +4405,57 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		}
 		return list;
 	}
+	/**
+	 * 返回指定武将的所有可获得技能（排除Boss、隐藏等特殊判定，同时支持自定义筛选）
+	 *
+	 * @param { string } name - 武将名
+	 * @param { ((info: object, skill: string, character: string) => boolean) } [func] - 自定义筛选函数，返回falsy则排除该技能
+	 * @returns { string[] } 该武将可获得的技能名数组；武将不存在时返回空数组
+	 */
 	gainableSkillsName(name, func) {
-		var list = [];
-		if (name && lib.character[name]) {
-			if (lib.character[name].isBoss) {
-				return list;
+		const list = [];
+		if (!name || !lib.character[name]) {
+			return list;
+		}
+		const character = lib.character[name];
+		if (character.isBoss) {
+			return list;
+		}
+		if (character.isHiddenBoss) {
+			return list;
+		}
+		if (character.isMinskin) {
+			return list;
+		}
+		if (character.isUnseen) {
+			return list;
+		}
+		for (const skill of character.skills) {
+			const info = lib.skill[skill];
+			if (lib.filter.skillDisabled(skill)) {
+				continue;
 			}
-			if (lib.character[name].isHiddenBoss) {
-				return list;
+			if (func && !func(info, skill, name)) {
+				continue;
 			}
-			if (lib.character[name].isMinskin) {
-				return list;
-			}
-			if (lib.character[name].isUnseen) {
-				return list;
-			}
-			for (var skill of lib.character[name].skills) {
-				var info = lib.skill[skill];
-				if (lib.filter.skillDisabled(skill)) {
-					continue;
-				}
-				if (func && !func(info, skill, name)) {
-					continue;
-				}
-				list.add(skill);
-			}
+			list.add(skill);
 		}
 		return list;
 	}
+	/**
+	 * 返回所有可获得技能的武将列表（排除禁将等不可选武将，同时支持自定义筛选和排除场上已有武将）
+	 *
+	 * @param { ((info: object, name: string) => boolean) | true } [func] - 自定义筛选函数（返回falsy则排除该武将），或传入`true`以额外排除场上（含已死亡）玩家的武将
+	 * @returns { string[] } 可获得的武将名数组
+	 */
 	gainableCharacters(func) {
-		var list = [];
-		for (var i in lib.character) {
-			var info = lib.character[i];
+		const list = [];
+		for (const i in lib.character) {
+			const info = lib.character[i];
 			if (!info) {
 				continue;
 			}
-			if (typeof func == "function" && !func(info, i)) {
+			if (typeof func === "function" && !func(info, i)) {
 				continue;
 			}
 			if (lib.filter.characterDisabled(i)) {
@@ -4296,11 +4467,11 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			list.push(i);
 		}
 		if (func === true) {
-			var players = game.players.concat(game.dead);
-			for (var i = 0; i < players.length; i++) {
-				list.remove(players[i].name);
-				list.remove(players[i].name1);
-				list.remove(players[i].name2);
+			const players = game.players.concat(game.dead);
+			for (const player of players) {
+				list.remove(player.name);
+				list.remove(player.name1);
+				list.remove(player.name2);
 			}
 		}
 		return list;
@@ -4327,100 +4498,63 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		}
 		return selectable;
 	}
-	filter(filter, i) {
-		if (typeof filter == "function") {
+	static #cardProperFunctions = new Set(["name", "type", "subtype", "color", "suit", "number"]);
+	/**
+	 * 将过滤函数或对象条件标准化为过滤函数。
+	 *
+	 * 传入对象条件时，会检查返回函数调用参数中第 `index` 个对象是否匹配该条件。
+	 * 若被检查对象是牌，`name`、`type`、`subtype`、`color`、`suit`、`number` 会通过对应的 get 方法取值。
+	 *
+	 * @param { ((...args: any[]) => boolean) | Record<string, any> } [filter] 过滤函数或对象条件
+	 * @param { number } [index=0] 要检查的参数下标
+	 * @returns { (...args: any[]) => boolean } 标准化后的过滤函数
+	 */
+	filter(filter, index) {
+		if (typeof filter === "function") {
+			// @ts-expect-error 神奇类型返回值
 			return filter;
 		}
-		if (i == undefined) {
-			i = 0;
+		if (index == null) {
+			index = 0;
 		}
-		var result = function () {
-			if (filter == arguments[i]) {
+		const result = (...args) => {
+			const item = args[index];
+			if (filter == null) {
+				// 旧代码中，判断完是否相等后，便开始执行遍历，而for in null不会进入循环
+				// 因此如果传入null，则必然返回true
+				// 考虑到传入null的合理情况基本没有，还是兼容为好
 				return true;
 			}
-			for (var j in filter) {
-				if (Object.prototype.hasOwnProperty.call(filter, j)) {
-					if (get.itemtype(arguments[i]) == "card") {
-						if (j == "name") {
-							if (Array.isArray(filter[j])) {
-								if (filter[j].includes(get.name(arguments[i])) == false) {
-									return false;
-								}
-							} else if (typeof filter[j] == "string") {
-								if (get.name(arguments[i]) != filter[j]) {
-									return false;
-								}
-							}
-						} else if (j == "type") {
-							if (Array.isArray(filter[j])) {
-								if (filter[j].includes(get.type(arguments[i])) == false) {
-									return false;
-								}
-							} else if (typeof filter[j] == "string") {
-								if (get.type(arguments[i]) != filter[j]) {
-									return false;
-								}
-							}
-						} else if (j == "subtype") {
-							if (Array.isArray(filter[j])) {
-								if (filter[j].includes(get.subtype(arguments[i])) == false) {
-									return false;
-								}
-							} else if (typeof filter[j] == "string") {
-								if (get.subtype(arguments[i]) != filter[j]) {
-									return false;
-								}
-							}
-						} else if (j == "color") {
-							if (Array.isArray(filter[j])) {
-								if (filter[j].includes(get.color(arguments[i])) == false) {
-									return false;
-								}
-							} else if (typeof filter[j] == "string") {
-								if (get.color(arguments[i]) != filter[j]) {
-									return false;
-								}
-							}
-						} else if (j == "suit") {
-							if (Array.isArray(filter[j])) {
-								if (filter[j].includes(get.suit(arguments[i])) == false) {
-									return false;
-								}
-							} else if (typeof filter[j] == "string") {
-								if (get.suit(arguments[i]) != filter[j]) {
-									return false;
-								}
-							}
-						} else if (j == "number") {
-							if (Array.isArray(filter[j])) {
-								if (filter[j].includes(get.number(arguments[i])) == false) {
-									return false;
-								}
-							} else if (typeof filter[j] == "string") {
-								if (get.number(arguments[i]) != filter[j]) {
-									return false;
-								}
-							}
-						} else if (Array.isArray(filter[j])) {
-							if (filter[j].includes(arguments[i][j]) == false) {
-								return false;
-							}
-						} else if (typeof filter[j] == "string") {
-							if (arguments[i][j] != filter[j]) {
-								return false;
-							}
-						}
-					} else {
-						if (arguments[i][j] != filter[j]) {
-							return false;
-						}
+			if (filter == item) {
+				return true;
+			}
+			const isCard = get.itemtype(item) === "card";
+			for (const key in filter) {
+				if (!Object.prototype.hasOwnProperty.call(filter, key)) {
+					continue;
+				}
+				const value = filter[key];
+				if (isCard) {
+					const proper = Get.#cardProperFunctions.has(key);
+					const target = proper ? get[key](item) : item[key];
+					if (!matches(value, target)) {
+						return false;
 					}
+				} else if (item[key] != value) {
+					return false;
 				}
 			}
 			return true;
 		};
-		result._filter_args = [filter, i];
+		result._filter_args = [filter, index];
 		return result;
+
+		function matches(value, target) {
+			if (Array.isArray(value)) {
+				return value.includes(target);
+			}
+			return target == value;
+		}
 	}
 	/**
 	 * 返回玩家本回合牌的使用次数
@@ -4606,148 +4740,204 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	}
 	/**
 	 * 从指定区域获得一张牌
-	 * @param { function | string | object | true } name 牌的筛选条件或名字，true为任意一张牌
-	 * @param { string | boolean } [position] 筛选区域，默认牌堆+弃牌堆：
 	 *
-	 * cardPile: 仅牌堆；discardPile: 仅弃牌堆；field: 牌堆+弃牌堆+场上
+	 * @param { string | true | Record<string, any> | ((card: Card) => boolean) } pattern - 筛选条件，可以是牌名、属性对象或过滤函数；若为`true`，则表示任意一张牌
+	 * @param { boolean | "cardPile" | "discardPile" | "field" } [position] - 筛选区域，默认牌堆+弃牌堆：
 	 *
-	 * 若为true且name为string | object类型，则在筛选区域内没有找到卡牌时创建一张name条件的牌
+	 * - cardPile: 仅牌堆
+	 * - discardPile: 仅弃牌堆
+	 * - field: 牌堆+弃牌堆+场上
 	 *
-	 * @param { string } [start] 遍历方式。默认top
+	 * > 若为true且name为`string | VCard`类型，则在筛选区域内没有找到卡牌时创建一张`name`条件的牌
 	 *
-	 * top: 从牌堆/弃牌堆顶自顶向下遍历
-	 * bottom: 从牌堆/弃牌堆底自底向上遍历
-	 * random: 随机位置遍历
-	 * @returns { Card | ChildNode | null }
+	 * @param { "top" | "bottom" | "random" } [start] - 遍历方式。默认top
+	 *
+	 * - top: 从牌堆/弃牌堆顶自顶向下遍历
+	 * - bottom: 从牌堆/弃牌堆底自底向上遍历
+	 * - random: 随机位置遍历
+	 *
+	 * @returns { Card | null }
 	 */
-	cardPile(name, position, start = "top") {
-		let filter,
-			create = null;
-		if (typeof name === "function") {
-			filter = function (card) {
-				return name(card);
-			};
-		} else if (name === true) {
-			filter = () => true;
-		} else if (name) {
-			if (typeof name === "string") {
-				name = { name };
-			}
-			filter = function (card) {
-				for (let i in name) {
-					if (card[i] && card[i] !== name[i]) {
-						return false;
-					}
+	cardPile(pattern, position, start = "top") {
+		let filter;
+		let create = false;
+		let filtering = true;
+		if (pattern === true) {
+			filtering = false;
+		} else if (typeof pattern === "function") {
+			filter = pattern;
+		} else if (pattern) {
+			if (typeof pattern === "string") {
+				filter = card => card.name === pattern;
+			} else {
+				// 预计算过滤器条目，避免每张牌都重复判断 key 类型和 filterVal 类型
+				const entries = [];
+				for (const key in pattern) {
+					const filterVal = pattern[key];
+					entries.push({
+						key,
+						filterVal,
+						isArray: Array.isArray(filterVal),
+					});
 				}
-				return true;
-			};
+				filter = card => {
+					for (const { key, filterVal, isArray } of entries) {
+						const value = card[key];
+						if (!value) {
+							continue;
+						}
+						if ((!isArray && value !== filterVal) || (isArray && !filterVal.includes(value))) {
+							return false;
+						}
+					}
+					return true;
+				};
+			}
 			if (position === true) {
 				create = true;
 			}
 		} else {
-			console.error("调用Get.cardPile()时未传入符合条件的参数name！");
+			console.error("调用get.cardPile()时未传入符合条件的参数name！");
 			return null;
 		}
+
+		const matches = card => !filtering || filter(card);
+		const findInPile = (pile, reverse = false) => {
+			const nodes = pile.childNodes;
+			const length = nodes.length;
+			if (!length) {
+				return null;
+			}
+			if (reverse) {
+				let index = length;
+				while (index--) {
+					const card = nodes[index];
+					if (matches(card)) {
+						return card;
+					}
+				}
+				return null;
+			}
+			let index = start === "random" ? get.rand(0, length - 1) : 0;
+			let count = 0;
+			while (count < length) {
+				const card = nodes[index];
+				if (matches(card)) {
+					return card;
+				}
+				count++;
+				index++;
+				if (index === length) {
+					index = 0;
+				}
+			}
+			return null;
+		};
+
 		if (start === "bottom") {
 			if (position !== "cardPile") {
-				for (let i = ui.discardPile.childNodes.length - 1; i >= 0; i--) {
-					if (filter(ui.discardPile.childNodes[i])) {
-						return ui.discardPile.childNodes[i];
-					}
+				const card = findInPile(ui.discardPile, true);
+				if (card) {
+					return card;
 				}
 			}
 			if (position !== "discardPile") {
-				for (let i = ui.cardPile.childNodes.length - 1; i >= 0; i--) {
-					if (filter(ui.cardPile.childNodes[i])) {
-						return ui.cardPile.childNodes[i];
-					}
+				const card = findInPile(ui.cardPile, true);
+				if (card) {
+					return card;
 				}
 			}
 			if (position === "field") {
-				let curs = game.filterPlayer(() => true);
-				for (let i = curs.length - 1; i >= 0; i--) {
-					const ej = curs[i].getCards("ej");
-					for (let j = ej.length - 1; j >= 0; j--) {
-						if (filter(ej[j])) {
-							return ej[j];
+				for (const current of game.filterPlayer().reverse()) {
+					for (const card of reversedFieldCards(current)) {
+						if (matches(card)) {
+							return card;
 						}
 					}
 				}
 			}
 			if (create) {
-				return game.createCard(name);
+				return game.createCard(pattern);
 			}
 			return null;
 		}
+
 		if (position !== "discardPile") {
-			let j = 0;
-			if (start === "random") {
-				j = get.rand(0, ui.cardPile.childNodes.length - 1);
-			}
-			for (let i = 0; i < ui.cardPile.childNodes.length; i++, j++) {
-				if (j >= ui.cardPile.childNodes.length) {
-					j -= ui.cardPile.childNodes.length;
-				}
-				if (filter(ui.cardPile.childNodes[j])) {
-					return ui.cardPile.childNodes[j];
-				}
+			const card = findInPile(ui.cardPile);
+			if (card) {
+				return card;
 			}
 		}
 		if (position !== "cardPile") {
-			let j = 0;
-			if (start === "random") {
-				j = get.rand(0, ui.discardPile.childNodes.length - 1);
-			}
-			for (let i = 0; i < ui.discardPile.childNodes.length; i++, j++) {
-				if (j >= ui.discardPile.childNodes.length) {
-					j -= ui.discardPile.childNodes.length;
-				}
-				if (filter(ui.discardPile.childNodes[j])) {
-					return ui.discardPile.childNodes[j];
-				}
+			const card = findInPile(ui.discardPile);
+			if (card) {
+				return card;
 			}
 		}
 		if (position === "field") {
-			let curs = game.filterPlayer(() => true);
-			for (let i = 0; i < curs.length; i++) {
-				const ej = curs[i].getCards("ej");
-				for (let j = 0; j < ej.length; j++) {
-					if (filter(ej[j])) {
-						return ej[j];
+			for (const current of game.filterPlayer()) {
+				for (const card of current.iterableGetCards("ej")) {
+					if (matches(card)) {
+						return card;
 					}
 				}
 			}
 		}
 		if (create) {
-			return game.createCard(name);
+			return game.createCard(pattern);
 		}
 		return null;
+
+		function* reversedFieldCards(player) {
+			const judges = player.node.judges.childNodes;
+			let index = judges.length;
+			while (index--) {
+				const card = judges[index];
+				if (card.classList.contains("removing") || card.classList.contains("feichu")) {
+					continue;
+				}
+				yield card;
+			}
+			const equips = player.node.equips.childNodes;
+			index = equips.length;
+			while (index--) {
+				const card = equips[index];
+				if (card.classList.contains("removing") || card.classList.contains("feichu") || card.classList.contains("emptyequip")) {
+					continue;
+				}
+				yield card;
+			}
+		}
 	}
 	/**
 	 * 从牌堆获得一张牌
-	 * @param { function | string | object | true } name 牌的筛选条件或名字，true为任意一张牌
-	 * @param { string } [start] 遍历方式。默认top
 	 *
-	 * top：从牌堆顶自顶向下遍历
-	 * bottom：从牌堆底自底向上遍历
-	 * random: 随机位置遍历
-	 * @returns { Card | ChildNode | null }
+	 * @param { string | true | Record<string, any> | ((card: Card) => boolean) } pattern - 筛选条件，可以是牌名、属性对象或过滤函数；若为`true`，则表示任意一张牌
+	 * @param { "top" | "bottom" | "random" } [start] - 遍历方式。默认top
+	 *
+	 * - top: 从牌堆/弃牌堆顶自顶向下遍历
+	 * - bottom: 从牌堆/弃牌堆底自底向上遍历
+	 * - random: 随机位置遍历
+	 *
+	 * @returns { Card | null }
 	 */
-	cardPile2(name, start) {
-		return get.cardPile(name, "cardPile", start || "top");
+	cardPile2(pattern, start) {
+		return get.cardPile(pattern, "cardPile", start || "top");
 	}
 	/**
 	 * 从弃牌堆获得一张牌
-	 * @param { function | string | object | true } name 牌的筛选条件或名字，true为任意一张牌
-	 * @param { string } [start] 遍历方式。默认top
 	 *
-	 * top：从弃牌堆顶自顶向下遍历
-	 * bottom：从弃牌堆底自底向上遍历
-	 * random: 随机位置遍历
-	 * @returns { Card | ChildNode | null }
+	 * @param { string | true | Record<string, any> | ((card: Card) => boolean) } pattern - 筛选条件，可以是牌名、属性对象或过滤函数；若为`true`，则表示任意一张牌
+	 * @param { "top" | "bottom" | "random" } [start] - 遍历方式。默认top
+	 *
+	 * - top: 从牌堆/弃牌堆顶自顶向下遍历
+	 * - bottom: 从牌堆/弃牌堆底自底向上遍历
+	 * - random: 随机位置遍历
+	 *
+	 * @returns { Card | null }
 	 */
-	discardPile(name, start) {
-		return get.cardPile(name, "discardPile", start || "top");
+	discardPile(pattern, start) {
+		return get.cardPile(pattern, "discardPile", start || "top");
 	}
 	aiStrategy() {
 		switch (get.config("ai_strategy")) {
@@ -4823,6 +5013,12 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 					return "已发动";
 				}
 				return "未发动";
+			}
+			case "qidingSkill": {
+				if (content) {
+					return "此事已成";
+				}
+				return "契约未定";
 			}
 			case "info": {
 				return lib.translate[skill + "_info"];
@@ -5048,7 +5244,8 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				}
 			}
 
-			if (!node.noclick) {
+			//旧的查看手牌的写法，manba out！
+			/*if (!node.noclick) {
 				const allShown = node.isUnderControl() || (!game.observe && game.me && game.me.hasSkillTag("viewHandcard", null, node, true));
 				const shownHs = node.getShownCards();
 				if (shownHs.length) {
@@ -5069,7 +5266,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 						uiintro.addSmall(hs);
 					}
 				}
-			}
+			}*/
 
 			var skills = node.getSkills(null, false, false).slice(0);
 			var skills2 = game.filterSkills(skills, node);
@@ -5409,15 +5606,17 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				uiintro.add(addFavourite);
 			}
 			if (!simple || get.is.phoneLayout()) {
-				let viewInfo = ui.create.div(".text.center.pointerdiv");
-				viewInfo.link = node;
-				viewInfo.innerHTML = "查看资料";
-				viewInfo.listen(function () {
-					let player = this.link;
-					let audioName = player.skin.name || player.name1 || player.name;
-					ui.click.charactercard(player.name1 || player.name, null, null, true, player.node.avatar, audioName);
-				});
-				uiintro.add(viewInfo);
+				if (!node.name.startsWith("unknown")) {
+					let viewInfo = ui.create.div(".text.center.pointerdiv");
+					viewInfo.link = node;
+					viewInfo.innerHTML = "查看资料";
+					viewInfo.listen(function () {
+						let player = this.link;
+						let audioName = player.skin.name || player.name1 || player.name;
+						ui.click.charactercard(player.name1 || player.name, null, null, true, player.node.avatar, audioName);
+					});
+					uiintro.add(viewInfo);
+				}
 			}
 			if ((lib.config.change_skin || lib.skin) && (!simple || get.is.phoneLayout())) {
 				[node.name1, node.name2].forEach((nameskin, index) => {
@@ -5678,7 +5877,10 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 								var dist = lib.card[name].distance;
 								if (dist.attackFrom) {
 									added = true;
-									uiintro.add('<div class="text center">攻击范围：' + (-dist.attackFrom + 1) + "</div>");
+									const rangeCard = Vcard || trueCard[trueCard.cardSymbol] || (!trueCard.classList.contains("emptyequip") && lib.card[trueCard.name] ? trueCard : false);
+									const owner = get.owner(node);
+									const range = owner && rangeCard ? owner.getEquipRange([rangeCard]) : -dist.attackFrom + 1;
+									uiintro.add('<div class="text center">攻击范围：' + range + "</div>"); //
 								}
 							}
 							if (!added) {
@@ -6242,7 +6444,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			if (type === true) {
 				return "kami";
 			}
-			return this.groups().filter(group => lib.group.includes(group));
+			return lib.group.filter(group => !lib.selectGroup.includes(group));
 		}
 		if (type === true) {
 			return "default";
@@ -6644,19 +6846,33 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		let cache = CacheContext.requireCacheContext();
 		return cache.get.effect_use(target, card, player, player2, isLink);
 	}
-	effect_use(target, card, player, player2, isLink) {
-		let cache = CacheContext.requireCacheContext();
-		var event = _status.event;
-		var eventskill = null;
-		if (player == undefined) {
+	/**
+	 * 计算使用牌或技能时的AI效果分值。
+	 *
+	 * 与`effect`类似，但会优先读取`player_use`和`target_use`作为使用阶段的基础收益；
+	 * 随后叠加发动者和目标的技能修正、目标威胁度、血量、手牌数，以及自然伤害的连环传导收益。
+	 * 数值越高，表示该使用行为对评估立场越有利；数值越低，表示越不利。
+	 *
+	 * @param { Player } [target] - 被作用的目标；无目标牌可省略
+	 * @param { string | Card | VCard | CardBaseUIData } [card] - 要评估的牌、虚拟牌、技能名或可被当前事件推断的对象
+	 * @param { Player } [player] - 牌或技能的发动者；省略时取当前事件的玩家
+	 * @param { Player } [player2] - 评估立场；省略时以`player`立场评估
+	 * @param { boolean | Record<string, any> } [linking] - 是否正在计算连环传导，或传导计算时携带的上下文
+	 * @returns { number } 综合态度、技能和状态修正后的AI效果分值
+	 */
+	effect_use(target, card, player, player2, linking) {
+		const cache = CacheContext.requireCacheContext();
+		const event = _status.event;
+		let eventskill = null;
+		if (player === undefined) {
 			player = _status.event.player;
 		}
-		if (card && typeof card == "object" && "name" in card) {
+		if (card && typeof card === "object" && "name" in card) {
 			card = get.autoViewAs(card);
 		}
-		if (typeof card != "string" && (typeof card != "object" || !card.name)) {
-			var skillinfo = get.info(event.skill);
-			if (event.skill && skillinfo.viewAs == undefined) {
+		if (typeof card !== "string" && (typeof card !== "object" || !card.name)) {
+			const skillinfo = get.info(event.skill);
+			if (event.skill && skillinfo.viewAs === undefined) {
 				card = _status.event.skill;
 			} else {
 				card = get.card();
@@ -6665,82 +6881,82 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				}
 			}
 		}
-		var info = get.info(card);
-		if (typeof card == "object" && info && info.changeTarget) {
-			var targets = [target];
-			info.changeTarget(player, targets);
-			var eff = 0;
-			for (var i of targets) {
-				eff += cache.get.effect(i, card, player, player2, isLink);
+		const cardInfo = get.info(card);
+		if (typeof card === "object" && cardInfo && cardInfo.changeTarget) {
+			const targets = [target];
+			cardInfo.changeTarget(player, targets);
+			let eff = 0;
+			for (const currentTarget of targets) {
+				eff += cache.get.effect(currentTarget, card, player, player2, linking);
 			}
 			return eff;
 		}
-		var result = get.result(card, eventskill);
-		var result1 = result.player_use || result.player,
-			result2 = result.target_use || result.target;
-		if (typeof result1 == "function") {
-			result1 = result1(player, target, card, isLink);
+		const result = get.result(card, eventskill);
+		let result1 = result.player_use || result.player;
+		let result2 = result.target_use || result.target;
+		if (typeof result1 === "function") {
+			result1 = result1(player, target, card, linking);
 		}
-		if (typeof result2 == "function") {
-			result2 = result2(player, target, card, isLink);
+		if (typeof result2 === "function") {
+			result2 = result2(player, target, card, linking);
 		}
 
-		if (typeof result1 != "number") {
+		if (typeof result1 !== "number") {
 			result1 = 0;
 		}
-		if (typeof result2 != "number") {
+		if (typeof result2 !== "number") {
 			result2 = 0;
 		}
-		var temp1,
-			temp2,
-			temp3,
-			temp01 = 0,
-			temp02 = 0,
-			threaten = 1;
-		var skills1 = player.getSkills().concat(lib.skill.global);
+		let temp1;
+		let temp2;
+		let temp3;
+		let temp01 = 0;
+		let temp02 = 0;
+		let threaten = 1;
+		const skills1 = player.getSkills().concat(lib.skill.global);
 		game.expandSkills(skills1);
-		var zerotarget = false,
-			zeroplayer = false;
-		for (let i = 0; i < skills1.length; i++) {
-			const info = get.info(skills1[i]);
+		let zerotarget = false;
+		let zeroplayer = false;
+		for (const skill of skills1) {
+			const info = get.info(skill);
 			if (!info) {
-				throw new Error(`${skills1[i]}不存在的技能`);
+				throw new Error(`${skill}不存在的技能`);
 			}
 			temp1 = info.ai;
-			if (temp1 && typeof temp1.effect == "object" && typeof temp1.effect.player_use == "function") {
-				temp1 = cache.delegate(temp1.effect).player_use(card, player, target, result1, isLink);
-			} else if (temp1 && typeof temp1.effect == "object" && typeof temp1.effect.player == "function") {
-				temp1 = cache.delegate(temp1.effect).player(card, player, target, result1, isLink);
+			if (temp1 && typeof temp1.effect === "object" && typeof temp1.effect.player_use === "function") {
+				temp1 = cache.delegate(temp1.effect).player_use(card, player, target, result1, linking);
+			} else if (temp1 && typeof temp1.effect === "object" && typeof temp1.effect.player === "function") {
+				temp1 = cache.delegate(temp1.effect).player(card, player, target, result1, linking);
 			} else {
 				temp1 = undefined;
 			}
-			if (typeof temp1 == "object") {
-				if (temp1.length == 2 || temp1.length == 4) {
+			if (typeof temp1 === "object") {
+				if (temp1.length === 2 || temp1.length === 4) {
 					result1 *= temp1[0];
 					temp01 += temp1[1];
 				}
-				if (temp1.length == 4) {
+				if (temp1.length === 4) {
 					result2 *= temp1[2];
 					temp02 += temp1[3];
 				}
-			} else if (typeof temp1 == "number") {
+			} else if (typeof temp1 === "number") {
 				result1 *= temp1;
-			} else if (temp1 == "zeroplayer") {
+			} else if (temp1 === "zeroplayer") {
 				zeroplayer = true;
-			} else if (temp1 == "zerotarget") {
+			} else if (temp1 === "zerotarget") {
 				zerotarget = true;
-			} else if (temp1 == "zeroplayertarget") {
+			} else if (temp1 === "zeroplayertarget") {
 				zeroplayer = true;
 				zerotarget = true;
 			}
 		}
 		if (target) {
-			var skills2 = target.getSkills().concat(lib.skill.global);
+			const skills2 = target.getSkills().concat(lib.skill.global);
 			game.expandSkills(skills2);
-			for (let i = 0; i < skills2.length; i++) {
-				const info = get.info(skills2[i]);
+			for (const skill of skills2) {
+				const info = get.info(skill);
 				if (!info) {
-					throw new Error(`${skills2[i]}不存在的技能`);
+					throw new Error(`${skill}不存在的技能`);
 				}
 				temp2 = info.ai;
 				if (temp2 && temp2.threaten) {
@@ -6748,109 +6964,109 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				} else {
 					temp3 = undefined;
 				}
-				if (temp2 && typeof temp2.effect == "function") {
+				if (temp2 && typeof temp2.effect === "function") {
 					if (
 						!player.hasSkillTag("ignoreSkill", true, {
 							card: card,
 							target: target,
-							skill: skills2[i],
-							isLink: isLink,
+							skill: skill,
+							isLink: linking,
 						})
 					) {
-						temp2 = cache.delegate(temp2).effect(card, player, target, result2, isLink);
+						temp2 = cache.delegate(temp2).effect(card, player, target, result2, linking);
 					} else {
 						temp2 = undefined;
 					}
-				} else if (temp2 && typeof temp2.effect == "object" && typeof temp2.effect.target_use == "function") {
+				} else if (temp2 && typeof temp2.effect === "object" && typeof temp2.effect.target_use === "function") {
 					if (
 						!player.hasSkillTag("ignoreSkill", true, {
 							card: card,
 							target: target,
-							skill: skills2[i],
-							isLink: isLink,
+							skill: skill,
+							isLink: linking,
 						})
 					) {
-						temp2 = cache.delegate(temp2.effect).target_use(card, player, target, result2, isLink);
+						temp2 = cache.delegate(temp2.effect).target_use(card, player, target, result2, linking);
 					} else {
 						temp2 = undefined;
 					}
-				} else if (temp2 && typeof temp2.effect == "object" && typeof temp2.effect.target == "function") {
+				} else if (temp2 && typeof temp2.effect === "object" && typeof temp2.effect.target === "function") {
 					if (
 						!player.hasSkillTag("ignoreSkill", true, {
 							card: card,
 							target: target,
-							skill: skills2[i],
-							isLink: isLink,
+							skill: skill,
+							isLink: linking,
 						})
 					) {
-						temp2 = cache.delegate(temp2.effect).target(card, player, target, result2, isLink);
+						temp2 = cache.delegate(temp2.effect).target(card, player, target, result2, linking);
 					} else {
 						temp2 = undefined;
 					}
 				} else {
 					temp2 = undefined;
 				}
-				if (typeof temp2 == "object") {
-					if (temp2.length == 2 || temp2.length == 4) {
+				if (typeof temp2 === "object") {
+					if (temp2.length === 2 || temp2.length === 4) {
 						result2 *= temp2[0];
 						temp02 += temp2[1];
 					}
-					if (temp2.length == 4) {
+					if (temp2.length === 4) {
 						result1 *= temp2[2];
 						temp01 += temp2[3];
 					}
-				} else if (typeof temp2 == "number") {
+				} else if (typeof temp2 === "number") {
 					result2 *= temp2;
-				} else if (temp2 == "zeroplayer") {
+				} else if (temp2 === "zeroplayer") {
 					zeroplayer = true;
-				} else if (temp2 == "zerotarget") {
+				} else if (temp2 === "zerotarget") {
 					zerotarget = true;
-				} else if (temp2 == "zeroplayertarget") {
+				} else if (temp2 === "zeroplayertarget") {
 					zeroplayer = true;
 					zerotarget = true;
 				}
-				if (typeof temp3 == "object") {
+				if (typeof temp3 === "object") {
 					temp3 = temp3.target;
 				}
-				if (typeof temp3 == "function") {
+				if (typeof temp3 === "function") {
 					temp3 = temp3(player, target);
 				}
-				if (typeof temp3 == "number") {
+				if (typeof temp3 === "number") {
 					threaten *= temp3;
 				}
 			}
 			result2 += temp02;
 			result1 += temp01;
-			if (typeof card == "object" && !result.ignoreStatus) {
+			if (typeof card === "object" && !result.ignoreStatus) {
 				if (cache.get.attitude(player, target) < 0) {
 					result2 *= Math.sqrt(threaten);
 				} else {
 					result2 *= Math.sqrt(Math.sqrt(threaten));
 				}
-				if (target.hp == 1) {
+				if (target.hp === 1) {
 					result2 *= 2.5;
 				}
-				if (target.hp == 2) {
+				if (target.hp === 2) {
 					result2 *= 1.8;
 				}
-				let countTargetCards = target.countCards("h");
-				if (countTargetCards == 0) {
+				const countTargetCards = target.countCards("h");
+				if (countTargetCards === 0) {
 					if (get.tag(card, "respondSha") || get.tag(card, "respondShan")) {
 						result2 *= 1.7;
 					} else {
 						result2 *= 1.5;
 					}
-				} else if (countTargetCards == 1) {
+				} else if (countTargetCards === 1) {
 					result2 *= 1.3;
-				} else if (countTargetCards == 2) {
+				} else if (countTargetCards === 2) {
 					result2 *= 1.1;
 				} else if (countTargetCards >= 3) {
 					result2 *= 0.5;
 				}
 
-				if (target.hp == 4) {
+				if (target.hp === 4) {
 					result2 *= 0.9;
-				} else if (target.hp == 5) {
+				} else if (target.hp === 5) {
 					result2 *= 0.8;
 				} else if (target.hp > 5) {
 					result2 *= 0.6;
@@ -6860,7 +7076,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			result2 += temp02;
 			result1 += temp01;
 			if (typeof card === "object" && !get.info(card)?.notarget) {
-				console.warn("计算get.effect_use(", target, card, player, player2, isLink, ")时缺少target参数");
+				console.warn("计算get.effect_use(", target, card, player, player2, linking, ")时缺少target参数");
 			}
 		}
 		if (zeroplayer) {
@@ -6869,18 +7085,18 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		if (zerotarget) {
 			result2 = 0;
 		}
-		var final = 0;
+		let final = 0;
 		if (player2) {
 			final = result1 * cache.get.attitude(player2, player) + (target ? result2 * cache.get.attitude(player2, target) : 0);
 		} else {
 			final = result1 * cache.get.attitude(player, player) + (target ? result2 * cache.get.attitude(player, target) : 0);
 		}
-		if (!isLink && target && !zerotarget && get.tag(card, "natureDamage")) {
-			var info = get.info(card);
+		if (!linking && target && !zerotarget && get.tag(card, "natureDamage")) {
+			const info = get.info(card);
 			if (!info || !info.ai || !info.ai.canLink) {
 				if (target.isLinked()) {
-					game.players.forEach(function (current) {
-						if (current != target && current.isLinked()) {
+					game.players.forEach(current => {
+						if (current !== target && current.isLinked()) {
 							final += cache.get.effect(current, card, player, player2, { source: target });
 						}
 					});
@@ -6892,8 +7108,8 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 						canLink = {};
 					}
 					canLink.source = target;
-					game.players.forEach(function (current) {
-						if (current != target && current.isLinked()) {
+					game.players.forEach(current => {
+						if (current !== target && current.isLinked()) {
 							final += cache.get.effect(current, card, player, player2, canLink);
 						}
 					});
@@ -6906,19 +7122,33 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		let cache = CacheContext.requireCacheContext();
 		return cache.get.effect(target, card, player, player2, isLink);
 	}
-	effect(target, card, player, player2, isLink) {
-		let cache = CacheContext.requireCacheContext();
-		var event = _status.event;
-		var eventskill = null;
-		if (player == undefined) {
+	/**
+	 * 计算牌或技能对目标的AI效果分值。
+	 *
+	 * 该分值会以`player`或`player2`的立场，把牌本身的收益、发动者和目标的技能修正、
+	 * 目标威胁度、血量、手牌数，以及自然伤害的连环传导收益合并为一个最终数值。
+	 * 数值越高，表示该行为对评估立场越有利；数值越低，表示越不利。
+	 *
+	 * @param { Player } [target] - 被作用的目标；无目标牌可省略
+	 * @param { string | Card | VCard | CardBaseUIData } [card] - 要评估的牌、虚拟牌、技能名或可被推断为当前事件牌的对象
+	 * @param { Player } [player] - 牌或技能的发动者；省略时取当前事件的玩家
+	 * @param { Player } [player2] - 评估立场；省略时以`player`立场评估
+	 * @param { boolean | Record<string, any> } [linking] - 是否正在计算连环传导，或传导计算时携带的上下文
+	 * @returns { number } 综合态度、技能和状态修正后的AI效果分值
+	 */
+	effect(target, card, player, player2, linking) {
+		const cache = CacheContext.requireCacheContext();
+		const event = _status.event;
+		let eventskill = null;
+		if (player === undefined) {
 			player = _status.event.player;
 		}
-		if (card && typeof card == "object" && "name" in card) {
+		if (card && typeof card === "object" && "name" in card) {
 			card = get.autoViewAs(card);
 		}
-		if (typeof card != "string" && (typeof card != "object" || !card.name)) {
-			var skillinfo = get.info(event.skill);
-			if (event.skill && skillinfo.viewAs == undefined) {
+		if (typeof card !== "string" && (typeof card !== "object" || !card.name)) {
+			const skillinfo = get.info(event.skill);
+			if (event.skill && skillinfo.viewAs === undefined) {
 				card = _status.event.skill;
 			} else {
 				card = get.card();
@@ -6927,70 +7157,70 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				}
 			}
 		}
-		var result = get.result(card, eventskill);
-		var result1 = result.player,
-			result2 = result.target;
-		if (typeof result1 == "function") {
-			result1 = result1(player, target, card, isLink);
+		const result = get.result(card, eventskill);
+		let result1 = result.player;
+		let result2 = result.target;
+		if (typeof result1 === "function") {
+			result1 = result1(player, target, card, linking);
 		}
-		if (typeof result2 == "function") {
-			result2 = result2(player, target, card, isLink);
+		if (typeof result2 === "function") {
+			result2 = result2(player, target, card, linking);
 		}
 
-		if (typeof result1 != "number") {
+		if (typeof result1 !== "number") {
 			result1 = 0;
 		}
-		if (typeof result2 != "number") {
+		if (typeof result2 !== "number") {
 			result2 = 0;
 		}
-		var temp1,
-			temp2,
-			temp3,
-			temp01 = 0,
-			temp02 = 0,
-			threaten = 1;
-		var skills1 = player.getSkills().concat(lib.skill.global);
+		let temp1;
+		let temp2;
+		let temp3;
+		let temp01 = 0;
+		let temp02 = 0;
+		let threaten = 1;
+		const skills1 = player.getSkills().concat(lib.skill.global);
 		game.expandSkills(skills1);
-		var zerotarget = false,
-			zeroplayer = false;
-		for (var i = 0; i < skills1.length; i++) {
-			const info = get.info(skills1[i]);
+		let zerotarget = false;
+		let zeroplayer = false;
+		for (const skill of skills1) {
+			const info = get.info(skill);
 			if (!info) {
-				throw new Error(`${skills1[i]}不存在的技能`);
+				throw new Error(`${skill}不存在的技能`);
 			}
 			temp1 = info.ai;
-			if (temp1 && typeof temp1.effect == "object" && typeof temp1.effect.player == "function") {
-				temp1 = temp1.effect.player(card, player, target, result1, isLink);
+			if (temp1 && typeof temp1.effect === "object" && typeof temp1.effect.player === "function") {
+				temp1 = temp1.effect.player(card, player, target, result1, linking);
 			} else {
 				temp1 = undefined;
 			}
-			if (typeof temp1 == "object") {
-				if (temp1.length == 2 || temp1.length == 4) {
+			if (typeof temp1 === "object") {
+				if (temp1.length === 2 || temp1.length === 4) {
 					result1 *= temp1[0];
 					temp01 += temp1[1];
 				}
-				if (temp1.length == 4) {
+				if (temp1.length === 4) {
 					result2 *= temp1[2];
 					temp02 += temp1[3];
 				}
-			} else if (typeof temp1 == "number") {
+			} else if (typeof temp1 === "number") {
 				result1 *= temp1;
-			} else if (temp1 == "zeroplayer") {
+			} else if (temp1 === "zeroplayer") {
 				zeroplayer = true;
-			} else if (temp1 == "zerotarget") {
+			} else if (temp1 === "zerotarget") {
 				zerotarget = true;
-			} else if (temp1 == "zeroplayertarget") {
+			} else if (temp1 === "zeroplayertarget") {
 				zeroplayer = true;
 				zerotarget = true;
 			}
 		}
 		if (target) {
-			var skills2 = target.getSkills().concat(lib.skill.global);
+			const skills2 = target.getSkills().concat(lib.skill.global);
 			game.expandSkills(skills2);
-			for (var i = 0; i < skills2.length; i++) {
-				const info = get.info(skills2[i]);
+			for (const skill of skills2) {
+				const info = get.info(skill);
 				if (!info) {
-					throw new Error(`${skills2[i]}不存在的技能`);
+					throw new Error(`${skill}不存在的技能`);
 				}
 				temp2 = info.ai;
 				if (!temp2) {
@@ -7001,86 +7231,85 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				} else {
 					temp3 = undefined;
 				}
-				if (typeof temp2.effect == "object" && typeof temp2.effect.target == "function") {
+				if (typeof temp2.effect === "object" && typeof temp2.effect.target === "function") {
 					if (
 						!player.hasSkillTag("ignoreSkill", true, {
 							card: card,
 							target: target,
-							skill: skills2[i],
-							isLink: isLink,
+							skill: skill,
+							isLink: linking,
 						})
 					) {
-						temp2 = cache.delegate(temp2.effect).target(card, player, target, result2, isLink);
+						temp2 = cache.delegate(temp2.effect).target(card, player, target, result2, linking);
 					} else {
 						temp2 = undefined;
 					}
 				} else {
 					temp2 = undefined;
 				}
-				if (typeof temp2 == "object") {
-					if (temp2.length == 2 || temp2.length == 4) {
+				if (typeof temp2 === "object") {
+					if (temp2.length === 2 || temp2.length === 4) {
 						result2 *= temp2[0];
 						temp02 += temp2[1];
 					}
-					if (temp2.length == 4) {
+					if (temp2.length === 4) {
 						result1 *= temp2[2];
 						temp01 += temp2[3];
 					}
-				} else if (typeof temp2 == "number") {
+				} else if (typeof temp2 === "number") {
 					result2 *= temp2;
-				} else if (temp2 == "zeroplayer") {
+				} else if (temp2 === "zeroplayer") {
 					zeroplayer = true;
-				} else if (temp2 == "zerotarget") {
+				} else if (temp2 === "zerotarget") {
 					zerotarget = true;
-				} else if (temp2 == "zeroplayertarget") {
+				} else if (temp2 === "zeroplayertarget") {
 					zeroplayer = true;
 					zerotarget = true;
 				}
-				if (typeof temp3 == "function" && temp3(player, target) != undefined) {
+				if (typeof temp3 === "function" && temp3(player, target) !== undefined) {
 					threaten *= temp3(player, target);
-				} else if (typeof temp3 == "object") {
-					if (typeof temp3.target == "number") {
+				} else if (typeof temp3 === "object") {
+					if (typeof temp3.target === "number") {
 						threaten *= temp3;
-					} else if (typeof temp3.target == "function" && temp3(player, target) != undefined) {
+					} else if (typeof temp3.target === "function" && temp3(player, target) !== undefined) {
 						threaten *= temp3(player, target);
 					}
-				} else if (typeof temp3 == "number") {
+				} else if (typeof temp3 === "number") {
 					threaten *= temp3;
 				}
 			}
 			result2 += temp02;
 			result1 += temp01;
-			if (typeof card == "object" && !result.ignoreStatus) {
+			if (typeof card === "object" && !result.ignoreStatus) {
 				if (cache.get.attitude(player, target) < 0) {
 					result2 *= Math.sqrt(threaten);
 				} else {
 					result2 *= Math.sqrt(Math.sqrt(threaten));
 				}
-				// *** continue here ***
-				if (target.hp == 1) {
+				if (target.hp === 1) {
 					result2 *= 3;
 				}
-				if (target.hp == 2) {
+				if (target.hp === 2) {
 					result2 *= 1.8;
 				}
-				let targetCountCards = target.countCards("h");
-				if (targetCountCards == 0) {
+				const targetCountCards = target.countCards("h");
+				if (targetCountCards === 0) {
 					if (get.tag(card, "respondSha") || get.tag(card, "respondShan")) {
 						result2 *= 2.1;
 					} else {
 						result2 *= 1.5;
 					}
 				}
-				if (targetCountCards == 1) {
+				if (targetCountCards === 1) {
 					result2 *= 1.3;
-				} else if (targetCountCards == 2) {
+				} else if (targetCountCards === 2) {
 					result2 *= 1.1;
 				} else if (targetCountCards > 3) {
 					result2 *= 0.5;
 				}
-				if (target.hp == 4) {
+				if (target.hp === 4) {
 					result2 *= 0.9;
-				} else if (target.hp == 5) {
+				} else if (target.hp === 5) {
 					result2 *= 0.8;
 				} else if (target.hp > 5) {
 					result2 *= 0.6;
@@ -7090,7 +7319,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			result2 += temp02;
 			result1 += temp01;
 			if (typeof card === "object" && !get.info(card)?.notarget) {
-				console.warn("计算get.effect(", target, card, player, player2, isLink, ")时缺少target参数");
+				console.warn("计算get.effect(", target, card, player, player2, linking, ")时缺少target参数");
 			}
 		}
 		if (zeroplayer) {
@@ -7099,18 +7328,18 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		if (zerotarget) {
 			result2 = 0;
 		}
-		var final = 0;
+		let final = 0;
 		if (player2) {
 			final = result1 * cache.get.attitude(player2, player) + (target ? result2 * cache.get.attitude(player2, target) : 0);
 		} else {
 			final = result1 * cache.get.attitude(player, player) + (target ? result2 * cache.get.attitude(player, target) : 0);
 		}
-		if (!isLink && target && !zerotarget && get.tag(card, "natureDamage")) {
-			var info = get.info(card);
+		if (!linking && target && !zerotarget && get.tag(card, "natureDamage")) {
+			const info = get.info(card);
 			if (!info || !info.ai || !info.ai.canLink) {
 				if (target.isLinked()) {
-					game.players.forEach(function (current) {
-						if (current != target && current.isLinked()) {
+					game.players.forEach(current => {
+						if (current !== target && current.isLinked()) {
 							final += cache.get.effect(current, card, player, player2, { source: target });
 						}
 					});
@@ -7122,8 +7351,8 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 						canLink = {};
 					}
 					canLink.source = target;
-					game.players.forEach(function (current) {
-						if (current != target && current.isLinked()) {
+					game.players.forEach(current => {
+						if (current !== target && current.isLinked()) {
 							final += cache.get.effect(current, card, player, player2, canLink);
 						}
 					});
@@ -7158,13 +7387,23 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		return eff;
 	}
 	/**
+	 * 获取动态变量的实际值。
 	 *
-	 * @param {any} source 如果参数是function，执行此函数并返回结果，传参为此方法剩余的参数。如果参数不是function，直接返回结果。
-	 * @returns 返回的结果
+	 * 当source为函数时，使用剩余参数执行该函数并返回结果；否则直接返回source。
+	 *
+	 * > 在我看到本体的用法时，我似乎理解了为什么有这种API
+	 * > 但还是很神金，而且命名也有问题
+	 *
+	 * @template T
+	 * @template { any[] } U
+	 * @param { T | ((...args: U) => T) } source 动态变量或用于计算动态变量的函数
+	 * @param { U } args 传给source函数的参数
+	 * @returns { T } source为函数时返回函数执行结果，否则返回source本身
 	 */
-	dynamicVariable(source) {
-		if (typeof source == "function") {
-			return source.call(null, ...Array.from(arguments).slice(1));
+	dynamicVariable(source, ...args) {
+		if (typeof source === "function") {
+			// @ts-ignore
+			return source(...args);
 		}
 		return source;
 	}

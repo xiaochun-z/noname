@@ -1,4 +1,5 @@
 export default {
+	star_zhugejin: "怀玉之臣",
 	caobao: "杯盏游神",
 	star_zhangsong: "乌鹊折槁",
 	star_zhanghe: "河北之庭柱",
@@ -95,6 +96,7 @@ export default {
 	star_sunshangxiang: "鸳袖衔剑珮",
 	liqueguosi: "犯祚倾祸",
 	star_sunjian: "破虏将军",
+	star_xiahouba:"箍围抗尽",
 	star_zhangzhao: "忠謇方直",
 	chezhou: "当车螳臂",
 	junk_zhangrang: "宦势控权",

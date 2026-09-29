@@ -4856,26 +4856,19 @@ export default () => {
 				enable: "phaseUse",
 				usable: 1,
 				promptfunc(event, player) {
-					var targets = [];
-					var skill = lib.skill.leader_zhaoxiang;
-					for (var i = 0; i < game.players.length; i++) {
-						if (!game.data.character.includes(game.players[i].name) && game.players[i].side != player.side) {
-							targets.push(game.players[i]);
-						}
+					const targets = game.players.filter(current => !game.data.character.includes(current.name) && current.side !== player.side);
+					if (!targets.length) {
+						return lib.translate.leader_zhaoxiang_info;
 					}
-					var str = lib.translate.leader_zhaoxiang_info;
-					if (targets.length) {
-						str = '<p style="text-align:center;line-height:20px;margin-top:0">⚑ ' + game.data.dust + '</p><p style="text-align:center;line-height:20px;margin-top:8px">';
-						for (var i = 0; i < targets.length; i++) {
-							str += '<span style="width:120px;display:inline-block;text-align:right">' + get.translation(targets[i]) + '：</span><span style="width:120px;display:inline-block;text-align:left">' + (skill.chance(targets[i], player) * 100).toFixed(2) + "%</span><br>";
-						}
-						str += "</p>";
-					}
-					return str;
+					const skill = lib.skill.leader_zhaoxiang;
+					const chances = targets
+						.map(target => `<span style="width:120px;display:inline-block;text-align:right">${get.translation(target)}：</span><span style="width:120px;display:inline-block;text-align:left">${(skill.chance(target, player) * 100).toFixed(2)}%</span><br>`)
+						.join("");
+					return `<p style="text-align:center;line-height:20px;margin-top:0">⚑ ${game.data.dust}</p><p style="text-align:center;line-height:20px;margin-top:8px">${chances}</p>`;
 				},
 				chance(target, player) {
-					var chance;
-					var renyi = player.hasSkill("leader_renyi");
+					let chance;
+					const renyi = player.hasSkill("leader_renyi");
 					switch (target.hp) {
 						case 1:
 							chance = 0.7;
@@ -4940,19 +4933,20 @@ export default () => {
 				filterTarget(card, player, target) {
 					return game.isChessNeighbour(player, target) && !game.data.character.includes(target.name);
 				},
-				content() {
-					var chance = lib.skill.leader_zhaoxiang.chance(target, player);
+				async content(event, trigger, player) {
+					const target = event.target;
+					const chance = lib.skill.leader_zhaoxiang.chance(target, player);
 					game.changeDust(-10);
 					if (Math.random() < chance) {
 						_status.zhaoxiang = target.name;
 						game.data.character.add(target.name);
 						game.saveData();
 						game.over();
-					} else {
-						game.log("招降", target, "失败");
-						player.popup("招降失败");
-						player.damage(target);
+						return;
 					}
+					game.log("招降", target, "失败");
+					player.popup("招降失败");
+					await player.damage(target);
 				},
 			},
 			leader_xiaoxiong: {
@@ -5012,25 +5006,23 @@ export default () => {
 				init(player) {
 					player.storage.tongshuai = {
 						list: [],
+						unowned: [],
 						owned: {},
-						player: player,
+						player,
 						get(num) {
-							if (typeof num != "number") {
+							if (typeof num !== "number") {
 								num = 1;
 							}
-							var player = this.player;
+							const player = this.player;
 							while (num--) {
-								var name = player.storage.tongshuai.unowned.shift();
-								if (!name) {
+								const name = player.storage.tongshuai.unowned.shift();
+								if (name == null) {
 									return;
 								}
-								var skills = lib.character[name][3].slice(0);
-								for (var i = 0; i < skills.length; i++) {
-									var info = lib.skill[skills[i]];
-									if (info.unique && !info.gainable) {
-										skills.splice(i--, 1);
-									}
-								}
+								const skills = get.character(name).skills.filter(skill => {
+									const info = get.info(skill);
+									return !info.unique || info.gainable;
+								});
 								player.storage.tongshuai.owned[name] = skills;
 								game.addVideo("chess_tongshuai", player, player.storage.tongshuai.owned);
 							}
@@ -5040,36 +5032,26 @@ export default () => {
 				group: ["tongshuai1", "tongshuai2", "tongshuai3"],
 				intro: {
 					content(storage, player) {
-						var str = "";
-						var slist = storage.owned;
-						var list = [];
-						for (var i in slist) {
-							list.push(i);
-						}
+						let str = "";
+						const list = Object.keys(storage.owned);
 						if (list.length) {
-							str += get.translation(list[0]);
-							for (var i = 1; i < list.length; i++) {
-								str += "、" + get.translation(list[i]);
-							}
+							str = list.map(name => get.translation(name)).join("、");
 						}
-						var skill = player.additionalSkills.tongshuai[0];
+						const skill = player.additionalSkills.tongshuai[0];
 						if (skill) {
-							str += "<p>当前技能：" + get.translation(skill);
+							str += `<p>当前技能：${get.translation(skill)}`;
 						}
 						return str;
 					},
 					mark(dialog, content, player) {
-						var slist = content.owned;
-						var list = [];
-						for (var i in slist) {
-							list.push(i);
-						}
+						const list = Object.keys(content.owned);
 						if (list.length) {
 							dialog.addSmall([list, "character"]);
 						}
-						var skill = player.additionalSkills.tongshuai[0];
+						const skill = player.additionalSkills.tongshuai[0];
 						if (skill) {
-							dialog.add('<div><div class="skill">【' + get.translation(skill) + "】</div><div>" + lib.translate[skill + "_info"] + "</div></div>");
+							const skillInfo = lib.translate[`${skill}_info`];
+							dialog.add(`<div><div class="skill">【${get.translation(skill)}】</div><div>${skillInfo}</div></div>`);
 						}
 					},
 				},
@@ -5077,163 +5059,119 @@ export default () => {
 			},
 			tongshuai1: {
 				trigger: { global: "gameStart" },
-				forced: true,
-				popup: false,
-				priority: 10,
-				content() {
-					for (var i = 0; i < game.data.character.length; i++) {
-						var skills = lib.character[game.data.character[i]][3];
-						var add = false;
-						for (var j = 0; j < skills.length; j++) {
-							var info = lib.skill[skills[j]];
-							if (info.gainable || !info.unique) {
-								add = true;
-								break;
+				charlotte: true,
+				silent: true,
+				firstDo: true,
+				async content(event, trigger, player) {
+					const storage = player.storage.tongshuai;
+					for (const name of game.data.character) {
+						const skills = lib.character[name][3];
+						let add = false;
+						for (const skill of skills) {
+							const info = lib.skill[skill];
+							if (!info.gainable && info.unique) {
+								continue;
 							}
+							add = true;
+							break;
 						}
 						if (add) {
-							player.storage.tongshuai.list.push(game.data.character[i]);
+							storage.list.push(name);
 						}
 					}
-					for (var i = 0; i < game.players.length; i++) {
-						player.storage.tongshuai.list.remove([game.players[i].name]);
-						player.storage.tongshuai.list.remove([game.players[i].name1]);
-						player.storage.tongshuai.list.remove([game.players[i].name2]);
+					for (const current of game.players) {
+						storage.list.remove([current.name]);
+						storage.list.remove([current.name1]);
+						storage.list.remove([current.name2]);
 					}
-					player.storage.tongshuai.unowned = player.storage.tongshuai.list.slice(0);
-					player.storage.tongshuai.unowned.sort(lib.sort.random);
-					if (player.storage.tongshuai.unowned.length > 1) {
-						player.storage.tongshuai.get(2);
-					} else if (player.storage.tongshuai.unowned.length == 1) {
-						player.storage.tongshuai.get();
-					} else {
+					storage.unowned = storage.list.slice(0);
+					storage.unowned.sort(lib.sort.random);
+					if (!storage.unowned.length) {
 						player.removeSkill("tongshuai");
+					} else if (storage.unowned.length === 1) {
+						storage.get();
+					} else {
+						storage.get(2);
 					}
 				},
 			},
 			tongshuai2: {
 				audio: 2,
-				trigger: { player: ["phaseBegin", "phaseEnd"], global: "gameStart" },
+				trigger: {
+					player: ["phaseZhunbeiBegin", "phaseJieshuBegin"],
+					global: "gameStart",
+				},
 				filter(event, player, name) {
 					if (!player.hasSkill("tongshuai")) {
 						return false;
 					}
-					if (name == "phaseBegin" && game.phaseNumber == 1) {
+					if (name === "phaseBegin" && game.phaseNumber === 1) {
 						return false;
 					}
-					return true;
+					const slist = player.storage.tongshuai.owned;
+					for (const _ in slist) {
+						return true;
+					}
+					return false;
 				},
-				priority: -9,
-				forced: true,
-				popup: false,
-				content() {
-					var slist = player.storage.tongshuai.owned;
-					var list = [];
-					for (var i in slist) {
-						list.push(i);
+				async cost(event, trigger, player) {
+					if (!event.isMine()) {
+						return;
 					}
-					if (event.isMine()) {
-						event.dialog = ui.create.dialog("选择获得一项技能", [list, "character"]);
-						if (trigger.name == "game") {
-							event.control = ui.create.control();
-						} else {
-							event.control = ui.create.control(["cancel"]);
-						}
-						event.clickControl = function (link) {
-							if (link != "cancel") {
-								var currentname = event.dialog.querySelector(".selected.button").link;
-								var mark = player.marks.tongshuai;
-								if (!mark) {
-									player.markSkill("tongshuai");
-									mark = player.marks.tongshuai;
-									if (mark.firstChild) {
-										mark.firstChild.remove();
-									}
-								}
-								mark.setBackground(currentname, "character");
 
-								player.addAdditionalSkill("tongshuai", link);
-								game.addVideo("chess_tongshuai_skill", player, [currentname, link]);
-								player.logSkill("tongshuai2");
-								game.log(player, "获得技能", "【" + get.translation(link) + "】");
-								player.popup(link);
-
-								for (var i = 0; i < event.dialog.buttons.length; i++) {
-									if (event.dialog.buttons[i].classList.contains("selected")) {
-										var name = event.dialog.buttons[i].link;
-										player.sex = lib.character[name][0];
-										player.group = lib.character[name][1];
-										// player.node.identity.style.backgroundColor=get.translation(player.group+'Color');
-										break;
-									}
-								}
-							}
-							ui.auto.show();
-							event.dialog.close();
-							event.control.close();
-							_status.imchoosing = false;
-							game.resume();
-						};
-						event.control.custom = event.clickControl;
-						ui.auto.hide();
-						_status.imchoosing = true;
-						game.pause();
-						for (var i = 0; i < event.dialog.buttons.length; i++) {
-							event.dialog.buttons[i].classList.add("selectable");
-						}
-						event.custom.replace.button = function (button) {
-							if (button.classList.contains("selected")) {
-								button.classList.remove("selected");
-								if (trigger.name == "game") {
-									event.control.style.opacity = 0;
-								} else {
-									event.control.replace(["cancel"]);
-								}
-							} else {
-								for (var i = 0; i < event.dialog.buttons.length; i++) {
-									event.dialog.buttons[i].classList.remove("selected");
-								}
-								button.classList.add("selected");
-								event.control.replace(slist[button.link]);
-								if (trigger.name == "game" && getComputedStyle(event.control).opacity == 0) {
-									event.control.style.transition = "opacity 0.5s";
-									ui.refresh(event.control);
-									event.control.style.opacity = 1;
-									event.control.style.transition = "";
-									ui.refresh(event.control);
-								} else {
-									event.control.style.opacity = 1;
-								}
-							}
-							event.control.custom = event.clickControl;
-						};
-						event.custom.replace.window = function () {
-							for (var i = 0; i < event.dialog.buttons.length; i++) {
-								if (event.dialog.buttons[i].classList.contains("selected")) {
-									event.dialog.buttons[i].classList.remove("selected");
-									if (trigger.name == "game") {
-										event.control.style.opacity = 0;
-									} else {
-										event.control.replace(["cancel"]);
-									}
-									event.control.custom = event.clickControl;
-									return;
-								}
-							}
-						};
-					} else {
-						event.finish();
+					const slist = player.storage.tongshuai.owned;
+					const list = Object.entries(slist).flatMap(([id, skills]) => skills.map(skill => [skill, id]));
+					const from = new Map(list);
+					const result = await player
+						.chooseButton({
+							createDialog: [get.prompt2("tongshuai"), [list, "skill"]],
+							ai(button) {
+								return get.skillRank(button.link, "inout");
+							},
+						})
+						.forResult();
+					if(!result?.bool || !result.links?.length) {
+						return;
 					}
+					event.result = {
+						bool: result.bool,
+						cost_data: {
+							skills: result.links,
+							owner: from.get(result.links[0]),
+						}
+					}
+				},
+				async content(event, trigger, player) {
+					const { skills, owner } = event.cost_data;
+					const [skill] = skills;
+
+					let mark = player.marks.tongshuai;
+					if (mark == null) {
+						player.markSkill("tongshuai");
+						mark = player.marks.tongshuai;
+						if (mark.firstChild) {
+							mark.firstChild.remove();
+						}
+					}
+					mark.setBackground(owner, "character");
+
+					await player.addAdditionalSkills("tongshuai", skills);
+					game.addVideo("chess_tongshuai_skill", player, [owner, skill]);
+
+					const character = get.character(owner);
+					player.sex = character.sex;
+					player.group = character.group;
 				},
 			},
 			tongshuai3: {
 				unique: true,
 				trigger: { player: "phaseBegin" },
 				forced: true,
+				locked: true,
 				filter(event, player) {
-					return player.storage.tongshuai && player.storage.tongshuai.unowned && player.storage.tongshuai.unowned.length > 0;
+					return player.storage.tongshuai && player.storage.tongshuai.unowned?.length > 0;
 				},
-				content() {
+				async content(event, trigger, player) {
 					player.storage.tongshuai.get();
 				},
 			},
@@ -6630,7 +6568,7 @@ export default () => {
 		rank: {},
 		posmap: {},
 		help: {
-			战棋模式: '<div style="margin:10px">对阵模式</div><ul style="margin-top:0"><li>n人对战n人的模式，由单人控制，开始游戏后随机分配位置与出牌顺序<li>' + "每人在出牌阶段有一次移动的机会，可移动的最大距离为2<li>" + "任何卡牌或技能无法指定位置相隔8个格以上的角色为目标<li>" + "杀死对方阵营的角色可摸一张牌，杀死本方阵营无惩罚<li>" + "若开启主将，双方各选择一名角色成为主将。主将体力上限加一，主将死亡后，若有副将，副将代替之成为主将，否则游戏结束<li>" + "开启无尽模式后，任何一方有角色死亡都将选择一名新角色重新加入战场，直到点击左上角的结束游戏按钮手动结束游戏。结束游戏时，杀敌更多的一方获胜<li>" + "行动顺序为指定时，双方无论存活角色角色多少都将轮流进行行动。在一方所有角色行动完毕进行下一轮行动时，若其人数比另一方少，另一方可指定至多X名角色名摸一张牌，X为人数之差<li>" + "开启战场机关后，每个回合结束时有一定机率出现一个机关，该机关不参与战斗，并有一个影响周围或全体角色的效果。机关在出现后的5~10个回合内消失<li>" + "开启击退效果后，当一名角色对距离两格以内的目标造成伤害后，受伤害角色将沿反方向移动一格<li>" + "战场上可设置出现随机路障，角色无法移动到路障处。当一名角色的周围四格有至少三格为路障或在战场外时，其可以在回合内清除一个相邻路障</ul>" + '<div style="margin:10px">君主模式</div><ul style="margin-top:0"><li>收集武将进行战斗，根据战斗难度及我方出场武将的强度，战斗胜利后将获得数量不等的金钱。没有君主出场时，获得的金钱较多<li>' + "金钱可以用来招募随机武将，招到已有武将，或遣返不需要的武将时可得到招募令<li>" + "战斗中有君主出场时可招降敌将，成功率取决于敌将的稀有度、剩余体力值以及手牌数。成功后战斗立即结束且没有金钱奖励。每发动一次招降，无论成功还是失败，都会扣除10招募令<li>" + "挑战武将会与该武将以及与其强度相近的武将进行战斗，敌方人数与我方出场人数相同，但不少于3。胜利后可通过招募令招募该武将，普通/稀有/史诗/传说武将分别需要40/100/400/1600招募令<li>" + "竞技场：<br>随机选择9名武将，每次派出1~3名武将参战。战斗中阵亡的武将不能再次上场。<br><br>战斗后武将进入疲劳状态，若立即再次出场则初始体力值-1。<br><br>战斗中本方武将行动时可召唤后援，令一名未出场的已方武将加入战斗。后援武将在战斗结束后无论存活与否均不能再次出场<br><br>当取得12场胜利或所有武将全部阵亡后结束，并根据胜场数获得随机奖励<li>" + "修改金钱：<br>game.changeMoney<br>修改招募令：<br>game.changeDust</ul>",
+			战棋模式: '<div style="margin:10px">对阵模式</div><ul style="margin-top:0"><li>n人对战n人的模式，由单人控制，开始游戏后随机分配位置与出牌顺序<li>' + "每人在出牌阶段有一次移动的机会，可移动的最大距离为2<li>" + "任何卡牌或技能无法指定位置相隔8个格以上的角色为目标<li>" + "杀死对方阵营的角色可摸一张牌，杀死本方阵营无惩罚<li>" + "若开启主将，双方各选择一名角色成为主将。主将体力上限加一，主将死亡后，若有副将，副将代替之成为主将，否则游戏结束<li>" + "开启无尽模式后，任何一方有角色死亡都将选择一名新角色重新加入战场，直到点击左上角的结束游戏按钮手动结束游戏。结束游戏时，杀敌更多的一方获胜<li>" + "行动顺序为指定时，双方无论存活角色多少都将轮流进行行动。在一方所有角色行动完毕进行下一轮行动时，若其人数比另一方少，另一方可指定至多X名角色名摸一张牌，X为人数之差<li>" + "开启战场机关后，每个回合结束时有一定机率出现一个机关，该机关不参与战斗，并有一个影响周围或全体角色的效果。机关在出现后的5~10个回合内消失<li>" + "开启击退效果后，当一名角色对距离两格以内的目标造成伤害后，受伤害角色将沿反方向移动一格<li>" + "战场上可设置出现随机路障，角色无法移动到路障处。当一名角色的周围四格有至少三格为路障或在战场外时，其可以在回合内清除一个相邻路障</ul>" + '<div style="margin:10px">君主模式</div><ul style="margin-top:0"><li>收集武将进行战斗，根据战斗难度及我方出场武将的强度，战斗胜利后将获得数量不等的金钱。没有君主出场时，获得的金钱较多<li>' + "金钱可以用来招募随机武将，招到已有武将，或遣返不需要的武将时可得到招募令<li>" + "战斗中有君主出场时可招降敌将，成功率取决于敌将的稀有度、剩余体力值以及手牌数。成功后战斗立即结束且没有金钱奖励。每发动一次招降，无论成功还是失败，都会扣除10招募令<li>" + "挑战武将会与该武将以及与其强度相近的武将进行战斗，敌方人数与我方出场人数相同，但不少于3。胜利后可通过招募令招募该武将，普通/稀有/史诗/传说武将分别需要40/100/400/1600招募令<li>" + "竞技场：<br>随机选择9名武将，每次派出1~3名武将参战。战斗中阵亡的武将不能再次上场。<br><br>战斗后武将进入疲劳状态，若立即再次出场则初始体力值-1。<br><br>战斗中本方武将行动时可召唤后援，令一名未出场的已方武将加入战斗。后援武将在战斗结束后无论存活与否均不能再次出场<br><br>当取得12场胜利或所有武将全部阵亡后结束，并根据胜场数获得随机奖励<li>" + "修改金钱：<br>game.changeMoney<br>修改招募令：<br>game.changeDust</ul>",
 		},
 	};
 };

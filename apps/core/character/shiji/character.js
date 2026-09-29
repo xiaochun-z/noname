@@ -44,6 +44,12 @@ const characters = {
 		skills: ["reshuishi", "stianyi", "resghuishi"],
 		groupInGuozhan: "wei",
 	},
+	mb_shen_machao: {
+		sex: "male",
+		group: "shen",
+		hp: 4,
+		skills: ["yuli", "tingwei", "jimie"],
+	},
 	mb_shen_jiangwei: {
 		sex: "male",
 		group: "shen",
@@ -153,7 +159,7 @@ const characters = {
 	sp_yanghu: {
 		sex: "male",
 		group: "qun",
-		hp: 3,
+		hp: 4,
 		skills: ["mingfa", "rongbei"],
 		groupBorder: "jin",
 	},
@@ -295,7 +301,7 @@ const characters = {
 		sex: "male",
 		group: "wu",
 		hp: 3,
-		skills: ["mjdingyi", "mjzuici", "mjfubi"],
+		skills: ["mbdingyi", "mbzuici", "mbfubi"],
 	},
 	sp_xunchen: {
 		sex: "male",

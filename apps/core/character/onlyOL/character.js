@@ -1,4 +1,60 @@
 const characters = {
+	ol_zhonghui: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["olquanji", "olzili"],
+	},
+	ol_shen_huangzhong: {
+		sex: "male",
+		group: "shen",
+		hp: 4,
+		skills: ["shenyu", "huaren"],
+		groupInGuozhan: "shu",
+	},
+	ol_sb_zhurong: {
+		sex: "female",
+		group: "shu",
+		hp: 4,
+		skills: ["olsbrenche", "olsbyalian"],
+		names: "null|null",
+	},
+	ol_liufeng: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["olxiansi", "olqinling"],
+	},
+	ol_bulianshi: {
+		sex: "female",
+		group: "wu",
+		hp: 3,
+		skills: ["olanxu", "olzhuiyi"],
+	},
+	ol_quancong: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["olyaoming"],
+	},
+	ol_caoxiu: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["olqianju", "olqingxi"],
+	},
+	ol_guanping: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["longyin", "oljieyong"],
+	},
+	dm_zhangfei: {
+		sex: "male",
+		group: "shu",
+		hp: 5,
+		skills: ["olzhuohun", "olchenshi"],
+	},
 	ol_xiahoushi: {
 		sex: "female",
 		group: "shu",
@@ -156,6 +212,7 @@ const characters = {
 		hp: 3,
 		skills: ["olsbzhitian", "olsbwujing", "olsbzhijue"],
 		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
 	},
 	ol_sunluban: {
 		sex: "female",

@@ -16,15 +16,15 @@ const dynamicTranslates = {
 	},
 	olchunhui(player, skill) {
 		const bool = player.storage[`${skill}_rewrite`];
-		return `锁定技，每轮首张牌被使用后，若此牌为: ${bool? "黑色" : "红色"}，你回复1点体力；黑色，你摸一张牌。`;
+		return `准备阶段或当你受到伤害后，令一名其他角色交给你一张手牌。若此牌为黑色，本回合你或其下一次成为${bool ? "黑色" : "红色"}牌的目标时，各弃置一张手牌。`;
 	},
 	olxiasheng(player, skill) {
 		const bool = player.storage[`${skill}_rewrite`];
-		return `准备阶段或当你受到伤害后，令一名其他角色交给你一张牌。若此牌为黑色，本轮你与其下一次使用${bool? "黑色" : "红色"}牌时，可为此牌增加或减少一个目标（至多减至1）。`;
+		return `锁定技，若你手牌中：${bool ? "黑色" : "红色"}牌较多，你使用黑色牌时摸一张牌；黑色牌较多，你使用${bool ? "黑色" : "红色"}牌可多指定一个目标。`;
 	},
 	olqiumu(player, skill) {
 		const bool = player.storage[`${skill}_rewrite`];
-		return `锁定技，你脱离濒死状态后，你重铸所有${bool? "黑色" : "红色"}牌，并将${get.poptip("olchunhui")}${get.poptip("olxiasheng")}〖秋暮〗描述中的“红色”均改为“黑色”。`;
+		return `锁定技，本回合成为过你的${bool ? "黑色" : "红色"}牌目标的角色进入濒死状态时，你将${get.poptip("olchunhui")}、${get.poptip("olxiasheng")}或〖秋暮〗描述中的“${bool ? "黑色" : "红色"}”均改为“黑色”，若描述变化，你获得其所有黑色手牌。`;
 	},
 	olwenyi(player) {
 		let info = lib.translate["olwenyi_info"],
@@ -104,7 +104,7 @@ const dynamicTranslates = {
 	spmanwang(player) {
 		var num = 4 - player.countMark("spmanwang");
 		var str = "出牌阶段，你可以弃置任意张牌。然后你依次执行以下选项中的前等量项：";
-		var list = ["⒈获得〖叛侵〗。", "⒉摸一张牌。", "⒊回复1点体力。", "⒋摸两张牌并失去〖叛侵〗。"];
+		var list = [`⒈获得${get.poptip("sppanqin")}。`, "⒉摸一张牌。", "⒊回复1点体力。", `⒋摸两张牌并失去${get.poptip("sppanqin")}。`];
 		for (var i = 0; i < 4; i++) {
 			if (i == num) {
 				str += '<span style="text-decoration: line-through;">';
@@ -121,7 +121,7 @@ const dynamicTranslates = {
 		if (count < 3) {
 			return lib.translate.olbixin_info.slice(count * 5);
 		}
-		return "你可以声明一种牌的类型（每种类型限[3]次），并选择一种你本轮未使用过且有合法目标的的基本牌。你摸[1]张牌，然后若你有此类型的手牌，你将所有此类型的手牌当此基本牌使用。";
+		return "你可以声明一种牌的类型（每种类型限[3]次），并选择一种你本轮未使用过且有合法目标的基本牌。你摸[1]张牌，然后若你有此类型的手牌，你将所有此类型的手牌当此基本牌使用。";
 	},
 	olfeibai(player) {
 		const bool = player.storage.olfeibai;
@@ -164,9 +164,9 @@ const dynamicTranslates = {
 	},
 	oldongdao(player) {
 		if (player.storage.oldongdao) {
-			return '农民的回合结束时：阴，你可以令地主进行一个额外回合；<span class="bluetext">阳，其可以进行一个额外回合</span>。';
+			return '农民的回合结束时：阳，你可以令地主进行一个额外回合；<span class="bluetext">阴，其可以进行一个额外回合</span>。';
 		}
-		return '农民的回合结束时：<span class="bluetext">阴，你可以令地主进行一个额外回合</span>；阳，其可以进行一个额外回合。';
+		return '农民的回合结束时：<span class="firetext">阳，你可以令地主进行一个额外回合</span>；阴，其可以进行一个额外回合。';
 	},
 	ollangdao(player) {
 		var str = "当你使用【杀】指定唯一目标时，你可以与该目标角色同时选择一项：";
@@ -225,6 +225,14 @@ const dynamicTranslates = {
 		let start = "转换技。出牌阶段，",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
+	},
+	oltaohuai(player, skill) {
+		const bool = player.storage[skill];
+		let yang = "阳：最大的牌",
+			yin = "阴：最小的牌";
+		if (bool) yin = `<span class='bluetext'>${yin}</span>`;
+		else yang = `<span class='firetext'>${yang}</span>`;
+		return `转换技，你使用手牌中点数<br>${yang}<br>${yin}<br>时摸一张牌，否则你可以弃置一张牌。`;
 	},
 };
 export default dynamicTranslates;

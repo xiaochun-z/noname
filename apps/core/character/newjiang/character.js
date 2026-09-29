@@ -1,17 +1,15 @@
 const characters = {
+	yj_wanglang: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["fuyu", "zhanshi"],
+	},
 	yj_x_xunxu: {
 		sex: "male",
 		group: "wei",
 		hp: 3,
 		skills: ["diyin", "boqia"],
-	},
-	yj_y_xunxu: {
-		sex: "male",
-		group: "wei",
-		hp: 3,
-		skills: ["kanlv", "yjshenwei"],
-		img: "image/character/yj_x_xunxu.jpg",
-		dieAudios: ["yj_x_xunxu"],
 	},
 	yj_fazheng: {
 		sex: "male",
@@ -146,6 +144,7 @@ const characters = {
 		hp: 3,
 		skills: ["sangu", "yizu"],
 		names: "诸葛|尚",
+		clans: ["琅琊诸葛氏"],
 	},
 	kebineng: {
 		sex: "male",
@@ -179,9 +178,10 @@ const characters = {
 	yj_xuangongzhu: {
 		sex: "female",
 		group: "wei",
-		hp: 3,
+		hp: 4,
 		skills: ["yjqimei", "yjzhuiji"],
 		names: "司马|null",
+		groupBorder: "jin",
 	},
 	xukun: {
 		sex: "male",

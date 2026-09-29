@@ -1,6 +1,51 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const dynamicTranslates = {
+	dcranlv(player, skill) {
+		if (!player.storage[skill]?.length) {
+			return lib.translate[skill + "_info"];
+		}
+		let list = [
+			"横置或重置至多两名角色",
+			"摸两张牌",
+			"弃置一名角色两张牌",
+		];
+		for (let i in list) {
+			if (player.storage[skill][i] === false) {
+				list[i] = `<span style="text-decoration: line-through;">${list[i]}</span>`
+			}
+		}
+		return `有角色受到非属性伤害后，你可选择一项执行后移除：1.${list[0]}；2.${list[1]}；3.${list[2]}。`
+	},
+	dcsbxieshu(player, skill) {
+		const usable = player.storage[skill] ? "" : "每回合限一次，";
+		return `${usable}你使用牌指定其他角色为目标后，你可令此牌对其中一个目标无效并获得其一张牌。`;
+	},
+	dcsbjingmou(player) {
+		const bool = player.storage.dcsbjingmou;
+		let yang = "你可令此牌无效并弃置牌堆顶一张牌，若与此牌花色一致对其造成1点火焰伤害",
+			yin = "此牌结算后将其交给任意一名角色";
+		if (bool) {
+			yin = `<span class="bluetext">${yin}</span>`;
+		} else {
+			yang = `<span class="firetext">${yang}</span>`;
+		}
+		const start = `转换技，①游戏开始时，你可以转换此技能状态；②任意角色出牌阶段开始时，若你未有记录的花色或牌类型，你可弃置任意张牌并秘密记录其中包含的至多三种花色与牌类型。有角色使用与你记录的花色或类型相同的牌时，移除该记录。`,
+			end = `。若你移除过所有花色与类型，你获得${get.poptip("dcsbdingnan")}。`;
+		return `${start}阳：${yang}；阴：${yin}${end}`;
+	},
+	dcsbzhubo(player, skill) {
+		let awaken1 = false, awaken2 = false;
+		if (player.storage["dcsbzhubo"]) {
+			({ awaken1, awaken2 } = player.storage["dcsbzhubo"]);
+		}
+		let str = "有角色于其出牌阶段外造成伤害时";
+		if (awaken2) str = "你于出牌阶段外造成或受到伤害时";
+		else if (awaken1) str = "有角色于其出牌阶段外受到伤害时";
+		let str2 = awaken2 ? "" : "失去1点体力并";
+		let str3 = awaken2 ? "自己" : "其";
+		return `每回合限一次，${str}，你可以${str2}选择一项：1.你与${str3}各摸两张牌；2.此伤害+1。`
+	},
 	fengliao(player) {
 		const bool = player.storage.fengliao;
 		let yang = "你令其摸一张牌",
@@ -27,23 +72,16 @@ const dynamicTranslates = {
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
-	dcliexiang(player, skill) {
-		let info = lib.translate[`${skill}_info`];
-		if (player.hasSkill("dcliexiang_extra")) {
-			return info.replace("一名", `至多${get.cnNumber(player.countMark("dcliexiang_extra") + 1)}名`);
-		}
-		return info;
-	},
 	dcsbyinmou(player) {
 		const bool = player.storage.dcsbyinmou;
 		let yang = "摸体力值张牌（至多摸五）",
-			yin = "弃置体力值张手牌";
+			yin = "其弃置体力值张手牌";
 		if (bool) {
 			yin = `<span class="bluetext">${yin}</span>`;
 		} else {
 			yang = `<span class="firetext">${yang}</span>`;
 		}
-		const start = `转换技，①游戏开始时，你可以转换此技能状态；②每个回合结束时，若本回合有角色失去手牌数大于剩余手牌数，你可观看牌堆顶三张牌并交给其中一名角色其中一张，此牌离开其手牌区时，`,
+		const start = `转换技，①游戏开始时，你可以转换此技能状态；②每个回合结束时，若本回合有角色失去手牌数不小于其当前手牌数，你可观看牌堆顶三张牌并交给其中一名角色其中一张，此牌离开其手牌区时，`,
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
@@ -104,8 +142,8 @@ const dynamicTranslates = {
 			end = "将手牌调整至体力上限（至多摸五张）并视为使用一张仅指定单目标的普通锦囊牌（此牌牌名与目标由你指定）。若以此法摸牌，此牌可额外增加一个目标；若以此法弃牌，此牌额外结算一次。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},
-	dcsbkongwu(player) {
-		const bool = player.storage.dcsbkongwu;
+	old_dcsbkongwu(player) {
+		const bool = player.storage.old_dcsbkongwu;
 		let yang = "弃置其至多等量张牌",
 			yin = "视为对其使用等量张【杀】";
 		if (bool) {
@@ -119,7 +157,7 @@ const dynamicTranslates = {
 	},
 	dckengqiang(player) {
 		let str = player.storage.dcshangjue ? "每回合每项各限一次" : "每回合限一次";
-		str += "，当你使用伤害牌时，你可以选择一项：1.摸体力上限张牌；2.令此牌伤害+1且获得造成伤害的牌。";
+		str += "，当你使用伤害牌时，你可以选择一项：1.摸体力上限张牌；2.令此牌伤害+1且于此牌造成伤害时获得此牌对应的所有实体牌。";
 		return str;
 	},
 	xinlvli(player) {
@@ -218,7 +256,7 @@ const dynamicTranslates = {
 	},
 	dcsbmengmou(player) {
 		const bool = player.storage.dcsbmengmou;
-		let yang = "你可以令该角色使用至多X张【杀】，且其每以此法造成1点伤害，其回复1点体力",
+		let yang = "你可以令该角色使用至多X张【杀】，且其每以此法造成1点伤害，你与其回复1点体力",
 			yin = "你可令该角色打出至多X张【杀】，然后其失去Y点体力";
 		if (bool) {
 			yin = `<span class='bluetext'>${yin}</span>`;
@@ -313,6 +351,13 @@ const dynamicTranslates = {
 			return match;
 		});
 		return result;
+	},
+	rencheng(player, skill) {
+		const storage = player.storage[skill];
+		if (!storage) {
+			return lib.translate["rencheng_info"];
+		}
+		return lib.translate["rencheng_rewrite_info"];
 	},
 };
 export default dynamicTranslates;

@@ -166,9 +166,9 @@ export class Game {
 		}
 		if (filter !== false) {
 			if (list.length) {
-				game.countPlayer2(current => {
+				for (const current of game.filterPlayer2()) {
 					list.removeArray(get.nameList(current));
-				});
+				}
 			}
 			if (filter === undefined) {
 				_status.characterlist = list;
@@ -450,11 +450,12 @@ export class Game {
 			return Promise.resolve();
 		}
 
-		// @ts-expect-error childNodes是可迭代的
-		const elements = new Set(parentFrom.childNodes).union(parentTo.childNodes);
+		const elements = new Set(parentFrom.childNodes).union(new Set(parentTo.childNodes));
 
 		for (const element of elements) {
-			recordAsFirstPosition(element);
+			if (element instanceof HTMLElement) {
+				recordAsFirstPosition(element);
+			}
 		}
 
 		// 我们等待所有动画入队再更改节点结构喵
@@ -470,11 +471,12 @@ export class Game {
 		await new Promise(resolve => resolve(null));
 
 		// 然后是LAST喵，记录结束位置哦喵
-		// @ts-expect-error childNodes是可迭代的
-		const elements2 = new Set(parentFrom.childNodes).union(parentTo.childNodes);
+		const elements2 = new Set(parentFrom.childNodes).union(new Set(parentTo.childNodes));
 
 		for (const element of elements2) {
-			recordAsLastPosition(element);
+			if (element instanceof HTMLElement) {
+				recordAsLastPosition(element);
+			}
 		}
 
 		/**
@@ -678,22 +680,23 @@ export class Game {
 	 */
 	addTempTag(id, translation) {
 		game.addVideo("addTempTag", null, [id, translation]);
-		game.broadcastAll(
+		// 重连恢复翻译
+		_status.postReconnect.addTempTag ??= [
+			list => {
+				for (const args of list) {
+					// @ts-expect-error ignore
+					game.addTempTag(...args);
+				}
+			},
+			[],
+		];
+		_status.postReconnect.addTempTag[1].push([id, translation]);
+		// 翻译
+		lib.translate[id] = translation;
+		game.broadcast(
 			// @ts-expect-error ignore
 			(id, translation) => {
-				if (!lib.translate[id]) {
-					lib.translate[id] = translation;
-					_status.postReconnect.addTempTag ??= [
-						list => {
-							for (const args of list) {
-								// @ts-expect-error ignore
-								game.addTempTag(...args);
-							}
-						},
-						[],
-					];
-					_status.postReconnect.addTempTag[1].push([id, translation]);
-				}
+				lib.translate[id] = translation;
 			},
 			id,
 			translation
@@ -1887,37 +1890,47 @@ export class Game {
 		}
 	}
 	/**
-	 * @template { (...args: any[]) => unknown } T
-	 * @param { T } func
-	 * @param { Parameters<T> } args
+	 * 向所有联机客户端广播并执行指定函数。
+	 *
+	 * 注意：`func`函数体内不能引用函数块外的作用域（如外层局部变量或闭包变量），
+	 * 否则客户端无法找到对应变量；需要的数据应通过`args`显式传入。
+	 *
+	 * @template { any[] } TParams
+	 * @param { (...args: TParams) => any } func
+	 * @param { TParams } args
 	 * @returns { void }
 	 */
 	broadcast(func, ...args) {
 		if (!lib.node || !lib.node.clients || game.online) {
 			return;
 		}
-		for (var i = 0; i < lib.node.clients.length; i++) {
-			if (lib.node.clients[i].inited) {
-				lib.node.clients[i].send.apply(lib.node.clients[i], arguments);
+		for (const client of lib.node.clients) {
+			if (client.inited) {
+				client.send(func, ...args);
 			}
 		}
 	}
 	/**
-	 * @template { (...args: any[]) => unknown } T
-	 * @param { T } func
-	 * @param { Parameters<T> } args
+	 * 向所有联机客户端广播并执行指定函数，同时在主机上执行相同函数。
+	 *
+	 * 注意：联机场景下传入的`func`会被发送到客户端执行，函数体内不能引用函数块外的作用域
+	 * （如外层局部变量或闭包变量），否则客户端无法找到对应变量；需要的数据应通过 `args` 显式传入。
+	 *
+	 * @template { any[] } TParams
+	 * @param { (...args: TParams) => any } func
+	 * @param { TParams } args
 	 * @returns { void }
 	 */
 	broadcastAll(func, ...args) {
 		if (game.online) {
 			return;
 		}
-		game.broadcast.apply(this, arguments);
+		game.broadcast(func, ...args);
 		if (typeof func == "string") {
 			func = lib.message.client[func];
 		}
 		if (typeof func == "function") {
-			func.apply(this, args);
+			func(...args);
 		}
 	}
 	syncState() {
@@ -6348,7 +6361,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 	}
 	/**
 	 * @param { string } skill
-	 * @param { Player } player
+	 * @param { Player } [player]
 	 */
 	removeGlobalSkill(skill, player) {
 		const players = lib.skill.globalmap[skill];
@@ -6504,7 +6517,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 	 * @param { Card | string } name
 	 * @param { string } suit
 	 * @param { number } number
-	 * @param { string } nature
+	 * @param { string } [nature]
 	 */
 	createCard2() {
 		let card = game.createCard.apply(this, arguments);
@@ -6538,7 +6551,19 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		if (game.me._trueMe) {
 			game.swapPlayer(game.me._trueMe);
 		}
-		let i, j, k, num, table, tr, td, dialog;
+		let i,
+			j,
+			k,
+			num,
+			table,
+			tr,
+			td,
+			dialog,
+			hsMap = new Map([]),
+			poptipData = new Map([]);
+		for (const target of [...game.players, ...game.dead]) {
+			hsMap.set(target, target.getCards("h"));
+		}
 		_status.over = true;
 		ui.control.show();
 		ui.clear();
@@ -6566,24 +6591,24 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			} else if (result2 == false) {
 				dialog.content.firstChild.innerHTML = "战斗失败";
 			}
+			const poptipData = arguments[2];
+			if (poptipData instanceof Map) {
+				const players = game.players.concat(game.dead, game.additionaldead || []);
+				for (const target of players) {
+					if (!poptipData.has(target.playerid)) continue;
+					const [id, hs] = poptipData.get(target.playerid);
+					lib.poptip.add({
+						id,
+						name: `<img style="width:15px; vertical-align: middle;" src="${lib.assetURL}image/card/handcard.png">`,
+						dialog(dialog) {
+							dialog.add(`${get.translation(target)}的手牌`);
+							dialog[hs.length ? "addSmall" : "addText"](hs.length ? hs : "（没有手牌）");
+						},
+					});
+				}
+			}
 			ui.update();
 			dialog.add(ui.create.div(".placeholder"));
-			for (let i = 0; i < game.players.length; i++) {
-				let hs = game.players[i].getCards("h");
-				if (hs.length) {
-					dialog.add('<div class="text center">' + get.translation(game.players[i]) + "</div>");
-					dialog.addSmall(hs);
-				}
-			}
-
-			for (let j = 0; j < game.dead.length; j++) {
-				let hs = game.dead[j].getCards("h");
-				if (hs.length) {
-					dialog.add('<div class="text center">' + get.translation(game.dead[j]) + "</div>");
-					dialog.addSmall(hs);
-				}
-			}
-
 			dialog.add(ui.create.div(".placeholder.slim"));
 			if (lib.config.background_audio) {
 				if (result2 === true) {
@@ -6771,7 +6796,6 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				ui.ladder.innerHTML = game.getLadderName(lib.storage.ladder.current);
 			}
 		}
-		// if(true){
 		if (game.players.length) {
 			table = document.createElement("table");
 			tr = document.createElement("tr");
@@ -6790,6 +6814,9 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			tr.appendChild(td);
 			td = document.createElement("td");
 			td.innerHTML = "杀敌";
+			tr.appendChild(td);
+			td = document.createElement("td");
+			td.innerHTML = "手牌";
 			tr.appendChild(td);
 			table.appendChild(tr);
 			for (i = 0; i < game.players.length; i++) {
@@ -6842,6 +6869,22 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				}
 				td.innerHTML = num;
 				tr.appendChild(td);
+				td = document.createElement("td");
+				let target = game.players[i];
+				const poptipId = get.id();
+				poptipData.set(target.playerid, [poptipId, hsMap.get(target) ?? []]);
+				game.broadcastAll(item => lib.poptip.add(item), {
+					id: poptipId,
+					name: `<img style="width:15px; vertical-align: middle;" src="${lib.assetURL}image/card/handcard.png">`,
+					dialog(dialog) {
+						let hs = hsMap.get(target) ?? [];
+						dialog.add(`${get.translation(target)}的手牌`);
+						dialog[hs.length > 0 ? "addSmall" : "addText"](hs.length > 0 ? hs : "（没有手牌）");
+						return dialog;
+					},
+				});
+				td.innerHTML = get.poptip(poptipId);
+				tr.appendChild(td);
 				table.appendChild(tr);
 			}
 			dialog.add(ui.create.div(".placeholder"));
@@ -6867,6 +6910,9 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				tr.appendChild(td);
 				td = document.createElement("td");
 				td.innerHTML = "杀敌";
+				tr.appendChild(td);
+				td = document.createElement("td");
+				td.innerHTML = "手牌";
 				tr.appendChild(td);
 				table.appendChild(tr);
 			}
@@ -6919,6 +6965,22 @@ ${e instanceof Error ? e.stack : String(e)}`);
 					}
 				}
 				td.innerHTML = num;
+				tr.appendChild(td);
+				td = document.createElement("td");
+				let target = game.dead[i];
+				const poptipId = get.id();
+				poptipData.set(target.playerid, [poptipId, hsMap.get(target) ?? []]);
+				game.broadcastAll(item => lib.poptip.add(item), {
+					id: poptipId,
+					name: `<img style="width:15px; vertical-align: middle;" src="${lib.assetURL}image/card/handcard.png">`,
+					dialog(dialog) {
+						let hs = hsMap.get(target) ?? [];
+						dialog.add(`${get.translation(target)}的手牌`);
+						dialog[hs.length > 0 ? "addSmall" : "addText"](hs.length > 0 ? hs : "（没有手牌）");
+						return dialog;
+					},
+				});
+				td.innerHTML = get.poptip(poptipId);
 				tr.appendChild(td);
 				table.appendChild(tr);
 			}
@@ -6978,6 +7040,22 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				}
 				td.innerHTML = num;
 				tr.appendChild(td);
+				td = document.createElement("td");
+				let target = game.additionaldead[i];
+				const poptipId = get.id();
+				poptipData.set(target.playerid, [poptipId, hsMap.get(target) ?? []]);
+				game.broadcastAll(item => lib.poptip.add(item), {
+					id: poptipId,
+					name: `<img style="width:15px; vertical-align: middle;" src="${lib.assetURL}image/card/handcard.png">`,
+					dialog(dialog) {
+						let hs = hsMap.get(target) ?? [];
+						dialog.add(`${get.translation(target)}的手牌`);
+						dialog[hs.length > 0 ? "addSmall" : "addText"](hs.length > 0 ? hs : "（没有手牌）");
+						return dialog;
+					},
+				});
+				td.innerHTML = get.poptip(poptipId);
+				tr.appendChild(td);
 				table.appendChild(tr);
 			}
 			dialog.add(ui.create.div(".placeholder"));
@@ -6986,35 +7064,14 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		// }
 		dialog.add(ui.create.div(".placeholder"));
 
-		let clients = game.players.concat(game.dead);
+		let clients = game.players.concat(game.dead, game.additionaldead || []);
 		for (let i = 0; i < clients.length; i++) {
 			if (clients[i].isOnline2()) {
-				clients[i].send(game.over, dialog.content.innerHTML, game.checkOnlineResult(clients[i]));
+				clients[i].send(game.over, dialog.content.innerHTML, game.checkOnlineResult(clients[i]), poptipData);
 			}
 		}
 
 		dialog.add(ui.create.div(".placeholder"));
-
-		for (let i = 0; i < game.players.length; i++) {
-			if (!_status.connectMode && game.players[i].isUnderControl(true) && game.layout != "long2") {
-				continue;
-			}
-			let hs = game.players[i].getCards("h");
-			if (hs.length) {
-				dialog.add('<div class="text center">' + get.translation(game.players[i]) + "</div>");
-				dialog.addSmall(hs);
-			}
-		}
-		for (let i = 0; i < game.dead.length; i++) {
-			if (!_status.connectMode && game.dead[i].isUnderControl(true) && game.layout != "long2") {
-				continue;
-			}
-			let hs = game.dead[i].getCards("h");
-			if (hs.length) {
-				dialog.add('<div class="text center">' + get.translation(game.dead[i]) + "</div>");
-				dialog.addSmall(hs);
-			}
-		}
 		dialog.add(ui.create.div(".placeholder.slim"));
 		game.addVideo("over", null, dialog.content.innerHTML);
 		let vinum = parseInt(lib.config.video);
@@ -8618,21 +8675,21 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		}
 	}
 	finishSkill(skillId, sub) {
-		const mode = get.mode(),
-			info = lib.skill[skillId],
-			iInfo = `${skillId}_info`;
-		if (_status.mode && lib.translate[iInfo + "_" + mode + "_" + _status.mode]) {
-			lib.translate[iInfo] = lib.translate[iInfo + "_" + mode + "_" + _status.mode];
+		const mode = get.mode();
+		const info = lib.skill[skillId];
+		const iInfo = `${skillId}_info`;
+		if (_status.mode && lib.translate[`${iInfo}_${mode}_${_status.mode}`]) {
+			lib.translate[iInfo] = lib.translate[`${iInfo}_${mode}_${_status.mode}`];
 		} else if (lib.translate[`${iInfo}_${mode}`]) {
 			lib.translate[iInfo] = lib.translate[`${iInfo}_${mode}`];
-		} else if (lib.translate[`${iInfo}_zhu`] && (mode == "identity" || (mode == "guozhan" && _status.mode == "four"))) {
+		} else if (lib.translate[`${iInfo}_zhu`] && (mode === "identity" || (mode === "guozhan" && _status.mode === "four"))) {
 			lib.translate[iInfo] = lib.translate[`${iInfo}_zhu`];
 		} else if (lib.translate[`${iInfo}_combat`] && get.is.versus()) {
 			lib.translate[iInfo] = lib.translate[`${iInfo}_combat`];
 		}
 		info.skill_id ??= skillId;
-		let deleteSkill = function (skill, iInfo) {
-			let { audio, audioname, audioname2, skillID } = lib.skill[skill] || {};
+		const deleteSkill = (skill, iInfo) => {
+			const { audio, audioname, audioname2, skillID } = lib.skill[skill] || {};
 			lib.skill[skill] = { audio, audioname, audioname2, skillID };
 			lib.translate[iInfo] &&= "此模式下不可用";
 			lib.dynamicTranslate[skill] &&= () => "此模式下不可用";
@@ -8641,11 +8698,15 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			const skill = lib.skill[info.inherit];
 			if (skill) {
 				Object.keys(skill).forEach(value => {
-					if (info[value] == undefined) {
-						if (value == "audio" && (typeof info[value] == "number" || typeof info[value] == "boolean")) {
+					if (info[value] == null) {
+						if (value === "audio" && (typeof info[value] === "number" || typeof info[value] === "boolean")) {
 							info[value] = info.inherit;
 						} else {
-							info[value] = skill[value];
+							if (typeof skill[value] === "object") {
+								info[value] = get.copy(skill[value]);
+							} else {
+								info[value] = skill[value];
+							}
 						}
 					}
 				});
@@ -8653,12 +8714,12 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			lib.translate[skillId] ??= lib.translate[info.inherit];
 			lib.translate[iInfo] ??= lib.translate[`${info.inherit}_info`];
 		}
-		if (info.forbid?.includes(mode) || info.mode?.includes(mode) == false || info.available?.(mode) == false) {
+		if (info.forbid?.includes(mode) || info.mode?.includes(mode) === false || info.available?.(mode) === false) {
 			deleteSkill(skillId, iInfo);
 			return;
 		}
-		if (info.viewAs && typeof info.viewAs != "function") {
-			if (typeof info.viewAs == "string") {
+		if (info.viewAs && typeof info.viewAs !== "function") {
+			if (typeof info.viewAs === "string") {
 				info.viewAs = {
 					name: info.viewAs,
 				};
@@ -8667,18 +8728,22 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				deleteSkill(skillId, iInfo);
 				return;
 			}
-			if (info.ai == undefined) {
+			if (info.ai == null) {
 				info.ai = {};
 			}
-			const skill = info.ai,
-				card = lib.card[info.viewAs.name].ai;
+			const skill = info.ai;
+			const card = lib.card[info.viewAs.name].ai;
 			if (card) {
 				Object.keys(card).forEach(value => {
-					if (skill[value] == undefined) {
-						skill[value] = card[value];
-					} else if (typeof skill[value] == "object") {
+					if (skill[value] == null) {
+						if (typeof card[value] === "object") {
+							skill[value] = get.copy(card[value]);
+						} else {
+							skill[value] = card[value];
+						}
+					} else if (typeof skill[value] === "object") {
 						Object.keys(card[value]).forEach(element => {
-							if (skill[value][element] == undefined) {
+							if (skill[value][element] == null) {
 								skill[value][element] = card[value][element];
 							}
 						});
@@ -8717,7 +8782,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		}
 		if (info.round) {
 			const k = `${skillId}_roundcount`;
-			if (typeof info.group == "string") {
+			if (typeof info.group === "string") {
 				info.group = [info.group, k];
 			} else if (Array.isArray(info.group)) {
 				info.group.add(k);
@@ -8731,7 +8796,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 					}
 				},
 				intro: {
-					content: (storage, player) => {
+					content(storage, player) {
 						let str = "";
 						const info = get.info(name.slice(0, name.indexOf("_roundcount")));
 						if (info && info.addintro) {
@@ -8751,7 +8816,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 				forced: true,
 				popup: false,
 				silent: true,
-				content: async (event, trigger, player) => {
+				async content(event, trigger, player) {
 					if (lib.skill[event.name.slice(0, event.name.indexOf("_roundcount"))].round - (game.roundNumber - player.storage[event.name]) > 0) {
 						player.updateMarks();
 					} else {
@@ -8792,7 +8857,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			}
 			info._priority = priority;
 		}
-		if (skillId[0] == "_") {
+		if (skillId[0] === "_") {
 			game.addGlobalSkill(skillId);
 		}
 	}
@@ -10148,7 +10213,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		return game.players.concat(game.dead).some(value => (includeOut || !value.isOut()) && func(value));
 	}
 	/**
-	 * @param { (player: Player) => boolean } [func]
+	 * @param { (player: Player) => number | boolean } [func]
 	 * @param { boolean } [includeOut]
 	 */
 	countPlayer(func, includeOut) {
@@ -10169,7 +10234,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		}, 0);
 	}
 	/**
-	 * @param { (player: Player) => boolean } func
+	 * @param { (player: Player) => number | boolean } func
 	 * @param { boolean } [includeOut]
 	 */
 	countPlayer2(func = lib.filter.all, includeOut) {
@@ -10489,7 +10554,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			ui.arena.setNumber(parseInt(ui.arena.dataset.number) + 1);
 			let position = !isNext ? parseInt(target.dataset.position) : parseInt(target.dataset.position) + 1;
 			if (position == 0) {
-				position = players.length;
+				position = parseInt(ui.arena.dataset.number) - 1;
 			}
 			players.forEach(value => {
 				if (parseInt(value.dataset.position) >= position) {
@@ -10601,7 +10666,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 						)
 						.finished.then(() => wave.remove());
 					list.push(shockWave);
-					return Promise.all(list);
+					return Promise.allSettled(list);
 				});
 			};
 			await animate(player);
@@ -10611,6 +10676,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		const players = game.players.concat(game.dead);
 		game.broadcast(addPlayer, id, target, character, character2, isNext, config);
 		const player = await addPlayer(id, target, character, character2, isNext, config);
+		await game.delay(2);
 		//分配座位号
 		const firstSeat = players.find(value => value.getSeatNum() == 1);
 		if (firstSeat) {
@@ -10635,11 +10701,25 @@ ${e instanceof Error ? e.stack : String(e)}`);
 			custom: [],
 			useSkill: [],
 		});
+		for (let i = 0; i < players[0].actionHistory.length; i++) {
+			["isRound", "isSkipped"].forEach(key => {
+				if (players[0].actionHistory[i][key]) {
+					player.actionHistory[i][key] = true;
+				}
+			});
+		}
 		player.stat = new Array(players[0].stat.length).fill({
 			card: {},
 			skill: {},
 			triggerSkill: {},
 		});
+		for (let i = 0; i < players[0].stat.length; i++) {
+			["isRound", "isSkipped"].forEach(key => {
+				if (players[0].stat[i][key]) {
+					player.stat[i][key] = true;
+				}
+			});
+		}
 		return player;
 	}
 	/**
@@ -10698,6 +10778,12 @@ ${e instanceof Error ? e.stack : String(e)}`);
 		//联机需要删除掉，不然重进会多一个dead（）
 		if (_status.connectMode) {
 			delete lib.playerOL[player.playerid];
+		}
+		//如果被移除角色为当前回合角色，需要特殊处理
+		const evt = get.event();
+		const loop = evt.getParent("phaseLoop", true);
+		if (loop?.player == player) {
+			loop.player = player.previousSeat;
 		}
 		//移除角色的具体步骤
 		const removePlayer = async (player, config, configOL) => {
@@ -10779,7 +10865,7 @@ ${e instanceof Error ? e.stack : String(e)}`);
 					);
 				}
 
-				//玩家dom自身的溃散动画（缩小并变灰），建议removePlayer的不要加onfinish后续移除角色的dom需要用到onfinish
+				//玩家dom自身的溃散动画（缩小并变灰）
 				const animation = player.animate(
 					[
 						{ transform: "scale(1)", filter: "brightness(1) grayscale(0)", opacity: 1 },
@@ -10792,56 +10878,56 @@ ${e instanceof Error ? e.stack : String(e)}`);
 					}
 				).finished;
 				list.push(animation);
-				return Promise.all(list);
+				return Promise.allSettled(list);
 			};
-			await animate(player).then(() => {
-				//移除角色的dom，隐藏dom是为了避免动画结束后的拖影（）
-				player.classList.add("dead");
-				player.classList.add("out");
-				player.style.display = "none";
-				player.delete();
-				//调整布局
-				const players = game.players.concat(game.dead);
-				const position = parseInt(player.dataset.position);
-				players.forEach(value => {
-					if (parseInt(value.dataset.position) > position) {
-						value.dataset.position = parseInt(value.dataset.position) - 1;
-					}
-				});
-				ui.arena.setNumber(parseInt(ui.arena.dataset.number) - 1);
-				player.removed = true;
-				if (player == game.me) {
-					//把角色移入旁观，主机不可能真的进旁观的，所以不必在意
-					const func = (player, config) => {
-						game.swapPlayer(game.players.find(i => i != player));
-						const replacePlayer = function (e) {
-							if (!_status.auto || !game.notMe) {
-								return;
-							}
-							game.swapPlayer(this || e.target.parentElement);
-						};
-						game.players.forEach(p => p.addEventListener(lib.config.touchscreen ? "touchend" : "click", replacePlayer));
-						game.notMe = true;
-						_status.auto = true;
-						if (game.online) {
-							if (!config.observe_handcard) {
-								ui.arena.classList.add("observe");
-							}
-							game.observe = true;
-						}
-					};
-					func(player, configOL);
-					//ui.me.hide();
-					ui.auto.hide();
-					ui.wuxie.hide();
+			await animate(player);
+			//移除角色的dom，隐藏dom是为了避免动画结束后的拖影（）
+			player.classList.add("dead");
+			player.classList.add("out");
+			player.style.display = "none";
+			player.delete();
+			//调整布局
+			const players = game.players.concat(game.dead);
+			const position = parseInt(player.dataset.position);
+			players.forEach(value => {
+				if (parseInt(value.dataset.position) > position) {
+					value.dataset.position = parseInt(value.dataset.position) - 1;
 				}
-				setTimeout(() => {
-					player.removeAttribute("style");
-				}, 500);
 			});
+			ui.arena.setNumber(parseInt(ui.arena.dataset.number) - 1);
+			player.removed = true;
+			if (player == game.me) {
+				//把角色移入旁观，主机不可能真的进旁观的，所以不必在意
+				const func = (player, config) => {
+					game.swapPlayer(game.players.find(i => i != player));
+					const replacePlayer = function (e) {
+						if (!_status.auto || !game.notMe) {
+							return;
+						}
+						game.swapPlayer(this || e.target.parentElement);
+					};
+					game.players.forEach(p => p.addEventListener(lib.config.touchscreen ? "touchend" : "click", replacePlayer));
+					game.notMe = true;
+					_status.auto = true;
+					if (game.online) {
+						if (!config.observe_handcard) {
+							ui.arena.classList.add("observe");
+						}
+						game.observe = true;
+					}
+				};
+				func(player, configOL);
+				//ui.me.hide();
+				ui.auto.hide();
+				ui.wuxie.hide();
+			}
+			setTimeout(() => {
+				player.removeAttribute("style");
+			}, 500);
 		};
 		game.broadcast(removePlayer, player, config, get.copy(lib.configOL));
 		await removePlayer(player, config, get.copy(lib.configOL));
+		await game.delay(2);
 		//判断胜负，避免移除后对局变成死局
 		player.dieAfter();
 		return player;

@@ -1,4 +1,63 @@
 const characters = {
+	//嗔
+	sxrm_zhouyu: {
+		sex: "male",
+		group: "devil",
+		hp: 4,
+		skills: ["sxrmjiehuo", "sxrmxianger", "sxrmmieguo"],
+		groupInGuozhan: "wu",
+	},
+	sxrm_sunshangxiang: {
+		sex: "female",
+		group: "wu",
+		hp: 3,
+		skills: ["sxrmjiaozong", "sxrmfusui"],
+	},
+	sxrm_zhangzhao: {
+		sex: "male",
+		group: "wu",
+		hp: 3,
+		skills: ["sxrmxiezhong", "sxrmqishi"],
+	},
+	sxrm_lusu: {
+		sex: "male",
+		group: "wu",
+		hp: 3,
+		skills: ["sxrmwanli", "sxrmlishui"],
+	},
+	sxrm_chen_caocao: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["sxrmlanjiao"],
+	},
+	sxrm_zhugeliang: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["sxrmbingqu", "sxrmfanxin"],
+		groupBorder: "shen",
+		names: "诸葛|亮",
+		clans: ["琅琊诸葛氏"],
+	},
+	sxrm_jiahua: {
+		sex: "male",
+		group: "wu",
+		hp: 5,
+		skills: ["sxrmfubei", "sxrmdancui"],
+	},
+	sxrm_zhaoyun: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["sxrmzhaduo"],
+	},
+	sxrm_caoren: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["sxrmyangbei", "sxrmyinfeng"],
+	},
 	//慢
 	sxrm_guanyu: {
 		sex: "male",
@@ -10,7 +69,7 @@ const characters = {
 	sxrm_guanyinping: {
 		sex: "female",
 		group: "shu",
-		hp: 3,
+		hp: 4,
 		skills: ["sxrmyinmou", "sxrmquchi"],
 	},
 	sxrm_yujin: {

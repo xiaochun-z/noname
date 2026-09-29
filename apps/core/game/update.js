@@ -1,11 +1,10 @@
 window.noname_update = {
-	version: "1.11.3",
+	version: "1.11.6",
 	update: "NULL",
 	changeLog: [
-		"新增52个武将",
-		"对Step Content武将进行重构",
-		"调整部分api",
-		"详细信息请参考game/updateLog.md"
+		"自8月16日起，无名杀仓库main分支的版本号改为下一版本号",
+		"当前版本暂未发布，仅供测试",
+		"如有问题，请加群565727384反馈"
 	],
 	files: [],
 };

@@ -14,10 +14,17 @@ const cards = {
 			}
 			return str;
 		},
-		ai: {
-			basic: {
-				equipValue: 0.1,
-			},
+		ai: { basic: { equipValue: 0.1 } },
+		async onLose(event, trigger, player) {
+			event.cards.forEach(card => {
+				card.fix();
+				ui.discardPile.appendChild(card);
+				game.log(card, "被置入了弃牌堆");
+			});
+			if (event.getParent(2).name == "gain") {
+				const remove = event.getParent(2).cards.filter(card => card[card.cardSymbol] == event.card);
+				event.getParent(2).cards.removeArray(remove);
+			}
 		},
 	},
 	dchuashang_trick: {
@@ -33,10 +40,17 @@ const cards = {
 			}
 			return str;
 		},
-		ai: {
-			basic: {
-				equipValue: 4,
-			},
+		ai: { basic: { equipValue: 4 } },
+		async onLose(event, trigger, player) {
+			event.cards.forEach(card => {
+				card.fix();
+				ui.discardPile.appendChild(card);
+				game.log(card, "被置入了弃牌堆");
+			});
+			if (event.getParent(2).name == "gain") {
+				const remove = event.getParent(2).cards.filter(card => card[card.cardSymbol] == event.card);
+				event.getParent(2).cards.removeArray(remove);
+			}
 		},
 	},
 	dchuashang_basic: {
@@ -52,10 +66,17 @@ const cards = {
 			}
 			return str;
 		},
-		ai: {
-			basic: {
-				equipValue: 3,
-			},
+		ai: { basic: { equipValue: 3 } },
+		async onLose(event, trigger, player) {
+			event.cards.forEach(card => {
+				card.fix();
+				ui.discardPile.appendChild(card);
+				game.log(card, "被置入了弃牌堆");
+			});
+			if (event.getParent(2).name == "gain") {
+				const remove = event.getParent(2).cards.filter(card => card[card.cardSymbol] == event.card);
+				event.getParent(2).cards.removeArray(remove);
+			}
 		},
 	},
 	//武关羽的兵临城下水淹七军
@@ -68,17 +89,18 @@ const cards = {
 		type: "trick",
 		selectTarget: [1, 2],
 		targetprompt: ["受伤弃牌", "受伤摸牌"],
-		contentBefore() {
-			var evt = event.getParent(),
-				target = evt.stocktargets[0];
+		async contentBefore(event, trigger, player) {
+			const evt = event.getParent();
+			const target = evt.stocktargets[0];
 			evt.shuiyanqijun_target = target;
 		},
-		content() {
+		async content(event, trigger, player) {
+			const { target } = event;
 			target.damage("thunder");
 			if (target != event.getParent().shuiyanqijun_target) {
-				target.draw();
+				await target.draw();
 			} else {
-				target.chooseToDiscard("he", true);
+				await target.chooseToDiscard("he", true);
 			}
 		},
 		ai: {
@@ -115,7 +137,7 @@ const cards = {
 			}
 		},
 		ai: { basic: { equipValue: 4 } },
-		onLose() {
+		async onLose({ player }) {
 			if (player.storage.counttrigger?.pyzhuren_heart > 0) {
 				delete player.storage.counttrigger.pyzhuren_heart;
 			}
@@ -134,7 +156,7 @@ const cards = {
 				delete _status.pyzhuren[card.name];
 			}
 		},
-		onLose() {
+		async onLose({ player }) {
 			if (player.storage.counttrigger?.pyzhuren_diamond > 0) {
 				delete player.storage.counttrigger.pyzhuren_diamond;
 			}
@@ -156,7 +178,7 @@ const cards = {
 		},
 		ai: { basic: { equipValue: 5 } },
 		loseDelay: false,
-		onLose() {
+		async onLose({ player }) {
 			if (player.storage.counttrigger?.pyzhuren_club > 0) {
 				delete player.storage.counttrigger.pyzhuren_club;
 			}

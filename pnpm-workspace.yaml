@@ -3,6 +3,12 @@ packages:
   - packages/*
   - packages/extension/*
 
+allowBuilds:
+  core-js-bundle: true
+  electron: true
+  electron-winstaller: true
+  esbuild: true
+
 onlyBuiltDependencies:
   - core-js-bundle
   - electron
